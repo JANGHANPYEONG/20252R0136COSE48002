@@ -72,4 +72,4 @@ app.register_blueprint(statistic_api, url_prefix="/statistic")  # 통계 데이�
 # Flask 실행
 if __name__ == "__main__":
     initialize_services()
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=8080)

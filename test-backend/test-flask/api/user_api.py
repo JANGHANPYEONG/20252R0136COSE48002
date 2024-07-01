@@ -144,7 +144,7 @@ def update_user_data():
         )
 
 # 유저 아이디 중복 체크 API
-@user_api.route("/id-check", methods=["GET", "POST"])
+@user_api.route("/duplicate_check", methods=["GET", "POST"])
 def check_duplicate():
     try:
         if request.method == "GET":
