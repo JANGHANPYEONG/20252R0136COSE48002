@@ -2,7 +2,7 @@
 from datetime import datetime
 import sys
 
-from flask import Flask, current_app, jsonify, request
+from flask import Flask, current_app, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -11,6 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from db.db_model import User, initialize_db
 from utils import logger
+import firebase_admin
+from firebase_admin import credentials, auth
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
@@ -21,32 +23,9 @@ db = SQLAlchemy()
 CORS(app)
 
 
-# 유저 login API
-@app.route("/", methods=["GET", "POST"])
-def login():
-    try:
-        db_session = current_app.db_session
-        data = request.get_json()
-        userId = data.get("userId")
-        password = data.get("password")
-        
-        if not userId or not password:
-            return jsonify({"msg": "Missing userId or password"}), 400
-        
-        user = db_session.query(User).filter_by(userId=userId).first()
-        
-        if user and user.password == password:
-            return jsonify({"msg": "Login successful"}), 200
-        else:
-            return jsonify({"msg": "Invalid userId or password"}), 401
-    except Exception as e:
-        logger.exception(str(e))
-        return jsonify(
-            {
-                "msg": "Server Error",
-                "time": datetime.now().strftime("%H:%M:%S")
-            }
-        ), 505
+@app.route("/")
+def hello_world():
+    return "Hello, World!"
 
 
 def initialize_services():
@@ -57,7 +36,7 @@ def initialize_services():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Using Flask Application
-    with app.app_context():
+    with app.app_context() as current_app:
         # 1. DB Session Connection
         initialize_db(app)
 

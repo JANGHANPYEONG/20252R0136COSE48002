@@ -9,6 +9,8 @@ from flask import (
 from db.db_model import User
 from db.db_controller import create_user, get_user, _get_users_by_type, update_user
 import hashlib
+import firebase_admin
+from firebase_admin import credentials, auth
 from datetime import datetime
 from utils import logger
 
@@ -20,6 +22,38 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
+
+
+# 로거 설정
+logger = logging.getLogger(__name__)
+
+
+# Firebase Admin SDK 초기화
+cred = credentials.Certificate('serviceAccountKey.json')  # Firebase 서비스 계정 키 파일 경로
+firebase_admin.initialize_app(cred)
+
+
+@user_api.route("/login", methods=["GET"])
+def login_user():
+    try:
+        # 쿼리 파라미터에서 userId 가져오기
+        user_id = request.args.get('userId')
+        logger.info(f"Received userId: {user_id}")
+
+        if not user_id:
+            return jsonify({"msg": "userId is required"}), 400
+
+        # 사용자 데이터베이스에서 userId 확인
+        user = User.query.filter_by(userId=user_id).first()
+
+        if not user:
+            return jsonify({"msg": "User not found"}), 404
+
+        return jsonify({"msg": "Login successful", "userId": user.userId, "name": user.name, "type": user.type}), 200
+
+    except Exception as e:
+        logger.exception("Exception: %s", e)
+        return jsonify({"msg": "Server Error"}), 500
 
 
 # 유저 등록 API
@@ -58,7 +92,14 @@ def read_user_data():
                 result = _get_users_by_type(db_session)
 
             # Ensure result is serializable
-            response_data = result if isinstance(result, dict) else result._asdict()
+            if isinstance(result, dict):
+                response_data = result
+            else:
+                response_data = result._asdict()
+
+            # Remove None values from response_data
+            response_data = {k: v for k, v in response_data.items() if v is not None}
+
             return jsonify(response_data), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
