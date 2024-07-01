@@ -5,13 +5,12 @@
 //
 
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
-  // static String baseUrl = 'http://3.39.51.41'; // 원본 서버
-  // static String baseUrl = 'http://54.180.132.204:8080'; // 테스트 서버
-  static String baseUrl = 'http://10.0.2.2:8080'; // 로컬 서버
+  static String baseUrl = dotenv.env['API']!; // 로컬 서버
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
