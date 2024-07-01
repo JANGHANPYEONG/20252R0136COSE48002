@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Form from 'react-bootstrap/Form';
+import Form from "react-bootstrap/Form";
 import { Button } from "react-bootstrap";
-import InputGroup from 'react-bootstrap/InputGroup';
+import InputGroup from "react-bootstrap/InputGroup";
 import { auth } from "../../firebase-config";
 import {
   createUserWithEmailAndPassword,
@@ -54,86 +54,86 @@ function UserRegister({ handleClose }) {
     return isEmailValid(userId) && isNameValid(name) && type !== "";
   };
 
-
   const handleSubmit = async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  if (form.checkValidity() === false) {
-    event.stopPropagation();
-  }
-
-  if (isFormValid()) {
-    try {
-      setCreatedAt(new Date().toISOString().slice(0, -5));
-      const toJson = {
-        userId: userId,
-        name: name,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-        loginAt: loginAt,
-        password: password,
-        company: company,
-        jobTitle: jobTitle,
-        homeAddr: homeAddr,
-        alarm: alarm,
-        type: type,
-      };
-
-      // Check registrationResponse.ok before calling createUserWithEmailAndPassword
-      const registrationResponse = await fetch("http://localhost:5001/user/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(toJson),
-        });
-      if (registrationResponse.ok) {
-        const tempPassword = generateTempPassword();
-        const { user } = await createUserWithEmailAndPassword(
-          auth,
-          userId,
-          tempPassword
-        );
-        await sendEmailVerification(user);
-        await sendPasswordResetEmail(auth, userId);
-
-        // Now you can handle the successful registration
-        console.log("User registered successfully");
-        handleClose(); // Close the registration form
-      } else {
-        // Handle registration failure
-        console.error("User registration failed");
-      }
-    } catch (error) {
-      // Handle error during Firebase authentication and registration
-      console.error("Error during registration:", error);
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
     }
-  }
-  setValidated(true);
-};
 
+    if (isFormValid()) {
+      try {
+        setCreatedAt(new Date().toISOString().slice(0, -5));
+        const toJson = {
+          userId: userId,
+          name: name,
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+          loginAt: loginAt,
+          password: password,
+          company: company,
+          jobTitle: jobTitle,
+          homeAddr: homeAddr,
+          alarm: alarm,
+          type: type,
+        };
+
+        // Check registrationResponse.ok before calling createUserWithEmailAndPassword
+        const registrationResponse = await fetch(
+          "http://localhost:5001/user/register",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(toJson),
+          }
+        );
+        if (registrationResponse.ok) {
+          const tempPassword = generateTempPassword();
+          const { user } = await createUserWithEmailAndPassword(
+            auth,
+            userId,
+            tempPassword
+          );
+          await sendEmailVerification(user);
+          await sendPasswordResetEmail(auth, userId);
+
+          // Now you can handle the successful registration
+          console.log("User registered successfully");
+          handleClose(); // Close the registration form
+        } else {
+          // Handle registration failure
+          console.error("User registration failed");
+        }
+      } catch (error) {
+        // Handle error during Firebase authentication and registration
+        console.error("Error during registration:", error);
+      }
+    }
+    setValidated(true);
+  };
 
   const [isEmailAvailable, setIsEmailAvailable] = useState(true);
   const [showifduplicate, setShowifduplicate] = useState(false);
   const handleDuplicateCheck = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:5001/user/duplicate_check?id=${userId}`
-        );
-        console.log(response);
-        if (response.ok) {
-          setIsEmailAvailable(true);
-          console.log("OK");
-        }
-        else {
-          setIsEmailAvailable(false);
-          console.log("NO");
-        }
-      } catch (error) {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/user/duplicate_check?userId=${userId}`
+      );
+      console.log(response);
+      if (response.ok) {
         setIsEmailAvailable(true);
+        console.log("OK");
+      } else {
+        setIsEmailAvailable(false);
         console.log("NO");
       }
-      setShowifduplicate(true);
+    } catch (error) {
+      setIsEmailAvailable(true);
+      console.log("NO");
+    }
+    setShowifduplicate(true);
   };
 
   return (
@@ -154,18 +154,18 @@ function UserRegister({ handleClose }) {
             <Button
               onClick={handleDuplicateCheck}
               style={{
-                background: "#0F3659",}}
+                background: "#0F3659",
+              }}
             >
               중복 확인
             </Button>
           </InputGroup>
-          {showifduplicate&&!isEmailAvailable &&  (
-        <div className="text-danger">중복된 이메일입니다.</div>
-      ) }
-      {showifduplicate&&isEmailAvailable && (
-        <div className="text-success">사용 가능한 이메일입니다.</div>
-      ) }
-
+          {showifduplicate && !isEmailAvailable && (
+            <div className="text-danger">중복된 이메일입니다.</div>
+          )}
+          {showifduplicate && isEmailAvailable && (
+            <div className="text-success">사용 가능한 이메일입니다.</div>
+          )}
 
           <Form.Group className="mb-3">
             <Form.Label column>*이름</Form.Label>
@@ -230,7 +230,7 @@ function UserRegister({ handleClose }) {
               onClick={handleSubmit}
               style={{
                 background: "#0F3659",
-                width: "150px"
+                width: "150px",
               }}
               disabled={!isFormValid() || !isEmailAvailable}
             >
