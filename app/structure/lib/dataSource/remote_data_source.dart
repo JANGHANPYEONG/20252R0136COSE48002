@@ -10,7 +10,8 @@ import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
   // static String baseUrl = 'http://3.39.51.41'; // 원본 서버
-  static String baseUrl = 'http://54.180.132.204:8080'; // 테스트 서버
+  // static String baseUrl = 'http://54.180.132.204:8080'; // 테스트 서버
+  static String baseUrl = 'http://10.0.2.2:8080'; // 로컬 서버
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
@@ -45,7 +46,7 @@ class RemoteDataSource {
 
   /// 유저 중복검사 (GET)
   static Future<dynamic> dupliCheck(String userId) async {
-    dynamic response = await _getApi('user/duplicate_check?userId=$userId');
+    dynamic response = await _getApi('user/id-check?userId=$userId');
     return response;
   }
 
@@ -112,7 +113,6 @@ class RemoteDataSource {
           headers: headers, body: requestBody);
       if (response.statusCode == 200) {
         print('POST 요청 성공');
-        print(response.body);
         return response.body;
       } else {
         print('POST 요청 실패: (${response.statusCode})${response.body}');
