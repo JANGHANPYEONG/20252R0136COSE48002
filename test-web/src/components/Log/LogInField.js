@@ -61,7 +61,7 @@ const LogInField = () => {
         return;
       }
       const auth = getAuth();
-      const response = await fetch(`${apiIP}/user/login?userId=${loginEmail}`);
+      const response = await fetch(`http://${apiIP}/user/login?userId=${loginEmail}`);
       const user = await response.json();
 
       try {
@@ -71,7 +71,7 @@ const LogInField = () => {
           //아이디가 존재하지 않는다면
           setLoginError("존재하지 않는 아이디입니다.");
           return;
-        } else if (user.type == "Normal") {
+        } else if (user.type === "Normal") {
           //아이디는 존재하지만 관리자가 아니라면
           setLoginError("로그인 권한이 없습니다. 관리자에게 문의해주세요.");
           return;

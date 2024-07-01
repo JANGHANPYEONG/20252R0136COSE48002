@@ -18,6 +18,7 @@ import { IoMdPersonAdd } from "react-icons/io";
 import { getAuth } from "firebase/auth";
 import { Box } from "@mui/material";
 import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { apiIP } from "../../config";
 
 function UserList() {
   const [registerShow, setRegisterShow] = useState(false);
@@ -142,7 +143,7 @@ function UserList() {
     const fetchData = async () => {
       try {
         //유저 리스트 fetch
-        const usersListResponse = await fetch("http://localhost:5001/user");
+        const usersListResponse = await fetch(`http://${apiIP}/user`);
         const usersData = await usersListResponse.json();
         setUsersData(usersData);
 
@@ -152,7 +153,7 @@ function UserList() {
           const users = usersData[userType];
           for (const userId of users) {
             const userDataResponse = await fetch(
-              `http://localhost:5001/user?userId=${userId}`
+              `http://${apiIP}/user/get?userId=${userId}`
             );
             const userData = await userDataResponse.json();
             usersWithAdditionalData.push({ ...userData, id: userId });
