@@ -1,0 +1,27 @@
+# Confidential files
+test-flask/.env
+test-flask/serviceAccountKey.json
+.idea/*
+
+# flask
+.idea/
+.vscode/
+.venv*/
+venv*/
+dist/
+.coverage*
+htmlcov/
+.tox/
+docs/_build/
+
+# pycache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# venv folder
+/venv/
+
+# System filds
+.DS_Store
+Thumbs.db

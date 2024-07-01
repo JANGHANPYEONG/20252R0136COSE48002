@@ -1,4 +1,3 @@
-altgraph @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/altgraph-0.17.2-py2.py3-none-any.whl
 anyio==4.2.0
 appnope==0.1.4
 argon2-cffi==23.1.0
@@ -45,7 +44,6 @@ Flask-Cors==4.0.1
 Flask-SQLAlchemy==3.1.1
 fonttools==4.51.0
 fqdn==1.5.1
-future @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/future-0.18.2-py3-none-any.whl
 google-api-core==2.19.1
 google-api-python-client==2.135.0
 google-auth==2.30.0
@@ -90,7 +88,6 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.25.2
 jupyterlab_widgets==3.0.10
 kiwisolver==1.4.5
-macholib @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/macholib-1.15.2-py2.py3-none-any.whl
 Markdown==3.5.2
 markdown-it-py==3.0.0
 MarkupSafe==2.1.3
@@ -155,7 +152,6 @@ s3transfer==0.10.0
 seaborn==0.13.2
 selenium==4.4.3
 Send2Trash==1.8.2
-six @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/six-1.15.0-py2.py3-none-any.whl
 sniffio==1.3.0
 sortedcontainers==2.4.0
 soupsieve==2.5
