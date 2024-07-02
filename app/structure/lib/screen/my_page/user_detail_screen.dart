@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/config/pallete.dart';
@@ -154,7 +155,7 @@ class UserDetailScreen extends StatelessWidget {
               ],
             ),
             context.watch<UserDetailViewModel>().isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: LoadingScreen())
                 : Container(),
           ],
         ),

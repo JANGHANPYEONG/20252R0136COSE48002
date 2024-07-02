@@ -15,7 +15,7 @@ class PasswordResetViewModel with ChangeNotifier {
 
   // 모든 값이 올바르게 입력됐는지 확인
   bool isAllValid() {
-      return true;
+    return true;
   }
 
   late BuildContext _context;
@@ -25,18 +25,15 @@ class PasswordResetViewModel with ChangeNotifier {
     _context = context;
     isLoading = true;
     notifyListeners();
-    
-    try{
+
+    try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email.text);
-    }
-    on FirebaseException catch (e){
-      if(e.code == 'invalid-email'){
+    } on FirebaseException catch (e) {
+      if (e.code == 'invalid-email') {
         _showAlert('잘못된 이메일 형식입니다.');
-      }
-      else if(e.code == 'user-not-found'){
+      } else if (e.code == 'user-not-found') {
         _showAlert('등록되지 않은 사용자입니다.');
-      }
-      else{
+      } else {
         _showAlert('오류가 발생했습니다.');
       }
     }
@@ -46,7 +43,7 @@ class PasswordResetViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-    /// 오류 snackbar
+  /// 오류 snackbar
   void _showAlert(String message) {
     ScaffoldMessenger.of(_context).showSnackBar(
       SnackBar(
@@ -56,8 +53,6 @@ class PasswordResetViewModel with ChangeNotifier {
       ),
     );
   }
-
-
 
   void _success() {
     showSuccessChangeUserInfo(_context);

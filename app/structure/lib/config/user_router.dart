@@ -28,6 +28,7 @@ import 'package:structure/screen/meat_registration/insertion_meat_info_screen.da
 import 'package:structure/screen/meat_registration/insertion_trace_num_screen.dart';
 import 'package:structure/screen/meat_registration/registration_meat_image_screen.dart';
 import 'package:structure/screen/my_page/change_password_screen.dart';
+import 'package:structure/screen/my_page/delete_user_screen.dart';
 import 'package:structure/screen/my_page/user_detail_screen.dart';
 import 'package:structure/screen/my_page/user_info_screen.dart';
 import 'package:structure/screen/sign_in/password_reset_screen.dart';
@@ -59,6 +60,7 @@ import 'package:structure/viewModel/meat_registration/insertion_meat_info_view_m
 import 'package:structure/viewModel/meat_registration/insertion_trace_num_view_model.dart';
 import 'package:structure/viewModel/meat_registration/registration_meat_image_view_model.dart';
 import 'package:structure/viewModel/my_page/change_password_view_model.dart';
+import 'package:structure/viewModel/my_page/delete_user_view_model.dart';
 import 'package:structure/viewModel/my_page/user_detail_view_model.dart';
 import 'package:structure/viewModel/my_page/user_info_view_model.dart';
 import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
@@ -107,15 +109,16 @@ class UserRouter {
             GoRoute(
               path: 'password_reset',
               builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) =>
-                        PasswordResetViewModel(userModel: userModel),
-                    builder: (context, child) => const PasswordResetScreen(),
-                  ),
+                create: (context) =>
+                    PasswordResetViewModel(userModel: userModel),
+                builder: (context, child) => const PasswordResetScreen(),
               ),
+            ),
+            // 비밀번호 변경 완료
             GoRoute(
               path: 'complete_password_reset',
               builder: (context, state) => const CompleteResetScreen(),
-              ),
+            ),
             // 회원가입 완료
             GoRoute(
               path: 'complete-sign-up',
@@ -219,6 +222,15 @@ class UserRouter {
                     builder: (context, child) => const ChangePasswordScreen(),
                   ),
                 ),
+                // 회원 탈퇴
+                GoRoute(
+                  path: 'delete-user',
+                  builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) =>
+                        DeleteUserViewModel(userModel: userModel),
+                    builder: (context, child) => const DeleteUserScreen(),
+                  ),
+                )
               ],
             ),
             // 데이터 관리 페이지 - Normal User
