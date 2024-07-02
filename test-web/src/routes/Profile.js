@@ -9,6 +9,7 @@ import { CircularProgress } from "@mui/material";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import CustomSnackbar from "../components/Base/CustomSnackbar";
+import { apiIP } from "../config";
 
 const UserInfo = JSON.parse(localStorage.getItem("UserInfo"));
 
@@ -38,7 +39,7 @@ export default function Profile() {
       const user = auth.currentUser;
 
       const response = await fetch(
-        `http://3.39.51.41/user/delete?id=${user.email}`
+        `http://${apiIP}/user/delete?id=${user.email}`
       );
 
       if (response.ok) {
@@ -55,7 +56,7 @@ export default function Profile() {
   const updateUserInfo = async () => {
     setIsUpdating(true);
     try {
-      const response = await fetch("http://3.39.51.41/user/update", {
+      const response = await fetch(`http://${apiIP}/user/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
