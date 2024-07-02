@@ -37,9 +37,10 @@ logger.setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+# 유저 전체 리스트 조회 API
 @user_api.route("/", methods=["GET"])
 def read_user_list():
-    db_session = current_app.db_session  # current_app.db.session 사용
+    db_session = current_app.db_session
     try:    
         users = db_session.query(User).all()
         user_list = []
@@ -64,6 +65,7 @@ def read_user_list():
         return jsonify({"msg": "User Not found"}), 404
 
 
+# 유저 로그인 API
 @user_api.route("/login", methods=["GET"])
 def login_user():
     try:
@@ -161,6 +163,7 @@ def read_user_data():
             }
         ), 505
 
+
 # 유저 정보 수정 API
 @user_api.route("/update", methods=["GET", "POST"])
 def update_user_data():
@@ -184,6 +187,7 @@ def update_user_data():
             505,
         )
 
+
 # 유저 아이디 중복 체크 API
 @user_api.route("/duplicate_check", methods=["GET", "POST"])
 def check_duplicate():
@@ -206,6 +210,7 @@ def check_duplicate():
             ),
             505,
         )
+
 
 # 유저 비밀번호 체크 API
 @user_api.route("/pwd-check", methods=["GET", "POST"])
@@ -249,6 +254,7 @@ def check_pwd():
             ),
             505,
         )
+
 
 # 유저 정보 삭제 API
 @user_api.route("/delete", methods=["GET", "POST"])
@@ -294,5 +300,3 @@ def delete_user():
             ),
             505,
         )
-
-
