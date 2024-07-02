@@ -30,7 +30,6 @@ def getMeatData():
             return (
                 get_range_meat_data(db_session, 0, Meat.query.count())
                 .get_json()
-                .get("meat_dict")
             )
 
         else:
