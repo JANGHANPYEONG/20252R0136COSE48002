@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/inner_box.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/components/round_button.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:flutter/material.dart';
@@ -103,27 +102,18 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                     onFieldFunc: (value) {
                       context.read<InsertionTraceNumViewModel>().traceNum =
                           value;
+                      context.read<InsertionTraceNumViewModel>().start(context);
                     },
-                    mainText: '',
-                    hintText: '이력번호/묶음번호 입력',
+                    mainText: '이력번호/묶음번호 입력',
+                    prefixIcon: const Icon(Icons.search),
                     canAlert: true,
-                    width: 479.w,
+                    width: 600.w,
                     height: 115.h,
                     maxLength: 15,
                   ),
                 ),
                 SizedBox(
                   width: 16.w,
-                ),
-                // 이력 번호를 넣고 검색할 때, 'start' 함수를 참조.
-                RoundButton(
-                  text: Text('검색', style: Palette.h4),
-                  onPress: () {
-                    context.read<InsertionTraceNumViewModel>().start(context);
-                  },
-                  width: 161.w,
-                  height: 85.h,
-                  bgColor: Palette.dataMngBtndBg,
                 ),
               ],
             ),

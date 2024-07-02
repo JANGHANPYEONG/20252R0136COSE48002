@@ -49,6 +49,12 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 유저 회원 탈퇴 (GET)
+  static Future<dynamic> deleteUser(String userId) async {
+    dynamic response = await _getApi("user/delete?userId=$userId");
+    return response;
+  }
+
   /* 육류 관련 API */
   /// 육류 정보 전송 (POST)
   static Future<dynamic> sendMeatData(String? dest, String jsonData) async {

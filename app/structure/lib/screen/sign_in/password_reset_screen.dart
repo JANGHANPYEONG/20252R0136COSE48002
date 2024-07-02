@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/components/custom_app_bar.dart';
-import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
+import 'package:go_router/go_router.dart';
 
 class PasswordResetScreen extends StatelessWidget {
   const PasswordResetScreen({super.key});
@@ -35,7 +34,7 @@ class PasswordResetScreen extends StatelessWidget {
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('이메일 입력', style: Palette.fieldTitle)),
+                        child: Text('이메일', style: Palette.fieldTitle)),
                     SizedBox(
                       height: 8.h,
                     ),
@@ -43,63 +42,33 @@ class PasswordResetScreen extends StatelessWidget {
                       mode: 1,
                       width: 640.w,
                       formKey: context.read<PasswordResetViewModel>().formKey,
-                      controller:
-                          context.read<PasswordResetViewModel>().originEmail,
+                      controller: context.read<PasswordResetViewModel>().email,
                       // obscureText: true,
                       // validateFunc: (value) => context
                       //     .read<PasswordResetViewModel>()
                       //     .pwValidate(value),
-                      // 비밀번호 유효성 검사 함수 -> id에 알맞는 비밀번호 설정 함수 
+                      // 비밀번호 유효성 검사 함수 -> id에 알맞는 비밀번호 설정 함수
                     ),
+
                     SizedBox(
-                      height: 16.h,
+                      height: 820.h,
                     ),
-                    Container(
-                        margin: EdgeInsets.only(left: 40.w),
-                        alignment: Alignment.centerLeft,
-                        child: Text('비밀번호 재설정', style: Palette.fieldTitle)),
-                    SizedBox(
-                      height: 8.h,
-                    ),
-                    MainInputField(
-                      mode: 1,
-                      width: 640.w,
-                      formKey: context.read<PasswordResetViewModel>().formKey,
-                      controller: context.read<PasswordResetViewModel>().newPW,
-                      obscureText: true,
-                      validateFunc: (value) => context
-                          .read<PasswordResetViewModel>()
-                          .newPwValidate(value),
-                      hintText: '영문 대/소문자+숫자+특수문자',
-                    ),
-                    SizedBox(
-                      height: 8.h,
-                    ),
-                    MainInputField(
-                      mode: 1,
-                      width: 640.w,
-                      formKey: context.read<PasswordResetViewModel>().formKey,
-                      controller:
-                          context.read<PasswordResetViewModel>().newCPW,
-                      obscureText: true,
-                      validateFunc: (value) => context
-                          .read<PasswordResetViewModel>()
-                          .cPwValidate(value),
-                      hintText: '비밀번호 확인',
-                    ),
-                    SizedBox(
-                      height: 600.h,
-                    ),
+                    // const Spacer(),
                     MainButton(
-                      onPressed:
-                          (){context.watch<PasswordResetViewModel>().isAllValid()
-                              ? () async => context
-                                  .read<PasswordResetViewModel>()
-                                  .changePassword(context)
-                              : null;
-                              context.go('/sign-in');
-                              },
-                      text: '저장',
+                      onPressed: () async {
+                        if (context
+                            .read<PasswordResetViewModel>()
+                            .isAllValid()) {
+                          await context
+                              .read<PasswordResetViewModel>()
+                              .sendResetPassword(context);
+                        }
+                        if (context.mounted) {
+                          FocusScope.of(context).unfocus();
+                          context.go('/sign-in/complete_password_reset');
+                        }
+                      },
+                      text: '확인',
                       width: 658.w,
                       height: 96.h,
                       mode: 1,
