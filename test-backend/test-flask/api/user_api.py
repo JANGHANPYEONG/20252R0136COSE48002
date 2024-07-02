@@ -4,17 +4,26 @@ from flask import (
     Blueprint,
     jsonify,
     request,
-    current_app,
+    current_app
 )
 from db.db_model import User
 from db.db_controller import create_user, get_user, _get_users_by_type, update_user
 import hashlib
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import credentials
+from firebase_admin import firestore
+from connection.firebase_connect import FireBase_
 from datetime import datetime
 from utils import logger
 
 user_api = Blueprint("user_api", __name__)
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate('serviceAccountKey.json') 
+    default_app = firebase_admin.initialize_app(cred)
+
+# Firestore 데이터베이스를 가져옵니다.
+firebase_db = firestore.client()
 
 # Initialize logger
 handler = logging.StreamHandler()
@@ -96,8 +105,7 @@ def register_user_data():
             db_session.commit()
 
             # Save user to Firebase Firestore
-            firestore_conn = current_app.firestore_conn
-            firestore_conn.firebase_db.collection('users').document(data['userId']).set(data)
+            firebase_db.collection('users').document(data['userId']).set(data)
 
             return jsonify({"msg": f"User {data['userId']} registered successfully"}), 200
         else:

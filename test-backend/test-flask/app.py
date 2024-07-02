@@ -16,9 +16,16 @@ from firebase_admin import credentials, auth
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# 환경변수 다운로드
+load_dotenv()
 
 app = Flask(__name__)
+# RDS DB 연결
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 db = SQLAlchemy()
 CORS(app)
 
@@ -29,11 +36,7 @@ def hello_world():
 
 
 def initialize_services():
-    # 환경변수 다운로드
-    load_dotenv()
-    # RDS DB 연결
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    
 
     # Using Flask Application
     with app.app_context() as current_app:
@@ -56,6 +59,8 @@ def initialize_services():
         # Firestore 초기화
         current_app.firestore_db = firebase_conn.firebase_db
 
+initialize_services()
+
 # API Blueprint Connection
 from api.user_api import user_api
 from api.create_api import create_api
@@ -74,5 +79,4 @@ app.register_blueprint(statistic_api, url_prefix="/statistic")  # 통계 데이�
 
 # Flask 실행
 if __name__ == "__main__":
-    initialize_services()
     app.run(debug=True, port=8080)
