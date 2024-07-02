@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/components/custom_pop_up.dart';
+import 'package:structure/config/labels.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
@@ -72,7 +72,7 @@ class DeleteUserViewModel with ChangeNotifier {
     } on FirebaseException catch (e) {
       print('error: ${e.code}');
       if (e.code == 'wrong-password') {
-        _showAlert('비밀번호가 일치하지 않습니다.'); // 기존 비밀번호가 틀리면 alert 생성
+        _showAlert(Labels.pwdNotSame); // 기존 비밀번호가 틀리면 alert 생성
       } else {
         _showAlert('오류가 발생했습니다.');
       }

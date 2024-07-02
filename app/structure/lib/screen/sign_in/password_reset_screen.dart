@@ -42,27 +42,32 @@ class PasswordResetScreen extends StatelessWidget {
                       mode: 1,
                       width: 640.w,
                       formKey: context.read<PasswordResetViewModel>().formKey,
-                      controller:
-                          context.read<PasswordResetViewModel>().email,
+                      controller: context.read<PasswordResetViewModel>().email,
                       // obscureText: true,
                       // validateFunc: (value) => context
                       //     .read<PasswordResetViewModel>()
                       //     .pwValidate(value),
-                      // 비밀번호 유효성 검사 함수 -> id에 알맞는 비밀번호 설정 함수 
+                      // 비밀번호 유효성 검사 함수 -> id에 알맞는 비밀번호 설정 함수
                     ),
-                    
+
                     SizedBox(
                       height: 820.h,
                     ),
                     // const Spacer(),
                     MainButton(
-                      onPressed: ()
-                          async{if (context.read<PasswordResetViewModel>().isAllValid()) {
-                            await context.read<PasswordResetViewModel>().sendResetPassword(context);
-                          }
+                      onPressed: () async {
+                        if (context
+                            .read<PasswordResetViewModel>()
+                            .isAllValid()) {
+                          await context
+                              .read<PasswordResetViewModel>()
+                              .sendResetPassword(context);
+                        }
+                        if (context.mounted) {
                           FocusScope.of(context).unfocus();
                           context.go('/sign-in/complete_password_reset');
-                              },
+                        }
+                      },
                       text: '확인',
                       width: 658.w,
                       height: 96.h,

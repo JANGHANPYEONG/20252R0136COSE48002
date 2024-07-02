@@ -105,8 +105,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   // 비밀번호 유효성 검사 (정규식)
   bool validatePassword(String password) {
     // 조건: 영문 대/소문자, 숫자, 특수문자 10자~15자
-    const pattern =
-        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()\-_=+{};:,<.>]).{10,}$';
+    const pattern = Labels.pwdPattern;
     final regex = RegExp(pattern);
 
     return regex.hasMatch(password);

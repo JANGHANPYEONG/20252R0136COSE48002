@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -38,7 +37,6 @@ class PasswordResetViewModel with ChangeNotifier {
       }
     }
 
-  
     isLoading = false;
     notifyListeners();
   }
@@ -52,10 +50,5 @@ class PasswordResetViewModel with ChangeNotifier {
         backgroundColor: Palette.alertBg,
       ),
     );
-  }
-
-  void _success() {
-    showSuccessChangeUserInfo(_context);
-    email.clear();
   }
 }
