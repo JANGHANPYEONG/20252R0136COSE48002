@@ -56,7 +56,7 @@ function UserList() {
 
       // If reauthentication is successful, proceed with the account deletion
       const response = await fetch(
-        `http://localhost:5001/user/delete?id=${userId}`
+        `http://${apiIP}/user/delete?id=${userId}`
       );
 
       if (response.ok) {
@@ -143,8 +143,8 @@ function UserList() {
     const fetchData = async () => {
       try {
         //유저 리스트 fetch
-        const usersData = await fetch(`http://${apiIP}/user`);
-        // const usersData = await usersListResponse.json();
+        const usersListResponse = await fetch(`http://${apiIP}/user`);
+        const usersData = await usersListResponse.json();
         setUsersData(usersData);
 
         //유저 상세정보
