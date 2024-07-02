@@ -11,6 +11,7 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/custom_table_calendar.dart';
 import 'package:structure/components/list_card.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
@@ -171,7 +172,7 @@ class _DataManagementHomeResearcherScreenState
             ),
             context.watch<DataManagementHomeResearcherViewModel>().isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(),
+                    child: LoadingScreen(),
                   )
                 : Container(),
           ],

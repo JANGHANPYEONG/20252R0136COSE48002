@@ -6,6 +6,7 @@ import 'package:structure/config/pallete.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
+import 'package:go_router/go_router.dart';
 
 class PasswordResetScreen extends StatelessWidget {
   const PasswordResetScreen({super.key});
@@ -51,16 +52,17 @@ class PasswordResetScreen extends StatelessWidget {
                     ),
                     
                     SizedBox(
-                      height: 750.h,
+                      height: 820.h,
                     ),
                     // const Spacer(),
                     MainButton(
-                      onPressed:
-                          context.watch<PasswordResetViewModel>().isAllValid()
-                              ? () async => context
-                                  .read<PasswordResetViewModel>()
-                                  .sendResetPassword(context)
-                              : null,
+                      onPressed: ()
+                          async{if (context.read<PasswordResetViewModel>().isAllValid()) {
+                            await context.read<PasswordResetViewModel>().sendResetPassword(context);
+                          }
+                          FocusScope.of(context).unfocus();
+                          context.go('/sign-in/complete_password_reset');
+                              },
                       text: '확인',
                       width: 658.w,
                       height: 96.h,

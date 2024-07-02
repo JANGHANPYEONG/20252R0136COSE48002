@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/tongue_field.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
@@ -97,7 +98,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                 ],
               ),
               context.watch<InsertionTongueDataViewModel>().isLoading
-                  ? const CircularProgressIndicator()
+                  ? const LoadingScreen()
                   : Container()
             ],
           ),

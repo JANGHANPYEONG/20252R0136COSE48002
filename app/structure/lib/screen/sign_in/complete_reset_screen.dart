@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 
-class CompleteSignUpScreen extends StatelessWidget {
-  const CompleteSignUpScreen({super.key});
 
-  @override
+class CompleteResetScreen extends StatelessWidget {
+  const CompleteResetScreen({super.key});
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -50,11 +50,11 @@ class CompleteSignUpScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('회원가입이\n완료되었습니다 !', style: Palette.h2),
+                      Text('비밀번호 변경 메일이\n전송되었습니다 !', style: Palette.h2),
                       SizedBox(
                         height: 13.h,
                       ),
-                      Text('이메일 인증을 완료해주세요.', style: Palette.h5Grey),
+                      Text('이메일을 확인해주세요.', style: Palette.h5Grey),
                     ],
                   ),
                 ),
@@ -65,7 +65,7 @@ class CompleteSignUpScreen extends StatelessWidget {
             margin: EdgeInsets.only(bottom: 40.h),
             child: MainButton(
               onPressed: () => context.go('/sign-in'),
-              text: '로그인',
+              text: '확인',
               width: 640.w,
               height: 96.h,
               mode: 1,

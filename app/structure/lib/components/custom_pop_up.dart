@@ -37,7 +37,7 @@ void showTemporarySavePopup(BuildContext context) {
 
 void showDuplicateEmailPopup(BuildContext context) {
   // 이메일 중복
-  showPopup(context, duplicateEmailText, '');
+  showPopup(context, duplicateEmailText, '확인');
 }
 
 void showDataManageLatePopup(BuildContext context) {

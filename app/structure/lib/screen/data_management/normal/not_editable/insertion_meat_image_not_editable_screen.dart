@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
@@ -149,7 +150,7 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
           ),
           context.watch<InsertionMeatImageNotEditableViewModel>().isLoading
               ? const Center(
-                  child: CircularProgressIndicator(),
+                  child: LoadingScreen(),
                 )
               : Container(),
         ],
