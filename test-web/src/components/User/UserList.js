@@ -143,8 +143,8 @@ function UserList() {
     const fetchData = async () => {
       try {
         //유저 리스트 fetch
-        const usersListResponse = await fetch(`http://${apiIP}/user`);
-        const usersData = await usersListResponse.json();
+        const usersData = await fetch(`http://${apiIP}/user`);
+        // const usersData = await usersListResponse.json();
         setUsersData(usersData);
 
         //유저 상세정보

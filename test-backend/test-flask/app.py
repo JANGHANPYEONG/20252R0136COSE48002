@@ -50,8 +50,11 @@ def initialize_services():
         )
 
         # 3. Firebase Connection
-        current_app.firestore_conn = FireBase_("serviceAccountKey.json")
-
+        firebase_conn = FireBase_("serviceAccountKey.json")
+        current_app.firestore_conn = firebase_conn
+        
+        # Firestore 초기화
+        current_app.firestore_db = firebase_conn.firebase_db
 
 # API Blueprint Connection
 from api.user_api import user_api
