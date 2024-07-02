@@ -51,7 +51,7 @@ class PasswordResetScreen extends StatelessWidget {
                     ),
                     
                     SizedBox(
-                      height: 750.h,
+                      height: 820.h,
                     ),
                     // const Spacer(),
                     MainButton(
