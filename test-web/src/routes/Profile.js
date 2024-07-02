@@ -39,7 +39,7 @@ export default function Profile() {
       const user = auth.currentUser;
 
       const response = await fetch(
-        `http://${apiIP}/user/delete?id=${user.email}`
+        `http://${apiIP}/user/delete?userId=${user.email}`
       );
 
       if (response.ok) {
@@ -62,32 +62,33 @@ export default function Profile() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          // local storage에 저장되어 있지 않은 정보들은 주석 처리
           userId: UserInfo.userId,
-          password: UserInfo.password,
+          // password: UserInfo.password,
           name: name,
           company: company,
           jobTitle: jobTitle,
           homeAddr: homeAddr,
-          alarm: UserInfo.alarm,
-          type: UserInfo.type,
-          updatedAt: UserInfo.updatedAt,
-          loginAt: UserInfo.loginAt,
-          createdAt: UserInfo.createdAt,
+          // alarm: UserInfo.alarm,
+          // type: UserInfo.type,
+          // updatedAt: UserInfo.updatedAt,
+          // loginAt: UserInfo.loginAt,
+          // createdAt: UserInfo.createdAt,
         }),
       });
       if (response.ok) {
         const updatedData = JSON.stringify({
           userId: UserInfo.userId,
-          password: UserInfo.password,
+          // password: UserInfo.password,
           name: name,
           company: company,
           jobTitle: jobTitle,
           homeAddr: homeAddr,
-          alarm: UserInfo.alarm,
+          // alarm: UserInfo.alarm,
           type: UserInfo.type,
-          updatedAt: UserInfo.updatedAt,
-          loginAt: UserInfo.loginAt,
-          createdAt: UserInfo.createdAt,
+          // updatedAt: UserInfo.updatedAt,
+          // loginAt: UserInfo.loginAt,
+          // createdAt: UserInfo.createdAt,
         });
         setUpdatedUserInfo(updatedData);
         localStorage.setItem("UserInfo", updatedData);
@@ -191,11 +192,18 @@ export default function Profile() {
         />
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
-        <Button style={{ margin: "0.5rem" }}variant="contained" onClick={updateUserInfo} disabled={isUpdating}>
+        <Button
+          style={{ margin: "0.5rem" }}
+          variant="contained"
+          onClick={updateUserInfo}
+          disabled={isUpdating}
+        >
           {isUpdating ? <CircularProgress size={24} /> : "정보 수정"}
         </Button>
-        <Button variant="contained" onClick={handleOpenModal}
-        style={{ backgroundColor: "red", color: "white", margin: "0.5rem"}}
+        <Button
+          variant="contained"
+          onClick={handleOpenModal}
+          style={{ backgroundColor: "red", color: "white", margin: "0.5rem" }}
         >
           회원 탈퇴
         </Button>
@@ -210,22 +218,22 @@ export default function Profile() {
         <Box
           sx={{
             position: "absolute",
-      width: 300,
-      backgroundColor: "white",
-      borderRadius: 8, // 더 둥글게
-      boxShadow: 5, // 그림자 추가
-      p: 2,
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      textAlign: "center",
+            width: 300,
+            backgroundColor: "white",
+            borderRadius: 8, // 더 둥글게
+            boxShadow: 5, // 그림자 추가
+            p: 2,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            textAlign: "center",
           }}
         >
           <Typography variant="h6" id="modal-modal-title" component="div">
             회원 탈퇴 확인
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            정말로 회원 탈퇴하시겠습니까? <br/>이 작업은 취소할 수 없습니다.
+            정말로 회원 탈퇴하시겠습니까? <br />이 작업은 취소할 수 없습니다.
           </Typography>
           <Button variant="contained" onClick={deleteself}>
             확인
