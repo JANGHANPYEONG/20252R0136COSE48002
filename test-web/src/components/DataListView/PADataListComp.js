@@ -99,7 +99,7 @@ const style = {
     width: "100%",
     paddingRight:'0px',
     paddingBottom: "0",
-    height:'500px'
+    height:'auto'
   },
   paginationBar : {
     marginTop: "20px",
