@@ -84,7 +84,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                       child: StepCard(
                         mainText: '육류 단면 촬영',
                         isCompleted: widget.meatModel.freshImageCompleted,
-                        isBefore: !widget.meatModel.basicCompleted,
+                        isBefore: false,
                         imageUrl: 'assets/images/meat_image.png',
                       )),
                   SizedBox(
@@ -109,7 +109,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                       child: StepCard(
                         mainText: '신선육 관능평가',
                         isCompleted: widget.meatModel.rawFreshCompleted,
-                        isBefore: !widget.meatModel.freshImageCompleted,
+                        isBefore: false,
                         imageUrl: 'assets/images/meat_eval.png',
                       )),
                   const Spacer(),

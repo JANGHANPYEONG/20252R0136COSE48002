@@ -103,27 +103,18 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                     onFieldFunc: (value) {
                       context.read<InsertionTraceNumViewModel>().traceNum =
                           value;
+                      context.read<InsertionTraceNumViewModel>().start(context);
                     },
-                    mainText: '',
-                    hintText: '이력번호/묶음번호 입력',
+                    mainText: '이력번호/묶음번호 입력',
+                    prefixIcon: Icon(Icons.search),
                     canAlert: true,
-                    width: 479.w,
+                    width: 600.w,
                     height: 115.h,
                     maxLength: 15,
                   ),
                 ),
                 SizedBox(
                   width: 16.w,
-                ),
-                // 이력 번호를 넣고 검색할 때, 'start' 함수를 참조.
-                RoundButton(
-                  text: Text('검색', style: Palette.h4),
-                  onPress: () {
-                    context.read<InsertionTraceNumViewModel>().start(context);
-                  },
-                  width: 161.w,
-                  height: 85.h,
-                  bgColor: Palette.dataMngBtndBg,
                 ),
               ],
             ),
