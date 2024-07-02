@@ -40,4 +40,4 @@ packages/react-devtools-inline/dist
 packages/react-devtools-shell/dist
 packages/react-devtools-timeline/dist
 
-src/firebase-config.js
+test-web/src/firebase-config.js

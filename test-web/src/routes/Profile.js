@@ -39,7 +39,7 @@ export default function Profile() {
       const user = auth.currentUser;
 
       const response = await fetch(
-        `http://${apiIP}/user/delete?id=${user.email}`
+        `http://${apiIP}/user/delete?userId=${user.email}`
       );
 
       if (response.ok) {

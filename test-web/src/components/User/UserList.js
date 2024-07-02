@@ -55,7 +55,9 @@ function UserList() {
       }
 
       // If reauthentication is successful, proceed with the account deletion
-      const response = await fetch(`http://${apiIP}/user/delete?id=${userId}`);
+      const response = await fetch(
+        `http://${apiIP}/user/delete?userId=${userId}`
+      );
 
       if (response.ok) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
@@ -118,7 +120,6 @@ function UserList() {
       renderCell: (params) => {
         const createdAt = params.row.createdAt;
         if (createdAt) {
-          //console.log("CreatedAt Value:", createdAt); 
           const parsedDate = new Date(createdAt);
           return format(parsedDate, "y년 M월 d일 a h시 m분");
         }
