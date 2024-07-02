@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/inner_box.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/components/round_button.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:flutter/material.dart';
@@ -106,7 +105,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                       context.read<InsertionTraceNumViewModel>().start(context);
                     },
                     mainText: '이력번호/묶음번호 입력',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     canAlert: true,
                     width: 600.w,
                     height: 115.h,

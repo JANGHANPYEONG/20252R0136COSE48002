@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 
-
 class CompleteResetScreen extends StatelessWidget {
   const CompleteResetScreen({super.key});
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,

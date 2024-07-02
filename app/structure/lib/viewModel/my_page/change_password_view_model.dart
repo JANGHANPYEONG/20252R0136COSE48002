@@ -69,8 +69,7 @@ class ChangePasswordViewModel with ChangeNotifier {
   /// 비밀번호 유효성 검사
   bool _validatePassword(String password) {
     // 비밀번호 유효성을 검사하는 정규식
-    const pattern =
-        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()\-_=+{};:,<.>]).{10,}$';
+    const pattern = Labels.pwdPattern;
     final regex = RegExp(pattern);
 
     return regex.hasMatch(password);
