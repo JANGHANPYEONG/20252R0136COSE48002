@@ -90,8 +90,11 @@ class UserInfoViewModel with ChangeNotifier {
 
   /// 비밀번호 변경 클릭
   void clickedChangePW(BuildContext context) {
-    context.go('/home/my-page/delete-user');
+    context.go('/home/my-page/change-pw');
   }
 
-  void clickedDeleteUser(BuildContext context) {}
+  ///
+  void clickedDeleteUser(BuildContext context) {
+    context.go('/home/my-page/delete-user');
+  }
 }

@@ -259,7 +259,7 @@ class UserInfoScreen extends StatelessWidget {
             // 회원 탈퇴
             InkWell(
               onTap: () =>
-                  context.read<UserInfoViewModel>().clickedChangePW(context),
+                  context.read<UserInfoViewModel>().clickedDeleteUser(context),
               child: SizedBox(
                 width: 640.w,
                 height: 90.h,
