@@ -27,7 +27,7 @@ void showFileUploadFailPopup(BuildContext context) {
 
 void showSuccessChangeUserInfo(BuildContext context) {
   // 유저 정보 변경 성공
-  showPopup(context, successChangeUserInfo, '');
+  showPopup(context, successChangeUserInfo, '확인');
 }
 
 void showTemporarySavePopup(BuildContext context) {
@@ -89,6 +89,7 @@ void showTermsPopup(BuildContext context) {
 void showPopup(BuildContext context, String contentText, String btnText) {
   showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           child: Stack(
