@@ -56,7 +56,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           margin: EdgeInsets.only(left: 40.w, bottom: 10.h),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '아이디',
+                            '이메일',
                             style: Palette.fieldTitle,
                           )),
                       MainInputField(
@@ -73,7 +73,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           margin: EdgeInsets.only(left: 40.w, bottom: 10.h),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '패스워드',
+                            '비밀번호',
                             style: Palette.fieldTitle,
                           )),
                       MainInputField(
@@ -127,6 +127,19 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             Text('자동 로그인', style: Palette.h5),
                             const Spacer(),
+                            // 비밀번호 재설정.
+                            TextButton(
+                              onPressed: () {
+                                FocusScope.of(context).unfocus();
+                                context.go('/sign-in/password_reset');
+                              },
+                              child: Text(
+                                '비밀번호 재설정 >',
+                                style: Palette.h5.copyWith(
+                                    color: Colors.black,
+                                    decoration: TextDecoration.underline),
+                              ),
+                            ),
                             // 회원가입 텍스트버튼
                             TextButton(
                               onPressed: () {
