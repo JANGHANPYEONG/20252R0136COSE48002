@@ -25,3 +25,5 @@ __pycache__/
 # System filds
 .DS_Store
 Thumbs.db
+
+/test-web/src/firebase-config.js

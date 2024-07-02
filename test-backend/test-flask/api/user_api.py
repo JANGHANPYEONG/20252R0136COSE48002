@@ -4,17 +4,26 @@ from flask import (
     Blueprint,
     jsonify,
     request,
-    current_app,
+    current_app
 )
 from db.db_model import User
 from db.db_controller import create_user, get_user, _get_users_by_type, update_user
 import hashlib
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import credentials
+from firebase_admin import firestore
+from connection.firebase_connect import FireBase_
 from datetime import datetime
 from utils import logger
 
 user_api = Blueprint("user_api", __name__)
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate('serviceAccountKey.json') 
+    default_app = firebase_admin.initialize_app(cred)
+
+# Firestore 데이터베이스를 가져옵니다.
+firebase_db = firestore.client()
 
 # Initialize logger
 handler = logging.StreamHandler()
@@ -28,11 +37,35 @@ logger.setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# Firebase Admin SDK 초기화
-cred = credentials.Certificate('serviceAccountKey.json')  # Firebase 서비스 계정 키 파일 경로
-firebase_admin.initialize_app(cred)
+# 유저 전체 리스트 조회 API
+@user_api.route("/", methods=["GET"])
+def read_user_list():
+    db_session = current_app.db_session
+    try:    
+        users = db_session.query(User).all()
+        user_list = []
+        for user in users:
+            user_data = {
+                "userId": user.userId,
+                "createdAt": user.createdAt,
+                "updatedAt": user.updatedAt,
+                "loginAt": user.loginAt,
+                "password": user.password,
+                "name": user.name,
+                "company": user.company,
+                "jobTitle": user.jobTitle,
+                "homeAddr": user.homeAddr,
+                "alarm": user.alarm,
+                "type": user.type
+            }
+            user_list.append(user_data)
+        
+        return jsonify(user_list), 200
+    except:
+        return jsonify({"msg": "User Not found"}), 404
 
 
+# 유저 로그인 API
 @user_api.route("/login", methods=["GET"])
 def login_user():
     try:
@@ -63,11 +96,20 @@ def register_user_data():
         if request.method == "POST":
             db_session = current_app.db_session
             data = request.get_json()
-            user = create_user(db_session, data)
 
+            # Check if user already exists
+            existing_user = db_session.query(User).filter_by(userId=data['userId']).first()
+            if existing_user:
+                return jsonify({"msg": "User already exists"}), 400
+
+            user = create_user(db_session, data)
             db_session.add(user)
             db_session.commit()
-            return jsonify({"msg": f"{data['userId']}"}), 200
+
+            # Save user to Firebase Firestore
+            firebase_db.collection('users').document(data['userId']).set(data)
+
+            return jsonify({"msg": f"User {data['userId']} registered successfully"}), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -80,6 +122,7 @@ def register_user_data():
         )
 
 
+# 유저 상세 정보 조회 API
 @user_api.route("/get", methods=["GET", "POST"])
 def read_user_data():
     try:
@@ -120,6 +163,7 @@ def read_user_data():
             }
         ), 505
 
+
 # 유저 정보 수정 API
 @user_api.route("/update", methods=["GET", "POST"])
 def update_user_data():
@@ -143,6 +187,7 @@ def update_user_data():
             505,
         )
 
+
 # 유저 아이디 중복 체크 API
 @user_api.route("/duplicate_check", methods=["GET", "POST"])
 def check_duplicate():
@@ -165,6 +210,7 @@ def check_duplicate():
             ),
             505,
         )
+
 
 # 유저 비밀번호 체크 API
 @user_api.route("/pwd-check", methods=["GET", "POST"])
@@ -208,6 +254,7 @@ def check_pwd():
             ),
             505,
         )
+
 
 # 유저 정보 삭제 API
 @user_api.route("/delete", methods=["GET", "POST"])
@@ -253,5 +300,3 @@ def delete_user():
             ),
             505,
         )
-
-
