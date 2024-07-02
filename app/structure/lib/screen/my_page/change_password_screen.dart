@@ -34,16 +34,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Row(),
-                    SizedBox(
-                      height: 72.h,
-                    ),
+                    SizedBox(height: 72.h),
+
+                    // 현재 비밀번호
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('현재 패스워드', style: Palette.fieldTitle)),
-                    SizedBox(
-                      height: 8.h,
-                    ),
+                        child: Text('현재 비밀번호', style: Palette.fieldTitle)),
+                    SizedBox(height: 8.h),
+
+                    // 현재 비밀번호 Input Field
                     MainInputField(
                       mode: 1,
                       width: 640.w,
@@ -55,16 +55,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           .read<ChangePasswordViewModel>()
                           .pwValidate(value),
                     ),
-                    SizedBox(
-                      height: 16.h,
-                    ),
+                    SizedBox(height: 16.h),
+
+                    // 새 비밀번호
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('새 패스워드', style: Palette.fieldTitle)),
-                    SizedBox(
-                      height: 8.h,
-                    ),
+                        child: Text('새 비밀번호', style: Palette.fieldTitle)),
+                    SizedBox(height: 8.h),
+
+                    // 새 비밀번호 Input Field
                     MainInputField(
                       mode: 1,
                       width: 640.w,
@@ -76,9 +76,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           .newPwValidate(value),
                       hintText: '영문 대/소문자+숫자+특수문자',
                     ),
-                    SizedBox(
-                      height: 8.h,
-                    ),
+                    SizedBox(height: 8.h),
+
+                    // 비밀번호 확인 Input Field
                     MainInputField(
                       mode: 1,
                       width: 640.w,
@@ -89,11 +89,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       validateFunc: (value) => context
                           .read<ChangePasswordViewModel>()
                           .cPwValidate(value),
-                      hintText: '패스워드 확인',
+                      hintText: '비밀번호 확인',
                     ),
-                    SizedBox(
-                      height: 600.h,
-                    ),
+                    SizedBox(height: 600.h),
+
+                    // 저장 버튼
                     MainButton(
                       onPressed:
                           context.watch<ChangePasswordViewModel>().isAllValid()
@@ -101,7 +101,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   .read<ChangePasswordViewModel>()
                                   .changePassword(context)
                               : null,
-                      text: '저장',
+                      text: '변경',
                       width: 658.w,
                       height: 96.h,
                       mode: 1,

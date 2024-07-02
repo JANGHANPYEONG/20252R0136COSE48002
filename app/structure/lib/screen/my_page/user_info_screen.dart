@@ -21,9 +21,9 @@ class UserInfoScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
+
+            // 기본 정보
             Container(
               margin: EdgeInsets.only(left: 40.w),
               alignment: Alignment.centerLeft,
@@ -32,9 +32,7 @@ class UserInfoScreen extends StatelessWidget {
                 style: Palette.userInfoIndex,
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             SizedBox(
               width: 640.w,
               child: Row(
@@ -56,9 +54,7 @@ class UserInfoScreen extends StatelessWidget {
                             context.read<UserInfoViewModel>().userName,
                             style: Palette.userInfoContent,
                           ),
-                          SizedBox(
-                            width: 8.w,
-                          ),
+                          SizedBox(width: 8.w),
                           Container(
                             height: 34.h,
                             alignment: Alignment.center,
@@ -76,15 +72,11 @@ class UserInfoScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 10.w,
-                  ),
+                  SizedBox(width: 10.w),
                 ],
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             SizedBox(
               width: 640.w,
               child: Row(
@@ -103,9 +95,7 @@ class UserInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             SizedBox(
               width: 640.w,
               child: Row(
@@ -123,15 +113,15 @@ class UserInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: const Divider(
                 height: 0,
               ),
             ),
+
+            // 상세 정보
             InkWell(
               onTap: () =>
                   context.read<UserInfoViewModel>().clickedEdit(context),
@@ -177,9 +167,7 @@ class UserInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             SizedBox(
               width: 640.w,
               child: Row(
@@ -197,9 +185,7 @@ class UserInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(
-              height: 20.h,
-            ),
+            SizedBox(height: 20.h),
             SizedBox(
               width: 640.w,
               child: Row(
@@ -232,15 +218,15 @@ class UserInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(
-              height: 40.h,
-            ),
+            SizedBox(height: 40.h),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: const Divider(
                 height: 0,
               ),
             ),
+
+            // 비밀번호 변경
             InkWell(
               onTap: () =>
                   context.read<UserInfoViewModel>().clickedChangePW(context),
@@ -269,7 +255,39 @@ class UserInfoScreen extends StatelessWidget {
                 height: 0,
               ),
             ),
+
+            // 회원 탈퇴
+            InkWell(
+              onTap: () =>
+                  context.read<UserInfoViewModel>().clickedChangePW(context),
+              child: SizedBox(
+                width: 640.w,
+                height: 90.h,
+                child: Row(
+                  children: [
+                    Text(
+                      '회원 탈퇴',
+                      style: Palette.userInfoIndex,
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Palette.appBarIcon,
+                      size: 24.h,
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
+              child: const Divider(
+                height: 0,
+              ),
+            ),
             const Spacer(),
+
+            // 로그아웃 버튼
             Container(
               margin: EdgeInsets.only(bottom: 40.h),
               child: MainButton(

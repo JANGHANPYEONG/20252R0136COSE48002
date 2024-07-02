@@ -23,6 +23,7 @@ class UserInfoViewModel with ChangeNotifier {
 
   void _initialize() {
     userName = userModel.name ?? 'None';
+    // Type 텍스트 변환
     if (userModel.type != null) {
       if (userModel.type == 'Normal') {
         userType = '일반데이터 수집자';
@@ -71,26 +72,26 @@ class UserInfoViewModel with ChangeNotifier {
     return formattedDate;
   }
 
-  BuildContext? _context;
-
+  /// 로그아웃 버튼 클릭
   Future<void> clickedSignOut(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     await LocalDataSource.saveDataToLocal(
         jsonEncode({'auto': null}), 'auto.json');
     userModel.reset();
-    _context = context;
-    movePage();
+    if (context.mounted) {
+      context.go('/sign-in');
+    }
   }
 
+  /// 상세 정보 변경 클릭
   void clickedEdit(BuildContext context) {
     context.go('/home/my-page/user-detail');
   }
 
+  /// 비밀번호 변경 클릭
   void clickedChangePW(BuildContext context) {
-    context.go('/home/my-page/change-pw');
+    context.go('/home/my-page/delete-user');
   }
 
-  void movePage() {
-    _context!.go('/sign-in');
-  }
+  void clickedDeleteUser(BuildContext context) {}
 }

@@ -23,18 +23,18 @@ class ChangePasswordViewModel with ChangeNotifier {
   bool _isValidNewPw = false;
   bool _isValidCPw = false;
 
-  // 기존 비밀번호 유효성 검사
+  /// 기존 비밀번호 유효성 검사
   String? pwValidate(String? value) {
     if (value!.isEmpty) {
       _isValidPw = false;
-      return null;
+      return '비밀번호를 입력하세요.';
     } else {
       _isValidPw = true;
       return null;
     }
   }
 
-  // 비밀번호 유효성 검사
+  /// 비밀번호 유효성 검사
   String? newPwValidate(String? value) {
     // 비어있지 않고 비밀번호 형식에 맞지 않을 때, 빨간 에러 메시지
     final bool isValid = _validatePassword(value!);
@@ -50,7 +50,7 @@ class ChangePasswordViewModel with ChangeNotifier {
     }
   }
 
-  // 비밀번호 재입력 유효성 검사
+  /// 비밀번호 재입력 유효성 검사
   String? cPwValidate(String? value) {
     // 비어있지 않고 비밀번호와 같지 않을 때, 빨간 에러 메시지
     if (value!.isNotEmpty && value != newPW.text) {
@@ -65,7 +65,7 @@ class ChangePasswordViewModel with ChangeNotifier {
     }
   }
 
-  // 비밀번호 유효성 검사
+  /// 비밀번호 유효성 검사
   bool _validatePassword(String password) {
     // 비밀번호 유효성을 검사하는 정규식
     const pattern =
@@ -75,7 +75,7 @@ class ChangePasswordViewModel with ChangeNotifier {
     return regex.hasMatch(password);
   }
 
-  // 모든 값이 올바르게 입력됐는지 확인
+  /// 모든 값이 올바르게 입력됐는지 확인
   bool isAllValid() {
     if (_isValidPw && _isValidNewPw && _isValidCPw) {
       return true;
@@ -86,56 +86,46 @@ class ChangePasswordViewModel with ChangeNotifier {
 
   late BuildContext _context;
 
-  // 비밀번호 변경
+  /// 비밀번호 변경 함수
   Future<void> changePassword(BuildContext context) async {
+    _context = context;
     isLoading = true;
     notifyListeners();
     try {
-      final response = await RemoteDataSource.checkUserPw(_userInfoToJson());
-
-      _context = context;
-      if (response == null) {
-        _showAlert();
-        isLoading = false;
-        notifyListeners();
-        return;
-      }
-
+      // 기존 firebase user 정보 불러오기 (현재 로그인된 유저)
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final response =
-            await RemoteDataSource.changeUserPw(_convertChangeUserPwToJson());
-        if (response == null) {
-          throw Error();
-        }
+        // 비밀번호 변경 전 firebase에 재인증 필요
         await FirebaseAuth.instance.currentUser?.reauthenticateWithCredential(
           EmailAuthProvider.credential(
             email: userModel.userId!,
             password: originPW.text,
           ),
         );
-        await user.updatePassword(newPW.text);
-        _context = context;
+        await user.updatePassword(newPW.text); // Firebase update password
+        // DB에 비밀번호 변경
+        final response =
+            await RemoteDataSource.changeUserPw(_convertChangeUserPwToJson());
+        if (response == null) {
+          throw Error();
+        }
         _success();
       } else {
         print('User does not exist.');
       }
-    } catch (e) {
-      print('error: $e');
+    } on FirebaseException catch (e) {
+      print('error: ${e.code}');
+      if (e.code == 'wrong-password') {
+        _showAlert('현재 비밀번호가 일치하지 않습니다.'); // 기존 비밀번호가 틀리면 alert 생성
+      } else {
+        _showAlert('오류가 발생했습니다.');
+      }
     }
     isLoading = false;
     notifyListeners();
   }
 
-  // 유저 비밀번호 확인
-  String _userInfoToJson() {
-    return jsonEncode({
-      "userId": userModel.userId,
-      "password": originPW.text,
-    });
-  }
-
-  // 유저 비밀번호 변경 시 반환
+  /// 유저 비밀번호 변경 시 반환
   String _convertChangeUserPwToJson() {
     return jsonEncode({
       "userId": userModel.userId,
@@ -143,18 +133,18 @@ class ChangePasswordViewModel with ChangeNotifier {
     });
   }
 
-  void _showAlert() {
+  /// 오류 snackbar
+  void _showAlert(String message) {
     ScaffoldMessenger.of(_context).showSnackBar(
-      const SnackBar(
-        duration: Duration(seconds: 1),
-        content: Text(
-          '비밀번호를 확인하세요',
-        ),
+      SnackBar(
+        duration: const Duration(seconds: 1),
+        content: Text(message),
         backgroundColor: Palette.alertBg,
       ),
     );
   }
 
+  /// 비밀번호 변경 성공
   void _success() {
     showSuccessChangeUserInfo(_context);
     originPW.clear();
