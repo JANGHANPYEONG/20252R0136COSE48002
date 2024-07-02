@@ -6,6 +6,7 @@ import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
+import 'package:structure/config/labels.dart';
 
 class ChangePasswordViewModel with ChangeNotifier {
   UserModel userModel;
@@ -40,7 +41,7 @@ class ChangePasswordViewModel with ChangeNotifier {
     final bool isValid = _validatePassword(value!);
     if (value.isNotEmpty && !isValid) {
       _isValidNewPw = false;
-      return '영문, 숫자, 특수문자를 모두 포함해 10자 이상으로 구성해주세요.';
+      return Labels.pwdErrorStr;
     } else if (value.isEmpty) {
       _isValidNewPw = false;
       return null;
@@ -55,7 +56,7 @@ class ChangePasswordViewModel with ChangeNotifier {
     // 비어있지 않고 비밀번호와 같지 않을 때, 빨간 에러 메시지
     if (value!.isNotEmpty && value != newPW.text) {
       _isValidCPw = false;
-      return '비밀번호가 일치하지 않습니다.';
+      return Labels.pwdNotSame;
     } else if (value.isEmpty) {
       _isValidCPw = false;
       return null;

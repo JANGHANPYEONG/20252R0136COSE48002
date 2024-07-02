@@ -53,59 +53,167 @@ class Palette {
   static const Color notCompleteBg = Color(0xffffebeb);
 
   static const Color starIcon = Color(0xffffe871);
-
+  static const Color loadingIcon = Color(0xff38c55f);
   // Text Style Palette
   static TextStyle h1 = TextStyle(fontSize: 50.sp, fontWeight: FontWeight.w700);
   static TextStyle h2 = TextStyle(fontSize: 40.sp, fontWeight: FontWeight.w700);
   static TextStyle h3 = TextStyle(fontSize: 36.sp, fontWeight: FontWeight.w700);
-  static TextStyle h3Green = TextStyle(fontSize: 36.sp, fontWeight: FontWeight.w700, color: const Color(0xff38c55f));
+  static TextStyle h3Green = TextStyle(
+      fontSize: 36.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xff38c55f));
   static TextStyle h4 = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
-  static TextStyle h4Grey = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600, color: const Color(0xff4a4a4a));
+  static TextStyle h4Grey = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
   static TextStyle h5 = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400);
-  static TextStyle h5White = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xffffffff));
-  static TextStyle h5Grey = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff848484));
-  static TextStyle h5LightGrey = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
+  static TextStyle h5White = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xffffffff));
+  static TextStyle h5Grey = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff848484));
+  static TextStyle h5LightGrey = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
 
-  static TextStyle mainBtnTitle = TextStyle(fontSize: 36.sp, fontWeight: FontWeight.w500, color: const Color(0xffffffff));
+  static TextStyle mainBtnTitle = TextStyle(
+      fontSize: 36.sp,
+      fontWeight: FontWeight.w500,
+      color: const Color(0xffffffff));
 
-  static TextStyle fieldTitle = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600, color: const Color(0xff4a4a4a));
-  static TextStyle fieldContent = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w400);
-  static TextStyle fieldContentGreen = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600, color: const Color(0xff38c55f));
-  static TextStyle fieldPlaceHolder = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
-  static TextStyle fieldPlaceHolderWhite = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w400, color: const Color(0xffffffff));
-  static TextStyle fieldDetail = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
-  static TextStyle fieldAlert = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w400, color: const Color(0xfff34e4e));
-  static TextStyle userInfoIndex = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600);
-  static TextStyle userInfoTitle = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: const Color(0xff9f9f9f));
-  static TextStyle userInfoContent = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff4a4a4a));
-  static TextStyle userLevelText = TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: const Color(0xff816cff));
+  static TextStyle fieldTitle = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
+  static TextStyle fieldContent =
+      TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w400);
+  static TextStyle fieldContentGreen = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff38c55f));
+  static TextStyle fieldPlaceHolder = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
+  static TextStyle fieldPlaceHolderWhite = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xffffffff));
+  static TextStyle fieldDetail = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
+  static TextStyle fieldAlert = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xfff34e4e));
+  static TextStyle userInfoIndex =
+      TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600);
+  static TextStyle userInfoTitle = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff9f9f9f));
+  static TextStyle userInfoContent = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff4a4a4a));
+  static TextStyle userLevelText = TextStyle(
+      fontSize: 16.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff816cff));
 
-  static TextStyle appBarTitle = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600, color: const Color(0xff4a4a4a));
+  static TextStyle appBarTitle = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
 
-  static TextStyle popupContent = TextStyle(fontSize: 32.sp, fontWeight: FontWeight.w400);
-  static TextStyle popupBtn = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff38c55f));
-  static TextStyle dialogContentBold = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
-  static TextStyle dialogContentSmall = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600, color: const Color(0xff9f9f9f));
-  static TextStyle dialogLeftBtnTitle = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600, color: const Color(0xff4a4a4a));
-  static TextStyle dialogRightBtnTitle = TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
+  static TextStyle popupContent =
+      TextStyle(fontSize: 32.sp, fontWeight: FontWeight.w400);
+  static TextStyle popupBtn = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff38c55f));
+  static TextStyle dialogContentBold =
+      TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
+  static TextStyle dialogContentSmall = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff9f9f9f));
+  static TextStyle dialogLeftBtnTitle = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
+  static TextStyle dialogRightBtnTitle =
+      TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
 
-  static TextStyle completeText = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: const Color(0xff38c55f));
-  static TextStyle notCompleteText = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: const Color(0xffff4949));
-  static TextStyle editableText = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: const Color(0xffffffff));
-  static TextStyle notEditableText = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: const Color(0xff9f9f9f));
-  static TextStyle seqNoText = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: const Color(0xff816cff));
-  static TextStyle completeTextLarge = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600, color: const Color(0xff38c55f));
-  static TextStyle notCompleteTextLarge = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600, color: const Color(0xffff4949));
+  static TextStyle completeText = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xff38c55f));
+  static TextStyle notCompleteText = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xffff4949));
+  static TextStyle editableText = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xffffffff));
+  static TextStyle notEditableText = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xff9f9f9f));
+  static TextStyle seqNoText = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff816cff));
+  static TextStyle completeTextLarge = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff38c55f));
+  static TextStyle notCompleteTextLarge = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xffff4949));
 
-  static TextStyle mngNum = TextStyle(fontSize: 45.sp, fontWeight: FontWeight.w700);
-  static TextStyle dataListBar = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w500, color: const Color(0xff6d6c6c));
-  static TextStyle dataListMngNum = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff4a4a4a));
-  static TextStyle dataListdate = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
-  static TextStyle dataListUserId = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
+  static TextStyle mngNum =
+      TextStyle(fontSize: 45.sp, fontWeight: FontWeight.w700);
+  static TextStyle dataListBar = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w500,
+      color: const Color(0xff6d6c6c));
+  static TextStyle dataListMngNum = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff4a4a4a));
+  static TextStyle dataListdate = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
+  static TextStyle dataListUserId = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
 
-  static TextStyle dDayText = TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w600, color: const Color(0xff816cff));
+  static TextStyle dDayText = TextStyle(
+      fontSize: 10.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff816cff));
 
-  static TextStyle filterTitle = TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: const Color(0xff4a4a4a));
-  static TextStyle filterContent = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff9f9f9f));
-  static TextStyle filterContentGreen = TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w400, color: const Color(0xff38c55f));
+  static TextStyle filterTitle = TextStyle(
+      fontSize: 20.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
+  static TextStyle filterContent = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff9f9f9f));
+  static TextStyle filterContentGreen = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w400,
+      color: const Color(0xff38c55f));
 }

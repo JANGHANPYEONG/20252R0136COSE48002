@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/deep_aging_card.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
 
@@ -162,7 +163,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                 height: 450.h,
                 // 딥에이징 추가 데이터 입력 (DeepAgingCard 컴포넌트 사용) - 클릭 | 삭제 시 대응되는 함수 호출
                 child: context.watch<DataAddHomeViewModel>().isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: LoadingScreen())
                     : ListView.builder(
                         itemCount: context
                             .read<DataAddHomeViewModel>()

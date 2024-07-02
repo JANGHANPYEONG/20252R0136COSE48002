@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/labdata_field.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 
@@ -119,7 +120,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                 ],
               ),
               context.watch<InsertionLabDataViewModel>().isLoading
-                  ? const CircularProgressIndicator()
+                  ? const LoadingScreen()
                   : Container()
             ],
           ),
