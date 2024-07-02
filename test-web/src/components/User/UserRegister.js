@@ -8,6 +8,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
 } from "firebase/auth";
+import { apiIP } from "../../config";
 
 function UserRegister({ handleClose }) {
   const [userId, setuserId] = useState("");
@@ -80,7 +81,7 @@ function UserRegister({ handleClose }) {
 
         // Check registrationResponse.ok before calling createUserWithEmailAndPassword
         const registrationResponse = await fetch(
-          "http://localhost:5001/user/register",
+          `http://${apiIP}/user/register`,
           {
             method: "POST",
             headers: {
@@ -119,7 +120,7 @@ function UserRegister({ handleClose }) {
   const handleDuplicateCheck = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5001/user/duplicate_check?userId=${userId}`
+        `http://${apiIP}/user/duplicate_check?userId=${userId}`
       );
       console.log(response);
       if (response.ok) {
