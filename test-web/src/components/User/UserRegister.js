@@ -80,6 +80,7 @@ function UserRegister({ handleClose }) {
         };
 
         // Check registrationResponse.ok before calling createUserWithEmailAndPassword
+
         const registrationResponse = await fetch(
           `http://${apiIP}/user/register`,
           {

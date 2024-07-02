@@ -146,3 +146,13 @@ Traceback (most recent call last):
   File "/Users/yang-eunseo/Library/Python/3.9/lib/python/site-packages/werkzeug/wrappers/request.py", line 647, in on_json_loading_failed
     raise UnsupportedMediaType(
 werkzeug.exceptions.UnsupportedMediaType: 415 Unsupported Media Type: Did not attempt to load JSON data because the request Content-Type was not 'application/json'.
+2024-07-01 13:42:10,859 - utils - ERROR - 'Flask' object has no attribute 'db_session'
+Traceback (most recent call last):
+  File "/mnt/c/Users/skitw/OneDrive/바탕 화면/Deeplant-Dev/test-backend/test-flask/app.py", line 28, in login
+    db_session = current_app.db_session
+AttributeError: 'Flask' object has no attribute 'db_session'
+2024-07-01 13:42:13,473 - utils - ERROR - 'Flask' object has no attribute 'db_session'
+Traceback (most recent call last):
+  File "/mnt/c/Users/skitw/OneDrive/바탕 화면/Deeplant-Dev/test-backend/test-flask/app.py", line 28, in login
+    db_session = current_app.db_session
+AttributeError: 'Flask' object has no attribute 'db_session'

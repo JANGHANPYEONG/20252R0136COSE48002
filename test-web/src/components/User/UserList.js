@@ -56,7 +56,12 @@ function UserList() {
 
       // If reauthentication is successful, proceed with the account deletion
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${userId}`
+        `http://${apiIP}/user/delete?userId=${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (response.ok) {

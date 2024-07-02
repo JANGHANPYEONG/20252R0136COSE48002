@@ -12,6 +12,7 @@ import hashlib
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from firebase_admin import auth as firebase_auth
 from connection.firebase_connect import FireBase_
 from datetime import datetime
 from utils import logger
@@ -263,43 +264,46 @@ def check_pwd():
 @user_api.route("/delete", methods=["GET", "POST"])
 def delete_user():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = request.args.get("userId")
-            user = db_session.query(User).filter_by(userId=id).first()
-            if user is None:
-                return (
-                    jsonify(
-                        {
-                            "msg": f"No user data in Database",
-                            "userId": id,
-                        }
-                    ),
-                    404,
-                )
-            try:
-                db_session.delete(user)
-                db_session.commit()
-                return (
-                    jsonify(
-                        {
-                            f"msg": f"User with userId has been deleted",
-                            "userId": id,
-                        }
-                    ),
-                    200,
-                )
-            except:
-                db_session.rollback()
-                raise Exception("Deleted Failed")
+        db_session = current_app.db_session
+        id = request.args.get("userId")
+        user = db_session.query(User).filter_by(userId=id).first()
+        if user is None:
+            return (
+                jsonify(
+                    {
+                        "msg": f"No user data in Database",
+                        "userId": id,
+                    }
+                ),
+                404,
+            )
+        try:
+            # Firebase에서 유저 삭제
+            user_record = firebase_auth.get_user_by_email(id)
+            firebase_auth.delete_user(user_record.uid)
 
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 401
+            # 로컬 데이터베이스에서 유저 삭제
+            db_session.delete(user)
+            db_session.commit()
+            return (
+                jsonify(
+                    {
+                        "msg": f"User with userId {id} has been deleted",
+                        "userId": id,
+                    }
+                ),
+                200,
+            )
+        except Exception as e:
+            db_session.rollback()
+            logger.exception(str(e))
+            return jsonify({"msg": "Delete Failed", "error": str(e)}), 500
+
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
