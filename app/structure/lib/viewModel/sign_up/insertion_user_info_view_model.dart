@@ -102,7 +102,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   bool validatePassword(String password) {
     // 조건: 영문 대/소문자, 숫자, 특수문자 10자~15자
     const pattern =
-        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()\-_=+{};:,<.>]).{10,15}$';
+        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()\-_=+{};:,<.>]).{10,}$';
     final regex = RegExp(pattern);
 
     return regex.hasMatch(password);

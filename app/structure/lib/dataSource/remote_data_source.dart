@@ -45,7 +45,7 @@ class RemoteDataSource {
 
   /// 유저 중복검사 (GET)
   static Future<dynamic> dupliCheck(String userId) async {
-    dynamic response = await _getApi('user/id-check?userId=$userId');
+    dynamic response = await _getApi('user/duplicate_check?userId=$userId');
     return response;
   }
 

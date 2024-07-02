@@ -30,6 +30,7 @@ import 'package:structure/screen/meat_registration/registration_meat_image_scree
 import 'package:structure/screen/my_page/change_password_screen.dart';
 import 'package:structure/screen/my_page/user_detail_screen.dart';
 import 'package:structure/screen/my_page/user_info_screen.dart';
+import 'package:structure/screen/sign_in/password_reset_screen.dart';
 import 'package:structure/screen/sign_up/complete_sign_up_screen.dart';
 import 'package:structure/screen/meat_registration/freshmeat_eval_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_detail_screen.dart';
@@ -59,6 +60,7 @@ import 'package:structure/viewModel/meat_registration/registration_meat_image_vi
 import 'package:structure/viewModel/my_page/change_password_view_model.dart';
 import 'package:structure/viewModel/my_page/user_detail_view_model.dart';
 import 'package:structure/viewModel/my_page/user_info_view_model.dart';
+import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
 import 'package:structure/viewModel/sign_up/insertion_user_detail_view_model.dart';
 import 'package:structure/viewModel/sign_up/insertion_user_info_view_model.dart';
 import 'package:structure/viewModel/meat_registration/meat_registration_view_model.dart';
@@ -100,6 +102,15 @@ class UserRouter {
                 ),
               ],
             ),
+            // 비밀번호 변경
+            GoRoute(
+              path: 'password_reset',
+              builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) =>
+                        PasswordResetViewModel(userModel: userModel),
+                    builder: (context, child) => const PasswordResetScreen(),
+                  ),
+              ),
             // 회원가입 완료
             GoRoute(
               path: 'complete-sign-up',
