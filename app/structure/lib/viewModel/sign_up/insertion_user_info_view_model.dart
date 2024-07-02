@@ -5,6 +5,7 @@ import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/main.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
+import 'package:structure/config/labels.dart';
 
 class InsertionUserInfoViewModel with ChangeNotifier {
   InsertionUserInfoViewModel(UserModel userModel) {
@@ -37,7 +38,10 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   bool isChecked4 = false;
   bool isRequiredChecked = false;
 
-  // 아이디 유효성 검사
+  //이메일 중복 확인 로딩 여부 확인 변수
+  bool emailCheckLoading = false;
+
+  /// 아이디 유효성 검사
   String? idValidate(String? value) {
     // 비어있지 않고 이메일 형식에 맞지 않을 때, 빨간 예외 메시지
     final bool isValid = EmailValidator.validate(value!);
@@ -59,7 +63,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     final bool isValid = validatePassword(value!);
     if (value.isNotEmpty && !isValid) {
       isValidPw = false;
-      return '영문, 숫자, 특수문자를 모두 포함해 10자 이상으로 구성해주세요.';
+      return Labels.pwdErrorStr;
     } else if (value.isEmpty) {
       isValidPw = false;
       return null;
@@ -74,7 +78,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     // 비어있지 않고 비밀번호와 같지 않을 때, 빨간 에러 메시지
     if (value!.isNotEmpty && value != password.text) {
       isValidCPw = false;
-      return '비밀번호가 일치하지 않습니다.';
+      return Labels.pwdNotSame;
     } else if (value.isEmpty) {
       isValidCPw = false;
       return null;
@@ -110,14 +114,21 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   // 이메일 중복 검사
   Future<void> dupliCheck(BuildContext context) async {
+    //이메일 중복 검사 로딩중인 상태
+    emailCheckLoading = true;
+    notifyListeners();
+
     dynamic isDuplicated = await RemoteDataSource.dupliCheck(email.text);
 
     if (isDuplicated != null) {
       isUnique = true;
+      emailCheckLoading = false;
       notifyListeners();
     } else {
       isUnique = false;
+      emailCheckLoading = false;
       notifyListeners();
+
       // popup 창 띄우기
       if (context.mounted) showDuplicateEmailPopup(context);
     }

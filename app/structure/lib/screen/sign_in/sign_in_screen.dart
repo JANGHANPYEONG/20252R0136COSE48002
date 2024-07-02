@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/config/pallete.dart';
@@ -151,7 +152,7 @@ class _SignInScreenState extends State<SignInScreen> {
             Center(
               child: // 데이터를 처리하는 동안 로딩 위젯 보여주기
                   context.watch<SignInViewModel>().isLoading
-                      ? const CircularProgressIndicator()
+                      ? const LoadingScreen()
                       : Container(),
             ),
           ],

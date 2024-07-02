@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/model/meat_model.dart';
@@ -43,7 +44,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
       ),
       body: Center(
         child: context.watch<MeatRegistrationViewModel>().isLoading
-            ? const CircularProgressIndicator()
+            ? const LoadingScreen()
             : Column(
                 children: [
                   SizedBox(
