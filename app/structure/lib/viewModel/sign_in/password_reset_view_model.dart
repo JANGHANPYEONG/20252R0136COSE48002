@@ -91,15 +91,15 @@ class PasswordResetViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      final response = await RemoteDataSource.checkUserPw(_userInfoToJson());
+      // final response = await RemoteDataSource.checkUserPw(_userInfoToJson());
 
-      _context = context;
-      if (response == null) {
-        _showAlert();
-        isLoading = false;
-        notifyListeners();
-        return;
-      }
+      // _context = context;
+      // if (response == null) {
+      //   _showAlert();
+      //   isLoading = false;
+      //   notifyListeners();
+      //   return;
+      // }
 
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
@@ -127,18 +127,18 @@ class PasswordResetViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 유저 비밀번호 확인
-  String _userInfoToJson() {
-    return jsonEncode({
-      "userId": userModel.userId,
-      "password": originEmail.text,
-    });
-  }
+  // // 유저 비밀번호 확인
+  // String _userInfoToJson() {
+  //   return jsonEncode({
+  //     "userId": userModel.userId,
+  //     "password": originEmail.text,
+  //   });
+  // }
 
   // 유저 비밀번호 변경 시 반환
   String _convertChangeUserPwToJson() {
     return jsonEncode({
-      "userId": userModel.userId,
+      "userId": originEmail.text,
       "password": newPW.text,
     });
   }

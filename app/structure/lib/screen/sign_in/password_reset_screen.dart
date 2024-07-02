@@ -45,7 +45,7 @@ class PasswordResetScreen extends StatelessWidget {
                       formKey: context.read<PasswordResetViewModel>().formKey,
                       controller:
                           context.read<PasswordResetViewModel>().originEmail,
-                      obscureText: true,
+                      // obscureText: true,
                       // validateFunc: (value) => context
                       //     .read<PasswordResetViewModel>()
                       //     .pwValidate(value),
@@ -92,11 +92,13 @@ class PasswordResetScreen extends StatelessWidget {
                     ),
                     MainButton(
                       onPressed:
-                          context.watch<PasswordResetViewModel>().isAllValid()
+                          (){context.watch<PasswordResetViewModel>().isAllValid()
                               ? () async => context
                                   .read<PasswordResetViewModel>()
                                   .changePassword(context)
-                              : null,
+                              : null;
+                              context.go('/sign-in');
+                              },
                       text: '저장',
                       width: 658.w,
                       height: 96.h,
