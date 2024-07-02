@@ -17,7 +17,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { IoMdPersonAdd } from "react-icons/io";
 import { getAuth } from "firebase/auth";
 import { Box } from "@mui/material";
-import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Button, Tooltip, OverlayTrigger } from "react-bootstrap";
 import { apiIP } from "../../config";
 
 function UserList() {
@@ -55,9 +55,7 @@ function UserList() {
       }
 
       // If reauthentication is successful, proceed with the account deletion
-      const response = await fetch(
-        `http://${apiIP}/user/delete?id=${userId}`
-      );
+      const response = await fetch(`http://${apiIP}/user/delete?id=${userId}`);
 
       if (response.ok) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
@@ -88,11 +86,11 @@ function UserList() {
   const closeSnackbar = () => {
     setSnackbarOpen(false);
   };
-  
-  const renderTooltip = (props) =>  (
-      <Tooltip id="button-tooltip" {...props}>
-        신규 회원 등록
-      </Tooltip>
+
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      신규 회원 등록
+    </Tooltip>
   );
   ////////////
 
@@ -117,11 +115,12 @@ function UserList() {
       field: "createdAt",
       headerName: "회원가입 날짜",
       width: 240,
-      valueGetter: (params) => {
+      renderCell: (params) => {
         const createdAt = params.row.createdAt;
         if (createdAt) {
+          //console.log("CreatedAt Value:", createdAt); 
           const parsedDate = new Date(createdAt);
-          return format(parsedDate, "Y년 M월 d일 a h시 m분");
+          return format(parsedDate, "y년 M월 d일 a h시 m분");
         }
         return "";
       },
@@ -151,13 +150,11 @@ function UserList() {
         const usersWithAdditionalData = [];
         for (const userType in usersData) {
           const users = usersData[userType];
-          for (const userId of users) {
-            const userDataResponse = await fetch(
-              `http://${apiIP}/user/get?userId=${userId}`
-            );
-            const userData = await userDataResponse.json();
-            usersWithAdditionalData.push({ ...userData, id: userId });
-          }
+          const userDataResponse = await fetch(
+            `http://${apiIP}/user/get?userId=${users.userId}`
+          );
+          const userData = await userDataResponse.json();
+          usersWithAdditionalData.push({ ...userData, id: users.userId });
         }
         setAllUsers(usersWithAdditionalData);
 
@@ -201,7 +198,7 @@ function UserList() {
 
     try {
       // Send a POST request to update the user's information
-      const response = await fetch("http://localhost:5001/user/update", {
+      const response = await fetch(`http://${apiIP}/user/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -341,7 +338,7 @@ function UserList() {
                 gap: `${(8 / 1920) * 100}vw`,
                 borderRadius: `${(10 / 1920) * 100}vw`,
                 background: "#32CD32",
-                borderColor : "#32CD32",
+                borderColor: "#32CD32",
               }}
             >
               <IoMdPersonAdd />
