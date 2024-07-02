@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 
 class PasswordResetViewModel with ChangeNotifier {
@@ -44,6 +41,7 @@ class PasswordResetViewModel with ChangeNotifier {
       }
     }
 
+  
     isLoading = false;
     notifyListeners();
   }

@@ -31,6 +31,7 @@ import 'package:structure/screen/my_page/change_password_screen.dart';
 import 'package:structure/screen/my_page/user_detail_screen.dart';
 import 'package:structure/screen/my_page/user_info_screen.dart';
 import 'package:structure/screen/sign_in/password_reset_screen.dart';
+import 'package:structure/screen/sign_in/complete_reset_screen.dart';
 import 'package:structure/screen/sign_up/complete_sign_up_screen.dart';
 import 'package:structure/screen/meat_registration/freshmeat_eval_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_detail_screen.dart';
@@ -110,6 +111,10 @@ class UserRouter {
                         PasswordResetViewModel(userModel: userModel),
                     builder: (context, child) => const PasswordResetScreen(),
                   ),
+              ),
+            GoRoute(
+              path: 'complete_password_reset',
+              builder: (context, state) => const CompleteResetScreen(),
               ),
             // 회원가입 완료
             GoRoute(
