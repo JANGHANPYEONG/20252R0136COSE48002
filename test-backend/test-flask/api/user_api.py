@@ -81,8 +81,11 @@ def login_user():
 
         if not user:
             return jsonify({"msg": "User not found"}), 404
-
-        return jsonify({"msg": "Login successful", "userId": user.userId, "name": user.name, "type": user.type}), 200
+        return jsonify({"msg": "Login successful", 
+                        "userId": user.userId, "createdAt": user.createdAt, "updatedAt": user.updatedAt,
+                        "password": user.password, "name": user.name, "company": user.company, "jobTitle": user.jobTitle,
+                        "homeAddr": user.homeAddr, "alarm": user.alarm, "type": user.type
+                        }), 200
 
     except Exception as e:
         logger.exception("Exception: %s", e)
@@ -106,8 +109,8 @@ def register_user_data():
             db_session.add(user)
             db_session.commit()
 
-            # Save user to Firebase Firestore
-            firebase_db.collection('users').document(data['userId']).set(data)
+            # Save user to Firebase Firestore - firebase에 등록은 프론트에서 처리
+            # firebase_db.collection('users').document(data['userId']).set(data)
 
             return jsonify({"msg": f"User {data['userId']} registered successfully"}), 200
         else:
