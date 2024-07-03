@@ -303,7 +303,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
   Future<void> _fetchData() async {
     try {
       List<dynamic>? jsonData =
-          await RemoteDataSource.getUserMeatData('?userId=${userModel.userId}');
+          await RemoteDataSource.getUserMeatData(userModel.userId!);
 
       if (jsonData == null) {
         print('데이터 없음');

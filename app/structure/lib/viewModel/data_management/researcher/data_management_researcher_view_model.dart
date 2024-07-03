@@ -332,7 +332,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   // 데이터 호출
   Future<void> _fetchData() async {
     try {
-      // 자신이 입력한 데이터만 호출
+      // Confirm된 육류 데이터 호출
       Map<String, dynamic>? jsonData =
           await RemoteDataSource.getConfirmedMeatData();
 
