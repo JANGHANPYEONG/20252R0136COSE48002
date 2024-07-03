@@ -166,7 +166,7 @@ class UserRouter {
                   path: 'image',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
-                        RegistrationMeatImageViewModel(meatModel),
+                        RegistrationMeatImageViewModel(meatModel, userModel),
                     child: const RegistrationMeatImageScreen(),
                   ),
                 ),
@@ -307,8 +307,8 @@ class UserRouter {
                     GoRoute(
                       path: 'image-editable',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) =>
-                            RegistrationMeatImageViewModel(meatModel),
+                        create: (context) => RegistrationMeatImageViewModel(
+                            meatModel, userModel),
                         child: const RegistrationMeatImageScreen(),
                       ),
                     ),
@@ -382,7 +382,8 @@ class UserRouter {
                             path: 'image',
                             builder: (context, state) => ChangeNotifierProvider(
                                   create: (context) =>
-                                      RegistrationMeatImageViewModel(meatModel),
+                                      RegistrationMeatImageViewModel(
+                                          meatModel, userModel),
                                   child: const RegistrationMeatImageScreen(),
                                 )),
                         GoRoute(

@@ -87,7 +87,6 @@ class LabDataField extends StatelessWidget {
                     style: TextStyle(
                       color: const Color(0xFF686868),
                       fontSize: 32.sp,
-                      fontFamily: 'Inter',
                       fontStyle: FontStyle.normal,
                       fontWeight: FontWeight.w400,
                     ),
