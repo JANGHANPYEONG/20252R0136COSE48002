@@ -15,7 +15,7 @@ from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
 from connection.firebase_connect import FireBase_
 from datetime import datetime
-from utils import logger
+from utils import logger, usrType
 
 user_api = Blueprint("user_api", __name__)
 
@@ -85,7 +85,7 @@ def login_user():
         return jsonify({"msg": "Login successful", 
                         "userId": user.userId, "createdAt": user.createdAt, "updatedAt": user.updatedAt,
                         "password": user.password, "name": user.name, "company": user.company, "jobTitle": user.jobTitle,
-                        "homeAddr": user.homeAddr, "alarm": user.alarm, "type": user.type
+                        "homeAddr": user.homeAddr, "alarm": user.alarm, "type": usrType[user.type]
                         }), 200
 
     except Exception as e:

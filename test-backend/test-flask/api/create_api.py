@@ -19,7 +19,7 @@ create_api = Blueprint("create_api", __name__)
 
 
 # 특정 육류의 기본 정보 생성 및 수정
-@create_api.route("/std-data", methods=["GET", "POST"])
+@create_api.route("/", methods=["GET", "POST"])
 def add_specific_meat_data():
     db_session = current_app.db_session
     s3_conn = current_app.s3_conn
@@ -48,7 +48,7 @@ def add_specific_meat_data():
 
 
 # 특정 육류의 딥 에이징 이력 생성 및 수정
-@create_api.route("/deepAging-data", methods=["GET", "POST"])
+@create_api.route("/deep-aging-data", methods=["GET", "POST"])
 def add_specific_deepAging_data():
     try:
         if request.method == "POST":
@@ -93,7 +93,7 @@ def add_specific_sensory_eval():
 
 
 # 특정 육류의 가열육 관능 검사 결과 생성 및 수정
-@create_api.route("/heatedmeat-data", methods=["GET", "POST"])
+@create_api.route("/heatedmeat-eval", methods=["GET", "POST"])
 def add_specific_heatedmeat_sensory_data():
     try:
         if request.method == "POST":

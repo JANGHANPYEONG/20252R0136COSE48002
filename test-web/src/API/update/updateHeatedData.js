@@ -22,9 +22,9 @@ export default async function updateHeatedData(
         ["period"] : Math.round(elapsedHour),
     }
 
-    //meat/add/heatedmeat_eval로 수정 API 전송 
+    //meat/add/heatedmeat-eval로 수정 API 전송 
     try{
-        const response  = fetch(`http://${apiIP}/meat/add/heatedmeat_eval`, {
+        const response  = fetch(`http://${apiIP}/meat/add/heatedmeat-eval`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
