@@ -38,6 +38,34 @@ void showDataRegisterDialog(
   );
 }
 
+void showDuplicateIdSigninDialog(
+    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '동일한 주소로 가입된 계정이 있습니다.',
+    '기존 계정으로 로그인 해주세요.',
+    '취소',
+    '로그인',
+    leftFunc,
+    rightFunc,
+  );
+}
+
+void showDeleteIdDialog(
+    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '회원탈퇴를 진행하시겠습니까?',
+    '탈퇴완료 이후에는 되돌릴 수 없습니다.',
+    '취소',
+    '탈퇴',
+    leftFunc,
+    rightFunc,
+  );
+}
+
 void showTemporarySaveDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
@@ -54,7 +82,7 @@ void showTemporarySaveDialog(BuildContext context, VoidCallback? rightFunc) {
 // 다이얼로그 형식입니다.
 void showCustomDialog(
   BuildContext context,
-  String iconPath,
+  String? iconPath,
   String titleText,
   String contentText,
   String leftButtonText,
@@ -74,13 +102,15 @@ void showCustomDialog(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  height: 96.h,
-                  width: 96.w,
-                  child: Image.asset(
-                    iconPath,
-                  ),
-                ),
+                iconPath != null
+                    ? SizedBox(
+                        height: 96.h,
+                        width: 96.w,
+                        child: Image.asset(
+                          iconPath,
+                        ),
+                      )
+                    : Container(),
                 SizedBox(height: 25.h),
                 Text(
                   titleText,
