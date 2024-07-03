@@ -66,11 +66,11 @@ def create_meat(meat_data: dict, db_session):
         raise Exception("Invalid Meat Data")
     # 1. Get the ID of the record in the SexType table
     sex_type = (
-        db_session.query(SexInfo).filter_by(value=meat_data.get("sexType")).first()
+        db_session.query(SexInfo).filter_by(id=meat_data.get("sexType")).first()
     )
     # 2. Get the ID of the record in the GradeNum table
     grade_num = (
-        db_session.query(GradeInfo).filter_by(value=meat_data.get("gradeNum")).first()
+        db_session.query(GradeInfo).filter_by(id=meat_data.get("gradeNum")).first()
     )
     # 3. meat_data에 없는 필드 추가
 
