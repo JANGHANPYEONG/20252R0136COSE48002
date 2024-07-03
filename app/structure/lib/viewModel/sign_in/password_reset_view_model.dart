@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -10,11 +11,28 @@ class PasswordResetViewModel with ChangeNotifier {
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
 
+  bool _isValidEmail = false;
+
   TextEditingController email = TextEditingController();
 
-  // 모든 값이 올바르게 입력됐는지 확인
-  bool isAllValid() {
-    return true;
+  // 이메일이 입력됐는지 확인
+  String? emailValidate(String? value) {
+    if (value!.isEmpty) {
+      _isValidEmail = false;
+      return '이메일을 입력하세요';
+    } else {
+      _isValidEmail = true;
+      return null;
+    }
+  }
+
+  /// 값이 올바르게 입력됐는지 확인
+  bool isValid() {
+    if (_isValidEmail) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   late BuildContext _context;
@@ -27,6 +45,8 @@ class PasswordResetViewModel with ChangeNotifier {
 
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email.text);
+
+      _success();
     } on FirebaseException catch (e) {
       if (e.code == 'invalid-email') {
         _showAlert('잘못된 이메일 형식입니다.');
@@ -50,5 +70,12 @@ class PasswordResetViewModel with ChangeNotifier {
         backgroundColor: Palette.alertBg,
       ),
     );
+  }
+
+  /// 성공시 complete_reset_screen으로 이동
+  void _success() {
+    if (_context.mounted) {
+      _context.go('/sign-in/complete_password_reset');
+    }
   }
 }

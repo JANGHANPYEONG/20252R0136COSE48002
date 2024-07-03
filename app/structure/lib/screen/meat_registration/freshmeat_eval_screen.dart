@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
@@ -73,7 +74,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                           if (loadingProgress == null) {
                             return child;
                           } else {
-                            return CircularProgressIndicator(
+                            return LoadingScreen(
                               value: loadingProgress.expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
                                       (loadingProgress.expectedTotalBytes ?? 1)

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:structure/config/pallete.dart';
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
+  final double? value;
+  const LoadingScreen({super.key, this.value});
 
   @override
   Widget build(BuildContext context) {
-    return const CircularProgressIndicator(
+    return CircularProgressIndicator(
       color: Palette.loadingIcon,
+      value: value,
     );
   }
 }

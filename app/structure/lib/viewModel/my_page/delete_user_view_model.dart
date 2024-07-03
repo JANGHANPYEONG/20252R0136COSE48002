@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/config/labels.dart';
 import 'package:structure/config/pallete.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -57,7 +58,7 @@ class DeleteUserViewModel with ChangeNotifier {
         );
 
         // Firebase 유저 삭제
-        await user.delete();
+        // await user.delete();
 
         // DB에서 유저 삭제 API 호출
         final response = await RemoteDataSource.deleteUser(userModel.userId!);
@@ -93,9 +94,10 @@ class DeleteUserViewModel with ChangeNotifier {
   }
 
   /// 비밀번호 변경 성공
-  void _success() {
+  void _success() async {
     password.clear();
-    _context.go('/sign-in');
+    await LocalDataSource.deleteLocalData(userModel.userId!);
+    if (_context.mounted) _context.go('/sign-in');
     _showAlert('회원 탈퇴가 성공적으로 처리되었습니다.');
   }
 }
