@@ -17,7 +17,6 @@ import uuid
 
 create_api = Blueprint("create_api", __name__)
 
-
 # 특정 육류의 기본 정보 생성 및 수정
 @create_api.route("/", methods=["GET", "POST"])
 def add_specific_meat_data():
