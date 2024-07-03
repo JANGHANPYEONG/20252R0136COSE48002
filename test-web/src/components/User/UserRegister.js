@@ -34,7 +34,7 @@ function UserRegister({ handleClose }) {
   };
 
   const isNameValid = (name) => {
-    const nameRegex = /^[가-힣]+$/;
+    const nameRegex = /^[가-힣a-zA-Z]+$/;
     return nameRegex.test(name);
   };
 

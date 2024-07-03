@@ -103,7 +103,6 @@ const styles={
     right:'0',
     left:'0px',
     borderRadius:'0',
-    backgroundColor:'',
     display:'flex', 
     justifyContent:'space-between' ,
     marginTop:'30px', 
@@ -118,10 +117,4 @@ const styles={
     border: `1px solid ${navy}`,
     color:navy,
   },
- 
 }
-
-
-
-
-

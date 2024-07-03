@@ -39,9 +39,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          height: 30.h,
-                        ),
+                        SizedBox(height: 30.h),
                         Container(
                           margin: EdgeInsets.only(left: 40.w),
                           alignment: Alignment.centerLeft,
@@ -50,18 +48,14 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                             style: Palette.fieldTitle,
                           ),
                         ),
-                        SizedBox(
-                          height: 8.h,
-                        ),
+                        SizedBox(height: 8.h),
                         MainInputField(
                           mode: 1,
                           width: 640.w,
                           controller:
                               context.read<InsertionUserInfoViewModel>().name,
                         ),
-                        SizedBox(
-                          height: 30.h,
-                        ),
+                        SizedBox(height: 30.h),
                         Container(
                           margin: EdgeInsets.only(left: 40.w),
                           alignment: Alignment.centerLeft,
@@ -70,9 +64,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                             style: Palette.fieldTitle,
                           ),
                         ),
-                        SizedBox(
-                          height: 8.h,
-                        ),
+                        SizedBox(height: 8.h),
                         Stack(
                           children: [
                             // 이메일 입력 필드
@@ -94,6 +86,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               contentPadding:
                                   EdgeInsets.only(left: 30.w, right: 200.w),
                             ),
+
                             // 중복확인 버튼
                             Positioned(
                               right: 30.w,
@@ -125,9 +118,9 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          height: 30.h,
-                        ),
+                        SizedBox(height: 30.h),
+
+                        // 비밀번호
                         Container(
                           margin: EdgeInsets.only(left: 40.w),
                           alignment: Alignment.centerLeft,
@@ -136,9 +129,8 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                             style: Palette.fieldTitle,
                           ),
                         ),
-                        SizedBox(
-                          height: 8.h,
-                        ),
+                        SizedBox(height: 8.h),
+
                         // 비밀번호 입력 필드
                         MainInputField(
                           formKey: context
@@ -155,9 +147,9 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               .pwValidate(value),
                           hintText: '영문 대/소문자+숫자+특수문자',
                         ),
-                        SizedBox(
-                          height: 16.h,
-                        ),
+                        SizedBox(height: 16.h),
+
+                        // 비밀번호 확인
                         MainInputField(
                           formKey: context
                               .read<InsertionUserInfoViewModel>()
@@ -175,9 +167,9 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 32.h,
-                    ),
+                    SizedBox(height: 32.h),
+
+                    // 약관 동의
                     Container(
                       decoration: BoxDecoration(
                           border: Border.all(
