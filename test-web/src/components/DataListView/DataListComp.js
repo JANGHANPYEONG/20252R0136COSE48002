@@ -102,12 +102,11 @@ const style = {
     width: "100%",
     paddingRight:'0px',
     paddingBottom: "0",
-    height:'400px',
+    height:'auto',
   },
   paginationBar : {
     marginTop: "40px",
     width: "100%",
     justifyContent: "center",
-   
   },
 }
