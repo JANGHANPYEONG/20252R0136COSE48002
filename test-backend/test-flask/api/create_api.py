@@ -68,7 +68,7 @@ def add_specific_deepAging_data():
 
 
 # 특정 육류의 관능 검사 결과 생성 및 수정
-@create_api.route("/sensory-data", methods=["GET", "POST"])
+@create_api.route("/sensory-eval", methods=["GET", "POST"])
 def add_specific_sensory_eval():
     try:
         if request.method == "POST":
