@@ -6,3 +6,5 @@ test-flask/serviceAccountKey.json
 __pycache__/
 *.py[cod]
 *$py.class
+
+test-flask/log/app.log
