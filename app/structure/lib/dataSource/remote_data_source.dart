@@ -68,7 +68,7 @@ class RemoteDataSource {
 
   /// 관리번호 육류 정보 조회 (GET)
   static Future<dynamic> getMeatData(String id) async {
-    dynamic response = await _getApi('meat/get?id=$id');
+    dynamic response = await _getApi('meat/get/by-id?id=$id');
     return response;
   }
 
@@ -81,27 +81,24 @@ class RemoteDataSource {
 
   /// 승인된 관리번호 검색
   static Future<dynamic> getConfirmedMeatData() async {
-    dynamic response = await _getApi('meat/status?statusType=2');
+    dynamic response = await _getApi('meat/get/by-status?statusType=2');
     return response;
   }
 
   /// 유저가 등록한 관리번호 조회 (GET)
-  static Future<dynamic> getUserMeatData(String? dest) async {
-    String endPoint = 'meat/user';
-    if (dest != null) {
-      endPoint = 'meat/user$dest';
-    }
+  static Future<dynamic> getUserMeatData(String userId) async {
+    String endPoint = 'meat/get/by-user-id?userId=$userId';
     dynamic response = await _getApi(endPoint);
     return response;
   }
 
   /// 육류 데이터 승인 (GET)
   static Future<dynamic> confirmMeatData(String meatId) async {
-    dynamic response = await _getApi('meat/confirm?id=$meatId');
+    dynamic response = await _getApi('meat/update/confirm?id=$meatId');
     return response;
   }
 
-  /// 종, 부위 조회 (GET)
+  /// category_info 테이블에서 종, 부위 데이터 불러오기 (GET)
   static Future<dynamic> getMeatSpecies() async {
     dynamic response = await _getApi('data');
     return response;
