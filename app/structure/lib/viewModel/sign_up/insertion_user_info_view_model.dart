@@ -1,11 +1,11 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/main.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 import 'package:structure/config/labels.dart';
+import 'package:structure/components/custom_dialog.dart';
 
 class InsertionUserInfoViewModel with ChangeNotifier {
   InsertionUserInfoViewModel(UserModel userModel) {
@@ -40,6 +40,8 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   //이메일 중복 확인 로딩 여부 확인 변수
   bool emailCheckLoading = false;
+
+  late BuildContext _context;
 
   /// 아이디 유효성 검사
   String? idValidate(String? value) {
@@ -117,6 +119,8 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     emailCheckLoading = true;
     notifyListeners();
 
+    _context = context;
+
     dynamic isDuplicated = await RemoteDataSource.dupliCheck(email.text);
 
     if (isDuplicated != null) {
@@ -129,8 +133,22 @@ class InsertionUserInfoViewModel with ChangeNotifier {
       notifyListeners();
 
       // popup 창 띄우기
-      if (context.mounted) showDuplicateEmailPopup(context);
+      // if (context.mounted) _showDuplicateIdSigninDialog(context);
+      if (context.mounted) _showDuplicateIdSigninDialog(context);
     }
+  }
+
+  ///이메일 중복확인 dialog
+  Future<void> _showDuplicateIdSigninDialog(dynamic response) async {
+    showDuplicateIdSigninDialog(_context, popDialog, moveSignIn);
+  }
+
+  void popDialog() {
+    _context.pop();
+  }
+
+  void moveSignIn() {
+    _context.go('/sign-in');
   }
 
   // 필수 동의 체크 확인
