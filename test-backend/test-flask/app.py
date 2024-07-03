@@ -16,6 +16,7 @@ from firebase_admin import credentials, auth
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 환경 변수 다운로드
 load_dotenv()  
