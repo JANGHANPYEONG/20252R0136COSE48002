@@ -12,9 +12,10 @@ import hashlib
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from firebase_admin import auth as firebase_auth
 from connection.firebase_connect import FireBase_
 from datetime import datetime
-from utils import logger
+from utils import logger, usrType
 
 user_api = Blueprint("user_api", __name__)
 
@@ -81,8 +82,11 @@ def login_user():
 
         if not user:
             return jsonify({"msg": "User not found"}), 404
-
-        return jsonify({"msg": "Login successful", "userId": user.userId, "name": user.name, "type": user.type}), 200
+        return jsonify({"msg": "Login successful", 
+                        "userId": user.userId, "createdAt": user.createdAt, "updatedAt": user.updatedAt,
+                        "password": user.password, "name": user.name, "company": user.company, "jobTitle": user.jobTitle,
+                        "homeAddr": user.homeAddr, "alarm": user.alarm, "type": usrType[user.type]
+                        }), 200
 
     except Exception as e:
         logger.exception("Exception: %s", e)
@@ -106,8 +110,8 @@ def register_user_data():
             db_session.add(user)
             db_session.commit()
 
-            # Save user to Firebase Firestore
-            firebase_db.collection('users').document(data['userId']).set(data)
+            # Save user to Firebase Firestore - firebase에 등록은 프론트에서 처리
+            # firebase_db.collection('users').document(data['userId']).set(data)
 
             return jsonify({"msg": f"User {data['userId']} registered successfully"}), 200
         else:
@@ -260,43 +264,46 @@ def check_pwd():
 @user_api.route("/delete", methods=["GET", "POST"])
 def delete_user():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = request.args.get("userId")
-            user = db_session.query(User).filter_by(userId=id).first()
-            if user is None:
-                return (
-                    jsonify(
-                        {
-                            "msg": f"No user data in Database",
-                            "userId": id,
-                        }
-                    ),
-                    404,
-                )
-            try:
-                db_session.delete(user)
-                db_session.commit()
-                return (
-                    jsonify(
-                        {
-                            f"msg": f"User with userId has been deleted",
-                            "userId": id,
-                        }
-                    ),
-                    200,
-                )
-            except:
-                db_session.rollback()
-                raise Exception("Deleted Failed")
+        db_session = current_app.db_session
+        id = request.args.get("userId")
+        user = db_session.query(User).filter_by(userId=id).first()
+        if user is None:
+            return (
+                jsonify(
+                    {
+                        "msg": f"No user data in Database",
+                        "userId": id,
+                    }
+                ),
+                404,
+            )
+        try:
+            # Firebase에서 유저 삭제
+            user_record = firebase_auth.get_user_by_email(id)
+            firebase_auth.delete_user(user_record.uid)
 
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 401
+            # 로컬 데이터베이스에서 유저 삭제
+            db_session.delete(user)
+            db_session.commit()
+            return (
+                jsonify(
+                    {
+                        "msg": f"User with userId {id} has been deleted",
+                        "userId": id,
+                    }
+                ),
+                200,
+            )
+        except Exception as e:
+            db_session.rollback()
+            logger.exception(str(e))
+            return jsonify({"msg": "Delete Failed", "error": str(e)}), 500
+
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )

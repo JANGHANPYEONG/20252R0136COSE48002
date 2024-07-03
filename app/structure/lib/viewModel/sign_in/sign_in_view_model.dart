@@ -91,7 +91,12 @@ class SignInViewModel with ChangeNotifier {
       String errorMessage;
       if (e is FirebaseException) {
         // 로그인 실패
-        errorMessage = '아이디와 비밀번호를 확인하세요.';
+        print(e.code);
+        if (e.code == 'user-not-found') {
+          errorMessage = '존재하지 않는 아이디입니다.';
+        } else {
+          errorMessage = '아이디와 비밀번호를 확인하세요.';
+        }
       } else if (e is InvalidEmailException) {
         // 이메일 인증 미완료
         errorMessage = e.message;

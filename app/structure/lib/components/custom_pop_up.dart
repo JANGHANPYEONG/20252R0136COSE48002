@@ -37,7 +37,7 @@ void showTemporarySavePopup(BuildContext context) {
 
 void showDuplicateEmailPopup(BuildContext context) {
   // 이메일 중복
-  showPopup(context, duplicateEmailText, '');
+  showPopup(context, duplicateEmailText, '확인');
 }
 
 void showDataManageLatePopup(BuildContext context) {
@@ -89,7 +89,7 @@ void showTermsPopup(BuildContext context) {
 void showPopup(BuildContext context, String contentText, String btnText) {
   showDialog(
       context: context,
-      barrierDismissible: false,
+      // barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           child: Stack(

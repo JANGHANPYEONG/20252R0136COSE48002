@@ -34,7 +34,7 @@ function UserRegister({ handleClose }) {
   };
 
   const isNameValid = (name) => {
-    const nameRegex = /^[가-힣]+$/;
+    const nameRegex = /^[가-힣a-zA-Z]+$/;
     return nameRegex.test(name);
   };
 
@@ -80,6 +80,7 @@ function UserRegister({ handleClose }) {
         };
 
         // Check registrationResponse.ok before calling createUserWithEmailAndPassword
+
         const registrationResponse = await fetch(
           `http://${apiIP}/user/register`,
           {

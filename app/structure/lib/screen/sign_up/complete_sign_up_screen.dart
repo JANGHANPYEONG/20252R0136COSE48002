@@ -10,6 +10,7 @@ class CompleteSignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Expanded(
@@ -47,6 +48,7 @@ class CompleteSignUpScreen extends StatelessWidget {
                 Container(
                   margin: EdgeInsets.only(left: 46.w, top: 182.h),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('회원가입이\n완료되었습니다 !', style: Palette.h2),
                       SizedBox(

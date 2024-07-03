@@ -70,7 +70,7 @@ from api.delete_api import delete_api
 from api.statistic_api import statistic_api
 
 app.register_blueprint(user_api, url_prefix="/user")  # user 관련 API
-app.register_blueprint(create_api, url_prefix="/meat/create")  # 육류 정보 생성 API
+app.register_blueprint(create_api, url_prefix="/meat/add")  # 육류 정보 생성 API
 app.register_blueprint(get_api, url_prefix="/meat/get")  # 육류 정보 조회 API
 app.register_blueprint(update_api, url_prefix="/meat/update")  # 육류 정보 수정 API
 app.register_blueprint(delete_api, url_prefix="/meat/delete")  # 육류 정보 삭제 API

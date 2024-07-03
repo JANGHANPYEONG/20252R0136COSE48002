@@ -34,19 +34,19 @@ function UserList() {
     window.location.reload();
   };
   const handleRegisterShow = () => setRegisterShow(true);
+  const UserInfo = JSON.parse(localStorage.getItem("UserInfo"));
 
   const handleUserDelete = async (userId) => {
     try {
       const auth = getAuth();
-      const user = auth.currentUser;
-      console.log(user.email);
+      console.log(UserInfo.userId);
       console.log(userId);
-      if (!user) {
+      if (!UserInfo.userId) {  
         showSnackbar("로그인이 필요합니다.", "error");
         return;
       }
 
-      if (user.email === userId) {
+      if (UserInfo.userId === userId) {
         showSnackbar(
           "자신의 계정은 삭제할 수 없습니다. 회원탈퇴는 프로필 페이지에서 가능합니다.",
           "error"
@@ -56,7 +56,12 @@ function UserList() {
 
       // If reauthentication is successful, proceed with the account deletion
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${userId}`
+        `http://${apiIP}/user/delete?userId=${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (response.ok) {
