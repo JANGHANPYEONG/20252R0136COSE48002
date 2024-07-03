@@ -187,7 +187,7 @@ function DataList({
                             <TableCell component="th" id={labelId} scope="row" align="center" style={style.tableCell}> 
                                 {(index+1)+(offset*count)} 
                             </TableCell>
-                            <TableCell align="center" style={style.tableCell}>
+                            <TableCell style={style.tableCell}>
                                 <Link 
                                     color="#000000" 
                                     component={RouterLink}
@@ -200,21 +200,21 @@ function DataList({
                                     {content.id}
                                 </Link>
                             </TableCell>
-                            <TableCell align="center" style={style.tableCell}> 
+                            <TableCell style={style.tableCell}> 
                                 {content.farmAddr? content.farmAddr : '-'} 
                             </TableCell>
-                            <TableCell align="center" style={style.tableCell}> 
+                            <TableCell style={style.tableCell}> 
                                 {content.name} 
                             </TableCell>
-                            <TableCell align="center" style={style.tableCell}> {content.type } </TableCell>
-                            <TableCell align="center" style={style.tableCell}> {content.company} </TableCell>
-                            <TableCell align="center" style={style.tableCell}> {content.createdAt.replace('T',' ')} </TableCell>
-                            <TableCell align="center" style={style.tableCell}>
+                            <TableCell style={style.tableCell}> {content.type } </TableCell>
+                            <TableCell style={style.tableCell}> {content.company} </TableCell>
+                            <TableCell style={style.tableCell}> {content.createdAt.replace('T',' ')} </TableCell>
+                            <TableCell style={style.tableCell}>
                                 {content.statusType === '반려' && <OrderStatus status={0} />}
                                 {content.statusType === '승인' && <OrderStatus status={1} />}
                                 {content.statusType === '대기중' && <OrderStatus status={2} />}
                             </TableCell>
-                            <TableCell align="center" style={style.tableCell }>
+                            <TableCell style={style.tableCell }>
                                 <IconButton aria-label="delete" color="#90a4ae" onClick={()=>handleTableCellDelete(content.id)} > 
                                     <FaRegTrashAlt/> 
                                 </IconButton>
@@ -252,6 +252,7 @@ const style={
         color:'#90a4ae',
     },
     tableCell : {
+        align:'left',
         fontSize:'17px',
         fontWeight:'600',
         padding:'5px',
