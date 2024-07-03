@@ -137,7 +137,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                         if (loadingProgress == null) {
                                           return child;
                                         } else {
-                                          return CircularProgressIndicator(
+                                          return LoadingScreen(
                                             value: loadingProgress
                                                         .expectedTotalBytes !=
                                                     null

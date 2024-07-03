@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/freshmeat_eval_not_editable_view_model.dart';
@@ -66,7 +67,7 @@ class _FreshMeatEvalNotEditableScreenState
                     if (loadingProgress == null) {
                       return child;
                     } else {
-                      return CircularProgressIndicator(
+                      return LoadingScreen(
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
                                 (loadingProgress.expectedTotalBytes ?? 1)
@@ -80,9 +81,7 @@ class _FreshMeatEvalNotEditableScreenState
                   },
                 ),
               ),
-              SizedBox(
-                height: 5.h,
-              ),
+              SizedBox(height: 5.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
