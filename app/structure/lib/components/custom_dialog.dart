@@ -43,7 +43,7 @@ void showDuplicateIdSigninDialog(
   showCustomDialog(
     context,
     null,
-    '동일한 주소로 가입된 계정이 있습니다.',
+    '중복된 이메일입니다.',
     '기존 계정으로 로그인 해주세요.',
     '취소',
     '로그인',
@@ -95,8 +95,9 @@ void showCustomDialog(
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
+        backgroundColor: Colors.white,
         child: SizedBox(
-          height: 431.h,
+          height: iconPath != null ? 431.h : 300.h,
           width: 676.w,
           child: Center(
             child: Column(
@@ -116,7 +117,7 @@ void showCustomDialog(
                   titleText,
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 36.sp,
+                    fontSize: 30.sp,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
                   ),
@@ -128,6 +129,7 @@ void showCustomDialog(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // 왼쪽 버튼
                     DialogButton(
                       buttonFunc: leftButtonFunc ??
                           () {
@@ -136,9 +138,9 @@ void showCustomDialog(
                       buttonText: leftButtonText,
                       isLeft: true,
                     ),
-                    SizedBox(
-                      width: 41.w,
-                    ),
+                    SizedBox(width: 20.w),
+
+                    // 오른쪽 버튼
                     DialogButton(
                       buttonFunc: rightButtonFunc,
                       buttonText: rightButtonText,
@@ -183,7 +185,7 @@ class DialogButton extends StatelessWidget {
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15.r),
-              side: BorderSide(color: const Color(0xFFD9D9D9), width: 2.w),
+              // side: BorderSide(color: const Color(0xFFD9D9D9), width: 2.w),
             ),
           ),
           minimumSize: WidgetStateProperty.all<Size>(Size(230.w, 104.h)),
