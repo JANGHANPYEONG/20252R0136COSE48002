@@ -6,7 +6,7 @@ export default async function updateDataStatus(confirmVal, id, setStateChanged){
     try{
         const response = await fetch(
             //query parameter : confirmVal, id
-            `http://${apiIP}/meat/${confirmVal}?id=${id}`
+            `http://${apiIP}/meat/update/${confirmVal}?id=${id}`
         );
         setStateChanged(true);
 
