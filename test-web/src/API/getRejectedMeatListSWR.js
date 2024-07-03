@@ -23,7 +23,7 @@ export const useRejectedMeatListFetch = (offset, count, startDate, endDate) => {
   //육류 반려 데이터 리스트를 API 서버로 부터 fetch  
   const {data, error} = useSWR(
     //query parameter : offset, count, startDate, endDate
-    `http://${apiIP}/meat/status?statusType=1&offset=${offset}&count=${count}&start=${startDate}&end=${endDate}`, 
+    `http://${apiIP}/meat/get/by-status?statusType=1&offset=${offset}&count=${count}&start=${startDate}&end=${endDate}`, 
     fetcher
   );
   
