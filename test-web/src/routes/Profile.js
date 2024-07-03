@@ -36,10 +36,9 @@ export default function Profile() {
   const deleteself = async () => {
     try {
       const auth = getAuth();
-      const user = auth.currentUser;
 
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${user.email}`
+        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`
       );
 
       if (response.ok) {
