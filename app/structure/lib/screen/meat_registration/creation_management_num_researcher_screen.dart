@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -17,11 +17,26 @@ class CreationManagementNumResearcherNumScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
+      body: Container(
         child: context
                 .watch<CreationManagementNumResearcherViewModel>()
                 .isLoading
-            ? const Text('관리번호 생성중')
+            ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  margin: EdgeInsets.only(
+                    left: 46.w,
+                    top: 182.h,
+                  ),
+                  child: Text('관리 번호를\n생성 중 입니다.', style: Palette.h2),
+                ),
+                SizedBox(height: 80.h),
+                const SpinKitThreeBounce(
+                  color: Palette.mainBtnAtvBg,
+                  size: 50.0,
+                ),
+                SizedBox(height: 90.h),
+                Center(child: Image.asset('assets/images/print.png')),
+              ])
             : Column(
                 children: [
                   SizedBox(
@@ -60,39 +75,6 @@ class CreationManagementNumResearcherNumScreen extends StatelessWidget {
                         Container(
                           margin: EdgeInsets.only(left: 46.w, top: 182.h),
                           child: Text('관리 번호가\n생성되었습니다!', style: Palette.h2),
-                        ),
-                        Positioned(
-                          top: 182.h,
-                          right: 46.w,
-                          child: InkWell(
-                            onTap: () async => await context
-                                .read<
-                                    CreationManagementNumResearcherViewModel>()
-                                .printQr(),
-                            child: Container(
-                              width: 120.w,
-                              height: 150.h,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.sp),
-                                color: Palette.mainBtnAtvBg,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.print,
-                                    size: 70.sp,
-                                    color: Colors.white,
-                                  ),
-                                  Text(
-                                    'QR코드\n인쇄',
-                                    textAlign: TextAlign.center,
-                                    style: Palette.h5White,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -190,10 +172,10 @@ class CreationManagementNumResearcherNumScreen extends StatelessWidget {
                   Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     child: MainButton(
-                      onPressed: () => context
+                      onPressed: () async => await context
                           .read<CreationManagementNumResearcherViewModel>()
-                          .clickedHomeButton(context),
-                      text: '홈으로 이동',
+                          .printQr(),
+                      text: 'QR코드 출력하기',
                       width: 658.w,
                       height: 104.h,
                       mode: 1,
@@ -202,11 +184,14 @@ class CreationManagementNumResearcherNumScreen extends StatelessWidget {
                   Container(
                     margin: EdgeInsets.only(bottom: 10.h),
                     child: TextButton(
-                      onPressed: () async => context
+                      onPressed: () => context
                           .read<CreationManagementNumResearcherViewModel>()
-                          .clickedAddData(context),
+                          .clickedHomeButton(context),
+                      // onPressed: () async => context
+                      //     .read<CreationManagementNumResearcherViewModel>()
+                      //     .clickedAddData(context),
                       child: const Text(
-                        '추가정보 입력하기',
+                        '홈으로 이동하기',
                         style: TextStyle(
                           color: Colors.black,
                           decoration: TextDecoration.underline,
