@@ -191,6 +191,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 마블링
                       Center(
                         child: PartEval(
+                          idx : 0,
                           selectedText: text[0],
                           value: viewModel.marbling,
                           onChanged: null,
@@ -199,6 +200,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 육색
                       Center(
                         child: PartEval(
+                          idx : 1,
                           selectedText: text[1],
                           value: viewModel.color,
                           onChanged: null,
@@ -207,6 +209,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 조직감
                       Center(
                         child: PartEval(
+                          idx : 2,
                           selectedText: text[2],
                           value: viewModel.texture,
                           onChanged: null,
@@ -215,6 +218,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 육즙
                       Center(
                         child: PartEval(
+                          idx : 3,
                           selectedText: text[3],
                           value: viewModel.surface,
                           onChanged: null,
@@ -223,6 +227,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 기호도
                       Center(
                         child: PartEval(
+                          idx : 4,
                           selectedText: text[4],
                           value: viewModel.overall,
                           onChanged: null,

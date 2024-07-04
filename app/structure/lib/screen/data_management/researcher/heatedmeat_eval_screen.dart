@@ -51,6 +51,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 10.h,
                 ),
                 PartEval(
+                  idx : 0,
                   selectedText: text[0],
                   value: context.watch<HeatedMeatEvalViewModel>().flavor,
                   onChanged: (value) => context
@@ -61,6 +62,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
+                  idx : 1,
                   selectedText: text[1],
                   value: context.read<HeatedMeatEvalViewModel>().juiciness,
                   onChanged: (value) => context
@@ -71,6 +73,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
+                  idx : 2,
                   selectedText: text[2],
                   value: context.read<HeatedMeatEvalViewModel>().tenderness,
                   onChanged: (value) => context
@@ -81,6 +84,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
+                  idx : 3,
                   selectedText: text[3],
                   value: context.read<HeatedMeatEvalViewModel>().umami,
                   onChanged: (value) => context
@@ -91,6 +95,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
+                  idx : 4,
                   selectedText: text[4],
                   value: context.read<HeatedMeatEvalViewModel>().palatability,
                   onChanged: (value) => context
@@ -98,7 +103,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                       .onChangedPalatability(value),
                 ),
                 SizedBox(
-                  height: 120.h,
+                  height: 60.h,
                 ),
                 // 데이터 저장 버튼
                 Container(
