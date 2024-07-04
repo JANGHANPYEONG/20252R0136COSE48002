@@ -52,7 +52,7 @@ function DataPAView({dataProps}){
     // 예측 데이터 fetch
     const getPredictedData = async (seqno) => {
         try {
-            const response = await fetch(`http://${apiIP}/predict/get?id=${id}&seqno=${seqno}`);
+            const response = await fetch(`http://${apiIP}/meat/get/predict-data?id=${id}&seqno=${seqno}`);
             if (!response.ok){
                 throw new Error('Network response was not ok', id, '-',seqno);
             }
@@ -92,7 +92,7 @@ function DataPAView({dataProps}){
                 ["period"]:Math.round(elapsedHour),
             };
             try{
-                await fetch(`http://${apiIP}/predict`, {
+                await fetch(`http://${apiIP}/meat/get/predict-data`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
