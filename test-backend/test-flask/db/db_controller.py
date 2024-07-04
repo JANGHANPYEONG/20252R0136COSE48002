@@ -271,9 +271,15 @@ def create_specific_deep_aging_meat_data(db_session, data):
             if sensory_eval:  # 기존 Deep Aging을 수정하는 경우
                 deepAgingId = sensory_eval.deepAgingId
                 existing_DeepAging = db_session.query(DeepAgingInfo).get(deepAgingId)
+                print(sensory_eval)
+                print(existing_DeepAging)
                 if existing_DeepAging:
                     for key, value in deepAging_data.items():
                         setattr(existing_DeepAging, key, value)
+                    for key, value in data.items():
+                        setattr(sensory_eval, key, value)
+                    # new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
+                    # db_session.merge(new_SensoryEval)
                 else:
                     raise Exception("No Deep Aging Data found for update")
             else:  # 새로운 Deep aging을 추가하는 경우

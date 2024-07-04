@@ -20,7 +20,7 @@ import Spinner from "react-bootstrap/Spinner";
 // import update APIs
 import updateHeatedData from "../../API/update/updateHeatedData";
 import updateProbexptData from "../../API/update/updateProbexptData";
-import updateProcessedData from "../../API/update/updateProcessedData"; // sensory-eval, deep-aging-data 경로 수정 필요
+import updateProcessedData from "../../API/update/updateProcessedData";
 import RestrictedModal from "./restrictedModal";
 // import card
 import QRInfoCard from "./cardComps/QRInfoCard";
