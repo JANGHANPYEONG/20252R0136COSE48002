@@ -52,9 +52,11 @@ def add_specific_deepAging_data():
     try:
         if request.method == "POST":
             db_session = current_app.db_session
+            s3_conn = current_app.s3_conn
+            firestore_conn = current_app.firestore_conn
             data = request.get_json()
             print(data)
-            return create_specific_deep_aging_meat_data(db_session, data), 200
+            return create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, data), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:

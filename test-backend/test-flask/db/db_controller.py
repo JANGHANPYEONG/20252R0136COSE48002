@@ -251,7 +251,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
     return jsonify(id)
 
 
-def create_specific_deep_aging_meat_data(db_session, data):
+def create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, data):
     # 2. 기본 데이터 받아두기
     id = data.get("id")
     seqno = data.get("seqno")
@@ -274,10 +274,10 @@ def create_specific_deep_aging_meat_data(db_session, data):
                 if existing_DeepAging:
                     for key, value in deepAging_data.items():
                         setattr(existing_DeepAging, key, value)
-                    for key, value in data.items():
-                        setattr(sensory_eval, key, value)
-                    # new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-                    # db_session.merge(new_SensoryEval)
+                    # for key, value in data.items():
+                    #     setattr(sensory_eval, key, value)
+                    new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
+                    db_session.merge(new_SensoryEval)
                 else:
                     raise Exception("No Deep Aging Data found for update")
             else:  # 새로운 Deep aging을 추가하는 경우
@@ -287,6 +287,15 @@ def create_specific_deep_aging_meat_data(db_session, data):
                 db_session.commit()
                 new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
                 db_session.merge(new_SensoryEval)
+            
+            transfer_folder_image(
+                s3_conn,
+                firestore_conn,
+                db_session,
+                f"{id}-{seqno}",
+                new_SensoryEval,
+                "sensory_evals",
+            )
             db_session.commit()
         else:
             raise Exception("No deepaging data in request")
