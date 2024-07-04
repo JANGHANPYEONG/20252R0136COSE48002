@@ -230,7 +230,6 @@ void showSaveImageDialog(BuildContext context, String imgPath,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // SizedBox(height: 32.h),
                 Text('사진 저장', style: Palette.dialogContentBold),
                 SizedBox(height: 14.h),
                 Text(

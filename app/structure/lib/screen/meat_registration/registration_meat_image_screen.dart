@@ -207,6 +207,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+
               // 저장 버튼
               Container(
                 margin: EdgeInsets.only(bottom: 40.h),
@@ -235,9 +236,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
           ),
           // 로딩 화면
           context.watch<RegistrationMeatImageViewModel>().isLoading
-              ? const Center(
-                  child: LoadingScreen(),
-                )
+              ? const Center(child: LoadingScreen())
               : Container(),
         ],
       ),

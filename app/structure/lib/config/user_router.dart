@@ -22,6 +22,7 @@ import 'package:structure/screen/data_management/researcher/heatedmeat_eval_scre
 import 'package:structure/screen/data_management/researcher/insertion_lab_data_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
 import 'package:structure/screen/home_screen.dart';
+import 'package:structure/screen/meat_registration/camera_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_researcher_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_meat_info_screen.dart';
@@ -53,6 +54,7 @@ import 'package:structure/viewModel/data_management/researcher/heatedmeat_eval_v
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
 import 'package:structure/viewModel/home_view_model.dart';
+import 'package:structure/viewModel/meat_registration/camera_view_model.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_researcher_view_model.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
 import 'package:structure/viewModel/meat_registration/freshmeat_eval_view_model.dart';
@@ -163,13 +165,23 @@ class UserRouter {
                 ),
                 // 육류 이미지
                 GoRoute(
-                  path: 'image',
-                  builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) =>
-                        RegistrationMeatImageViewModel(meatModel, userModel),
-                    child: const RegistrationMeatImageScreen(),
-                  ),
-                ),
+                    path: 'image',
+                    builder: (context, state) => ChangeNotifierProvider(
+                          create: (context) => RegistrationMeatImageViewModel(
+                              meatModel, userModel),
+                          child: const RegistrationMeatImageScreen(),
+                        ),
+                    routes: [
+                      // 사진 촬영 카메라
+                      GoRoute(
+                        path: 'camera',
+                        builder: (context, state) => ChangeNotifierProvider(
+                          create: (context) => CameraViewModel(),
+                          child: const CameraScreen(),
+                        ),
+                      ),
+                    ]),
+
                 // 신선육 관능평가
                 GoRoute(
                   path: 'freshmeat',

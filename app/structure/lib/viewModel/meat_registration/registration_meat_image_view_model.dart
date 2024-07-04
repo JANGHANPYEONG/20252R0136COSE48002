@@ -12,7 +12,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -97,35 +96,32 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
   /// 이미지 촬영을 위한 메소드
   Future<void> pickImage(BuildContext context) async {
-    final imagePicker = ImagePicker();
+    String? imgPath = await context.push('/home/registration/image/camera');
 
-    // imagePicker - source : camera
-    final pickedImageFile = await imagePicker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 100,
-    );
+    // 반환된 사진이 있으면 저장 팝업 생성
+    if (imgPath != null) {
+      if (context.mounted) {
+        showSaveImageDialog(context, imgPath, () {
+          // 재설정
+          context.pop();
+        }, () {
+          // 저장
+          isLoading = true; // 로딩 활성화
+          notifyListeners();
 
-    if (context.mounted) {
-      showSaveImageDialog(context, pickedImageFile!.path, () {
-        context.pop();
-      }, () {
-        context.pop();
-      });
+          imagePath = imgPath;
+          imageFile = File(imgPath);
+          _setInfo();
+
+          isLoading = false; // 로딩 비활성화
+          notifyListeners();
+          context.pop();
+        });
+      }
+    } else {
+      // 사진 찍기 오류
+      print('Image error');
     }
-
-    isLoading = true; // 로딩 활성화
-    notifyListeners();
-
-    if (pickedImageFile != null) {
-      // 촬영한 이미지를 저장한다.
-      imagePath = pickedImageFile.path;
-      imageFile = File(imagePath!);
-
-      _setInfo();
-    }
-
-    isLoading = false; // 로딩 비활성화
-    notifyListeners();
   }
 
   /// 사진 초기화
