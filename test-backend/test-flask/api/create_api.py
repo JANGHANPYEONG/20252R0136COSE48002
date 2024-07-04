@@ -53,7 +53,7 @@ def add_specific_deepAging_data():
         if request.method == "POST":
             db_session = current_app.db_session
             data = request.get_json()
-            return create_specific_deep_aging_meat_data(data, db_session), 200
+            return create_specific_deep_aging_meat_data(db_session, data), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:

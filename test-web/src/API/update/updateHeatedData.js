@@ -24,7 +24,7 @@ export default async function updateHeatedData(
 
   //meat/add/heatedmeat-eval로 수정 API 전송
   try {
-    const response = fetch(`http://${apiIP}/meat/add/heatedmeat-eval`, {
+    const response = await fetch(`http://${apiIP}/meat/add/heatedmeat-eval`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
