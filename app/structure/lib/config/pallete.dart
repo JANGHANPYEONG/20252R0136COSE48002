@@ -15,6 +15,14 @@ class Palette {
   static const Color alertColor = Color.fromRGBO(255, 73, 73, 1);
   static const Color disabledButtonColor = Color(0xFFC4C4C4);
 
+  //육류 기본정보 화면 종류 배경 색깔
+  static const Color basicSpeciesColor = Color(0xFFF9F9F9);
+  static const Color checkSpeciesColor = Color(0xFF38C55F);
+
+  //육류 기본정보 화면 종류 글씨 색깔
+  static const Color basicSpeciesTextColor = Color(0xFF9F9F9F);
+  static const Color checkSpeciesTextColor = Color.fromARGB(255, 255, 255, 255);
+
   // Updated
   // Color Palette
   static const Color meatRegiCardBg = Color(0xff87e980);
@@ -216,4 +224,30 @@ class Palette {
       fontSize: 24.sp,
       fontWeight: FontWeight.w400,
       color: const Color(0xff38c55f));
+
+  //listView에 사용되는 textstyle
+  static TextStyle listIndexGrey = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff848484));
+  static TextStyle listStyle = TextStyle(
+      fontSize: 30.sp,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xff4a4a4a));
+  static TextStyle mainTextFieldTextStyle = TextStyle(
+      fontSize: 35.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xFF9F9F9F));
+  static TextStyle dropDownTitleStyle = TextStyle(
+      fontSize: 33.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color(0xFF9F9F9F));
+  static TextStyle dropDownTextStyle = TextStyle(
+      fontSize: 33.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color.fromARGB(255, 0, 0, 0));
+  static TextStyle selectSpeciesStyle = TextStyle(
+      fontSize: 33.sp,
+      fontWeight: FontWeight.w700,
+      color: const Color.fromARGB(255, 255, 255, 255));
 }

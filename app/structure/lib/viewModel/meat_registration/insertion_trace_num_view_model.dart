@@ -44,6 +44,8 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   String? butcheryYmd;
   String? gradeNum;
 
+  bool len = false;
+
   // 초기 실행 함수
   void initialize() {
     // 데이터가 meatModel에 존재하면 해당 데이터를 할당. (데이터 관리 전용)
@@ -58,13 +60,13 @@ class InsertionTraceNumViewModel with ChangeNotifier {
       gradeNum = meatModel.gradeNum;
       tableData.addAll([
         traceNum,
-        birthYmd,
-        species,
-        sexType,
         farmerNm,
         farmAddr,
         butcheryYmd,
-        gradeNum
+        species,
+        sexType,
+        gradeNum,
+        birthYmd,
       ]);
       isAllInserted = 1;
     }
@@ -92,6 +94,11 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     meatModel.sexType = sexType;
     meatModel.speciesValue = species;
     meatModel.gradeNum = gradeNum;
+  }
+
+  bool lenCheck() {
+    bool len = farmAddr != null && farmAddr!.length > 16;
+    return len;
   }
 
   // 새롭게 검색을 누를 때, 기존 데이터 초기화 (육종 별 데이터가 다름)
@@ -241,13 +248,13 @@ class InsertionTraceNumViewModel with ChangeNotifier {
       // 데이터를 table list에 할당.
       tableData.addAll([
         traceNum,
-        birthYmd,
-        species,
-        sexType,
         farmerNm,
         farmAddr,
         butcheryYmd,
-        gradeNum
+        species,
+        sexType,
+        gradeNum,
+        birthYmd,
       ]);
       isAllInserted = 1;
     } else {
