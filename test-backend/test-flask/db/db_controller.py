@@ -328,17 +328,18 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
             meat.statusType = 0
             db_session.merge(meat)
 
-        # transfer_folder_image(
-        #     s3_conn,
-        #     firestore_conn,
-        #     db_session,
-        #     f"{id}-{seqno}",
-        #     new_SensoryEval,
-        #     "sensory_evals",
-        # )
+        transfer_folder_image(
+            s3_conn,
+            firestore_conn,
+            db_session,
+            f"{id}-{seqno}",
+            new_SensoryEval,
+            "sensory_evals",
+        )
         db_session.commit()
     except Exception as e:
         db_session.rollback()
+        logger.exception(str(e))
         raise e
     return jsonify(id)
 

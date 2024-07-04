@@ -56,7 +56,7 @@ class FireBase_:
             print(f"Deleted file: {folder}/{item_id}.png")
         else:
             print(f"No such file to delete: {folder}/{item_id}.png")
-
+    
     def server2firestorage(
         self, filepath, blob_name
     ):  # Firebase Storage에 image 데이터 넣기 (Storage <- Flask Server)
