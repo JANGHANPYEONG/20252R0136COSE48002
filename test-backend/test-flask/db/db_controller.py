@@ -128,7 +128,6 @@ def create_DeepAging(meat_data: dict):
     except Exception as e:
         raise Exception("Wrong DeepAging DB field items: " + str(e))
     return new_deepAging
-    return new_deepAging
 
 
 def create_SensoryEval(meat_data: dict, seqno: int, id: str, deepAgingId: int):
@@ -249,7 +248,6 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
     except Exception as e:
         db_session.rollback()
         raise e
-    return jsonify(id)
     return jsonify(id)
 
 
