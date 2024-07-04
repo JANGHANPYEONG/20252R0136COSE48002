@@ -8,15 +8,16 @@ class MainButton extends StatelessWidget {
   final String text;
   final double width;
   final double height;
+  final TextStyle? style;
 
-  const MainButton({
-    super.key,
-    required this.mode,
-    this.onPressed,
-    required this.text,
-    required this.width,
-    required this.height,
-  });
+  const MainButton(
+      {super.key,
+      required this.mode,
+      this.onPressed,
+      required this.text,
+      required this.width,
+      required this.height,
+      this.style});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class MainButton extends StatelessWidget {
             ),
             elevation: 0),
         child: Center(
-          child: Text(text, style: Palette.mainBtnTitle),
+          child: Text(text, style: style ?? Palette.mainBtnTitle),
         ),
       ),
     );

@@ -144,6 +144,12 @@ class Palette {
       fontSize: 24.sp,
       fontWeight: FontWeight.w600,
       color: const Color(0xff9f9f9f));
+  static TextStyle dialogContentSmallUnderline = TextStyle(
+    fontSize: 24.sp,
+    fontWeight: FontWeight.w600,
+    color: const Color(0xff9f9f9f),
+    decoration: TextDecoration.underline,
+  );
   static TextStyle dialogLeftBtnTitle = TextStyle(
       fontSize: 30.sp,
       fontWeight: FontWeight.w600,

@@ -100,7 +100,7 @@ class RemoteDataSource {
 
   /// category_info 테이블에서 종, 부위 데이터 불러오기 (GET)
   static Future<dynamic> getMeatSpecies() async {
-    dynamic response = await _getApi('data');
+    dynamic response = await _getApi('meat/get/default-data');
     return response;
   }
 
