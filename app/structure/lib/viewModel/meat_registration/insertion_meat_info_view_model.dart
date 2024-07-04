@@ -27,6 +27,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   bool isSelectedSecondary = false;
   bool completed = false;
 
+  bool _speciesCheck = false;
+
   // 'DropdownButton'에 사용될 데이터 변수
   List<String> largeDiv = [];
   List<String> litteDiv = [];
@@ -39,6 +41,17 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   ];
 
   List<bool> selectedSpecies = List.generate(2, (index) => false);
+
+  bool speciesCheckFunc() {
+    if (meatModel.speciesValue != null) {
+      if (meatModel.speciesValue! == '한우') {
+        _speciesCheck = false;
+      } else {
+        _speciesCheck = true;
+      }
+    }
+    return _speciesCheck;
+  }
 
   Future<void> initialize() async {
     // 초기 데이터 할당

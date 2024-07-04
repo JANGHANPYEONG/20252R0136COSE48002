@@ -102,7 +102,7 @@ class MainTextField extends StatelessWidget {
                   )
                 : Text(
                     mainText,
-                    style: Palette.h4Grey,
+                    style: Palette.mainTextFieldTextStyle,
                   ),
             filled: true,
             fillColor: Palette.fieldEmptyBg,
@@ -130,9 +130,10 @@ class MainTextField extends StatelessWidget {
             enabledBorder: canAlert
                 ? OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.sp),
-                    borderSide: BorderSide(
-                      color: Palette.fieldDisabBg,
-                    ),
+                    borderSide: BorderSide.none,
+                    // borderSide: BorderSide(
+                    //   color: Palette.fieldDisabBg,
+                    // ),
                   )
                 : null,
             focusedBorder: canAlert

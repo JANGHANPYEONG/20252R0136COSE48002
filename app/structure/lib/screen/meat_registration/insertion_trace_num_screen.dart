@@ -104,8 +104,27 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                           value;
                       context.read<InsertionTraceNumViewModel>().start(context);
                     },
-                    mainText: '이력번호/묶음번호 입력',
-                    prefixIcon: const Icon(Icons.search),
+                    mainText: '이력번호 입력',
+                    prefixIcon: GestureDetector(
+                      onTap: () {
+                        String currentText = context
+                            .read<InsertionTraceNumViewModel>()
+                            .textEditingController
+                            .text;
+                        if (currentText.isNotEmpty &&
+                            currentText.length >= 12) {
+                          context.read<InsertionTraceNumViewModel>().traceNum =
+                              currentText;
+                          context
+                              .read<InsertionTraceNumViewModel>()
+                              .start(context);
+                        }
+                      },
+                      child: const Icon(
+                        Icons.search,
+                        size: 30.0,
+                      ),
+                    ),
                     canAlert: true,
                     width: 600.w,
                     height: 115.h,
@@ -182,13 +201,13 @@ class ListTable extends StatelessWidget {
   // table을 설명하는 list이다.
   final List<String> baseData = [
     '이력번호',
-    '출생년월일',
-    '육종/축종',
-    '성별',
     '경영자',
     '사육지',
     '도축일자',
+    '육종/축종',
+    '성별',
     '등급',
+    '출생년월일',
   ];
 
   @override
@@ -197,9 +216,9 @@ class ListTable extends StatelessWidget {
     return ListView.builder(
       itemCount: baseData.length,
       itemBuilder: (context, index) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        return IntrinsicHeight(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // baseData를 이용하여 table index list를 출력.
               Flexible(
@@ -207,7 +226,7 @@ class ListTable extends StatelessWidget {
                 fit: FlexFit.tight,
                 child: InnerBox(
                   text: baseData[index],
-                  style: Palette.h5Grey,
+                  style: Palette.listIndexGrey,
                 ),
               ),
               // tableData를 이용하여 table data list를 출력.
@@ -216,17 +235,14 @@ class ListTable extends StatelessWidget {
                 fit: FlexFit.tight,
                 child: (baseData[index] == '사육지' && (tableData[2] != '돼지'))
                     // 데이터가 '소'이며, '사육지'일 때, 주소가 길어질 수 있으니 스크롤 형태로 출력.
-                    ? SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: InnerBox(
-                          text: tableData[index],
-                          style: Palette.h4Grey,
-                        ),
+                    ? InnerBox(
+                        text: tableData[index],
+                        style: Palette.listStyle,
                       )
                     : InnerBox(
                         text:
                             (tableData[index] != null) ? tableData[index] : "",
-                        style: Palette.h4Grey,
+                        style: Palette.listStyle,
                       ),
               ),
             ],

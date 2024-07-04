@@ -15,7 +15,7 @@ import 'package:structure/config/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class CustomDropdown extends StatelessWidget {
+class CustomDropdown extends StatefulWidget {
   final Widget hintText;
   final String? value;
   final List<String> itemList;
@@ -30,43 +30,103 @@ class CustomDropdown extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Palette.fieldEmptyBg,
-        borderRadius: BorderRadius.circular(15.sp),
-        border: Border.all(
-          color: value != null ? Palette.meatRegiCardBg : Palette.fieldEmptyBg,
-          width: 1.0,
+  _CustomDropdownState createState() => _CustomDropdownState();
+}
+
+class _CustomDropdownState extends State<CustomDropdown> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+
+  void _toggleDropdown() {
+    if (_overlayEntry == null) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+    } else {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    Size size = renderBox.size;
+    return OverlayEntry(
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0.0, size.height),
+          child: Material(
+            elevation: 0.0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15.sp),
+                border: Border.all(
+                  color: Palette.meatRegiCardBg,
+                ),
+              ),
+              constraints: BoxConstraints(
+                maxHeight: 400.h,
+              ),
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
+                  children: widget.itemList.map((String item) {
+                    return ListTile(
+                      title: Text(item, style: Palette.dropDownTextStyle),
+                      onTap: () {
+                        widget.onChanged!(item);
+                        _toggleDropdown();
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
-      child: DropdownButton(
-        padding: EdgeInsets.only(left: 40.w),
-        alignment: Alignment.centerLeft,
-        elevation: 1,
-        // 밑줄을 표현하기 위해 사용.
-        underline: Container(),
-        borderRadius: BorderRadius.circular(15.sp),
-        dropdownColor: Colors.white,
-        menuMaxHeight: 310.h,
-        // 우측의 화살표 버튼을 추가하기 위해 사용.
-        icon: Container(
-          width: 20.w,
-          margin: EdgeInsets.only(right: 30.w),
-          child: Image.asset('assets/images/arrow-b.png'),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: GestureDetector(
+        onTap: _toggleDropdown,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Palette.fieldEmptyBg,
+            borderRadius: BorderRadius.circular(15.sp),
+            border: Border.all(
+              color: widget.value != null
+                  ? Palette.meatRegiCardBg
+                  : Palette.fieldEmptyBg,
+              width: 1.0,
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: widget.value != null
+                    ? Text(
+                        widget.value!,
+                        style: Palette.dropDownTextStyle,
+                      )
+                    : widget.hintText,
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
         ),
-        // 페이지 너비에 맞게 조정.
-        isExpanded: true,
-        hint: hintText,
-        value: value,
-        items: itemList
-            // itemList를 받아서 'DropdownMenuItem'에 맞게 매핑한다.
-            .map((e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e, style: Palette.h4),
-                ))
-            .toList(),
-        onChanged: onChanged,
       ),
     );
   }

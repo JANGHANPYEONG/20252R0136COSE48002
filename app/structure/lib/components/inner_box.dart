@@ -25,32 +25,16 @@ class InnerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 455.w,
-      height: 40.0,
-      padding: const EdgeInsets.all(5.0),
+      width: 485.w,
+      constraints: BoxConstraints(minHeight: 72.h),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 30),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.grey,
           width: 0.25,
         ),
       ),
-      child: Row(
-        children: [
-          RichText(
-            text: TextSpan(children: [
-              const WidgetSpan(
-                child: SizedBox(
-                  width: 15,
-                ),
-              ),
-              TextSpan(
-                text: text,
-                style: style,
-              ),
-            ]),
-          ),
-        ],
-      ),
+      child: Text(text ?? '', style: style),
     );
   }
 }
