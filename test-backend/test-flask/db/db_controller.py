@@ -271,8 +271,6 @@ def create_specific_deep_aging_meat_data(db_session, data):
             if sensory_eval:  # 기존 Deep Aging을 수정하는 경우
                 deepAgingId = sensory_eval.deepAgingId
                 existing_DeepAging = db_session.query(DeepAgingInfo).get(deepAgingId)
-                print(sensory_eval)
-                print(existing_DeepAging)
                 if existing_DeepAging:
                     for key, value in deepAging_data.items():
                         setattr(existing_DeepAging, key, value)
