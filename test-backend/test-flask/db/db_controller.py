@@ -128,6 +128,7 @@ def create_DeepAging(meat_data: dict):
     except Exception as e:
         raise Exception("Wrong DeepAging DB field items: " + str(e))
     return new_deepAging
+    return new_deepAging
 
 
 def create_SensoryEval(meat_data: dict, seqno: int, id: str, deepAgingId: int):
@@ -217,10 +218,10 @@ def create_ProbexptData(meat_data: dict, seqno: int, id: str):
             item_encoder(meat_data, field)
     # Create a new Meat object
     try:
-        new_probData = ProbexptData(**meat_data)
+        new_probexptdata = ProbexptData(**meat_data)
     except Exception as e:
         raise Exception("Wrong heatedmeat sensory eval DB field items" + str(e))
-    return new_probData
+    return new_probexptdata
 
 
 # API MiddleWare
@@ -248,6 +249,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
     except Exception as e:
         db_session.rollback()
         raise e
+    return jsonify(id)
     return jsonify(id)
 
 
@@ -290,6 +292,7 @@ def create_specific_deep_aging_meat_data(db_session, data):
         db_session.rollback()
         raise e
     return jsonify(id)
+    return jsonify(id)
 
 
 def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
@@ -328,14 +331,14 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
             meat.statusType = 0
             db_session.merge(meat)
 
-        transfer_folder_image(
-            s3_conn,
-            firestore_conn,
-            db_session,
-            f"{id}-{seqno}",
-            new_SensoryEval,
-            "sensory_evals",
-        )
+        # transfer_folder_image(
+        #     s3_conn,
+        #     firestore_conn,
+        #     db_session,
+        #     f"{id}-{seqno}",
+        #     new_SensoryEval,
+        #     "sensory_evals",
+        # )
         db_session.commit()
     except Exception as e:
         db_session.rollback()

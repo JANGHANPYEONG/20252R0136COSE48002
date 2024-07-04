@@ -15,10 +15,10 @@ from db.db_controller import (
 from utils import *
 import uuid
 
-create_api = Blueprint("create_api", __name__)
+add_api = Blueprint("add_api", __name__)
 
 # 특정 육류의 기본 정보 생성 및 수정
-@create_api.route("/", methods=["GET", "POST"])
+@add_api.route("/", methods=["GET", "POST"])
 def add_specific_meat_data():
     db_session = current_app.db_session
     s3_conn = current_app.s3_conn
@@ -47,12 +47,13 @@ def add_specific_meat_data():
 
 
 # 특정 육류의 딥 에이징 이력 생성 및 수정
-@create_api.route("/deep-aging-data", methods=["GET", "POST"])
+@add_api.route("/deep-aging-data", methods=["GET", "POST"])
 def add_specific_deepAging_data():
     try:
         if request.method == "POST":
             db_session = current_app.db_session
             data = request.get_json()
+            print(data)
             return create_specific_deep_aging_meat_data(db_session, data), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
@@ -67,7 +68,7 @@ def add_specific_deepAging_data():
 
 
 # 특정 육류의 관능 검사 결과 생성 및 수정
-@create_api.route("/sensory-eval", methods=["GET", "POST"])
+@add_api.route("/sensory-eval", methods=["GET", "POST"])
 def add_specific_sensory_eval():
     try:
         if request.method == "POST":
@@ -75,10 +76,8 @@ def add_specific_sensory_eval():
             s3_conn = current_app.s3_conn
             firestore_conn = current_app.firestore_conn
             data = request.get_json()
-            return (
-                create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data),
-                200,
-            )
+            return create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data), 200
+            
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -92,7 +91,7 @@ def add_specific_sensory_eval():
 
 
 # 특정 육류의 가열육 관능 검사 결과 생성 및 수정
-@create_api.route("/heatedmeat-eval", methods=["GET", "POST"])
+@add_api.route("/heatedmeat-eval", methods=["GET", "POST"])
 def add_specific_heatedmeat_sensory_data():
     try:
         if request.method == "POST":
@@ -112,7 +111,7 @@ def add_specific_heatedmeat_sensory_data():
 
 
 # 특정 육류의 실험실 데이터 생성 및 수정
-@create_api.route("/probexpt-data", methods=["GET", "POST"])
+@add_api.route("/probexpt-data", methods=["GET", "POST"])
 def add_specific_probexpt_data():
     try:
         if request.method == "POST":
@@ -135,7 +134,7 @@ def add_specific_probexpt_data():
 
 
 # 예측 데이터 생성 및 수정
-@create_api.route("/predict-data", methods=["GET", "POST"])
+@add_api.route("/predict-data", methods=["GET", "POST"])
 def add_specific_predict_data():
     try:
         if request.method == "POST":

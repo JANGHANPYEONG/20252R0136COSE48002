@@ -34,6 +34,13 @@ export default async function updateProcessedData(
 
   ///meat/add/deep-aging-data로 처리육 수정 데이터 API 전송
   try {
+    // const response = await fetch(`http://${apiIP}/meat/add/deep-aging-data`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(req),
+    // });
     const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
       method: "POST",
       headers: {
