@@ -292,7 +292,6 @@ def create_specific_deep_aging_meat_data(db_session, data):
         db_session.rollback()
         raise e
     return jsonify(id)
-    return jsonify(id)
 
 
 def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
@@ -331,14 +330,14 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
             meat.statusType = 0
             db_session.merge(meat)
 
-        # transfer_folder_image(
-        #     s3_conn,
-        #     firestore_conn,
-        #     db_session,
-        #     f"{id}-{seqno}",
-        #     new_SensoryEval,
-        #     "sensory_evals",
-        # )
+        transfer_folder_image(
+            s3_conn,
+            firestore_conn,
+            db_session,
+            f"{id}-{seqno}",
+            new_SensoryEval,
+            "sensory_evals",
+        )
         db_session.commit()
     except Exception as e:
         db_session.rollback()
