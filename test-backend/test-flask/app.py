@@ -73,7 +73,7 @@ app.register_blueprint(add_api, url_prefix="/meat/add")  # 육류 정보 생성 
 app.register_blueprint(get_api, url_prefix="/meat/get")  # 육류 정보 조회 API
 app.register_blueprint(update_api, url_prefix="/meat/update")  # 육류 정보 수정 API
 app.register_blueprint(delete_api, url_prefix="/meat/delete")  # 육류 정보 삭제 API
-app.register_blueprint(statistic_api, url_prefix="/statistic")  # 통계 데이터 조회 API
+app.register_blueprint(statistic_api, url_prefix="/meat/statistic")  # 통계 데이터 조회 API
 
 @app.route("/")
 def hello_world():
