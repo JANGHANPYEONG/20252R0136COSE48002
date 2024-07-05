@@ -12,15 +12,17 @@ import 'package:http/http.dart' as http;
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:structure/model/user_model.dart';
 
 class RegistrationMeatImageViewModel with ChangeNotifier {
   final MeatModel meatModel;
+  final UserModel userModel;
 
-  RegistrationMeatImageViewModel(this.meatModel) {
+  RegistrationMeatImageViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
 
@@ -35,7 +37,9 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
   File? imageFile;
 
-  // String_to_DateTime method
+  late BuildContext _context;
+
+  /// String_to_DateTime method
   void fetchDate(String dateString) {
     DateTime? date = parseDate(dateString);
 
@@ -46,14 +50,14 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     }
   }
 
-  // 등록 정보 지정 (등록 날짜, 등록자)
+  /// 등록 정보 지정 (등록 날짜, 등록자)
   void _setInfo() {
     time = DateTime.now();
     date = '${time.year}.${time.month}.${time.day}';
-    userName = meatModel.userId ?? '-';
+    userName = userModel.name ?? '-';
   }
 
-  // Date_parse
+  /// Date_parse
   DateTime? parseDate(String dateString) {
     try {
       return DateTime.parse(dateString);
@@ -62,7 +66,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     }
   }
 
-  // 초기 할당
+  /// 초기 할당
   void _initialize() {
     if (meatModel.seqno == 0) {
       // 원육 데이터
@@ -90,43 +94,49 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 이미지 촬영을 위한 메소드
-  Future<void> pickImage() async {
-    final imagePicker = ImagePicker();
+  /// 이미지 촬영을 위한 메소드
+  Future<void> pickImage(BuildContext context) async {
+    String? imgPath = await context.push('/home/registration/image/camera');
 
-    // imagePicker - source : camera
-    final pickedImageFile = await imagePicker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 100,
-    );
+    // 반환된 사진이 있으면 저장 팝업 생성
+    if (imgPath != null) {
+      if (context.mounted) {
+        showSaveImageDialog(context, imgPath, () {
+          // 재설정
+          context.pop();
+        }, () {
+          // 저장
+          isLoading = true; // 로딩 활성화
+          notifyListeners();
 
-    isLoading = true; // 로딩 활성화
-    notifyListeners();
+          imagePath = imgPath;
+          imageFile = File(imgPath);
+          _setInfo();
 
-    if (pickedImageFile != null) {
-      // 촬영한 이미지를 저장한다.
-      imagePath = pickedImageFile.path;
-      imageFile = File(imagePath!);
-
-      _setInfo();
+          isLoading = false; // 로딩 비활성화
+          notifyListeners();
+          context.pop();
+        });
+      }
+    } else {
+      // 사진 찍기 오류
+      print('Image error');
     }
-
-    isLoading = false; // 로딩 비활성화
-    notifyListeners();
   }
 
-  // 사진 초기화
-  void deleteImage() {
-    imagePath = null;
-    imageFile = null;
-    date = '-';
-    userName = '-';
-    notifyListeners();
+  /// 사진 초기화
+  void deleteImage(BuildContext context) {
+    showDeletePhotoDialog(context, () {
+      imagePath = null;
+      imageFile = null;
+      date = '-';
+      userName = '-';
+      notifyListeners();
+      context.pop();
+    });
   }
 
-  late BuildContext _context;
-
-  // 데이터 등록
+  /// 데이터 등록
   Future<void> saveMeatData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
@@ -173,6 +183,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 페이지 이동
   void _movePage() {
     if (meatModel.seqno == 0) {
       // 원육

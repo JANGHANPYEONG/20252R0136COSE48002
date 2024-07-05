@@ -133,25 +133,18 @@ class InsertionUserInfoViewModel with ChangeNotifier {
       notifyListeners();
 
       // popup 창 띄우기
-      // if (context.mounted) _showDuplicateIdSigninDialog(context);
-      if (context.mounted) _showDuplicateIdSigninDialog(context);
+      if (context.mounted) {
+        showDuplicateIdSigninDialog(_context, _context.pop, moveSignIn);
+      }
     }
   }
 
-  ///이메일 중복확인 dialog
-  Future<void> _showDuplicateIdSigninDialog(dynamic response) async {
-    showDuplicateIdSigninDialog(_context, popDialog, moveSignIn);
-  }
-
-  void popDialog() {
-    _context.pop();
-  }
-
+  /// popup 확인
   void moveSignIn() {
     _context.go('/sign-in');
   }
 
-  // 필수 동의 체크 확인
+  /// 필수 동의 체크 확인
   void _checkCheckBoxValues() {
     if (isChecked2 == true && isChecked3 == true && isChecked4 == true) {
       isChecked1 = true;
@@ -166,7 +159,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 첫 번째 체크박스 클릭 시
+  /// 첫 번째 체크박스 클릭 시
   void clicked1stCheckBox(bool? value) {
     isChecked1 = value!;
     isChecked2 = value;
