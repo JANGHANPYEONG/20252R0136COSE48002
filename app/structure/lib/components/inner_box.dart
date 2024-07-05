@@ -25,9 +25,9 @@ class InnerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 485.w,
+      width: 800.w,
       constraints: BoxConstraints(minHeight: 72.h),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 30),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 26),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.grey,

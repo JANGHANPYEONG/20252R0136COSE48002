@@ -234,8 +234,8 @@ class Palette {
   //listView에 사용되는 textstyle
   static TextStyle listIndexGrey = TextStyle(
       fontSize: 24.sp,
-      fontWeight: FontWeight.w600,
-      color: const Color(0xff848484));
+      fontWeight: FontWeight.w700,
+      color: const Color(0xff848484)); //
   static TextStyle listStyle = TextStyle(
       fontSize: 30.sp,
       fontWeight: FontWeight.w600,

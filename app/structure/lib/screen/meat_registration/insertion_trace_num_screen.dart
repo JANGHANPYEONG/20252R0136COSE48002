@@ -66,9 +66,12 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
           children: [
             SizedBox(height: 49.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(
+                  width: 20.h,
+                ),
                 Form(
                   key: context.read<InsertionTraceNumViewModel>().formKey,
                   // MainTextField 컴포넌트를 이용하여, textfield를 구현.
@@ -111,6 +114,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                             .read<InsertionTraceNumViewModel>()
                             .textEditingController
                             .text;
+                        // print('currentTExt : $currentText');
                         if (currentText.isNotEmpty &&
                             currentText.length >= 12) {
                           context.read<InsertionTraceNumViewModel>().traceNum =
@@ -132,7 +136,22 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                   ),
                 ),
                 SizedBox(
-                  width: 16.w,
+                  width: 50,
+                  child: TextButton(
+                    onPressed: () {
+                      context
+                          .read<InsertionTraceNumViewModel>()
+                          .clearText(context);
+                      FocusScope.of(context).unfocus();
+                    },
+                    child: const Text(
+                      '취소',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -142,9 +161,15 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
             // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
             if (context.watch<InsertionTraceNumViewModel>().isAllInserted == 1)
               Expanded(
-                  child: ListTable(
-                      tableData:
-                          context.read<InsertionTraceNumViewModel>().tableData))
+                  child: Container(
+                width: 642.w,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: ListTable(
+                    tableData:
+                        context.read<InsertionTraceNumViewModel>().tableData),
+              ))
             // 검색 결과가 존재하지 않음을 출력. (이력 번호가 잘못된 상황)
             else if (context.read<InsertionTraceNumViewModel>().isAllInserted ==
                 2)

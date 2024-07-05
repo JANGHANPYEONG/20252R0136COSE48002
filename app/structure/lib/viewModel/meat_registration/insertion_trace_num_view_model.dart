@@ -18,6 +18,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     initialize();
   }
 
+  //table 조회 상태 변수
+  bool isTableVisible = false;
+
   // form key
   final formKey = GlobalKey<FormState>();
 
@@ -43,8 +46,6 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   String? farmAddr;
   String? butcheryYmd;
   String? gradeNum;
-
-  bool len = false;
 
   // 초기 실행 함수
   void initialize() {
@@ -96,9 +97,15 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     meatModel.gradeNum = gradeNum;
   }
 
-  bool lenCheck() {
-    bool len = farmAddr != null && farmAddr!.length > 16;
-    return len;
+  void hideTable() {
+    isTableVisible = false;
+    // meatModel.traceNum = null;
+    notifyListeners();
+  }
+
+  void showTable() {
+    isTableVisible = true;
+    notifyListeners();
   }
 
   // 새롭게 검색을 누를 때, 기존 데이터 초기화 (육종 별 데이터가 다름)
@@ -144,10 +151,15 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     }
 
     // 이후 작업을 위해, text field를 비운다.
-    textEditingController.clear();
+    // textEditingController.clear();
 
     // provider에게 신호를 보낸다.
     notifyListeners();
+  }
+
+  void clearText(BuildContext context) async {
+    // 이후 작업을 위해, text field를 비운다.
+    textEditingController.clear();
   }
 
   // fetchData
