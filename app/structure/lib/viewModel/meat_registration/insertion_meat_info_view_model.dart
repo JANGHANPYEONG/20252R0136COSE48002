@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 
 class InsertionMeatInfoViewModel with ChangeNotifier {
   MeatModel meatModel;
@@ -28,6 +29,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   bool completed = false;
 
   bool _speciesCheck = false;
+  bool isLoading = false;
 
   // 'DropdownButton'에 사용될 데이터 변수
   List<String> largeDiv = [];
@@ -155,5 +157,25 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
   void _movePage() {
     _context.go('/home/data-manage-normal/edit');
+  }
+
+  /// 임시 저장 Part
+
+  /// 임시저장 버튼
+  Future<void> clickedTempSaveButton(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      dynamic response = await LocalDataSource.saveDataToLocal(
+          meatModel.toJsonTemp(), meatModel.userId!);
+      if (response == null) Error();
+      isLoading = false;
+      notifyListeners();
+      _context = context;
+    } catch (e) {
+      print('에러발생: $e');
+    }
+    isLoading = false;
+    notifyListeners();
   }
 }

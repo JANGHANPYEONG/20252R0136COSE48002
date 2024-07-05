@@ -201,9 +201,14 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
               margin: EdgeInsets.only(bottom: 28.h),
               child: MainButton(
                 onPressed: context.watch<InsertionMeatInfoViewModel>().completed
-                    ? () => context
-                        .read<InsertionMeatInfoViewModel>()
-                        .clickedNextButton(context)
+                    ? () {
+                        context
+                            .read<InsertionMeatInfoViewModel>()
+                            .clickedNextButton(context);
+                        context
+                            .read<InsertionMeatInfoViewModel>()
+                            .clickedTempSaveButton(context);
+                      }
                     : null,
                 text: context.read<InsertionMeatInfoViewModel>().meatModel.id ==
                         null
