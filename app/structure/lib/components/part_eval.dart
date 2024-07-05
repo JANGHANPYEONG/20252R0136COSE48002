@@ -12,7 +12,13 @@ class PartEval extends StatelessWidget {
     required this.onChanged,
   });
 
-  final List<String> imagePath = ['assets/images/eval_Marbling.png','assets/images/eval_Color.png','assets/images/eval_Texture.png','assets/images/eval_SurfaceMoisture.png','assets/images/eval_Overall.png'];
+  final List<String> imagePath = [
+    'assets/images/eval_Marbling.png',
+    'assets/images/eval_Color.png',
+    'assets/images/eval_Texture.png',
+    'assets/images/eval_SurfaceMoisture.png',
+    'assets/images/eval_Overall.png'
+  ];
   final List<String>? selectedText;
   final double value;
   final Function(dynamic value)? onChanged;
@@ -22,18 +28,21 @@ class PartEval extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 30.w,
-        ),
+        SizedBox(height: 30.w),
+
+        // 기준 이미지
         Container(
           margin: EdgeInsets.only(top: 20.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              
-              Image.asset(imagePath[idx],width: 624.w,height: 68.h,)
+              Image.asset(
+                imagePath[idx],
+                width: 624.w,
+                height: 68.h,
+              )
             ],
-            ),
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -43,15 +52,14 @@ class PartEval extends StatelessWidget {
                 width: 123.w,
                 child: Text(
                   selectedText![i],
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: Palette.h5,
                   textAlign: TextAlign.center,
                 ),
               ),
           ],
         ),
+
+        // 슬라이더
         Container(
           width: 650.w,
           height: 12.h,

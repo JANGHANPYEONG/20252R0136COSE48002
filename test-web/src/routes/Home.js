@@ -1,12 +1,14 @@
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
-import React from 'react';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
-import { useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
 
 import home1 from '../src_assets/home1.png';
 import home2 from '../src_assets/home2.png';
@@ -14,6 +16,10 @@ import home3 from '../src_assets/home3.png';
 import home4 from '../src_assets/home4.png';
 import home5 from '../src_assets/home5.png';
 import home6 from '../src_assets/home6.png';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const cards = [
   {
@@ -53,10 +59,25 @@ const cards = [
     link: '/Profile',
   },
 ];
+
 function Home() {
   const navigate = useNavigate();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const handleCardClick = (link) => {
-    navigate(link);
+    const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
+    if (link === '/UserManagement' && UserInfo.type !== 'Manager') {
+      setOpenSnackbar(true);
+    } else {
+      navigate(link);
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbar(false);
   };
 
   return (
@@ -77,7 +98,7 @@ function Home() {
       </Typography>
       <Grid container spacing={5}>
         {cards.map((card) => (
-          <Grid item xs={12} sm={4} md={4} lg={4} key={card}>
+          <Grid item xs={12} sm={4} md={4} lg={4} key={card.title}>
             <Box
               sx={{
                 width: `${(261 / 1920) * 100}vw`, // Relative width
@@ -113,6 +134,15 @@ function Home() {
           </Grid>
         ))}
       </Grid>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          권한이 없습니다
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

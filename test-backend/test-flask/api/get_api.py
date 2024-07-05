@@ -182,7 +182,7 @@ def getMeatDataByUserId():
         if request.method == "GET":
             db_session = current_app.db_session
             userId = request.args.get("userId")
-            if userId:
+            if not userId:
                 return jsonify("No userId in parameter"), 401
             else:
                 return _getMeatDataByUserId(db_session, userId)

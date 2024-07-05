@@ -1,11 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/custom_text_button.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/config/userfuls.dart';
+import 'package:structure/screen/meat_registration/creation_management_num_loading_screen.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
 
 class CreationManagementNumScreen extends StatelessWidget {
@@ -17,89 +18,43 @@ class CreationManagementNumScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
+      body: Container(
         child: context.watch<CreationManagementNumViewModel>().isLoading
-            ? const Text('관리번호 생성중')
+            ? const CreationManagementNumLoadingScreen()
             : Column(
                 children: [
                   SizedBox(
                     height: 550.h,
                     child: Stack(
                       children: [
+                        // 성공 이미지
                         Center(
                           child: Transform.translate(
                             offset: Offset(0, 150.h),
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  left: 0.w,
-                                  bottom: 0,
-                                  child: const Icon(
-                                    Icons.auto_awesome,
-                                    color: Palette.starIcon,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.check_circle,
-                                  size: 120.w,
-                                  color: Palette.mainBtnAtvBg,
-                                ),
-                                const Positioned(
-                                  right: 0,
-                                  child: Icon(
-                                    Icons.auto_awesome,
-                                    color: Palette.starIcon,
-                                  ),
-                                ),
-                              ],
+                            child: Image.asset(
+                              'assets/images/success.png',
+                              width: 202.w,
+                              height: 180.h,
                             ),
                           ),
                         ),
+
+                        // 성공 텍스트
                         Container(
                           margin: EdgeInsets.only(left: 46.w, top: 182.h),
-                          child: Text('관리 번호가\n생성되었습니다!', style: Palette.h2),
-                        ),
-                        Positioned(
-                          top: 182.h,
-                          right: 46.w,
-                          child: InkWell(
-                            onTap: () async => await context
-                                .read<CreationManagementNumViewModel>()
-                                .printQr(),
-                            child: Container(
-                              width: 120.w,
-                              height: 150.h,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.sp),
-                                color: Palette.mainBtnAtvBg,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.print,
-                                    size: 70.sp,
-                                    color: Colors.white,
-                                  ),
-                                  Text(
-                                    'QR코드\n인쇄',
-                                    textAlign: TextAlign.center,
-                                    style: Palette.h5White,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          child: Text('관리번호가\n생성되었습니다!', style: Palette.h2),
                         ),
                       ],
                     ),
                   ),
+
+                  // 관리 번호
                   Container(
                     width: 456.w,
                     height: 141.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Palette.dataMngCardBg,
+                      color: Palette.fieldEmptyBg,
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Text(
@@ -110,9 +65,9 @@ class CreationManagementNumScreen extends StatelessWidget {
                       style: Palette.h1,
                     ),
                   ),
-                  SizedBox(
-                    height: 35.h,
-                  ),
+                  SizedBox(height: 35.h),
+
+                  // 정보 컨테이너
                   Container(
                     width: 640.w,
                     height: 251.h,
@@ -125,10 +80,8 @@ class CreationManagementNumScreen extends StatelessWidget {
                     child: Column(children: [
                       Row(
                         children: [
-                          Text(
-                            '기본 정보',
-                            style: Palette.h5Grey,
-                          ),
+                          // 기본 정보
+                          Text('기본 정보', style: Palette.h5Grey),
                           const Spacer(),
                           ClipOval(
                             child: Image.file(
@@ -141,9 +94,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                               fit: BoxFit.fill,
                             ),
                           ),
-                          SizedBox(
-                            width: 25.w,
-                          ),
+                          SizedBox(width: 25.w),
                           Text(
                             '${context.read<CreationManagementNumViewModel>().meatModel.speciesValue}•${context.read<CreationManagementNumViewModel>().meatModel.primalValue}•${context.read<CreationManagementNumViewModel>().meatModel.secondaryValue}',
                             style: Palette.h5,
@@ -151,11 +102,10 @@ class CreationManagementNumScreen extends StatelessWidget {
                         ],
                       ),
                       const Spacer(),
+
+                      // 이력 번호
                       Row(children: [
-                        Text(
-                          '이력번호',
-                          style: Palette.h5Grey,
-                        ),
+                        Text('이력번호', style: Palette.h5Grey),
                         const Spacer(),
                         Text(
                           "${context.read<CreationManagementNumViewModel>().meatModel.traceNum}",
@@ -163,12 +113,11 @@ class CreationManagementNumScreen extends StatelessWidget {
                         )
                       ]),
                       const Spacer(),
+
+                      // 날짜
                       Row(
                         children: [
-                          Text(
-                            '날짜',
-                            style: Palette.h5Grey,
-                          ),
+                          Text('날짜', style: Palette.h5Grey),
                           const Spacer(),
                           Text(
                             Usefuls.parseDate(context
@@ -182,16 +131,29 @@ class CreationManagementNumScreen extends StatelessWidget {
                     ]),
                   ),
                   const Spacer(),
+
+                  // QR 버튼
                   Container(
-                    margin: const EdgeInsets.only(bottom: 40),
+                    margin: EdgeInsets.only(bottom: 20.h),
                     child: MainButton(
+                      onPressed: () async => await context
+                          .read<CreationManagementNumViewModel>()
+                          .printQr(),
+                      text: 'QR코드 출력하기',
+                      width: 640.w,
+                      height: 96.h,
+                      mode: 1,
+                    ),
+                  ),
+
+                  // 홈 이동 버튼
+                  Container(
+                    margin: EdgeInsets.only(bottom: 32.h),
+                    child: CustomTextButton(
+                      title: '홈으로 이동하기',
                       onPressed: () => context
                           .read<CreationManagementNumViewModel>()
                           .clickedHomeButton(context),
-                      text: '홈으로 이동',
-                      width: 658.w,
-                      height: 104.h,
-                      mode: 1,
                     ),
                   ),
                 ],
