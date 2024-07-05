@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/cam_shutter.dart';
+import 'package:structure/components/camera_guide.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/viewModel/meat_registration/camera_view_model.dart';
 
@@ -29,6 +31,15 @@ class _CameraScreenState extends State<CameraScreen> {
               : const Center(child: LoadingScreen()),
 
           // 사진 가이드
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 560.w,
+              height: 620.h,
+              child: const Positioned.fill(
+                  child: CameraGuide(color: Colors.white)),
+            ),
+          ),
 
           // 상단 메뉴 버튼
           SafeArea(
@@ -89,20 +100,15 @@ class _CameraScreenState extends State<CameraScreen> {
           SafeArea(
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                // 버튼 클릭 이벤트 정의를 위한 GestureDetector
+              child: Container(
+                padding: EdgeInsets.only(bottom: 108.h),
                 child: GestureDetector(
                   onTap: () {
                     // 사진 찍기 함수 호출
                     context.read<CameraViewModel>().takePicture(context);
                   },
-                  // 버튼으로 표시될 Icon
-                  child: const Icon(
-                    Icons.camera_enhance,
-                    size: 70,
-                    color: Colors.white,
-                  ),
+                  child: CamShutter(
+                      isReady: context.read<CameraViewModel>().canTakePicture),
                 ),
               ),
             ),

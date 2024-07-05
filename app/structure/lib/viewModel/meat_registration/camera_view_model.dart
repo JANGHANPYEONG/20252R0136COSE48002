@@ -14,6 +14,7 @@ class CameraViewModel with ChangeNotifier {
   late CameraController controller;
 
   bool isLoaded = false;
+  bool canTakePicture = false;
   bool isFlashOn = false; // Flash on/off
 
   Future<void> _initialize() async {
@@ -35,6 +36,7 @@ class CameraViewModel with ChangeNotifier {
 
     // 카메라 설정 완료
     isLoaded = controller.value.isInitialized;
+    canTakePicture = isLoaded;
     notifyListeners();
   }
 
@@ -47,8 +49,10 @@ class CameraViewModel with ChangeNotifier {
 
   /// 사진 촬영
   Future<void> takePicture(BuildContext context) async {
-    if (!controller.value.isInitialized) return; // 카메라 init 오류
-    if (controller.value.isTakingPicture) return; // 사진 찍는 중이면 취소
+    // 카메라 init 오류 또는 사진 찍는 중
+    if (!controller.value.isInitialized || controller.value.isTakingPicture) {
+      return;
+    }
 
     try {
       // 임시 저장 장소와 이름 생성
@@ -56,7 +60,7 @@ class CameraViewModel with ChangeNotifier {
       final imgPath = '${directory.path}/${DateTime.now()}.jpeg';
       // 사진 촬영
       final XFile file = await controller.takePicture();
-      file.saveTo(imgPath);
+      await file.saveTo(imgPath);
       if (context.mounted) {
         context.pop(imgPath);
       }
