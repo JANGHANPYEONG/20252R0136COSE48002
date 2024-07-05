@@ -194,7 +194,8 @@ class UserRouter {
             GoRoute(
               path: 'success-registration',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => CreationManagementNumViewModel(meatModel),
+                create: (context) =>
+                    CreationManagementNumViewModel(meatModel, userModel),
                 child: const CreationManagementNumScreen(),
               ),
             ),

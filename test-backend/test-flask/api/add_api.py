@@ -10,12 +10,13 @@ from db.db_controller import (
     create_specific_probexpt_data,
     create_specific_deep_aging_meat_data,
     create_specific_heatedmeat_seonsory_data,
-    _addSpecificPredictData
+    _addSpecificPredictData,
 )
 from utils import *
 import uuid
 
 add_api = Blueprint("add_api", __name__)
+
 
 # 특정 육류의 기본 정보 생성 및 수정
 @add_api.route("/", methods=["GET", "POST"])
@@ -56,7 +57,12 @@ def add_specific_deepAging_data():
             firestore_conn = current_app.firestore_conn
             data = request.get_json()
             print(data)
-            return create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, data), 200
+            return (
+                create_specific_deep_aging_meat_data(
+                    db_session, s3_conn, firestore_conn, data
+                ),
+                200,
+            )
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -78,8 +84,11 @@ def add_specific_sensory_eval():
             s3_conn = current_app.s3_conn
             firestore_conn = current_app.firestore_conn
             data = request.get_json()
-            return create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data), 200
-            
+            return (
+                create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data),
+                200,
+            )
+
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
