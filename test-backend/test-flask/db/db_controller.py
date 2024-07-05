@@ -225,8 +225,9 @@ def create_ProbexptData(meat_data: dict, seqno: int, id: str):
 def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
     id = data.get("id")
     meat = db_session.query(Meat).get(id)
-    if meat.statusType == 2:
-        raise Exception("No Id in Request Data")
+    if meat:
+        if meat.statusType == 2:
+            raise Exception("No Id in Request Data")
     try:
         # 1. DB merge
         new_meat = create_meat(meat_data=data, db_session=db_session)
