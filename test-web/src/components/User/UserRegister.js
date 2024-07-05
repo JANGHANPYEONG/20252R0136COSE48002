@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import Form from "react-bootstrap/Form";
-import { Button } from "react-bootstrap";
-import InputGroup from "react-bootstrap/InputGroup";
-import { auth } from "../../firebase-config";
+import React, { useState } from 'react';
+import Form from 'react-bootstrap/Form';
+import { Button } from 'react-bootstrap';
+import InputGroup from 'react-bootstrap/InputGroup';
+import { auth } from '../../firebase-config';
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
-} from "firebase/auth";
-import { apiIP } from "../../config";
+} from 'firebase/auth';
+import { apiIP } from '../../config';
 
 function UserRegister({ handleClose }) {
-  const [userId, setuserId] = useState("");
-  const [name, setname] = useState("");
+  const [userId, setuserId] = useState('');
+  const [name, setname] = useState('');
   const [createdAt, setCreatedAt] = useState(
     new Date().toISOString().slice(0, -5)
   );
@@ -20,12 +20,12 @@ function UserRegister({ handleClose }) {
     new Date().toISOString().slice(0, -5)
   );
   const [loginAt, setloginAt] = useState(new Date().toISOString().slice(0, -5));
-  const [password, setpassword] = useState("");
-  const [company, setcompany] = useState("");
-  const [jobTitle, setjobTitle] = useState("");
-  const [homeAddr, sethomeAddr] = useState("");
-  const [alarm, setalarm] = useState("");
-  const [type, settype] = useState("");
+  const [password, setpassword] = useState('');
+  const [company, setcompany] = useState('');
+  const [jobTitle, setjobTitle] = useState('');
+  const [homeAddr, sethomeAddr] = useState('');
+  const [alarm, setalarm] = useState('');
+  const [type, settype] = useState('');
   const [validated, setValidated] = useState(false);
 
   const isEmailValid = (userId) => {
@@ -40,9 +40,9 @@ function UserRegister({ handleClose }) {
 
   const generateTempPassword = () => {
     const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const length = 10;
-    let tempPassword = "";
+    let tempPassword = '';
     for (let i = 0; i < length; i++) {
       tempPassword += characters.charAt(
         Math.floor(Math.random() * characters.length)
@@ -52,7 +52,7 @@ function UserRegister({ handleClose }) {
   };
 
   const isFormValid = () => {
-    return isEmailValid(userId) && isNameValid(name) && type !== "";
+    return isEmailValid(userId) && isNameValid(name) && type !== '';
   };
 
   const handleSubmit = async (event) => {
@@ -84,9 +84,9 @@ function UserRegister({ handleClose }) {
         const registrationResponse = await fetch(
           `http://${apiIP}/user/register`,
           {
-            method: "POST",
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify(toJson),
           }
@@ -102,15 +102,15 @@ function UserRegister({ handleClose }) {
           await sendPasswordResetEmail(auth, userId);
 
           // Now you can handle the successful registration
-          console.log("User registered successfully");
+          console.log('User registered successfully');
           handleClose(); // Close the registration form
         } else {
           // Handle registration failure
-          console.error("User registration failed");
+          console.error('User registration failed');
         }
       } catch (error) {
         // Handle error during Firebase authentication and registration
-        console.error("Error during registration:", error);
+        console.error('Error during registration:', error);
       }
     }
     setValidated(true);
@@ -126,14 +126,14 @@ function UserRegister({ handleClose }) {
       console.log(response);
       if (response.ok) {
         setIsEmailAvailable(true);
-        console.log("OK");
+        console.log('OK');
       } else {
         setIsEmailAvailable(false);
-        console.log("NO");
+        console.log('NO');
       }
     } catch (error) {
       setIsEmailAvailable(true);
-      console.log("NO");
+      console.log('NO');
     }
     setShowifduplicate(true);
   };
@@ -156,7 +156,7 @@ function UserRegister({ handleClose }) {
             <Button
               onClick={handleDuplicateCheck}
               style={{
-                background: "#0F3659",
+                background: '#0F3659',
               }}
             >
               중복 확인
@@ -231,8 +231,8 @@ function UserRegister({ handleClose }) {
               type="submit"
               onClick={handleSubmit}
               style={{
-                background: "#0F3659",
-                width: "150px",
+                background: '#0F3659',
+                width: '150px',
               }}
               disabled={!isFormValid() || !isEmailAvailable}
             >

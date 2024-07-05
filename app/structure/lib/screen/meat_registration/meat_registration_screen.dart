@@ -14,6 +14,7 @@ import 'package:structure/config/pallete.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/viewModel/meat_registration/meat_registration_view_model.dart';
 import 'package:structure/components/main_button.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 
 class MeatRegistrationScreen extends StatefulWidget {
   final MeatModel meatModel;
@@ -142,9 +143,13 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                                   height: 50.h,
                                 ),
                                 MainButton(
-                                  onPressed: () => context
-                                      .read<MeatRegistrationViewModel>()
-                                      .clickedSaveButton(context),
+                                  onPressed: () async {
+                                    context
+                                        .read<MeatRegistrationViewModel>()
+                                        .clickedSaveButton(context);
+                                    await LocalDataSource.deleteLocalData(
+                                        widget.meatModel.userId!);
+                                  },
                                   text: '관리번호 만들기',
                                   width: 282.w,
                                   height: 96.h,

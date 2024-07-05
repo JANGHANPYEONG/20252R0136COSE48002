@@ -20,6 +20,7 @@ export default function DelWarningModal({
   };
 
   // 삭제 API 호출함수
+
   const onDelete = async (req) => {
     await fetch(`http://${apiIP}/meat/delete/`, {
       method: 'DELETE',

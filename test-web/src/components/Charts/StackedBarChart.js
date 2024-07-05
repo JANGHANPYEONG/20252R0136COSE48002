@@ -5,11 +5,11 @@ import { useTheme } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { useStackedBarFetch } from '../../API/listCharts/getStackedBarSWR';
 
-const StackedBarChart = ({startDate,endDate}) => {
+const StackedBarChart = ({ startDate, endDate }) => {
   const theme = useTheme();
   const line = theme.palette.divider;
   //누적 바 차트 부위 별 색
-  const stackColors  = [ 
+  const stackColors = [
     theme.palette.success.light,
     theme.palette.primary.main,
     theme.palette.warning.main,
@@ -34,22 +34,24 @@ const StackedBarChart = ({startDate,endDate}) => {
     const porkData = data['pork_counts_by_primal_value'];
     // [{name:'부위 별 이름', data : '부위 별 개수'}, ... ] 형태로 데이터 전처리
     let seriesArr = [];
-    categories.map((c)=>{
+    categories.map((c) => {
       seriesArr = [
-          ...seriesArr,
-          {
-            name : c,
-            data : [(cattleData[c]!==undefined) ? cattleData[c] : 0, 
-                      (porkData[c]!==undefined) ? porkData[c] : 0],
-          }
-        ];
+        ...seriesArr,
+        {
+          name: c,
+          data: [
+            cattleData[c] !== undefined ? cattleData[c] : 0,
+            porkData[c] !== undefined ? porkData[c] : 0,
+          ],
+        },
+      ];
     });
-    // series에 저장 
+    // series에 저장
     setSeries(seriesArr);
-  }
+  };
 
   // 누적 바 데이터 API fetch
-  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate) ;
+  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
   console.log('stacked bar chart fetch 결과:', data);
 
   // fetch한 데이터 parsing 함수 호출
@@ -58,8 +60,8 @@ const StackedBarChart = ({startDate,endDate}) => {
       processStackedBarData(data);
     }
   }, [data]);
-  
-  // stacked bar 스타일 
+
+  // stacked bar 스타일
   const [options, setOptions] = useState(columnChartOptions);
   useEffect(() => {
     setOptions((prevState) => ({
@@ -83,13 +85,13 @@ const StackedBarChart = ({startDate,endDate}) => {
         borderColor: line,
       },
       tooltip: {
-        theme: "light",
-      },  
+        theme: 'light',
+      },
     }));
   }, []);
- 
+
   return (
-    <div id="chart" style={{ backgroundColor: "white", borderRadius: "5px" }}>
+    <div id="chart" style={{ backgroundColor: 'white', borderRadius: '5px' }}>
       <ReactApexChart
         type="bar"
         options={options}
@@ -109,22 +111,24 @@ const columnChartOptions = {
     height: 350,
     stacked: true,
     toolbar: {
-      show: true
+      show: true,
     },
     zoom: {
-      enabled: true
-    }
+      enabled: true,
+    },
   },
-  responsive: [{
-    breakpoint: 480,
-    options: {
-      legend: {
-        position: 'bottom',
-        offsetX: -10,
-        offsetY: 0
-      }
-    }
-  }],
+  responsive: [
+    {
+      breakpoint: 480,
+      options: {
+        legend: {
+          position: 'bottom',
+          offsetX: -10,
+          offsetY: 0,
+        },
+      },
+    },
+  ],
   plotOptions: {
     bar: {
       horizontal: false,
@@ -134,10 +138,10 @@ const columnChartOptions = {
           enabled: true,
           style: {
             fontSize: '13px',
-            fontWeight: 900
-          }
-        }
-      }
+            fontWeight: 900,
+          },
+        },
+      },
     },
   },
   dataLabels: {
@@ -146,25 +150,22 @@ const columnChartOptions = {
   stroke: {
     show: true,
     width: 8,
-    colors: ["transparent"],
+    colors: ['transparent'],
   },
   xaxis: {
-    categories: [
-      "소",
-      "돼지",
-    ],
+    categories: ['소', '돼지'],
   },
   yaxis: {
     title: {
-      text: "개",
+      text: '개',
     },
   },
   legend: {
     position: 'right',
-    offsetY: 40
+    offsetY: 40,
   },
   fill: {
-    opacity: 1
+    opacity: 1,
   },
   tooltip: {
     y: {
@@ -184,7 +185,7 @@ const columnChartOptions = {
     markers: {
       width: 16,
       height: 16,
-      radius: "50%",
+      radius: '50%',
       offsexX: 2,
       offsexY: 2,
     },
@@ -195,4 +196,17 @@ const columnChartOptions = {
   },
 };
 
-const categories = ["안심", "등심","목심","앞다리","갈비", "채끝","우둔", "설도", "양지",  "사태","삼겹살","뒷다리",];
+const categories = [
+  '안심',
+  '등심',
+  '목심',
+  '앞다리',
+  '갈비',
+  '채끝',
+  '우둔',
+  '설도',
+  '양지',
+  '사태',
+  '삼겹살',
+  '뒷다리',
+];

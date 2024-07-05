@@ -162,8 +162,8 @@ class Palette {
       fontSize: 30.sp,
       fontWeight: FontWeight.w600,
       color: const Color(0xff4a4a4a));
-  static TextStyle dialogRightBtnTitle =
-      TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w600);
+  static TextStyle dialogRightBtnTitle = TextStyle(
+      fontSize: 30.sp, fontWeight: FontWeight.w600, color: Colors.white);
 
   static TextStyle completeText = TextStyle(
       fontSize: 20.sp,

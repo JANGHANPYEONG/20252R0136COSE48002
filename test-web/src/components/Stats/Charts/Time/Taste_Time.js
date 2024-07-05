@@ -1,6 +1,6 @@
-import ApexCharts from "react-apexcharts";
-import React, { useEffect, useState } from "react";
-import { apiIP } from "../../../../config";
+import ApexCharts from 'react-apexcharts';
+import React, { useEffect, useState } from 'react';
+import { apiIP } from '../../../../config';
 
 export default function Taste_Time({ startDate, endDate }) {
   useEffect(() => {
@@ -11,12 +11,12 @@ export default function Taste_Time({ startDate, endDate }) {
         );
 
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error('Network response was not ok');
         }
         const data = await response.json();
 
         // Calculate the average values for each property (bitterness, richness, sourness, umami)
-        const properties = ["bitterness", "richness", "sourness", "umami"];
+        const properties = ['bitterness', 'richness', 'sourness', 'umami'];
         const sum = {};
         const counts = {};
         for (const time in data) {
@@ -46,32 +46,32 @@ export default function Taste_Time({ startDate, endDate }) {
         // Update the chart data
         setSeries([
           {
-            name: "Bitterness",
+            name: 'Bitterness',
             data: Object.keys(averages).map((time) =>
               parseFloat(averages[time].bitterness)
             ),
           },
           {
-            name: "Richness",
+            name: 'Richness',
             data: Object.keys(averages).map((time) =>
               parseFloat(averages[time].richness)
             ),
           },
           {
-            name: "Sourness",
+            name: 'Sourness',
             data: Object.keys(averages).map((time) =>
               parseFloat(averages[time].sourness)
             ),
           },
           {
-            name: "Umami",
+            name: 'Umami',
             data: Object.keys(averages).map((time) =>
               parseFloat(averages[time].umami)
             ),
           },
         ]);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
 
@@ -80,25 +80,25 @@ export default function Taste_Time({ startDate, endDate }) {
 
   const [series, setSeries] = useState([
     {
-      name: "Bitterness",
+      name: 'Bitterness',
       data: [], // We will update this with the actual data points later
     },
     {
-      name: "Richness",
+      name: 'Richness',
       data: [], // We will update this with the actual data points later
     },
     {
-      name: "Sourness",
+      name: 'Sourness',
       data: [], // We will update this with the actual data points later
     },
     {
-      name: "Umami",
+      name: 'Umami',
       data: [], // We will update this with the actual data points later
     },
   ]);
 
   const [averages, setAverages] = useState({});
-  console.log("key", averages);
+  console.log('key', averages);
 
   // Initialize propertyMin and propertyMax with the first data point values
   const firstTime = Object.keys(averages)[0];
@@ -120,10 +120,10 @@ export default function Taste_Time({ startDate, endDate }) {
   const options = {
     chart: {
       height: 350,
-      type: "line",
+      type: 'line',
       dropShadow: {
         enabled: true,
-        color: "#000",
+        color: '#000',
         top: 18,
         left: 7,
         blur: 10,
@@ -133,21 +133,21 @@ export default function Taste_Time({ startDate, endDate }) {
         show: false,
       },
     },
-    colors: ["#77B6EA", "#545454", "#F44336", "#4CAF50"],
+    colors: ['#77B6EA', '#545454', '#F44336', '#4CAF50'],
     dataLabels: {
       enabled: true,
     },
     stroke: {
-      curve: "smooth",
+      curve: 'smooth',
     },
     title: {
-      text: "숙성 시간에 따른 맛 데이터 변화",
-      align: "left",
+      text: '숙성 시간에 따른 맛 데이터 변화',
+      align: 'left',
     },
     grid: {
-      borderColor: "#e7e7e7",
+      borderColor: '#e7e7e7',
       row: {
-        colors: ["#f3f3f3", "transparent"],
+        colors: ['#f3f3f3', 'transparent'],
         opacity: 0.5,
       },
     },
@@ -157,12 +157,12 @@ export default function Taste_Time({ startDate, endDate }) {
     xaxis: {
       categories: Object.keys(averages).map((time) => time),
       title: {
-        text: "숙성 시간",
+        text: '숙성 시간',
       },
     },
     yaxis: {
       title: {
-        text: "맛 데이터",
+        text: '맛 데이터',
       },
       min:
         Math.min(
@@ -184,8 +184,8 @@ export default function Taste_Time({ startDate, endDate }) {
     },
 
     legend: {
-      position: "top",
-      horizontalAlign: "right",
+      position: 'top',
+      horizontalAlign: 'right',
       floating: true,
       offsetY: -25,
       offsetX: -5,

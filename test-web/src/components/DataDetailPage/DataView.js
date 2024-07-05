@@ -1,37 +1,37 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 // react-bootstrap
-import Card from "react-bootstrap/Card";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+import Card from 'react-bootstrap/Card';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 // modal component
-import InputTransitionsModal from "./InputWarningComp";
+import InputTransitionsModal from './InputWarningComp';
 // mui
-import { TextField, Autocomplete } from "@mui/material";
+import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from "./tablesComps/rawTable";
-import ProcessedTable from "./tablesComps/processedTable";
-import HeatTable from "./tablesComps/heatTable";
-import LabTable from "./tablesComps/labTable";
-import ApiTable from "./tablesComps/apiTable";
+import RawTable from './tablesComps/rawTable';
+import ProcessedTable from './tablesComps/processedTable';
+import HeatTable from './tablesComps/heatTable';
+import LabTable from './tablesComps/labTable';
+import ApiTable from './tablesComps/apiTable';
 // import timezone
-import { TIME_ZONE } from "../../config";
-import Spinner from "react-bootstrap/Spinner";
+import { TIME_ZONE } from '../../config';
+import Spinner from 'react-bootstrap/Spinner';
 // import update APIs
-import updateHeatedData from "../../API/update/updateHeatedData";
-import updateProbexptData from "../../API/update/updateProbexptData";
-import updateProcessedData from "../../API/update/updateProcessedData";
-import RestrictedModal from "./restrictedModal";
+import updateHeatedData from '../../API/update/updateHeatedData';
+import updateProbexptData from '../../API/update/updateProbexptData';
+import updateProcessedData from '../../API/update/updateProcessedData';
+import RestrictedModal from './restrictedModal';
 // import card
-import QRInfoCard from "./cardComps/QRInfoCard";
-import MeatImgsCard from "./cardComps/MeatImgsCard";
-import { computePeriod } from "./computePeriod";
+import QRInfoCard from './cardComps/QRInfoCard';
+import MeatImgsCard from './cardComps/MeatImgsCard';
+import { computePeriod } from './computePeriod';
 
-const navy = "#0F3659";
+const navy = '#0F3659';
 
 function DataView({ dataProps }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageOffset = searchParams.get("pageOffset");
+  const pageOffset = searchParams.get('pageOffset');
 
   //dataProps로 부터 properties destruct
   const {
@@ -61,12 +61,12 @@ function DataView({ dataProps }) {
   }, []);
 
   // 처리육 및 실험 회차 토글
-  const [processed_toggle, setProcessedToggle] = useState("1회");
-  const [processedToggleValue, setProcessedToggleValue] = useState("");
+  const [processed_toggle, setProcessedToggle] = useState('1회');
+  const [processedToggleValue, setProcessedToggleValue] = useState('');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
-  const [heatedToggleValue, setHeatedToggleValue] = useState("");
+  const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
-  const [labToggleValue, setLabToggleValue] = useState("");
+  const [labToggleValue, setLabToggleValue] = useState('');
 
   // "원육","처리육","가열육","실험실+전자혀","축산물 이력",별 수정 및 추가 input text
   const [rawInput, setRawInput] = useState({});
@@ -91,7 +91,7 @@ function DataView({ dataProps }) {
         t.forEach((f) => {
           setInputFields[index].setter((currentField) => ({
             ...currentField,
-            [f]: "",
+            [f]: '',
           }));
         });
       } else {
@@ -118,19 +118,19 @@ function DataView({ dataProps }) {
       .toISOString()
       .slice(0, -5);
     // period 계산
-    const elapsedHour = computePeriod(apiInput["butcheryYmd"]);
+    const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
-    const userId = JSON.parse(localStorage.getItem("UserInfo"))["userId"];
+    const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
       updateHeatedData(heatInput[i], i, id, createdDate, userId, elapsedHour)
         .then((response) => {
-          console.log("가열육 수정 POST요청 성공:", response);
+          console.log('가열육 수정 POST요청 성공:', response);
         })
         .catch((error) => {
           // 오류 발생 시의 처리
-          console.error("가열육 수정 POST 요청 오류:", error);
+          console.error('가열육 수정 POST 요청 오류:', error);
         });
     }
 
@@ -138,11 +138,11 @@ function DataView({ dataProps }) {
     for (let i = 0; i < len; i++) {
       updateProbexptData(labInput[i], i, id, createdDate, userId, elapsedHour)
         .then((response) => {
-          console.log("실험실 수정 POST요청 성공:", response);
+          console.log('실험실 수정 POST요청 성공:', response);
         })
         .catch((error) => {
           // 오류 발생 시의 처리
-          console.error("실험실 수정 POST 요청 오류:", error);
+          console.error('실험실 수정 POST 요청 오류:', error);
         });
     }
 
@@ -160,11 +160,11 @@ function DataView({ dataProps }) {
         elapsedHour
       )
         .then((response) => {
-          console.log("처리육 수정 POST요청 성공:", response);
+          console.log('처리육 수정 POST요청 성공:', response);
         })
         .catch((error) => {
           // 오류 발생 시의 처리
-          console.error("처리육 수정 POST 요청 오류:", error);
+          console.error('처리육 수정 POST 요청 오류:', error);
         });
     }
   };
@@ -182,7 +182,7 @@ function DataView({ dataProps }) {
     if (idx === 1) {
       // 해당 딥에에징 회차의 이미지가 입력되어있지 않으면 경고 창 띄우기
       if (imgArr[valueIdx + 1] === null || imgArr[valueIdx + 1] === undefined) {
-        console.log("처리육 이미지를 먼저 업로드 하세요!");
+        console.log('처리육 이미지를 먼저 업로드 하세요!');
         setModal(true);
         return <InputTransitionsModal setModal={setModal} />;
       }
@@ -196,7 +196,7 @@ function DataView({ dataProps }) {
         ...currentField,
         [valueIdx]: temp,
       }));
-      console.log("result", temp, valueIdx);
+      console.log('result', temp, valueIdx);
     }
   };
 
@@ -219,7 +219,7 @@ function DataView({ dataProps }) {
   const [isUploadingDone, setIsUploadingDone] = useState(true);
 
   return (
-    <div style={{ width: "100%", marginTop: "40px" }}>
+    <div style={{ width: '100%', marginTop: '40px' }}>
       {!isUploadingDone && (
         <div style={divStyle.loadingBackground}>
           <Spinner />
@@ -238,14 +238,14 @@ function DataView({ dataProps }) {
         {/* 1. 관리번호 육류에 대한 사진*/}
         <MeatImgsCard
           edited={edited}
-          page={"수정및조회"}
+          page={'수정및조회'}
           raw_img_path={raw_img_path}
           processed_img_path={processed_img_path}
           setIsUploadingDone={setIsUploadingDone}
           id={id}
           raw_data={raw_data}
           setIsLimitedToChangeImage={setIsLimitedToChangeImage}
-          butcheryYmd={api_data["butcheryYmd"]}
+          butcheryYmd={api_data['butcheryYmd']}
           processedInput={processedInput}
           processed_data={processed_data}
           processedMinute={processedMinute}
@@ -261,10 +261,10 @@ function DataView({ dataProps }) {
         {/* 3. 세부 데이터 정보*/}
         <Card
           style={{
-            width: "27vw",
-            margin: "0px 10px",
+            width: '27vw',
+            margin: '0px 10px',
             boxShadow: 24,
-            height: "65vh",
+            height: '65vh',
           }}
         >
           <Tabs
@@ -273,7 +273,7 @@ function DataView({ dataProps }) {
             defaultActiveKey="rawMeat"
             aria-label="tabs"
             className="mb-3"
-            style={{ backgroundColor: "white", width: "100%" }}
+            style={{ backgroundColor: 'white', width: '100%' }}
           >
             <Tab value="raw" eventKey="rawMeat" title="원육">
               <RawTable data={rawInput} />
@@ -282,10 +282,10 @@ function DataView({ dataProps }) {
               value="proc"
               eventKey="processedMeat"
               title="처리육"
-              style={{ backgroundColor: "white" }}
+              style={{ backgroundColor: 'white' }}
             >
               <Autocomplete
-                id={"controllable-states-processed"}
+                id={'controllable-states-processed'}
                 label="처리상태"
                 value={processed_toggle}
                 onChange={(event, newValue) => {
@@ -297,7 +297,7 @@ function DataView({ dataProps }) {
                 }}
                 options={options.slice(1)}
                 size="small"
-                sx={{ width: "fit-content", marginBottom: "10px" }}
+                sx={{ width: 'fit-content', marginBottom: '10px' }}
                 renderInput={(params) => <TextField {...params} />}
               />
               <ProcessedTable
@@ -317,7 +317,7 @@ function DataView({ dataProps }) {
               value="heat"
               eventKey="heatedMeat"
               title="가열육"
-              style={{ backgroundColor: "white" }}
+              style={{ backgroundColor: 'white' }}
             >
               <Autocomplete
                 value={heatedToggle}
@@ -329,9 +329,9 @@ function DataView({ dataProps }) {
                 onInputChange={(event, newInputValue) => {
                   setHeatedToggleValue(newInputValue);
                 }}
-                id={"controllable-states-heated"}
+                id={'controllable-states-heated'}
                 options={options}
-                sx={{ width: "fit-content", marginBottom: "10px" }}
+                sx={{ width: 'fit-content', marginBottom: '10px' }}
                 renderInput={(params) => (
                   <TextField {...params} label="처리상태" />
                 )}
@@ -348,7 +348,7 @@ function DataView({ dataProps }) {
               value="lab"
               eventKey="labData"
               title="실험실"
-              style={{ backgroundColor: "white" }}
+              style={{ backgroundColor: 'white' }}
             >
               <Autocomplete
                 value={labToggle}
@@ -360,9 +360,9 @@ function DataView({ dataProps }) {
                 onInputChange={(event, newInputValue) => {
                   setLabToggleValue(newInputValue);
                 }}
-                id={"controllable-states-api"}
+                id={'controllable-states-api'}
                 options={options}
-                sx={{ width: "fit-content", marginBottom: "10px" }}
+                sx={{ width: 'fit-content', marginBottom: '10px' }}
                 renderInput={(params) => (
                   <TextField {...params} label="처리상태" />
                 )}
@@ -379,7 +379,7 @@ function DataView({ dataProps }) {
               value="api"
               eventKey="api"
               title="축산물 이력"
-              style={{ backgroundColor: "white" }}
+              style={{ backgroundColor: 'white' }}
             >
               <ApiTable api_data={api_data} />
             </Tab>
@@ -408,147 +408,147 @@ function DataView({ dataProps }) {
 export default DataView;
 
 // 토글 버튼
-let options = ["원육"];
+let options = ['원육'];
 
-const rawField = ["marbling", "color", "texture", "surfaceMoisture", "overall"];
+const rawField = ['marbling', 'color', 'texture', 'surfaceMoisture', 'overall'];
 const deepAgingField = [
-  "marbling",
-  "color",
-  "texture",
-  "surfaceMoisture",
-  "overall",
-  "createdAt",
-  "seqno",
-  "minute",
-  "period",
+  'marbling',
+  'color',
+  'texture',
+  'surfaceMoisture',
+  'overall',
+  'createdAt',
+  'seqno',
+  'minute',
+  'period',
 ];
 const heatedField = [
-  "flavor",
-  "juiciness",
-  "tenderness",
-  "umami",
-  "palability",
+  'flavor',
+  'juiciness',
+  'tenderness',
+  'umami',
+  'palability',
 ];
 const labField = [
-  "L",
-  "a",
-  "b",
-  "DL",
-  "CL",
-  "RW",
-  "ph",
-  "WBSF",
-  "cardepsin_activity",
-  "MFI",
-  "sourness",
-  "bitterness",
-  "umami",
-  "richness",
+  'L',
+  'a',
+  'b',
+  'DL',
+  'CL',
+  'RW',
+  'ph',
+  'WBSF',
+  'cardepsin_activity',
+  'MFI',
+  'sourness',
+  'bitterness',
+  'umami',
+  'richness',
 ];
 const apiField = [
-  "birthYmd",
-  "butcheryYmd",
-  "farmAddr",
-  "farmerNm",
-  "gradeNm",
-  "primalValue",
-  "secondaryValue",
-  "sexType",
-  "species",
-  "statusType",
-  "traceNum",
+  'birthYmd',
+  'butcheryYmd',
+  'farmAddr',
+  'farmerNm',
+  'gradeNm',
+  'primalValue',
+  'secondaryValue',
+  'sexType',
+  'species',
+  'statusType',
+  'traceNum',
 ];
 
 const style = {
   singleDataWrapper: {
-    marginTop: "40px",
-    display: "flex",
-    justifyContent: "space-between",
+    marginTop: '40px',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   editBtnWrapper: {
-    paddingTop: "0px",
-    width: "100%",
-    display: "flex",
-    justifyContent: "end",
-    marginTop: "auto",
-    borderBottomLeftRadius: "10px",
-    borderBottomRightRadius: "10px",
+    paddingTop: '0px',
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'end',
+    marginTop: 'auto',
+    borderBottomLeftRadius: '10px',
+    borderBottomRightRadius: '10px',
   },
   dataFieldColumn: {
-    backgroundColor: "#9e9e9e",
-    height: "33px",
-    borderRight: "1px solid rgb(174, 168, 168)",
-    borderBottom: "1px solid #fafafa",
-    padding: "4px 5px",
+    backgroundColor: '#9e9e9e',
+    height: '33px',
+    borderRight: '1px solid rgb(174, 168, 168)',
+    borderBottom: '1px solid #fafafa',
+    padding: '4px 5px',
   },
   dataExpColumn: {
-    backgroundColor: "#757575",
-    height: "33px",
-    borderRight: "1px solid rgb(174, 168, 168)",
-    borderBottom: "1px solid #fafafa",
-    padding: "4px 5px",
-    color: "white",
+    backgroundColor: '#757575',
+    height: '33px',
+    borderRight: '1px solid rgb(174, 168, 168)',
+    borderBottom: '1px solid #fafafa',
+    padding: '4px 5px',
+    color: 'white',
   },
   dataFieldContainer: {
-    backgroundColor: "#eeeeee",
-    height: "100%",
-    borderRight: "1px solid rgb(174, 168, 168)",
-    borderBottom: "1px solid #fafafa",
-    padding: "4px 5px",
+    backgroundColor: '#eeeeee',
+    height: '100%',
+    borderRight: '1px solid rgb(174, 168, 168)',
+    borderBottom: '1px solid #fafafa',
+    padding: '4px 5px',
   },
   dataContainer: {
-    height: "33px",
-    borderBottom: "0.8px solid #e0e0e0",
-    width: "",
-    borderRight: "0.8px solid #e0e0e0",
-    padding: "4px 5px",
+    height: '33px',
+    borderBottom: '0.8px solid #e0e0e0',
+    width: '',
+    borderRight: '0.8px solid #e0e0e0',
+    padding: '4px 5px',
   },
   completeBtn: {
     border: `1px solid ${navy}`,
     color: `${navy}`,
-    borderRadius: "5px",
-    width: "60px",
-    height: "35px",
+    borderRadius: '5px',
+    width: '60px',
+    height: '35px',
   },
   editBtn: {
     backgroundColor: `${navy}`,
-    border: "none",
-    color: "white",
-    borderRadius: "5px",
-    width: "60px",
-    height: "35px",
+    border: 'none',
+    color: 'white',
+    borderRadius: '5px',
+    width: '60px',
+    height: '35px',
   },
 };
 const divStyle = {
   currDiv: {
-    height: "fit-content",
-    width: "fit-content",
-    padding: "10px",
-    borderRadius: "5px",
+    height: 'fit-content',
+    width: 'fit-content',
+    padding: '10px',
+    borderRadius: '5px',
     color: navy,
   },
   notCurrDiv: {
-    height: "100%",
-    width: "fit-content",
-    borderRadius: "5px",
-    padding: "10px",
-    color: "#b0bec5",
+    height: '100%',
+    width: 'fit-content',
+    borderRadius: '5px',
+    padding: '10px',
+    color: '#b0bec5',
   },
   loadingBackground: {
-    position: "absolute",
-    width: "100vw",
-    height: "100vh",
+    position: 'absolute',
+    width: '100vw',
+    height: '100vh',
     top: 0,
     left: 0,
-    backgroundColor: "#ffffffb7",
+    backgroundColor: '#ffffffb7',
     zIndex: 999,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
-    fontSize: "25px",
-    textAlign: "center",
+    fontSize: '25px',
+    textAlign: 'center',
   },
 };

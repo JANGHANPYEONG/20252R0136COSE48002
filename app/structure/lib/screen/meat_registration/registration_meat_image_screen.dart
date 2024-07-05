@@ -33,19 +33,16 @@ class RegistrationMeatImageScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                height: 30.h,
-              ),
+              SizedBox(height: 30.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // 촬영 날짜
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('촬영 날짜', style: Palette.h4),
-                      SizedBox(
-                        height: 20.h,
-                      ),
+                      SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
                         height: 78.h,
@@ -67,13 +64,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                     ],
                   ),
                   SizedBox(width: 10.w),
+
+                  // 촬영자
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('촬영자', style: Palette.h4),
-                      SizedBox(
-                        height: 20.h,
-                      ),
+                      SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
                         height: 78.h,
@@ -88,7 +85,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             context
                                 .watch<RegistrationMeatImageViewModel>()
                                 .userName,
-                            style: Palette.h5,
+                            style: Palette.h4,
                           ),
                         ),
                       ),
@@ -96,16 +93,12 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 30.h,
-              ),
+              SizedBox(height: 30.h),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('단면 촬영 사진', style: Palette.h4),
-                  SizedBox(
-                    height: 20.h,
-                  ),
+                  SizedBox(height: 20.h),
                   // 촬영 사진
                   context.watch<RegistrationMeatImageViewModel>().imagePath !=
                           null
@@ -115,6 +108,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             SizedBox(
                               width: 640.w,
                               height: 653.h,
+
                               // 이미지 할당
                               child: context
                                               .watch<
@@ -164,6 +158,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                       fit: BoxFit.cover,
                                     ),
                             ),
+
                             // 삭제 버튼
                             Positioned(
                               right: 15.h,
@@ -176,7 +171,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                 child: IconButton(
                                     onPressed: () => context
                                         .read<RegistrationMeatImageViewModel>()
-                                        .deleteImage(),
+                                        .deleteImage(context),
                                     iconSize: 55.h,
                                     icon: const Icon(
                                       Icons.delete_outline_outlined,
@@ -186,11 +181,12 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             )
                           ],
                         )
+
                       // 이미지 삽입 버튼
                       : InkWell(
                           onTap: () => context
                               .read<RegistrationMeatImageViewModel>()
-                              .pickImage(),
+                              .pickImage(context),
                           child: DottedBorder(
                             radius: Radius.circular(20.sp),
                             borderType: BorderType.RRect,
@@ -211,6 +207,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+
               // 저장 버튼
               Container(
                 margin: EdgeInsets.only(bottom: 40.h),
@@ -219,9 +216,16 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                               .watch<RegistrationMeatImageViewModel>()
                               .imagePath !=
                           null
-                      ? () async => await context
-                          .read<RegistrationMeatImageViewModel>()
-                          .saveMeatData(context)
+                      ? () async {
+                          await context
+                              .read<RegistrationMeatImageViewModel>()
+                              .saveMeatData(context);
+                          if (context.mounted) {
+                            context
+                                .read<RegistrationMeatImageViewModel>()
+                                .clickedTempSaveButton(context);
+                          }
+                        }
                       : null,
                   text: context
                               .read<RegistrationMeatImageViewModel>()
@@ -239,9 +243,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
           ),
           // 로딩 화면
           context.watch<RegistrationMeatImageViewModel>().isLoading
-              ? const Center(
-                  child: LoadingScreen(),
-                )
+              ? const Center(child: LoadingScreen())
               : Container(),
         ],
       ),

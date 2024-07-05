@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
-import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 // import mui component
 import {
   ListItemButton,
@@ -13,53 +13,53 @@ import {
   IconButton,
   Toolbar,
   Tooltip,
-} from "@mui/material";
-import MuiDrawer from "@mui/material/Drawer";
-import MuiAppBar from "@mui/material/AppBar";
+} from '@mui/material';
+import MuiDrawer from '@mui/material/Drawer';
+import MuiAppBar from '@mui/material/AppBar';
 // import icons
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import LogoutIcon from "@mui/icons-material/Logout";
-import DataThresholdingIcon from "@mui/icons-material/DataThresholding";
-import StackedLineChartIcon from "@mui/icons-material/StackedLineChart";
-import GroupIcon from "@mui/icons-material/Group";
-import HomeIcon from "@mui/icons-material/Home";
-import { HiOutlineChip } from "react-icons/hi";
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import LogoutIcon from '@mui/icons-material/Logout';
+import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import GroupIcon from '@mui/icons-material/Group';
+import HomeIcon from '@mui/icons-material/Home';
+import { HiOutlineChip } from 'react-icons/hi';
 
-import DeeplantLong from "../../src_assets/Deeplant_long.webp";
-import LOGO from "../../src_assets/LOGO.png"
+import DeeplantLong from '../../src_assets/Deeplant_long.webp';
+import LOGO from '../../src_assets/LOGO.png';
 
 const mainListItems = [
   {
-    label: "홈",
+    label: '홈',
     icon: <HomeIcon sx={{ fontSize: 60 }} />,
-    path: "/Home",
+    path: '/Home',
   },
   {
-    label: "홈",
+    label: '홈',
     icon: <HomeIcon sx={{ fontSize: 30 }} />,
-    path: "/Home",
+    path: '/Home',
   },
   {
-    label: "대시보드",
+    label: '대시보드',
     icon: <DataThresholdingIcon sx={{ fontSize: 30 }} />,
-    path: "/DataManage",
+    path: '/DataManage',
   },
   {
-    label: "데이터 예측",
+    label: '데이터 예측',
     icon: <HiOutlineChip style={{ fontSize: 30 }} />,
-    path: "/PA",
+    path: '/PA',
   },
   {
-    label: "통계 분석",
+    label: '통계 분석',
     icon: <StackedLineChartIcon sx={{ fontSize: 30 }} />,
-    path: "/stats",
+    path: '/stats',
   },
   {
-    label: "사용자 관리",
+    label: '사용자 관리',
     icon: <GroupIcon sx={{ fontSize: 30 }} />,
-    path: "/UserManagement",
+    path: '/UserManagement',
   },
 ];
 
@@ -67,26 +67,26 @@ const drawerWidth = `${(345 / 1920) * 100}vw`; // Width when drawer is open
 const defaultTheme = createTheme();
 
 const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== "open",
+  shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
-  "& .MuiDrawer-paper": {
-    position: "relative",
-    whiteSpace: "nowrap",
-    width:  drawerWidth ,
-    transition: theme.transitions.create("width", {
+  '& .MuiDrawer-paper': {
+    position: 'relative',
+    whiteSpace: 'nowrap',
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    boxSizing: "border-box",
-    backgroundColor: "#FFFFFF", //사이드바 배경
-    boxShadow:`${(5 / 1920) * 100}vw 0px ${(30 / 1080) * 100}vh 0px rgba(238, 238, 238, 0.50)`, // 사이드바 그림자
+    boxSizing: 'border-box',
+    backgroundColor: '#FFFFFF', //사이드바 배경
+    boxShadow: `${(5 / 1920) * 100}vw 0px ${(30 / 1080) * 100}vh 0px rgba(238, 238, 238, 0.50)`, // 사이드바 그림자
     ...(!open && {
-      transition: theme.transitions.create("width", {
+      transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
       width: theme.spacing(7),
-      [theme.breakpoints.up("sm")]: {
+      [theme.breakpoints.up('sm')]: {
         width: theme.spacing(8),
       },
     }),
@@ -94,20 +94,20 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
+  shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
+  transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  backgroundColor: "#FFFFFF",
-  boxShadow: "none",
+  backgroundColor: '#FFFFFF',
+  boxShadow: 'none',
   minHeight: `${(90 / 1080) * 100}vh`,
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
+    transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -118,8 +118,8 @@ function Sidebar() {
   const [open, setOpen] = React.useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const UserInfo = JSON.parse(localStorage.getItem("UserInfo"));
+  const [username, setUsername] = useState('');
+  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
   const userEmail = UserInfo.userId;
   console.log(userEmail);
   const toggleDrawer = () => {
@@ -133,10 +133,9 @@ function Sidebar() {
       // const auth = getAuth();
       // await signOut(auth);
       // console.log(response);
-      localStorage.setItem("isLoggedIn", "false");
-      navigate("/");
+      localStorage.setItem('isLoggedIn', 'false');
+      navigate('/');
       window.location.reload();
-
     } catch (error) {
       console.log(error.message);
     }
@@ -149,7 +148,7 @@ function Sidebar() {
       <AppBar position="absolute" open={open}>
         <Toolbar
           sx={{
-            pr: "24px", // keep right padding when drawer closed
+            pr: '24px', // keep right padding when drawer closed
           }}
         >
           <IconButton
@@ -157,49 +156,81 @@ function Sidebar() {
             aria-label="open drawer"
             onClick={toggleDrawer}
             sx={{
-              marginRight: "36px",
-              ...(open && { display: "none" }),
+              marginRight: '36px',
+              ...(open && { display: 'none' }),
             }}
           >
-            <img src={LOGO} alt="LOGO"  />
+            <img src={LOGO} alt="LOGO" />
           </IconButton>
           <Typography sx={{ flexGrow: 1 }}>
-          {open && (
-  <Link to="/Home">
-    <img src={DeeplantLong} alt="Deeplant Logo" />
-  </Link>
-)}
-    </Typography>
-          <IconButton onClick={() => navigate("/profile")}>
-            <div style={{ backgroundColor: '#E8E8E8', width: '40px', height: '40px',borderRadius:'12px',marginRight:'10px' }}>
-              <PersonOutlineOutlinedIcon style={{ width: '100%', height: '100%' }} />
+            {open && (
+              <Link to="/Home">
+                <img src={DeeplantLong} alt="Deeplant Logo" />
+              </Link>
+            )}
+          </Typography>
+          <IconButton onClick={() => navigate('/profile')}>
+            <div
+              style={{
+                backgroundColor: '#E8E8E8',
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                marginRight: '10px',
+              }}
+            >
+              <PersonOutlineOutlinedIcon
+                style={{ width: '100%', height: '100%' }}
+              />
             </div>
             {UserInfo && UserInfo.name ? (
-  <div style={{ display: "flex", flexDirection: "column",alignItems: "flex-start" }}>
-  <Typography component="h1" variant="h6" noWrap sx={{ flexGrow: 1,color:"black", fontSize: "21px"}}>
-    {UserInfo.name}
-  </Typography>
-  <Typography component="h1" variant="h6" noWrap sx={{ flexGrow: 1 , fontSize: "11px"}}>
-    {UserInfo.type}
-  </Typography>
-</div>
-
-) : (
-  <Typography component="span" variant="body1" sx={{ flexGrow: 1 }}>
-    로그인 필요
-  </Typography>
-)}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                }}
+              >
+                <Typography
+                  component="h1"
+                  variant="h6"
+                  noWrap
+                  sx={{ flexGrow: 1, color: 'black', fontSize: '21px' }}
+                >
+                  {UserInfo.name}
+                </Typography>
+                <Typography
+                  component="h1"
+                  variant="h6"
+                  noWrap
+                  sx={{ flexGrow: 1, fontSize: '11px' }}
+                >
+                  {UserInfo.type}
+                </Typography>
+              </div>
+            ) : (
+              <Typography component="span" variant="body1" sx={{ flexGrow: 1 }}>
+                로그인 필요
+              </Typography>
+            )}
           </IconButton>
           <IconButton onClick={logout}>
-            <div style={{ backgroundColor: '#E8E8E8', width: '40px', height: '40px',borderRadius:'12px',marginRight:'10px' }}>
+            <div
+              style={{
+                backgroundColor: '#E8E8E8',
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                marginRight: '10px',
+              }}
+            >
               <LogoutIcon style={{ width: '100%', height: '100%' }} />
             </div>
           </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
-        
-        <List component="nav" >
+        <List component="nav">
           {mainListItems.map((item) => (
             <Tooltip title={item.label} placement="right" arrow>
               <ListItemButton
@@ -209,22 +240,20 @@ function Sidebar() {
                 selected={location.pathname === item.path}
                 sx={{
                   ...(location.pathname === item.path && {
-                    "& .MuiSvgIcon-root, .MuiTypography-root": {
-                      color: "#FFFFFF",
+                    '& .MuiSvgIcon-root, .MuiTypography-root': {
+                      color: '#FFFFFF',
                     },
-                    "&.Mui-selected": {
-                      backgroundColor: "#7BD758",
+                    '&.Mui-selected': {
+                      backgroundColor: '#7BD758',
                     },
                   }),
-               
                 }}
-
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
-                <Button onClick={()=>{}}>
+                <Button onClick={() => {}}>
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ color: "textPrimary" }}
+                    primaryTypographyProps={{ color: 'textPrimary' }}
                   />
                 </Button>
               </ListItemButton>
@@ -233,15 +262,15 @@ function Sidebar() {
         </List>
         <Toolbar
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
             px: [1],
           }}
         >
           <IconButton onClick={toggleDrawer}>
-  {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-</IconButton>
+            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
         </Toolbar>
       </Drawer>
     </ThemeProvider>

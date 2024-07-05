@@ -1,7 +1,7 @@
-import ApexCharts from "react-apexcharts";
-import React, { useEffect, useState } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import { apiIP } from "../../../../config";
+import ApexCharts from 'react-apexcharts';
+import React, { useEffect, useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import { apiIP } from '../../../../config';
 
 export default function Sens_HeatedMeat({ startDate, endDate }) {
   const [chartData, setChartData] = useState([]);
@@ -9,16 +9,16 @@ export default function Sens_HeatedMeat({ startDate, endDate }) {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/statistic?type=8&start=${startDate}&end=${endDate}`
+        `http://${apiIP}/meat/statistic/sensory-stats/heated-fresh?start=${startDate}&end=${endDate}`
       );
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       setChartData(data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -42,7 +42,7 @@ export default function Sens_HeatedMeat({ startDate, endDate }) {
 
   const chartOptions = {
     chart: {
-      type: "boxPlot",
+      type: 'boxPlot',
       height: 350,
     },
   };
@@ -54,32 +54,32 @@ export default function Sens_HeatedMeat({ startDate, endDate }) {
         <ApexCharts
           series={[
             {
-              type: "boxPlot",
+              type: 'boxPlot',
               data: [
                 {
-                  x: "flavor",
+                  x: 'flavor',
                   y: calculateBoxPlotStatistics(chartData.flavor.unique_values),
                 },
                 {
-                  x: "juiciness",
+                  x: 'juiciness',
                   y: calculateBoxPlotStatistics(
                     chartData.juiciness.unique_values
                   ),
                 },
                 {
-                  x: "palability",
+                  x: 'palability',
                   y: calculateBoxPlotStatistics(
                     chartData.palability.unique_values
                   ),
                 },
                 {
-                  x: "tenderness",
+                  x: 'tenderness',
                   y: calculateBoxPlotStatistics(
                     chartData.tenderness.unique_values
                   ),
                 },
                 {
-                  x: "umami",
+                  x: 'umami',
                   y: calculateBoxPlotStatistics(chartData.umami.unique_values),
                 },
               ],
