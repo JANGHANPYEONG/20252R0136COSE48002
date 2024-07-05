@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +21,8 @@ class DeleteUserViewModel with ChangeNotifier {
 
   bool _isValidPw = false;
 
+  late BuildContext _context;
+
   /// 기존 비밀번호 유효성 검사
   String? pwValidate(String? value) {
     if (value!.isEmpty) {
@@ -37,13 +41,6 @@ class DeleteUserViewModel with ChangeNotifier {
     } else {
       return false;
     }
-  }
-
-  late BuildContext _context;
-
-  /// 회원 탈퇴 확인 dialog
-  Future<void> _showDeleteIdDialog(dynamic response) async {
-    showDeleteIdDialog(_context, popDialogCancel, popDialogConfirm);
   }
 
   /// 회원 탈퇴 cancel
@@ -65,7 +62,13 @@ class DeleteUserViewModel with ChangeNotifier {
       throw Error();
     }
 
-    _success();
+    password.clear();
+    await LocalDataSource.deleteLocalData(userModel.userId!);
+    await LocalDataSource.saveDataToLocal(
+        jsonEncode({'auto': null}), 'auto.json');
+    userModel.reset();
+    if (_context.mounted) _context.go('/sign-in');
+    _showAlert('회원 탈퇴가 성공적으로 처리되었습니다.');
   }
 
   /// 회원 탈퇴 함수
@@ -89,7 +92,9 @@ class DeleteUserViewModel with ChangeNotifier {
         isLoading = false;
         notifyListeners();
         _context = context;
-        if (_context.mounted) await _showDeleteIdDialog(_context);
+        if (_context.mounted) {
+          showDeleteIdDialog(_context, popDialogCancel, popDialogConfirm);
+        }
       } else {
         print('User does not exist.');
       }
@@ -114,13 +119,5 @@ class DeleteUserViewModel with ChangeNotifier {
         backgroundColor: Palette.alertBg,
       ),
     );
-  }
-
-  /// 비밀번호 변경 성공
-  void _success() async {
-    password.clear();
-    await LocalDataSource.deleteLocalData(userModel.userId!);
-    if (_context.mounted) _context.go('/sign-in');
-    _showAlert('회원 탈퇴가 성공적으로 처리되었습니다.');
   }
 }

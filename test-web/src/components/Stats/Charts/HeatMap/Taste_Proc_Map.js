@@ -10,7 +10,7 @@ export default function Taste_Proc_Map({ startDate, endDate }) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic?type=5&start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/probexpt-stats/processed?&start=${startDate}&end=${endDate}&seqno=1`
         );
 
         if (!response.ok) {

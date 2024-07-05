@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ApexCharts from "react-apexcharts";
 import { apiIP } from "../../../../config";
 
-export default function Sense_Heated_Corr({ startDate, endDate }) {
+export default function Sense_Proc_Corr({ startDate, endDate }) {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
@@ -10,7 +10,7 @@ export default function Sense_Heated_Corr({ startDate, endDate }) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic?type=8&start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}`
         );
 
         if (!response.ok) {
@@ -95,7 +95,7 @@ export default function Sense_Heated_Corr({ startDate, endDate }) {
       categories: xCategories, // 4가지 요소로 구성된 배열을 사용
     },
     title: {
-      text: "가열육 관능데이터 상관관계",
+      text: "처리육 관능데이터 상관관계",
     },
     grid: {
       padding: {

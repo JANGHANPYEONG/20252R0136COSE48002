@@ -39,7 +39,7 @@ class UserModel with ChangeNotifier {
     homeAdress = jsonData['homeAddr'];
     company = jsonData['company'];
     jobTitle = jsonData['jobTitle'];
-    type = '${jsonData['type']}';
+    type = jsonData['type'];
     createdAt = jsonData['createdAt'];
     alarm = jsonData['alarm'];
   }

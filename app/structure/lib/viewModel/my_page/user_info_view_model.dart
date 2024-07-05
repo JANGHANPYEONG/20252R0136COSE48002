@@ -93,7 +93,7 @@ class UserInfoViewModel with ChangeNotifier {
     context.go('/home/my-page/change-pw');
   }
 
-  ///
+  /// 회원 탈퇴 클릭
   void clickedDeleteUser(BuildContext context) {
     context.go('/home/my-page/delete-user');
   }
