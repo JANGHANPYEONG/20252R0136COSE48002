@@ -1040,37 +1040,32 @@ def create_AI_SensoryEval(db_session, meat_data: dict, seqno: int, id: str):
 
 def _deleteSpecificMeatData(db_session, s3_conn, firebase_conn, id):
     # 1. 육류 DB 체크
-    meat = db_session.query(Meat).get(id)
-
+    meat = db_session.query(Meat).filter_by(id=id).one()
     if meat is None:
         return jsonify({"msg": f"No meat data found with the given ID: {id}"}), 404
     try:
         sensory_evals = db_session.query(SensoryEval).filter_by(id=id).all()
-        heatedmeat_evals = (
-            db_session.query(HeatedmeatSensoryEval).filter_by(id=id).all()
-        )
+        heatedmeat_evals = db_session.query(HeatedmeatSensoryEval).filter_by(id=id).all()
         probexpt_datas = db_session.query(ProbexptData).filter_by(id=id).all()
         # 가열육 데이터 삭제
         for heatedmeat_eval in heatedmeat_evals:
             seqno = heatedmeat_eval.seqno
             db_session.delete(heatedmeat_eval)
             s3_conn.delete_image("heatedmeat_sensory_evals", f"{id}-{seqno}")
-            db_session.commit()
 
         # 실험 데이터 삭제
         for probexpt_data in probexpt_datas:
             db_session.delete(probexpt_data)
-        db_session.commit()
 
         # 관능 데이터 삭제 및 관능 이미지 삭제
         for sensory_eval in sensory_evals:
             seqno = sensory_eval.seqno
             db_session.delete(sensory_eval)
             s3_conn.delete_image("sensory_evals", f"{id}-{seqno}")
-            db_session.commit()
 
         # 육류 데이터 삭제
         db_session.delete(meat)
+        db_session.commit()
 
         # 큐알 삭제
         s3_conn.delete_image("qr_codes", f"{id}")
@@ -1088,28 +1083,22 @@ def _deleteSpecificDeepAgingData(db_session, s3_conn, firebase_conn, id, seqno):
     if meat is None:
         return jsonify({"msg": f"No meat data found with the given ID: {id}"}), 404
     try:
-        sensory_evals = (
-            db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).all()
-        )
-        heatedmeat_evals = (
-            db_session.query(HeatedmeatSensoryEval).filter_by(id=id, seqno=seqno).all()
-        )
-        probexpt_datas = (
-            db_session.query(ProbexptData).filter_by(id=id, seqno=seqno).all()
-        )
+        sensory_evals = db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).all()
+        heatedmeat_evals = db_session.query(HeatedmeatSensoryEval).filter_by(id=id, seqno=seqno).all()
+        probexpt_datas = db_session.query(ProbexptData).filter_by(id=id, seqno=seqno).all()
+        
         for heatedmeat_eval in heatedmeat_evals:
             db_session.delete(heatedmeat_eval)
             s3_conn.delete_image("heatedmeat_sensory_evals", f"{id}-{seqno}")
-            db_session.commit()
 
         for probexpt_data in probexpt_datas:
             db_session.delete(probexpt_data)
-        db_session.commit()
 
         for sensory_eval in sensory_evals:
             db_session.delete(sensory_eval)
             s3_conn.delete_image("sensory_evals", f"{id}-{seqno}")
-            db_session.commit()
+
+        db_session.commit()
         return jsonify({"delete Id": id, "delete Seqno": seqno}), 200
     except Exception as e:
         db_session.rollback()

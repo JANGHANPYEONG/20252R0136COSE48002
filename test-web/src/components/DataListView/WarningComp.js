@@ -20,8 +20,15 @@ export default function DelWarningModal({
   };
 
   // 삭제 API 호출함수
-  const onDelete = async (id) => {
-    await fetch(`http://${apiIP}/meat/delete?id=${id}`);
+
+  const onDelete = async (req) => {
+    await fetch(`http://${apiIP}/meat/delete/`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req),
+    });
   };
 
   // 삭제 후 reload 시 쿼리 파라미터 변수 값
@@ -33,10 +40,7 @@ export default function DelWarningModal({
 
   // 삭제 버튼 클릭 시
   const handleOnDelete = async () => {
-    for (let i = 0; i < idArr.length; i++) {
-      // 삭제 API 호출
-      await onDelete(idArr[i]);
-    }
+    await onDelete({ id: idArr });
     // 삭체 후 새로고침
     window.location.href =
       'http://' +
