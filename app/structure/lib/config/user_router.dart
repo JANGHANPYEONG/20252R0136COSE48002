@@ -23,7 +23,6 @@ import 'package:structure/screen/data_management/researcher/insertion_lab_data_s
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
 import 'package:structure/screen/home_screen.dart';
 import 'package:structure/screen/meat_registration/camera_screen.dart';
-import 'package:structure/screen/meat_registration/creation_management_num_researcher_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_meat_info_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_trace_num_screen.dart';
@@ -55,7 +54,6 @@ import 'package:structure/viewModel/data_management/researcher/insertion_lab_dat
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
 import 'package:structure/viewModel/home_view_model.dart';
 import 'package:structure/viewModel/meat_registration/camera_view_model.dart';
-import 'package:structure/viewModel/meat_registration/creation_management_num_researcher_view_model.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
 import 'package:structure/viewModel/meat_registration/freshmeat_eval_view_model.dart';
 import 'package:structure/viewModel/meat_registration/insertion_meat_info_view_model.dart';
@@ -192,21 +190,12 @@ class UserRouter {
                 ),
               ],
             ),
-            // 육류 등록 완료 페이지 - Normal User
+            // 육류 등록 완료 페이지
             GoRoute(
-              path: 'success-registration-normal',
+              path: 'success-registration',
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) => CreationManagementNumViewModel(meatModel),
                 child: const CreationManagementNumScreen(),
-              ),
-            ),
-            // 육류 등록 완료 페이지 - Researcher User
-            GoRoute(
-              path: 'success-registration-researcher',
-              builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    CreationManagementNumResearcherViewModel(meatModel),
-                child: const CreationManagementNumResearcherNumScreen(),
               ),
             ),
             // 마이 페이지

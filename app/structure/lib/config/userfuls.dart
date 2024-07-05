@@ -8,14 +8,14 @@ import 'package:intl/intl.dart';
 import 'package:structure/model/meat_model.dart';
 
 class Usefuls {
-  // 현재 날짜
+  /// 현재 날짜
   static String getCurrentDate() {
     DateTime now = DateTime.now();
     String createdAt = DateFormat('yyyy-MM-ddTHH:mm:ssZ').format(now);
     return createdAt;
   }
 
-  // period
+  /// period
   static int getMeatPeriod(MeatModel meatModel) {
     if (meatModel.butcheryYmd == null) return 0;
     DateTime butcheryDate = DateTime.parse(meatModel.butcheryYmd!);
@@ -29,6 +29,7 @@ class Usefuls {
     return period;
   }
 
+  /// 시간 차이 계산
   static int calculateDateDifference(String targetDate) {
     // 현재 로컬 시간 구하기
     DateTime now = DateTime.now();
@@ -41,7 +42,7 @@ class Usefuls {
     return difference.inDays;
   }
 
-  // 날짜 파싱
+  /// YYYY-MM-DD 형식으로 날짜 파싱
   static String parseDate(String? inputDate) {
     if (inputDate == null) return '-';
     DateTime dateTime = DateTime.parse(inputDate);

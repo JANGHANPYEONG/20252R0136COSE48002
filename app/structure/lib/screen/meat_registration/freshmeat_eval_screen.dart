@@ -60,8 +60,8 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
             children: [
               SizedBox(height: 15.h),
               SizedBox(
-                width: 600.w,
-                height: 600.h,
+                width: 640.w,
+                height: 475.h,
                 // 관능평가를 위한 이미지 할당.
                 child: context
                         .read<FreshMeatEvalViewModel>()
@@ -93,16 +93,13 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                         fit: BoxFit.cover,
                       ),
               ),
-              SizedBox(
-                height: 5.h,
-              ),
+              SizedBox(height: 63.h),
+
               // 관능평가 데이터가 입력 되었는지 체크.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 70.w,
-                  ),
+                  SizedBox(width: 70.w),
                   Icon(
                     Icons.check,
                     color: context.watch<FreshMeatEvalViewModel>().marbling > 0
@@ -137,39 +134,24 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                         ? Palette.meatRegiBtnBg
                         : Colors.transparent,
                   ),
-                  SizedBox(
-                    width: 70.w,
-                  ),
+                  SizedBox(width: 70.w),
                 ],
               ),
               Container(
-                margin: EdgeInsets.only(
-                  left: 24.w,
-                  right: 24.w,
-                ),
+                margin: EdgeInsets.only(left: 24.w, right: 24.w),
                 // tab을 이용하여 관능평가 항목을 구분.
                 child: TabBar(
                   controller: _tabController,
-                  tabs: [
-                    Tab(
-                      child: Text('마블링', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('육색', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('조직감', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('육즙', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('기호도', style: Palette.h5),
-                    ),
+                  tabs: const [
+                    Tab(child: Text('마블링')),
+                    Tab(child: Text('육색')),
+                    Tab(child: Text('조직감')),
+                    Tab(child: Text('육즙')),
+                    Tab(child: Text('기호도')),
                   ],
                   labelColor: Palette.dataMngBtndBg,
-                  labelStyle: Palette.h5,
-                  unselectedLabelStyle: Palette.h5LightGrey,
+                  labelStyle: Palette.h5Bold,
+                  unselectedLabelStyle: Palette.h5,
                   indicator: ShapeDecoration(
                     shape: Border(
                       bottom: BorderSide(
@@ -180,9 +162,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                   ),
                 ),
               ),
-              // SizedBox(
-              //   height: 10.h,
-              // ),
+
               SizedBox(
                 height: 270.h,
                 child: Consumer<FreshMeatEvalViewModel>(
@@ -200,6 +180,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                               viewModel.onChangedMarbling(value),
                         ),
                       ),
+
                       // 육색
                       Center(
                         child: PartEval(
@@ -209,6 +190,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                           onChanged: (value) => viewModel.onChangedColor(value),
                         ),
                       ),
+
                       // 조직감
                       Center(
                         child: PartEval(
@@ -217,9 +199,9 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                           value: viewModel.texture,
                           onChanged: // 이게 sliding part
                               (value) => viewModel.onChangedTexture(value),
-                          // (value) => {}
                         ),
                       ),
+
                       // 육즙
                       Center(
                         child: PartEval(
@@ -230,6 +212,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                               viewModel.onChangedSurface(value),
                         ),
                       ),
+
                       // 기호도
                       Center(
                         child: PartEval(
@@ -244,9 +227,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                   ),
                 ),
               ),
-              // SizedBox(
-              //   height: 5.h,
-              // ),
+
               // 데이터 저장 버튼
               Container(
                 margin: EdgeInsets.only(bottom: 20.h),

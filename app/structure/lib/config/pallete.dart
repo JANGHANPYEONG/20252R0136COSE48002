@@ -88,11 +88,19 @@ class Palette {
       fontSize: 24.sp,
       fontWeight: FontWeight.w400,
       color: const Color(0xff9f9f9f));
+  static TextStyle h5Bold =
+      TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600);
 
   static TextStyle mainBtnTitle = TextStyle(
       fontSize: 36.sp,
       fontWeight: FontWeight.w500,
       color: const Color(0xffffffff));
+  static TextStyle customTextBtnStyle = TextStyle(
+    fontSize: 24.sp,
+    fontWeight: FontWeight.w500,
+    color: const Color(0xff929292),
+    decoration: TextDecoration.underline,
+  );
 
   static TextStyle fieldTitle = TextStyle(
       fontSize: 24.sp,
