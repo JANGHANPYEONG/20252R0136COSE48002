@@ -8,13 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/custom_text_button.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/viewModel/meat_registration/meat_registration_view_model.dart';
 import 'package:structure/components/main_button.dart';
-import 'package:structure/dataSource/local_data_source.dart';
 
 class MeatRegistrationScreen extends StatefulWidget {
   final MeatModel meatModel;
@@ -49,9 +49,8 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
             ? const LoadingScreen()
             : Column(
                 children: [
-                  SizedBox(
-                    height: 55.h,
-                  ),
+                  SizedBox(height: 55.h),
+
                   // STEP 1 : 육류 기본정보 등록
                   InkWell(
                     onTap: () => context
@@ -64,18 +63,15 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                       imageUrl: 'assets/images/meat_info.png',
                     ),
                   ),
-                  SizedBox(
-                    height: 4.h,
-                  ),
+                  SizedBox(height: 4.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40.w),
                     child: const Divider(
                       thickness: 1,
                     ),
                   ),
-                  SizedBox(
-                    height: 4.h,
-                  ),
+                  SizedBox(height: 4.h),
+
                   // STEP 2 : 육류 단면 촬영
                   InkWell(
                       onTap: () => widget.meatModel.basicCompleted
@@ -89,18 +85,15 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         isBefore: false,
                         imageUrl: 'assets/images/meat_image.png',
                       )),
-                  SizedBox(
-                    height: 4.h,
-                  ),
+                  SizedBox(height: 4.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40.w),
                     child: const Divider(
                       thickness: 1,
                     ),
                   ),
-                  SizedBox(
-                    height: 4.h,
-                  ),
+                  SizedBox(height: 4.h),
+
                   // STEP 3 : 신선육 관능평가
                   InkWell(
                       onTap: () => widget.meatModel.freshImageCompleted
@@ -114,113 +107,42 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         isBefore: false,
                         imageUrl: 'assets/images/meat_eval.png',
                       )),
-                  SizedBox(
-                    height: 116.h,
-                  ),
-                  Container(
-                    // margin: EdgeInsets.only(bottom: 1.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  SizedBox(height: 116.h),
+
+                  // 하단 완료 버튼
+                  if (widget.meatModel.basicCompleted &&
+                      widget.meatModel.freshImageCompleted &&
+                      widget.meatModel.rawFreshCompleted)
+                    Column(
                       children: [
-                        if (widget.meatModel.basicCompleted &&
-                            widget.meatModel.freshImageCompleted &&
-                            widget.meatModel.rawFreshCompleted)
-                          Container(
-                            // padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              children: [
-                                Text('육류 등록 완료!', style: Palette.h1),
-                                SizedBox(
-                                  height: 13.h,
-                                ),
-                                Text('등록한 정보로 관리번호를 생성할 수 있어요.',
-                                    style: Palette.h5Grey),
-                                SizedBox(
-                                  height: 50.h,
-                                ),
-                                MainButton(
-                                  onPressed: () async {
-                                    context
-                                        .read<MeatRegistrationViewModel>()
-                                        .clickedSaveButton(context);
-                                    await LocalDataSource.deleteLocalData(
-                                        widget.meatModel.userId!);
-                                  },
-                                  text: '관리번호 만들기',
-                                  width: 282.w,
-                                  height: 96.h,
-                                  mode: 1,
-                                  style: Palette.fieldPlaceHolderWhite,
-                                ),
-                                TextButton(
-                                  onPressed: widget.meatModel.basicCompleted
-                                      ? () async => context
-                                          .read<MeatRegistrationViewModel>()
-                                          .clickedTempSaveButton(context)
-                                      : null,
-                                  child: Text('임시 저장 하기.',
-                                      style:
-                                          Palette.dialogContentSmallUnderline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        // SizedBox(
-                        //   width: 310.w,
-                        //   height: 104.h,
-                        //   // 임시 저장 버튼
-                        //   child: ElevatedButton(
-                        //     onPressed: widget.meatModel.basicCompleted
-                        //         ? () async => context
-                        //             .read<MeatRegistrationViewModel>()
-                        //             .clickedTempSaveButton(context)
-                        //         : null,
-                        //     style: ElevatedButton.styleFrom(
-                        //         disabledBackgroundColor: Palette.notEditableBg,
-                        //         backgroundColor: Palette.mainBtnAtvBg,
-                        //         shape: RoundedRectangleBorder(
-                        //           borderRadius: BorderRadius.circular(20.sp),
-                        //         ),
-                        //         elevation: 0),
-                        //     child: Center(
-                        //       child: Text('임시저장', style: Palette.mainBtnTitle),
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(
-                        //   width: 32.w,
-                        // ),
-                        // // 관리 번호 생성 버튼
-                        // SizedBox(
-                        //   width: 310.w,
-                        //   height: 104.h,
-                        //   child: ElevatedButton(
-                        //     onPressed: widget.meatModel.basicCompleted &&
-                        //             widget.meatModel.freshImageCompleted &&
-                        //             widget.meatModel.rawFreshCompleted
-                        // ? () => context
-                        //     .read<MeatRegistrationViewModel>()
-                        //     .clickedSaveButton(context)
-                        //         : null,
-                        //     style: ElevatedButton.styleFrom(
-                        //         disabledBackgroundColor: Palette.notEditableBg,
-                        //         backgroundColor: Palette.mainBtnAtvBg,
-                        //         shape: RoundedRectangleBorder(
-                        //           borderRadius: BorderRadius.circular(20.sp),
-                        //         ),
-                        //         elevation: 0),
-                        //     child: Center(
-                        //       child: Text('저장', style: Palette.mainBtnTitle),
-                        //     ),
-                        //   ),
-                        // ),
+                        Text('육류 등록 완료!', style: Palette.h1),
+                        SizedBox(height: 12.h),
+                        Text('등록한 정보로 관리번호를 생성할 수 있어요.', style: Palette.h5Grey),
+                        SizedBox(height: 50.h),
+
+                        // 관리번호 생성 버튼
+                        MainButton(
+                          onPressed: () async {
+                            context
+                                .read<MeatRegistrationViewModel>()
+                                .clickCreateBtn(context);
+                          },
+                          text: '관리번호 만들기',
+                          width: 282.w,
+                          height: 96.h,
+                          mode: 1,
+                          style: Palette.fieldPlaceHolderWhite,
+                        ),
+                        SizedBox(height: 22.h),
+
+                        // 임시저장 버튼
+                        CustomTextButton(
+                          title: '임시저장 하기',
+                          onPressed: () async =>
+                              context.read<MeatRegistrationViewModel>(),
+                        ),
                       ],
                     ),
-                  ),
                 ],
               ),
       ),

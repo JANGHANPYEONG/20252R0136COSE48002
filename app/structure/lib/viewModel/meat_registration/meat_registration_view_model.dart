@@ -37,7 +37,7 @@ class MeatRegistrationViewModel with ChangeNotifier {
 
   late BuildContext _context;
 
-  // 임시저장 데이터 check
+  /// 임시저장 데이터 check
   Future<void> checkTempData(BuildContext context) async {
     try {
       dynamic response = await LocalDataSource.getLocalData(meatModel.userId!);
@@ -53,7 +53,7 @@ class MeatRegistrationViewModel with ChangeNotifier {
     }
   }
 
-  // 임시저장 dialog : 임시 데이터 존재시 결정
+  /// 임시저장 dialog : 임시 데이터 존재시 결정
   Future<void> _showTempDataDialog(dynamic response) async {
     showDataRegisterDialog(_context, () async {
       // 처음부터 등록
@@ -74,22 +74,22 @@ class MeatRegistrationViewModel with ChangeNotifier {
     _context.pop();
   }
 
-  // STEP 1 : 육류 기본정보 등록
+  /// STEP 1 : 육류 기본정보 등록
   void clickedBasic(BuildContext context) {
     context.go('/home/registration/trace-num');
   }
 
-  // STEP 2 : 육류 단면 촬영
+  /// STEP 2 : 육류 단면 촬영
   void clickedImage(BuildContext context) {
     context.go('/home/registration/image');
   }
 
-  // STEP 3 : 신선육 관능평가
+  /// STEP 3 : 신선육 관능평가
   void clickedFreshmeat(BuildContext context) {
     context.go('/home/registration/freshmeat');
   }
 
-  // 임시저장 버튼
+  /// 임시저장 버튼
   Future<void> clickedTempSaveButton(BuildContext context) async {
     isLoading = true;
     notifyListeners();
@@ -108,19 +108,16 @@ class MeatRegistrationViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 임시저장 완료
+  /// 임시저장 완료
   void _showTempSavePopup() {
     showTemporarySavePopup(_context);
   }
 
-  // 관리번호 생성 버튼
-  void clickedSaveButton(BuildContext context) {
-    if (userModel.type == 'Normal') {
-      context.go('/home/success-registration-normal');
-    } else if (userModel.type == 'Researcher' || userModel.type == 'Manager') {
-      context.go('/home/success-registration-researcher');
-    } else {
-      showUserTypeErrorPopup(context);
-    }
+  /// 관리번호 생성 버튼
+  void clickCreateBtn(BuildContext context) async {
+    // 임시저장된 데이터 삭제
+    await LocalDataSource.deleteLocalData(meatModel.userId!);
+    // 페이지 이동
+    if (context.mounted) context.go('/home/success-registration');
   }
 }
