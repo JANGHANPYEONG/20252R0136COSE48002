@@ -13,6 +13,8 @@ import {
   IconButton,
   Toolbar,
   Tooltip,
+  Snackbar,
+  Alert as MuiAlert,
 } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
@@ -29,6 +31,10 @@ import { HiOutlineChip } from 'react-icons/hi';
 
 import DeeplantLong from '../../src_assets/Deeplant_long.webp';
 import LOGO from '../../src_assets/LOGO.png';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const mainListItems = [
   {
@@ -110,10 +116,12 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 function Sidebar() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
   const userEmail = UserInfo.userId;
   console.log(userEmail);
@@ -137,6 +145,19 @@ function Sidebar() {
   };
 
   useEffect(() => {}, [location]);
+
+  const handleListItemClick = (item) => {
+    if (item.label === '사용자 관리' && UserInfo.type !== 'Manager') {
+      setSnackbarMessage('권한이 없습니다');
+      setSnackbarOpen(true);
+    } else {
+      navigate(item.path);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -236,11 +257,15 @@ function Sidebar() {
           }}
         >
           {mainListItems.map((item) => (
-            <Tooltip title={item.label} placement="right" arrow>
+            <Tooltip
+              title={item.label}
+              placement="right"
+              arrow
+              key={item.label}
+            >
               <ListItemButton
-                key={item.label}
-                component={Link}
-                to={item.path}
+                component="div"
+                onClick={() => handleListItemClick(item)}
                 selected={location.pathname === item.path}
                 sx={{
                   ...(location.pathname === item.path && {
@@ -277,6 +302,15 @@ function Sidebar() {
           </IconButton>
         </Toolbar>
       </Drawer>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity="error">
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }
