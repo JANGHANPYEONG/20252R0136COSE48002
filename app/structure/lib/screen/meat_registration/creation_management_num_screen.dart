@@ -42,8 +42,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                         // 성공 텍스트
                         Container(
                           margin: EdgeInsets.only(left: 46.w, top: 182.h),
-                          child:
-                              Text('관리 1231번호가\n생성되었습니다!', style: Palette.h2),
+                          child: Text('관리번호가\n생성되었습니다!', style: Palette.h2),
                         ),
                       ],
                     ),
