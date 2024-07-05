@@ -10,14 +10,14 @@ import {
   query,
   where,
   getDocs,
-} from "firebase/firestore";
-import { db } from "../../firebase-config";
-import React, { useState, useEffect } from "react";
-import Button from "react-bootstrap/Button";
+} from 'firebase/firestore';
+import { db } from '../../firebase-config';
+import React, { useState, useEffect } from 'react';
+import Button from 'react-bootstrap/Button';
 
 function UserEdit({ selectedUser }) {
-  const [userLevel, setUserLevel] = useState(""); // 사용자 레벨 상태 추가
-  const [newUserLevel, setNewUserLevel] = useState(""); // 새로운 사용자 레벨 상태 추가
+  const [userLevel, setUserLevel] = useState(''); // 사용자 레벨 상태 추가
+  const [newUserLevel, setNewUserLevel] = useState(''); // 새로운 사용자 레벨 상태 추가
 
   const handleUserLevelChange = (event) => {
     setNewUserLevel(event.target.value);
@@ -26,15 +26,15 @@ function UserEdit({ selectedUser }) {
   useEffect(() => {
     const getUserLevel = async () => {
       // selectedUser가 users_1 컬렉션에 있는지 확인
-      const users1CollectionRef = collection(db, "users_1");
+      const users1CollectionRef = collection(db, 'users_1');
       const users1Query = query(
         users1CollectionRef,
-        where("id", "==", selectedUser?.id)
+        where('id', '==', selectedUser?.id)
       );
       const users1Snapshot = await getDocs(users1Query);
 
       // selectedUser가 users_1 컬렉션에 있다면 사용자 레벨을 1로 설정, 그렇지 않다면 2로 설정
-      const level = users1Snapshot.docs.length > 0 ? "1" : "2";
+      const level = users1Snapshot.docs.length > 0 ? '1' : '2';
       setUserLevel(level);
     };
 
@@ -46,14 +46,14 @@ function UserEdit({ selectedUser }) {
 
     // 현재 사용자의 문서 참조 가져오기
     const currentCollectionRef =
-      userLevel === "1" ? collection(db, "users_1") : collection(db, "users_2");
+      userLevel === '1' ? collection(db, 'users_1') : collection(db, 'users_2');
     const currentDocRef = doc(currentCollectionRef, selectedUser.id);
 
     // 새로운 사용자 레벨의 문서 참조 가져오기
     const newCollectionRef =
-      newUserLevel === "1"
-        ? collection(db, "users_1")
-        : collection(db, "users_2");
+      newUserLevel === '1'
+        ? collection(db, 'users_1')
+        : collection(db, 'users_2');
     const newDocRef = doc(newCollectionRef, selectedUser.id);
 
     try {
@@ -71,10 +71,10 @@ function UserEdit({ selectedUser }) {
         // 사용자 레벨 상태 업데이트
         setUserLevel(newUserLevel);
       } else {
-        console.error("현재 문서를 찾을 수 없습니다.");
+        console.error('현재 문서를 찾을 수 없습니다.');
       }
     } catch (error) {
-      console.error("문서 이동 오류:", error);
+      console.error('문서 이동 오류:', error);
       // 문서 이동 오류 처리
     }
   };
@@ -162,7 +162,7 @@ function UserEdit({ selectedUser }) {
           <Col sm={{ span: 9, offset: 3 }}>
             <Button variant="primary" onClick={handleSave}>
               저장
-            </Button>{" "}
+            </Button>{' '}
             {/* 저장 버튼 추가 */}
           </Col>
         </Form.Group>

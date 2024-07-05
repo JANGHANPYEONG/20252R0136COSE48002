@@ -1,7 +1,7 @@
-import ApexCharts from "react-apexcharts";
-import React, { useEffect, useState } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import { apiIP } from "../../../../config";
+import ApexCharts from 'react-apexcharts';
+import React, { useEffect, useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import { apiIP } from '../../../../config';
 
 export default function Taste_FreshMeat({ startDate, endDate }) {
   const [chartData, setChartData] = useState([]); // Change initial state to null
@@ -13,12 +13,12 @@ export default function Taste_FreshMeat({ startDate, endDate }) {
       );
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       setChartData(data);
     } catch (error) {
-      console.error("Error fetching chartData:", error);
+      console.error('Error fetching chartData:', error);
     }
   };
 
@@ -42,7 +42,7 @@ export default function Taste_FreshMeat({ startDate, endDate }) {
 
   const chartOptions = {
     chart: {
-      type: "boxPlot",
+      type: 'boxPlot',
       height: 350,
     },
   };
@@ -56,28 +56,28 @@ export default function Taste_FreshMeat({ startDate, endDate }) {
         <ApexCharts
           series={[
             {
-              type: "boxPlot",
+              type: 'boxPlot',
               data: [
                 {
-                  x: "bitterness",
+                  x: 'bitterness',
                   y: calculateBoxPlotStatistics(
                     chartData.bitterness.unique_values
                   ),
                 },
                 {
-                  x: "richness",
+                  x: 'richness',
                   y: calculateBoxPlotStatistics(
                     chartData.richness.unique_values
                   ),
                 },
                 {
-                  x: "sourness",
+                  x: 'sourness',
                   y: calculateBoxPlotStatistics(
                     chartData.sourness.unique_values
                   ),
                 },
                 {
-                  x: "umami",
+                  x: 'umami',
                   y: calculateBoxPlotStatistics(chartData.umami.unique_values),
                 },
               ],

@@ -1,24 +1,24 @@
-import * as React from "react";
-import Modal from "react-bootstrap/Modal";
-import UserRegister from "./UserRegister";
-import { useState, useEffect } from "react";
-import Typography from "@mui/material/Typography";
-import { format } from "date-fns";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import CustomSnackbar from "../Base/CustomSnackbar";
-import DeleteIcon from "@mui/icons-material/Delete";
-import InputBase from "@mui/material/InputBase";
-import Toolbar from "@mui/material/Toolbar";
-import { DataGrid } from "@mui/x-data-grid";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
-import SearchIcon from "@mui/icons-material/Search";
-import { IoMdPersonAdd } from "react-icons/io";
-import { getAuth } from "firebase/auth";
-import { Box } from "@mui/material";
-import { Button, Tooltip, OverlayTrigger } from "react-bootstrap";
-import { apiIP } from "../../config";
+import * as React from 'react';
+import Modal from 'react-bootstrap/Modal';
+import UserRegister from './UserRegister';
+import { useState, useEffect } from 'react';
+import Typography from '@mui/material/Typography';
+import { format } from 'date-fns';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import CustomSnackbar from '../Base/CustomSnackbar';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InputBase from '@mui/material/InputBase';
+import Toolbar from '@mui/material/Toolbar';
+import { DataGrid } from '@mui/x-data-grid';
+import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
+import SearchIcon from '@mui/icons-material/Search';
+import { IoMdPersonAdd } from 'react-icons/io';
+import { getAuth } from 'firebase/auth';
+import { Box } from '@mui/material';
+import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { apiIP } from '../../config';
 
 function UserList() {
   const [registerShow, setRegisterShow] = useState(false);
@@ -34,32 +34,33 @@ function UserList() {
     window.location.reload();
   };
   const handleRegisterShow = () => setRegisterShow(true);
-  const UserInfo = JSON.parse(localStorage.getItem("UserInfo"));
+  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
   const handleUserDelete = async (userId) => {
     try {
       const auth = getAuth();
       console.log(UserInfo.userId);
       console.log(userId);
-      if (!UserInfo.userId) {  
-        showSnackbar("로그인이 필요합니다.", "error");
+      if (!UserInfo.userId) {
+        showSnackbar('로그인이 필요합니다.', 'error');
         return;
       }
 
       if (UserInfo.userId === userId) {
         showSnackbar(
-          "자신의 계정은 삭제할 수 없습니다. 회원탈퇴는 프로필 페이지에서 가능합니다.",
-          "error"
+          '자신의 계정은 삭제할 수 없습니다. 회원탈퇴는 프로필 페이지에서 가능합니다.',
+          'error'
         );
         return;
       }
 
       // If reauthentication is successful, proceed with the account deletion
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${userId}`, {
-          method: "POST",
+        `http://${apiIP}/user/delete?userId=${userId}`,
+        {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -69,20 +70,20 @@ function UserList() {
         setAllUsers((prevUsers) =>
           prevUsers.filter((user) => user.userId !== userId)
         );
-        showSnackbar("사용자가 삭제되었습니다.", "success");
+        showSnackbar('사용자가 삭제되었습니다.', 'success');
         //delete user in firebase
       } else {
-        showSnackbar("사용자 삭제에 실패했습니다.", "error");
+        showSnackbar('사용자 삭제에 실패했습니다.', 'error');
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      showSnackbar("사용자 삭제 중 오류가 발생했습니다.", "error");
+      console.error('Error deleting user:', error);
+      showSnackbar('사용자 삭제 중 오류가 발생했습니다.', 'error');
     }
   };
   ///////////
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -102,11 +103,11 @@ function UserList() {
   ////////////
 
   const columns = [
-    { field: "name", headerName: "이름", width: 100 },
-    { field: "userId", headerName: "아이디", width: 250 },
+    { field: 'name', headerName: '이름', width: 100 },
+    { field: 'userId', headerName: '아이디', width: 250 },
     {
-      field: "type",
-      headerName: "소속",
+      field: 'type',
+      headerName: '소속',
       width: 200,
       renderCell: (params) => (
         <CustomEditCell
@@ -117,23 +118,23 @@ function UserList() {
         />
       ),
     },
-    { field: "company", headerName: "회사", width: 120 },
+    { field: 'company', headerName: '회사', width: 120 },
     {
-      field: "createdAt",
-      headerName: "회원가입 날짜",
+      field: 'createdAt',
+      headerName: '회원가입 날짜',
       width: 240,
       renderCell: (params) => {
         const createdAt = params.row.createdAt;
         if (createdAt) {
           const parsedDate = new Date(createdAt);
-          return format(parsedDate, "y년 M월 d일 a h시 m분");
+          return format(parsedDate, 'y년 M월 d일 a h시 m분');
         }
-        return "";
+        return '';
       },
     },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       width: 120,
       renderCell: (params) => (
         <div>
@@ -166,7 +167,7 @@ function UserList() {
 
         setIsLoading(false); // Set isLoading to false after fetching data
       } catch (error) {
-        console.log("Error fetching data:", error);
+        console.log('Error fetching data:', error);
         setIsLoading(false); // Set isLoading to false in case of an error as well
       }
     };
@@ -179,7 +180,7 @@ function UserList() {
     if (!allUsers || allUsers.length === 0) {
       return; // Return early if allUsers is empty or not yet initialized
     }
-    if (keyword === "") {
+    if (keyword === '') {
       setSearchedUsers([]); // Show no users if the search field is empty
     } else {
       const results = allUsers.filter(
@@ -205,9 +206,9 @@ function UserList() {
     try {
       // Send a POST request to update the user's information
       const response = await fetch(`http://${apiIP}/user/update`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           userId: userToUpdate.userId,
@@ -233,13 +234,13 @@ function UserList() {
         );
         showSnackbar(
           `${userToUpdate.name}님의 권한이 ${value}로 수정되었습니다. `,
-          "success"
+          'success'
         );
       } else {
-        console.log("Failed to update the user information");
+        console.log('Failed to update the user information');
       }
     } catch (error) {
-      console.log("Error updating user information:", error);
+      console.log('Error updating user information:', error);
     }
   };
 
@@ -250,7 +251,7 @@ function UserList() {
     };
 
     return (
-      <Select value={value} onChange={handleChange} sx={{ width: "140px" }}>
+      <Select value={value} onChange={handleChange} sx={{ width: '140px' }}>
         <MenuItem value="Normal">Normal</MenuItem>
         <MenuItem value="Researcher">Researcher</MenuItem>
         <MenuItem value="Manager">Manager</MenuItem>
@@ -261,16 +262,16 @@ function UserList() {
   return (
     <div>
       <Toolbar />
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Typography
           component="h2"
           variant="h4"
           gutterBottom
           style={{
-            color: "#151D48",
-            fontFamily: "Poppins",
+            color: '#151D48',
+            fontFamily: 'Poppins',
             fontSize: `${(36 / 1920) * 100}vw`,
-            fontStyle: "normal",
+            fontStyle: 'normal',
             fontWeight: 600,
             lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
           }}
@@ -288,8 +289,8 @@ function UserList() {
         <Modal.Body>
           <Modal.Title
             style={{
-              color: "#151D48",
-              fontFamily: "Poppins",
+              color: '#151D48',
+              fontFamily: 'Poppins',
               fontSize: `${(36 / 1920) * 100}vw`,
               fontWeight: 600,
               lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
@@ -300,7 +301,7 @@ function UserList() {
           <UserRegister handleClose={handleRegisterClose} />
         </Modal.Body>
       </Modal>
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Box
           component="form"
           sx={{
@@ -309,7 +310,7 @@ function UserList() {
             paddingY: `${(12 / 1080) * 100}vh`,
             width: `${(513 / 1920) * 100}vw`,
             height: `${(60 / 1080) * 100}vh`,
-            backgroundColor: "#FFF",
+            backgroundColor: '#FFF',
           }}
         >
           <SearchIcon />
@@ -317,17 +318,17 @@ function UserList() {
             placeholder=" 사용자 검색"
             onChange={(event) => handleSearch(event)}
             sx={{
-              color: "#737791",
-              fontFamily: "Poppins",
+              color: '#737791',
+              fontFamily: 'Poppins',
               fontSize: `${(20 / 1920) * 100}vw`,
-              fontStyle: "normal",
+              fontStyle: 'normal',
               fontWeight: 500,
               lineHeight: `${(20 / 1080) * 100}vh`,
             }}
           />
         </Box>
 
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: 'auto' }}>
           <OverlayTrigger
             placement="top"
             delay={{ show: 250, hide: 400 }}
@@ -337,14 +338,14 @@ function UserList() {
               className="mb-3"
               onClick={handleRegisterShow}
               style={{
-                display: "inline-flex",
+                display: 'inline-flex',
                 paddingX: `${(12 / 1920) * 100}vw`,
                 paddingY: `${(16 / 1080) * 100}vh`,
-                alignItems: "center",
+                alignItems: 'center',
                 gap: `${(8 / 1920) * 100}vw`,
                 borderRadius: `${(10 / 1920) * 100}vw`,
-                background: "#32CD32",
-                borderColor: "#32CD32",
+                background: '#32CD32',
+                borderColor: '#32CD32',
               }}
             >
               <IoMdPersonAdd />
@@ -359,7 +360,7 @@ function UserList() {
         <DataGrid
           rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
           columns={columns.map((column) =>
-            column.field === "type"
+            column.field === 'type'
               ? { ...column, editable: true } // Enable editing for the "type" field
               : column
           )}
@@ -382,8 +383,8 @@ function UserList() {
             height: `${(560 / 1080) * 100}vh`,
             flexShrink: 0,
             borderRadius: `${(20 / 1920) * 100}vw`,
-            border: "1px solid #F8F9FA",
-            backgroundColor: "#FFF",
+            border: '1px solid #F8F9FA',
+            backgroundColor: '#FFF',
             boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
               (20 / 1920) * 100
             }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,

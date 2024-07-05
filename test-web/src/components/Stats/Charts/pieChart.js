@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
-import { PieChart } from "@mui/x-charts/PieChart";
-import { apiIP } from "../../../config";
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { PieChart } from '@mui/x-charts/PieChart';
+import { apiIP } from '../../../config';
 
 export default function BasicPie() {
   const [chartData, setChartData] = useState([]);
@@ -18,17 +18,17 @@ export default function BasicPie() {
         const pigRaw = data.pig_counts.raw;
 
         const chartData = [
-          { id: 0, value: cattleProcessed, label: "Cattle Processed" },
-          { id: 1, value: cattleRaw, label: "Cattle Raw" },
-          { id: 2, value: pigProcessed, label: "Pig Processed" },
-          { id: 3, value: pigRaw, label: "Pig Raw" },
+          { id: 0, value: cattleProcessed, label: 'Cattle Processed' },
+          { id: 1, value: cattleRaw, label: 'Cattle Raw' },
+          { id: 2, value: pigProcessed, label: 'Pig Processed' },
+          { id: 3, value: pigRaw, label: 'Pig Raw' },
         ];
 
         // Set the transformed data to the state
         setChartData(chartData);
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       });
   }, []);
 

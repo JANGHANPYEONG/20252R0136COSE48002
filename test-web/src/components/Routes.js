@@ -22,16 +22,14 @@ const PublicRoute = ({ component: Component, restricted, ...rest }) => {
 const PrivateRoute = ({ component: Component, ...rest }) => {
   return (
     console.log(isLogin()),
-    <Route
-      {...rest}
-      render={(props) =>
-        isLogin() ? (
-          <Component {...props} />
-        ) : (
-          <Navigate to="/home" />
-        )
-      }
-    />
+    (
+      <Route
+        {...rest}
+        render={(props) =>
+          isLogin() ? <Component {...props} /> : <Navigate to="/home" />
+        }
+      />
+    )
   );
 };
 
