@@ -18,12 +18,11 @@ def deleteTotalMeatData():
         if request.method == "DELETE":
             db_session = current_app.db_session
             s3_conn = current_app.s3_conn
-            firebase_conn = current_app.firestore_conn
             id_list = request.get_json().get("id")
             if id_list:
                 for id in id_list:
                     result = _deleteSpecificMeatData(
-                        db_session, s3_conn, firebase_conn, id
+                        db_session, s3_conn, id
                     )
                 return jsonify({"delete_success": id_list}), 200
             else:
@@ -65,18 +64,17 @@ def deleteTotalMeatData():
 #         )
 
 # 특정 딥에이징 이력 삭제
-@delete_api.route("/deep-aging", methods=["GET", "POST"])
+@delete_api.route("/deep-aging", methods=["GET", "DELETE"])
 def deleteDeepAgingData():
     try:
-        if request.method == "GET":
+        if request.method == "DELETE":
             db_session = current_app.db_session
             s3_conn = current_app.s3_conn
-            firebase_conn = current_app.firebase_conn
             id = safe_str(request.args.get("id"))
             seqno = safe_str(request.args.get("seqno"))
             if id and seqno:
                 return _deleteSpecificDeepAgingData(
-                    db_session, s3_conn, firebase_conn, id, seqno
+                    db_session, s3_conn, id, seqno
                 )
             else:
                 return jsonify("No id parameter"), 401

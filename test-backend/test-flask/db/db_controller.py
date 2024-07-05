@@ -1038,7 +1038,7 @@ def create_AI_SensoryEval(db_session, meat_data: dict, seqno: int, id: str):
     return new_SensoryEval
 
 
-def _deleteSpecificMeatData(db_session, s3_conn, firebase_conn, id):
+def _deleteSpecificMeatData(db_session, s3_conn, id):
     # 1. 육류 DB 체크
     meat = db_session.query(Meat).filter_by(id=id).one()
     if meat is None:
@@ -1076,7 +1076,7 @@ def _deleteSpecificMeatData(db_session, s3_conn, firebase_conn, id):
         raise e
 
 
-def _deleteSpecificDeepAgingData(db_session, s3_conn, firebase_conn, id, seqno):
+def _deleteSpecificDeepAgingData(db_session, s3_conn, id, seqno):
     # 1. 육류 DB 체크
     meat = db_session.query(Meat).get(id)
 
