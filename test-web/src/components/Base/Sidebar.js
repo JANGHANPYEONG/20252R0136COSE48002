@@ -33,11 +33,6 @@ import LOGO from '../../src_assets/LOGO.png';
 const mainListItems = [
   {
     label: '홈',
-    icon: <HomeIcon sx={{ fontSize: 60 }} />,
-    path: '/Home',
-  },
-  {
-    label: '홈',
     icon: <HomeIcon sx={{ fontSize: 30 }} />,
     path: '/Home',
   },
@@ -149,6 +144,7 @@ function Sidebar() {
         <Toolbar
           sx={{
             pr: '24px', // keep right padding when drawer closed
+            ...(open && { minHeight: '120px' }), // 열렸을 때 Toolbar 높이 증가
           }}
         >
           <IconButton
@@ -230,7 +226,15 @@ function Sidebar() {
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
-        <List component="nav">
+        <Toolbar />
+        <List
+          component="nav"
+          sx={{
+            pt: '14px', // 홈 버튼에만 추가 상단 패딩
+            pb: '12px', // 홈 버튼에만 추가 하단 패딩
+            ...(open && { mt: '20px' }), // 열렸을 때 추가 상단 여백
+          }}
+        >
           {mainListItems.map((item) => (
             <Tooltip title={item.label} placement="right" arrow>
               <ListItemButton
