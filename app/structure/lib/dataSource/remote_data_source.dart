@@ -75,7 +75,7 @@ class RemoteDataSource {
   /// 딥에이징 데이터 삭제 (GET)
   static Future<dynamic> deleteDeepAging(String id, int seqno) async {
     dynamic response =
-        await _getApi('meat/delete/deep_aging?id=$id&seqno=$seqno');
+        await _getApi('meat/delete/deep-aging?id=$id&seqno=$seqno');
     return response;
   }
 

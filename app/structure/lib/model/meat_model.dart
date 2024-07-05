@@ -72,25 +72,26 @@ class MeatModel with ChangeNotifier {
   MeatModel({
     // 관리 번호 생성 시 저장
     this.id,
-    this.createUser,
     this.userId,
+    this.sexType,
+    this.gradeNum,
+    this.statusType,
     this.createdAt,
     this.traceNum,
     this.farmAddr,
     this.farmerNm,
     this.butcheryYmd,
     this.birthYmd,
-    this.sexType,
-    this.gradeNum,
+    this.imagePath,
+    this.createUser,
+    // Species, primal, secondary를 토대로 백에서 categoryId 생성
     this.speciesValue,
     this.primalValue,
     this.secondaryValue,
-    this.imagePath,
     this.deepAgedImage,
     this.seqno,
     this.freshmeat,
     this.deepAgedFreshmeat,
-    this.statusType,
 
     // 연구 데이터 추가 입력 완료 시 저장
     this.deepAgingData,
@@ -285,10 +286,10 @@ class MeatModel with ChangeNotifier {
       "id": id,
       "userId": userId,
       "sexType": sexType,
+      "gradeNum": gradeNum,
       "specieValue": speciesValue,
       "primalValue": primalValue,
       "secondaryValue": secondaryValue,
-      "gradeNum": gradeNum,
       "createdAt": createdAt,
       "traceNum": traceNum,
       "farmAddr": farmAddr,
@@ -300,18 +301,6 @@ class MeatModel with ChangeNotifier {
 
   // 신선육 데이터 변환
   String toJsonFresh() {
-    print({
-      "id": id,
-      "createdAt": deepAgedFreshmeat?["createdAt"],
-      "userId": userId,
-      "period": deepAgedFreshmeat?["period"],
-      "marbling": deepAgedFreshmeat?["marbling"],
-      "color": deepAgedFreshmeat?["color"],
-      "texture": deepAgedFreshmeat?["texture"],
-      "surfaceMoisture": deepAgedFreshmeat?["surfaceMoisture"],
-      "overall": deepAgedFreshmeat?["overall"],
-      "seqno": meatModel.seqno,
-    });
     if (seqno == 0) {
       return jsonEncode({
         "id": id,
