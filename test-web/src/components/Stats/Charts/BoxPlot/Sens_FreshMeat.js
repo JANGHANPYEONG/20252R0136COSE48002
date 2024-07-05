@@ -1,7 +1,7 @@
-import ApexCharts from "react-apexcharts";
-import React, { useEffect, useState } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import { apiIP } from "../../../../config";
+import ApexCharts from 'react-apexcharts';
+import React, { useEffect, useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import { apiIP } from '../../../../config';
 
 export default function Sens_FreshMeat({ startDate, endDate }) {
   const [chartData, setChartData] = useState([]);
@@ -13,12 +13,12 @@ export default function Sens_FreshMeat({ startDate, endDate }) {
       );
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Network response was not ok');
       }
       const data = await response.json();
       setChartData(data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -26,7 +26,7 @@ export default function Sens_FreshMeat({ startDate, endDate }) {
     fetchData();
     console.log('new data ', chartData);
   }, [startDate, endDate]);
-  
+
   const calculateBoxPlotStatistics = (data) => {
     const sortedData = data.sort((a, b) => a - b);
     const q1Index = Math.floor(sortedData.length / 4);
@@ -43,7 +43,7 @@ export default function Sens_FreshMeat({ startDate, endDate }) {
 
   const chartOptions = {
     chart: {
-      type: "boxPlot",
+      type: 'boxPlot',
       height: 350,
     },
   };
@@ -55,32 +55,32 @@ export default function Sens_FreshMeat({ startDate, endDate }) {
         <ApexCharts
           series={[
             {
-              type: "boxPlot",
+              type: 'boxPlot',
               data: [
                 {
-                  x: "Color",
+                  x: 'Color',
                   y: calculateBoxPlotStatistics(chartData.color.unique_values),
                 },
                 {
-                  x: "Marbling",
+                  x: 'Marbling',
                   y: calculateBoxPlotStatistics(
                     chartData.marbling.unique_values
                   ),
                 },
                 {
-                  x: "Overall",
+                  x: 'Overall',
                   y: calculateBoxPlotStatistics(
                     chartData.overall.unique_values
                   ),
                 },
                 {
-                  x: "SurfaceMoisture",
+                  x: 'SurfaceMoisture',
                   y: calculateBoxPlotStatistics(
                     chartData.surfaceMoisture.unique_values
                   ),
                 },
                 {
-                  x: "Texture",
+                  x: 'Texture',
                   y: calculateBoxPlotStatistics(
                     chartData.texture.unique_values
                   ),

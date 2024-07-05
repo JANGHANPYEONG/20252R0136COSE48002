@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { apiIP } from "../../../config";
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { apiIP } from '../../../config';
 
 export default function BarGraph() {
   const [chartData, setChartData] = useState([]); // Initialize with an empty array
@@ -19,14 +19,14 @@ export default function BarGraph() {
 
         // Set the transformed data to the state
         setChartData([
-          { group: "Cattle Processed", value: cattleProcessed },
-          { group: "Cattle Raw", value: cattleRaw },
-          { group: "Pig Processed", value: pigProcessed },
-          { group: "Pig Raw", value: pigRaw },
+          { group: 'Cattle Processed', value: cattleProcessed },
+          { group: 'Cattle Raw', value: cattleRaw },
+          { group: 'Pig Processed', value: pigProcessed },
+          { group: 'Pig Raw', value: pigRaw },
         ]);
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       });
   }, []);
 
@@ -37,7 +37,7 @@ export default function BarGraph() {
 
   return (
     <BarChart
-      xAxis={[{ scaleType: "band", data: chartData.map((item) => item.group) }]}
+      xAxis={[{ scaleType: 'band', data: chartData.map((item) => item.group) }]}
       series={[{ data: chartData.map((item) => item.value) }]}
       width={500}
       height={300}
