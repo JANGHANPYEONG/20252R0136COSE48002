@@ -10,7 +10,7 @@ export default function Taste_Fresh_Corr({ startDate, endDate }) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic?type=4&start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}`
         );
 
         if (!response.ok) {

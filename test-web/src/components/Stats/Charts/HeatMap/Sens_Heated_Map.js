@@ -11,7 +11,7 @@ export default function Sens_Heated_Map({ startDate, endDate }) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic?type=8&start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/sensory-stats/heated-fresh?start=${startDate}&end=${endDate}`
         );
 
         if (!response.ok) {
