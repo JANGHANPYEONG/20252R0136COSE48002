@@ -33,7 +33,7 @@ void showDataRegisterDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
-    'assets/images/meat_eval.png',
+    'assets/images/temporarySave.png',
     '임시저장 중인 데이터가 있습니다.',
     '이어서 등록하시겠습니까?',
     '처음부터 등록하기',

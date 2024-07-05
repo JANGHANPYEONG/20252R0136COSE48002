@@ -216,9 +216,16 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                               .watch<RegistrationMeatImageViewModel>()
                               .imagePath !=
                           null
-                      ? () async => await context
-                          .read<RegistrationMeatImageViewModel>()
-                          .saveMeatData(context)
+                      ? () async {
+                          await context
+                              .read<RegistrationMeatImageViewModel>()
+                              .saveMeatData(context);
+                          if (context.mounted) {
+                            context
+                                .read<RegistrationMeatImageViewModel>()
+                                .clickedTempSaveButton(context);
+                          }
+                        }
                       : null,
                   text: context
                               .read<RegistrationMeatImageViewModel>()

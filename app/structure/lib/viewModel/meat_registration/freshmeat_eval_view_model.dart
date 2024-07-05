@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 
 class FreshMeatEvalViewModel with ChangeNotifier {
   MeatModel meatModel;
@@ -27,6 +28,7 @@ class FreshMeatEvalViewModel with ChangeNotifier {
   double overall = 0;
 
   bool completed = false;
+  bool isLoading = false;
 
   // 데이터가 존재하면 할당
   void _initialize() {
@@ -163,5 +165,25 @@ class FreshMeatEvalViewModel with ChangeNotifier {
       // 처리육
       _context.go('/home/data-manage-researcher/add/processed-meat');
     }
+  }
+
+  /// 임시 저장 Part
+
+  /// 임시저장 버튼
+  Future<void> clickedTempSaveButton(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      dynamic response = await LocalDataSource.saveDataToLocal(
+          meatModel.toJsonTemp(), meatModel.userId!);
+      if (response == null) Error();
+      isLoading = false;
+      notifyListeners();
+      _context = context;
+    } catch (e) {
+      print('에러발생: $e');
+    }
+    isLoading = false;
+    notifyListeners();
   }
 }
