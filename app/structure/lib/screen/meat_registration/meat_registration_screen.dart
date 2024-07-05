@@ -138,8 +138,9 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         // 임시저장 버튼
                         CustomTextButton(
                           title: '임시저장 하기',
-                          onPressed: () async =>
-                              context.read<MeatRegistrationViewModel>(),
+                          onPressed: () async => context
+                              .read<MeatRegistrationViewModel>()
+                              .clickedTempSaveButton(context),
                         ),
                       ],
                     ),
