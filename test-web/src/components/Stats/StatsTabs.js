@@ -21,9 +21,9 @@ import Taste_Time from "./Charts/Time/Taste_Time";
 import { useEffect } from "react";
 import Sens_Proc_Map from "./Charts/HeatMap/Sens_Proc_Map";
 import Taste_Fresh_Corr from "./Charts/Corr/Taste_Fresh_Corr";
-import Sense_Proc_Corr from "./Charts/Corr/Sense_Proc_Corr";
-import Sense_Heated_Corr from "./Charts/Corr/Sense_Heated_Corr";
-import Sense_Fresh_Corr from "./Charts/Corr/Sense_Fresh_Corr";
+import Sense_Proc_Corr from "./Charts/Corr/Sens_Proc_Corr";
+import Sense_Heated_Corr from "./Charts/Corr/Sens_Heated_Corr";
+import Sense_Fresh_Corr from "./Charts/Corr/Sens_Fresh_Corr";
 import Taste_Proc_Corr from "./Charts/Corr/Taste_Proc_Corr";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
