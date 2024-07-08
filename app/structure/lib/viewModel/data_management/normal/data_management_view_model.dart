@@ -109,12 +109,15 @@ class DataManagementHomeViewModel with ChangeNotifier {
 
   // 날짜 fomatting
   void formatting() {
+    isOpenTable = !isOpenTable;
+
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
     }
     if (lastDay != null) {
       lastDayText = DateFormat('yyyy.MM.dd').format(lastDay!);
     }
+    notifyListeners();
   }
 
   // 직접 설정 과정에서 범위를 재 지정함. (범위의 앞 보다 뒤가 더 빠른 날짜 일 때, 둘을 뒤 바꿈.)
@@ -194,12 +197,12 @@ class DataManagementHomeViewModel with ChangeNotifier {
   }
 
   // TableCalendar 관련 함수
-  void onTapTable(int index) {
+  void onTapTable(int index) async {
     // 만일 날짜를 처음 지정할 시 기존 값을 초기화
     if (firstDay == null || lastDay == null) {
       focused = DateTime.now();
     }
-    isOpenTable = !isOpenTable;
+    isOpenTable = true;
     indexDay = index;
     // 날짜 지정 이후 선택할 시 이전 날짜 호출
     if (index == 0 && temp1 != null) {
