@@ -74,7 +74,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       // 등록, 수정
       imagePath = meatModel.imagePath;
       if (imagePath != null && meatModel.freshmeat != null) {
-        userName = meatModel.freshmeat!['userId'] ?? '-';
+        userName = meatModel.freshmeat!['userName'] ?? '-';
         if (meatModel.freshmeat!['createdAt'] != null) {
           fetchDate(meatModel.freshmeat!['createdAt']);
           date = '${time.year}.${time.month}.${time.day}';
@@ -84,7 +84,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       // 처리육 데이터
       imagePath = meatModel.deepAgedImage;
       if (imagePath != null && meatModel.deepAgedFreshmeat != null) {
-        userName = meatModel.deepAgedFreshmeat!["userId"] ?? '-';
+        userName = meatModel.deepAgedFreshmeat!["userName"] ?? '-';
         if (meatModel.deepAgedFreshmeat!["createdAt"] != null) {
           fetchDate(meatModel.deepAgedFreshmeat!["createdAt"]);
           date = '${time.year}.${time.month}.${time.day}';
@@ -148,6 +148,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.imagePath = imagePath;
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
+        meatModel.freshmeat!['userName'] = userName;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
         if (meatModel.id == null) {
           // 등록
@@ -162,6 +163,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.deepAgedImage = imagePath;
         meatModel.deepAgedFreshmeat ??= {};
         meatModel.deepAgedFreshmeat!['userId'] = meatModel.userId;
+        meatModel.deepAgedFreshmeat!['userName'] = userName;
         meatModel.deepAgedFreshmeat!['createdAt'] = Usefuls.getCurrentDate();
         await _sendImageToFirebase();
         await RemoteDataSource.sendMeatData(
@@ -173,7 +175,8 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
               "seqno": meatModel.seqno
             }));
       }
-      meatModel.checkCompleted();
+      // meatModel.checkCompleted();
+      if (context.mounted) await tempSave(context);
       _movePage();
     } catch (e) {
       print('에러발생: $e');
@@ -201,7 +204,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     }
   }
 
-  // 이미지를 파이어베이스에 저장
+  /// 이미지를 파이어베이스에 저장
   Future<void> _sendImageToFirebase() async {
     try {
       // fire storage에 육류 이미지 저장
@@ -233,13 +236,12 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     }
   }
 
-  /// 임시 저장 Part
-
-// 임시저장 버튼
-  Future<void> clickedTempSaveButton(BuildContext context) async {
+  /// 임시저장
+  Future<void> tempSave(BuildContext context) async {
     isLoading = true;
     notifyListeners();
     try {
+      print(meatModel.toJsonTemp());
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
