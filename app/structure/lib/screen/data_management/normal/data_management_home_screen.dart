@@ -146,19 +146,19 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                               ListView.builder(
                             itemCount: viewModel.selectedList.length,
                             itemBuilder: (context, index) => ListCardNormal(
-                                onTap: () async =>
-                                    await viewModel.onTap(index, context),
-                                idx: index + 1,
-                                num: viewModel.selectedList[index]["id"]!,
-                                dayTime: viewModel.selectedList[index]
-                                    ["dayTime"]!,
-                                statusType: viewModel.selectedList[index]
-                                    ["statusType"]!,
-                                dDay: 3 -
-                                    Usefuls.calculateDateDifference(
-                                      viewModel.selectedList[index]
-                                          ["createdAt"]!,
-                                    )),
+                              onTap: () async =>
+                                  await viewModel.onTap(index, context),
+                              idx: index + 1,
+                              num: viewModel.selectedList[index]["id"]!,
+                              dayTime: viewModel.selectedList[index]
+                                  ["dayTime"]!,
+                              statusType: viewModel.selectedList[index]
+                                  ["statusType"]!,
+                              dDay: 3 -
+                                  Usefuls.calculateDateDifference(
+                                    viewModel.selectedList[index]["createdAt"]!,
+                                  ),
+                            ),
                           ),
                         ),
                       ),

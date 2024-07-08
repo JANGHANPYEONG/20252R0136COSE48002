@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                       context.read<HomeViewModel>().clickedMeatRegist(context),
                   child: HomeCard(
                     mainText: '육류등록',
-                    subText: '육류 정보를 입력하고\n데이터를 전송합니다',
+                    subText: '\n데이터를 전송합니다',
                     imageUrl: 'assets/images/pig.png',
                     mainColor: Palette.meatRegiCardBg,
                     btnColor: Palette.meatRegiBtnBg,

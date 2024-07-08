@@ -100,7 +100,7 @@ class MeatRegistrationViewModel with ChangeNotifier {
       isLoading = false;
       notifyListeners();
       _context = context;
-      _showTempSavePopup();
+      // _showTempSavePopup();
     } catch (e) {
       print('에러발생: $e');
     }

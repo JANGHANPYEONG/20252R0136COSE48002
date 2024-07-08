@@ -130,6 +130,121 @@ class ListCard extends StatelessWidget {
   }
 }
 
+class ListCardResearcherApprove extends StatelessWidget {
+  final VoidCallback? onTap;
+  final int idx;
+  final String num;
+  final String dayTime;
+  final String statusType;
+  final int dDay;
+  final String userId;
+
+  const ListCardResearcherApprove({
+    super.key,
+    required this.onTap,
+    required this.idx,
+    required this.num,
+    required this.dayTime,
+    required this.statusType,
+    required this.dDay,
+    required this.userId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 640.w,
+        height: 72.w,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
+          ),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              child: Text(
+                num,
+                style: Palette.h5,
+              ),
+            ),
+            const Spacer(),
+            SizedBox(
+              child: Text(
+                userId,
+                style: Palette.filterContent,
+              ),
+            ),
+            const Spacer(),
+            statusType == "대기중"
+                ? Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.sp),
+                          color: Palette.waitingCardBg,
+                        ),
+                        width: 101.w,
+                        height: 42.h,
+                        child: Center(
+                          child: Text(
+                            statusType,
+                            style: Palette.h5White,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        child: Container(
+                          width: 36.w,
+                          height: 16.h,
+                          decoration: BoxDecoration(
+                            color: Palette.starIcon,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(28.5.sp),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'D-$dDay',
+                            style: TextStyle(fontSize: 13.sp),
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.sp),
+                      color: statusType == "승인"
+                          ? Palette.confirmCardBg
+                          : Palette.rejectCardBg,
+                    ),
+                    width: 101.w,
+                    height: 42.h,
+                    child: Center(
+                      child: Text(
+                        statusType,
+                        style: Palette.h5White,
+                      ),
+                    ),
+                  ),
+            SizedBox(
+              width: 30.w,
+            ),
+            Icon(
+              Icons.arrow_forward_ios_outlined,
+              size: 30.sp,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 //
 //
 // ListCardResearcher 위젯.
@@ -151,6 +266,7 @@ class ListCardResearcher extends StatelessWidget {
   final String num;
   final String dayTime;
   final String userId;
+
   const ListCardResearcher({
     super.key,
     required this.onTap,
@@ -179,8 +295,8 @@ class ListCardResearcher extends StatelessWidget {
             ),
             SizedBox(
               child: Text(
-                num,
-                style: Palette.h4,
+                idx.toString(),
+                style: Palette.filterContent,
               ),
             ),
             const Spacer(),
@@ -189,18 +305,12 @@ class ListCardResearcher extends StatelessWidget {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Text(
-                  userId,
-                  style: Palette.filterContent,
+                  num,
+                  style: Palette.meatNumStyle,
                 ),
               ),
             ),
             const Spacer(),
-            SizedBox(
-              child: Text(
-                dayTime,
-                style: Palette.filterContent,
-              ),
-            ),
             SizedBox(
               width: 5.w,
             ),
@@ -214,3 +324,79 @@ class ListCardResearcher extends StatelessWidget {
     );
   }
 }
+
+
+// class ListCardResearcherApprove extends StatelessWidget {
+//   final VoidCallback? onTap;
+//   final int idx;
+//   final String num;
+//   final String dayTime;
+//   final String userId;
+//   // final String statusType;
+
+//   const ListCardResearcherApprove({
+//     super.key,
+//     required this.onTap,
+//     required this.idx,
+//     required this.num,
+//     required this.dayTime,
+//     required this.userId,
+//     // required this.statusType,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: onTap,
+//       child: Container(
+//         width: 640.w,
+//         height: 72.w,
+//         decoration: BoxDecoration(
+//           border: Border(
+//             bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
+//           ),
+//         ),
+//         child: Row(
+//           children: [
+//             SizedBox(
+//               width: 5.w,
+//             ),
+//             SizedBox(
+//               child: Text(
+//                 num,
+//                 style: Palette.h4,
+//               ),
+//             ),
+//             const Spacer(),
+//             SizedBox(
+//               width: 160.w,
+//               child: SingleChildScrollView(
+//                 scrollDirection: Axis.horizontal,
+//                 child: Text(
+//                   // idx.toString(),
+//                   userId,
+//                   style: Palette.filterContent,
+//                 ),
+//               ),
+//             ),
+//             const Spacer(),
+//             SizedBox(
+//               child: Text(
+//                 // statusType,
+//                 dayTime,
+//                 style: Palette.filterContent,
+//               ),
+//             ),
+//             SizedBox(
+//               width: 5.w,
+//             ),
+//             Icon(
+//               Icons.arrow_forward_ios_outlined,
+//               size: 30.sp,
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
