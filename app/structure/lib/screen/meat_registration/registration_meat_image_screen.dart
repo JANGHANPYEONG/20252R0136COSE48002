@@ -220,11 +220,6 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                           await context
                               .read<RegistrationMeatImageViewModel>()
                               .saveMeatData(context);
-                          if (context.mounted) {
-                            context
-                                .read<RegistrationMeatImageViewModel>()
-                                .clickedTempSaveButton(context);
-                          }
                         }
                       : null,
                   text: context
