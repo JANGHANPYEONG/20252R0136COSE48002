@@ -33,7 +33,7 @@ class RemoteDataSource {
 
   /// 유저 비밀번호 검사 (POST)
   static Future<dynamic> checkUserPw(String jsonData) async {
-    dynamic response = await _postApi('user/pwd_check', jsonData);
+    dynamic response = await _postApi('user/pwd-check', jsonData);
     return response;
   }
 
@@ -45,7 +45,7 @@ class RemoteDataSource {
 
   /// 유저 중복검사 (GET)
   static Future<dynamic> dupliCheck(String userId) async {
-    dynamic response = await _getApi('user/duplicate_check?userId=$userId');
+    dynamic response = await _getApi('user/duplicate-check?userId=$userId');
     return response;
   }
 
@@ -58,7 +58,7 @@ class RemoteDataSource {
   /* 육류 관련 API */
   /// 육류 정보 전송 (POST)
   static Future<dynamic> sendMeatData(String? dest, String jsonData) async {
-    String endPoint = 'meat/add';
+    String endPoint = 'meat/add/';
     if (dest != null) {
       endPoint = 'meat/add/$dest';
     }

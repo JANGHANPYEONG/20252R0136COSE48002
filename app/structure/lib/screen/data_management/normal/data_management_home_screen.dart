@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/custom_table_calendar.dart';
-import 'package:structure/components/list_card.dart';
+import 'package:structure/components/list_card_normal.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
@@ -145,7 +145,7 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                           builder: (context, viewModel, child) =>
                               ListView.builder(
                             itemCount: viewModel.selectedList.length,
-                            itemBuilder: (context, index) => ListCard(
+                            itemBuilder: (context, index) => ListCardNormal(
                               onTap: () async =>
                                   await viewModel.onTap(index, context),
                               idx: index + 1,
@@ -278,6 +278,7 @@ class NormalFilterBox extends StatelessWidget {
                         onTap: (viewModel.dateStatus[3])
                             ? () => viewModel.onTapTable(1)
                             : null,
+                        // onTap :() => {},
                         child: Container(
                           width: 290.w,
                           height: 64.h,
