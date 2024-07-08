@@ -58,7 +58,7 @@ class RemoteDataSource {
   /* 육류 관련 API */
   /// 육류 정보 전송 (POST)
   static Future<dynamic> sendMeatData(String? dest, String jsonData) async {
-    String endPoint = 'meat/add';
+    String endPoint = 'meat/add/';
     if (dest != null) {
       endPoint = 'meat/add/$dest';
     }
