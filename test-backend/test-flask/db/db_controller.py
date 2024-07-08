@@ -65,10 +65,10 @@ def create_meat(meat_data: dict, db_session):
     if meat_data is None:
         raise Exception("Invalid Meat Data")
     # 1. Get the ID of the record in the SexType table
-    sex_type = db_session.query(SexInfo).filter_by(id=meat_data.get("sexType")).first()
+    sex_type = db_session.query(SexInfo).filter_by(value=meat_data.get("sexType")).first()
     # 2. Get the ID of the record in the GradeNum table
     grade_num = (
-        db_session.query(GradeInfo).filter_by(id=meat_data.get("gradeNum")).first()
+        db_session.query(GradeInfo).filter_by(value=meat_data.get("gradeNum")).first()
     )
     # 3. meat_data에 없는 필드 추가
 
@@ -235,6 +235,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
         db_session.merge(new_meat)
 
         # 2. Firestore -> S3
+        db_session.commit()
         transfer_folder_image(
             s3_conn=s3_conn,
             firestore_conn=firestore_conn,
@@ -243,7 +244,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
             new_meat=new_meat,
             folder="qr_codes",
         )
-        db_session.commit()
+        
     except Exception as e:
         db_session.rollback()
         raise e
@@ -287,6 +288,7 @@ def create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, da
                 new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
                 db_session.merge(new_SensoryEval)
 
+            db_session.commit()
             transfer_folder_image(
                 s3_conn,
                 firestore_conn,
@@ -295,7 +297,7 @@ def create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, da
                 new_SensoryEval,
                 "sensory_evals",
             )
-            db_session.commit()
+            
         else:
             raise Exception("No deepaging data in request")
     except Exception as e:
@@ -334,12 +336,13 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
             if meat:  # 수정하는 경우
                 if meat.statusType == 2:
                     raise Exception("Already confirmed meat data")
+                meat.statusType = 0
+                db_session.merge(meat)
             deepAgingId = None
             new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
             db_session.merge(new_SensoryEval)
-            meat.statusType = 0
-            db_session.merge(meat)
-
+            
+        db_session.commit()
         transfer_folder_image(
             s3_conn,
             firestore_conn,
@@ -348,7 +351,6 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
             new_SensoryEval,
             "sensory_evals",
         )
-        db_session.commit()
     except Exception as e:
         db_session.rollback()
         logger.exception(str(e))
