@@ -65,6 +65,11 @@ const LogInField = () => {
         `http://${apiIP}/user/login?userId=${loginEmail}`
       );
       const user = await response.json();
+      if (user.type === 'Normal') {
+        //아이디는 존재하지만 관리자가 아니라면
+        setLoginError('로그인 권한이 없습니다. 관리자에게 문의해주세요.');
+        return;
+      }
 
       try {
         await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
