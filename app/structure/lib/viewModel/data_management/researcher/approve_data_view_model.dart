@@ -1,9 +1,3 @@
-//
-//
-// 데이터 관리 페이지(ViewModel) : Researcher
-//
-//
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -12,10 +6,10 @@ import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
-class DataManagementHomeResearcherViewModel with ChangeNotifier {
+class ApproveDataViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-  DataManagementHomeResearcherViewModel(this.meatModel, this.userModel) {
+  ApproveDataViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
   late BuildContext _context;
@@ -75,7 +69,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     await _fetchData();
     filterlize();
-    print('filteredList = $filteredList');
+    print(filteredList);
     isLoading = false;
     notifyListeners();
   }

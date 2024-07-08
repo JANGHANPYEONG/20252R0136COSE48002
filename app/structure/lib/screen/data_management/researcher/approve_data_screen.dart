@@ -1,30 +1,32 @@
 //
 //
-// 데이터 관리 페이지(View) : Researcher
+//
+// 일반 데이터 승인 화면 (Researcher)
+//
 //
 //
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/custom_table_calendar.dart';
 import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
+import 'package:structure/config/userfuls.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 
-class DataManagementHomeResearcherScreen extends StatefulWidget {
-  const DataManagementHomeResearcherScreen({super.key});
+class ApproveDataScreen extends StatefulWidget {
+  const ApproveDataScreen({super.key});
 
   @override
-  State<DataManagementHomeResearcherScreen> createState() =>
-      _DataManagementHomeResearcherScreenState();
+  State<ApproveDataScreen> createState() => _ApproveDataScreenState();
 }
 
-class _DataManagementHomeResearcherScreenState
-    extends State<DataManagementHomeResearcherScreen> {
+class _ApproveDataScreenState extends State<ApproveDataScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -40,6 +42,7 @@ class _DataManagementHomeResearcherScreenState
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      SizedBox(height: 40.h),
                       // 필터 버튼에 대한 기능을 정의한다.
                       InkWell(
                         // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
@@ -67,11 +70,15 @@ class _DataManagementHomeResearcherScreenState
                           ),
                         ),
                       ),
+
                       SizedBox(
                         width: 30.w,
                       ),
                     ],
                   ),
+                  // SizedBox(
+                  //   height: 40.h,
+                  // ),
                   context
                           .watch<DataManagementHomeResearcherViewModel>()
                           .isOpnedFilter
@@ -135,8 +142,11 @@ class _DataManagementHomeResearcherScreenState
                     ],
                   ),
                   Container(
-                    margin: EdgeInsets.symmetric(vertical: 10.h),
-                  ),
+                      margin: EdgeInsets.symmetric(vertical: 10.h),
+                      // 'CustomTableBar' 컴포넌트를 통해 table label 지정.
+                      child: const CustomTableBarResearcherApprove(
+                        isNormal: false,
+                      )),
                   SizedBox(
                     height: 800.h,
                     width: 640.w,
@@ -144,13 +154,21 @@ class _DataManagementHomeResearcherScreenState
                       // ListView 위젯을 활용하여, ListCard 출력 : 데이터 목록 표현
                       builder: (context, viewModel, child) => ListView.builder(
                         itemCount: viewModel.selectedList.length,
-                        itemBuilder: (context, index) => ListCardResearcher(
-                          onTap: () async =>
-                              await viewModel.onTap(index, context),
+                        itemBuilder: (context, index) => ListCard(
+                          onTap:
+                              // () async =>
+                              //     await viewModel.onTap(index, context),
+                              null, // 승인, 반려 화면 만들면 여기서 넘어가도록 함
                           idx: index + 1,
                           num: viewModel.selectedList[index]["id"]!,
-                          dayTime: viewModel.selectedList[index]["dayTime"]!,
-                          userId: viewModel.selectedList[index]['userId']!,
+                          dayTime: viewModel.selectedList[index]["userId"]!,
+                          statusType: viewModel.selectedList[index]
+                                  ["statusType"] ??
+                              '대기중',
+                          dDay: 3 -
+                              Usefuls.calculateDateDifference(
+                                viewModel.selectedList[index]["createdAt"]!,
+                              ),
                         ),
                       ),
                     ),
@@ -172,12 +190,6 @@ class _DataManagementHomeResearcherScreenState
     );
   }
 }
-
-//
-//
-// FilterBox 컴포넌트 : Researcher
-//
-//
 
 class ResercherFilterBox extends StatelessWidget {
   const ResercherFilterBox({
@@ -219,6 +231,7 @@ class ResercherFilterBox extends StatelessWidget {
                         onTap: (index) => context
                             .read<DataManagementHomeResearcherViewModel>()
                             .onTapDate(index),
+                        // null,
                         status: context
                             .watch<DataManagementHomeResearcherViewModel>()
                             .dateStatus),
@@ -398,16 +411,6 @@ class ResercherFilterBox extends StatelessWidget {
     );
   }
 }
-
-//
-//
-// FilterRow 컴포넌트 : Researcher
-//
-// 매개변수
-// 1. 필터의 요소들이 들어감. (날짜, 정렬 방식, 육종 등)
-// 2. 필터를 클릭할 때, 작업할 내용이 들어감.
-// 3. 필터의 작용을 관리할 리스트 (어느 버튼이 눌린지를 체크)
-//
 
 class FilterRow extends StatelessWidget {
   const FilterRow({

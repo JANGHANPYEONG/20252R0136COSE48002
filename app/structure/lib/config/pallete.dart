@@ -264,4 +264,10 @@ class Palette {
       fontSize: 33.sp,
       fontWeight: FontWeight.w700,
       color: const Color.fromARGB(255, 255, 255, 255));
+
+  static TextStyle meatNumStyle = TextStyle(
+    fontSize: 27.sp,
+    fontWeight: FontWeight.w600,
+    color: Colors.black,
+  );
 }
