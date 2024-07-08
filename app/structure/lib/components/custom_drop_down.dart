@@ -30,7 +30,7 @@ class CustomDropdown extends StatefulWidget {
   });
 
   @override
-  _CustomDropdownState createState() => _CustomDropdownState();
+  State<CustomDropdown> createState() => _CustomDropdownState();
 }
 
 class _CustomDropdownState extends State<CustomDropdown> {
@@ -56,7 +56,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(0.0, size.height),
+          offset: Offset(0, size.height + 16.h),
           child: Material(
             elevation: 0.0,
             child: Container(
@@ -67,9 +67,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                   color: Palette.meatRegiCardBg,
                 ),
               ),
-              constraints: BoxConstraints(
-                maxHeight: 400.h,
-              ),
+              constraints: BoxConstraints(maxHeight: 400.h),
               child: Scrollbar(
                 thumbVisibility: true,
                 child: ListView(

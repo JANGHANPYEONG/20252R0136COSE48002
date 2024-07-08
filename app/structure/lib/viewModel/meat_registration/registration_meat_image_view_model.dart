@@ -175,7 +175,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
               "seqno": meatModel.seqno
             }));
       }
-      // meatModel.checkCompleted();
+      meatModel.checkCompleted();
       if (context.mounted) await tempSave(context);
       _movePage();
     } catch (e) {
@@ -241,7 +241,6 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      print(meatModel.toJsonTemp());
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();

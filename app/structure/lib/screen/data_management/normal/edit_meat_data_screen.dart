@@ -24,9 +24,9 @@ class EditMeatDataScreen extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            SizedBox(
-              height: 48.h,
-            ),
+            SizedBox(height: 48.h),
+
+            // 육류 기본 정보
             InkWell(
               onTap: () =>
                   context.read<EditMeatDataViewModel>().clicekdBasic(context),
@@ -36,9 +36,9 @@ class EditMeatDataScreen extends StatelessWidget {
                 imageUrl: 'assets/images/meat_info.png',
               ),
             ),
-            SizedBox(
-              height: 18.h,
-            ),
+            SizedBox(height: 18.h),
+
+            // 육류 단면 촬영
             InkWell(
               onTap: () =>
                   context.read<EditMeatDataViewModel>().clickedImage(context),
@@ -48,9 +48,9 @@ class EditMeatDataScreen extends StatelessWidget {
                 imageUrl: 'assets/images/meat_image.png',
               ),
             ),
-            SizedBox(
-              height: 18.h,
-            ),
+            SizedBox(height: 18.h),
+
+            // 신선육 관능 평가
             InkWell(
               onTap: () =>
                   context.read<EditMeatDataViewModel>().clicekdFresh(context),

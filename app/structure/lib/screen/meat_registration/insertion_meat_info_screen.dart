@@ -46,60 +46,47 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 50.w),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 70.h,
-                  ),
+                  SizedBox(height: 56.h),
+                  Text('종류', style: Palette.h4),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
-                      Text('종류', style: Palette.h4),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  Row(
-                    children: [
+                      // 소
                       Container(
+                        width: 116.w,
+                        height: 72.h,
                         decoration: BoxDecoration(
                           color: context
                                   .watch<InsertionMeatInfoViewModel>()
                                   .speciesCheckFunc()
                               ? Palette.basicSpeciesColor
                               : Palette.checkSpeciesColor,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(35.0),
+                          borderRadius: BorderRadius.all(Radius.circular(50.r)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "소",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30.sp,
+                              fontWeight: FontWeight.w700,
+                              color: context
+                                      .watch<InsertionMeatInfoViewModel>()
+                                      .speciesCheckFunc()
+                                  ? Palette.basicSpeciesTextColor
+                                  : Palette.checkSpeciesTextColor,
+                            ),
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            const SizedBox(
-                              height: 13,
-                            ),
-                            SizedBox(
-                              width: 80,
-                              height: 40,
-                              child: Text(
-                                "소",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w700,
-                                  color: context
-                                          .watch<InsertionMeatInfoViewModel>()
-                                          .speciesCheckFunc()
-                                      ? Palette.basicSpeciesTextColor
-                                      : Palette.checkSpeciesTextColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      SizedBox(width: 16.w),
+
+                      // 돼지
                       Container(
+                        width: 116.w,
+                        height: 72.h,
                         decoration: BoxDecoration(
                           color: context
                                   .watch<InsertionMeatInfoViewModel>()
@@ -110,44 +97,28 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                             Radius.circular(35.0),
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            const SizedBox(
-                              height: 14,
+                        child: Center(
+                          child: Text(
+                            "돼지",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30.sp,
+                              fontWeight: FontWeight.w700,
+                              color: context
+                                      .watch<InsertionMeatInfoViewModel>()
+                                      .speciesCheckFunc()
+                                  ? Palette.checkSpeciesTextColor
+                                  : Palette.basicSpeciesTextColor,
                             ),
-                            SizedBox(
-                              width: 80,
-                              height: 40,
-                              child: Text(
-                                "돼지",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w700,
-                                  color: context
-                                          .watch<InsertionMeatInfoViewModel>()
-                                          .speciesCheckFunc()
-                                      ? Palette.checkSpeciesTextColor
-                                      : Palette.basicSpeciesTextColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: 42.0.h,
-                  ),
-                  Row(
-                    children: [
-                      Text('부위', style: Palette.h4),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
+                  SizedBox(height: 30.h),
+                  Text('부위', style: Palette.h4),
+                  SizedBox(height: 12.h),
+
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
                   CustomDropdown(
                     hintText: Text('대분할', style: Palette.dropDownTitleStyle),
@@ -168,9 +139,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                           }
                         : null,
                   ),
-                  SizedBox(
-                    height: 16.h,
-                  ),
+                  SizedBox(height: 16.h),
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
                   CustomDropdown(
                     hintText: Text('소분할', style: Palette.dropDownTitleStyle),

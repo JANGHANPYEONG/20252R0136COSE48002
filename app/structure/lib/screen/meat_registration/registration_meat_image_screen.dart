@@ -94,6 +94,8 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 30.h),
+
+              // 사진
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -102,6 +104,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                   // 촬영 사진
                   context.watch<RegistrationMeatImageViewModel>().imagePath !=
                           null
+                      // 등록된 이미지가 있음
                       ? Stack(
                           // 삭제 버튼을 이미지 위에 띄우기 위한 'stack' 위젯 사용
                           children: [
@@ -120,6 +123,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                               RegistrationMeatImageViewModel>()
                                           .imagePath!
                                           .contains('http')
+                                  // s3에 업로드 된 이미지 (수정)
                                   ? Image.network(
                                       context
                                           .read<
@@ -149,7 +153,9 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                           StackTrace? stackTrace) {
                                         return const Icon(Icons.error);
                                       },
+                                      fit: BoxFit.cover,
                                     )
+                                  // 이미지 촬영 중 임시저장 된 사진
                                   : Image.file(
                                       File(context
                                           .read<
@@ -182,6 +188,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                           ],
                         )
 
+                      // 등록된 이미지가 없음 (사진 촬영)
                       // 이미지 삽입 버튼
                       : InkWell(
                           onTap: () => context
