@@ -133,7 +133,7 @@ const labDBFieldToSemanticWord = {
   WBSF: '전단가',
   cardepsin_activity: '카뎁신활성도',
   MFI: '근소편화지수',
-  sourness: '신만',
+  sourness: '신맛',
   bitterness: '진한맛',
   umami: '감칠맛',
   richness: '후미',
