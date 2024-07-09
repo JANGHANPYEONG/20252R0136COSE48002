@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:structure/components/custom_pop_up.dart';
 
 class CameraViewModel with ChangeNotifier {
   CameraViewModel() {
@@ -66,6 +67,7 @@ class CameraViewModel with ChangeNotifier {
       }
     } catch (e) {
       // 사진 촬영 오류
+      if (context.mounted) showCameraErrorPopup(context);
       print('Error taking picture');
     }
   }
