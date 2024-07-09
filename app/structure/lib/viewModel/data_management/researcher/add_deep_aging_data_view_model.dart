@@ -97,12 +97,14 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
       }
     });
     print(jsonData);
+
     try {
       dynamic response =
           await RemoteDataSource.sendMeatData('deep-aging-data', jsonData);
+      print('response : $response');
       if (response == null) {
         throw Error();
-      } else {
+      } else if (response == 400) {
         meatModel.deepAgingData!.add({
           "deepAgingNum": '$seqno회',
           "date": '$selectedYear$selectedMonth$selectedDay',
@@ -112,9 +114,7 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
         _context = context;
         _movePage();
       }
-    } catch (e) {
-      print("에러발생: $e");
-    }
+    } catch (e) {}
   }
 
   void _movePage() {

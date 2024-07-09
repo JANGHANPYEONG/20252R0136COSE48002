@@ -118,8 +118,7 @@ class RemoteDataSource {
         return response.body;
       } else {
         print('POST 요청 실패: (${response.statusCode})${response.body}');
-        print(response.body);
-        return;
+        return response.statusCode;
       }
     } catch (e) {
       print('POST 요청 중 예외 발생: $e');

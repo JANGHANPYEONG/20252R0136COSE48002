@@ -48,12 +48,25 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
               children: [
                 // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
                 SizedBox(height: 10.h),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: const Text(
-                    'Flavor 풍미',
-                    textAlign: TextAlign.left,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(width: 40.w),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: const Row(children: [
+                        Text(
+                          'Flavor ',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '풍미',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ]),
+                    ),
+                  ],
                 ),
                 PartEval(
                   idx: 0,
@@ -64,7 +77,24 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                       .onChangedFlavor(value),
                 ),
                 SizedBox(
-                  height: 50.h,
+                  height: 30.h,
+                ),
+                Row(
+                  children: [
+                    SizedBox(width: 40.w),
+                    const Row(children: [
+                      Text(
+                        'Juiciness ',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '다즙성',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ]),
+                  ],
                 ),
                 PartEval(
                   idx: 1,
@@ -75,7 +105,24 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                       .onChangedJuiciness(value),
                 ),
                 SizedBox(
-                  height: 50.h,
+                  height: 30.h,
+                ),
+                Row(
+                  children: [
+                    SizedBox(width: 40.w),
+                    const Row(children: [
+                      Text(
+                        'Tenderness ',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '연도',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ]),
+                  ],
                 ),
                 PartEval(
                   idx: 2,
@@ -86,7 +133,24 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                       .onChangedTenderness(value),
                 ),
                 SizedBox(
-                  height: 50.h,
+                  height: 30.h,
+                ),
+                Row(
+                  children: [
+                    SizedBox(width: 40.w),
+                    const Row(children: [
+                      Text(
+                        'Umami ',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '표면육즙',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ]),
+                  ],
                 ),
                 PartEval(
                   idx: 3,
@@ -97,7 +161,24 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                       .onChangedUmami(value),
                 ),
                 SizedBox(
-                  height: 50.h,
+                  height: 30.h,
+                ),
+                Row(
+                  children: [
+                    SizedBox(width: 40.w),
+                    const Row(children: [
+                      Text(
+                        'Palatability ',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '기호도',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ]),
+                  ],
                 ),
                 PartEval(
                   idx: 4,
