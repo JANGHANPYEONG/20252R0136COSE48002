@@ -120,6 +120,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                   SizedBox(height: 12.h),
 
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
+                  // 대분류
                   CustomDropdown(
                     hintText: Text('대분할', style: Palette.dropDownTitleStyle),
                     value:
@@ -140,7 +141,9 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         : null,
                   ),
                   SizedBox(height: 16.h),
+
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
+                  // 소분류
                   CustomDropdown(
                     hintText: Text('소분할', style: Palette.dropDownTitleStyle),
                     value: context

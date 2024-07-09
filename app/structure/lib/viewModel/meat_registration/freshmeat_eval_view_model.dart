@@ -111,9 +111,12 @@ class FreshMeatEvalViewModel with ChangeNotifier {
 
   // 데이터를 객체에 할당
   Future<void> saveMeatData(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+    await tempSave(context);
     try {
       if (meatModel.seqno == 0) {
-        // 원육 - 등록, 수정
+        // 원육 - 등록
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
         meatModel.freshmeat!['period'] = Usefuls.getMeatPeriod(meatModel);
@@ -123,10 +126,10 @@ class FreshMeatEvalViewModel with ChangeNotifier {
         meatModel.freshmeat!['surfaceMoisture'] = surface;
         meatModel.freshmeat!['overall'] = overall;
 
+        // 수정
         if (meatModel.id != null) {
-          // 수정
           await RemoteDataSource.sendMeatData(
-              'sensory_eval', meatModel.toJsonFresh());
+              'sensory-eval', meatModel.toJsonFresh());
         }
       } else {
         // 처리육
@@ -141,10 +144,11 @@ class FreshMeatEvalViewModel with ChangeNotifier {
         meatModel.deepAgedFreshmeat!['overall'] = overall;
 
         await RemoteDataSource.sendMeatData(
-            'sensory_eval', meatModel.toJsonFresh());
+            'sensory-eval', meatModel.toJsonFresh());
       }
       meatModel.checkCompleted();
-      _context = context;
+      isLoading = false;
+      notifyListeners();
       _goNext();
     } catch (e) {
       print('에러발생: $e');
@@ -167,23 +171,15 @@ class FreshMeatEvalViewModel with ChangeNotifier {
     }
   }
 
-  /// 임시 저장 Part
-
   /// 임시저장 버튼
-  Future<void> clickedTempSaveButton(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
+  Future<void> tempSave(BuildContext context) async {
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      isLoading = false;
-      notifyListeners();
       _context = context;
     } catch (e) {
       print('에러발생: $e');
     }
-    isLoading = false;
-    notifyListeners();
   }
 }
