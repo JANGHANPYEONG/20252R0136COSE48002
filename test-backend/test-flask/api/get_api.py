@@ -292,13 +292,13 @@ def getMeatDataByRangeStatusType():
         if request.method == "GET":
             db_session = current_app.db_session
             statusType_value = safe_int(request.args.get("statusType"))
-            offset = safe_int(request.args.get("offset"))
-            count = safe_int(request.args.get("count"))
+            offset = request.args.get("offset")
+            count = request.args.get("count")
             start_str = request.args.get('start')
             end_str = request.args.get('end')
 
-            start = convert2datetime(start_str, 1)
-            end = convert2datetime(end_str, 1)
+            start = convert2datetime(start_str, 0)
+            end = convert2datetime(end_str, 0)
             if statusType_value:
                 return _getMeatDataByRangeStatusType(
                     db_session, statusType_value, offset, count, start, end
