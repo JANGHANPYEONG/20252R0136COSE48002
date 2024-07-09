@@ -563,13 +563,13 @@ def get_range_meat_data(
 ):
     offset = safe_int(offset)
     count = safe_int(count)
-    start = convert2datetime(start, 1)
-    end = convert2datetime(end, 1)
+    start = convert2datetime(start, 0)
+    end = convert2datetime(end, 0)
     # Base Query
     query = db_session.query(Meat).join(
         User, User.userId == Meat.userId
     )  # Join with User
-
+    
     # Sorting and Filtering
     if farmAddr is not None:
         if farmAddr:  # true: 가나다순 정렬

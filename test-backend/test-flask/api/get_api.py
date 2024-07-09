@@ -27,8 +27,10 @@ def getMeatData():
     try:
         if request.method == "GET":
             db_session = current_app.db_session
+            offset = request.args.get("offset")
+            count = request.args.get("count")
             return (
-                get_range_meat_data(db_session, 0, Meat.query.count())
+                get_range_meat_data(db_session, offset=offset, count=count)
                 .get_json()
             )
 
