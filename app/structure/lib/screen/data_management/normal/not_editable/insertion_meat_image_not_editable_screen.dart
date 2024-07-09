@@ -132,20 +132,6 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              Container(
-                margin: EdgeInsets.only(bottom: 40.h),
-                child: MainButton(
-                  onPressed: () {
-                    context
-                        .read<InsertionMeatImageNotEditableViewModel>()
-                        .clickedNextButton(context);
-                  },
-                  text: '완료',
-                  width: 640.w,
-                  height: 96.h,
-                  mode: 1,
-                ),
-              ),
             ],
           ),
           context.watch<InsertionMeatImageNotEditableViewModel>().isLoading

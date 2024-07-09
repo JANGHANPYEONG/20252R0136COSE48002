@@ -23,7 +23,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(
+      appBar: const CustomEditAppBar(
         title: '육류 단면 촬영',
         backButton: true,
         closeButton: false,

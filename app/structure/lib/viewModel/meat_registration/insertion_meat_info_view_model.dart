@@ -10,6 +10,7 @@ import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
+import 'package:structure/components/custom_pop_up.dart';
 
 class InsertionMeatInfoViewModel with ChangeNotifier {
   MeatModel meatModel;
@@ -134,12 +135,15 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  late BuildContext _context;
-
   // 저장 버튼 : 객체에 데이터 할당
   Future<void> clickedNextButton(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
+    await tempSave();
     saveMeatData();
     meatModel.checkCompleted();
+
     if (meatModel.id != null) {
       final response =
           await RemoteDataSource.sendMeatData(null, meatModel.toJsonBasic());
@@ -147,35 +151,31 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       if (response == null) {
         // 에러 페이지
       } else {
-        _context = context;
-        _movePage();
+        isLoading = false;
+        notifyListeners();
+
+        if (context.mounted) {
+          showDataManageSucceedPopup(context, () {
+            context.go('/home/data-manage-normal/edit');
+          });
+        }
       }
     } else {
+      isLoading = false;
+      notifyListeners();
+
       context.go('/home/registration');
     }
   }
 
-  void _movePage() {
-    _context.go('/home/data-manage-normal/edit');
-  }
-
-  /// 임시 저장 Part
-
   /// 임시저장 버튼
-  Future<void> clickedTempSaveButton(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
+  Future<void> tempSave() async {
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      isLoading = false;
-      notifyListeners();
-      _context = context;
     } catch (e) {
       print('에러발생: $e');
     }
-    isLoading = false;
-    notifyListeners();
   }
 }

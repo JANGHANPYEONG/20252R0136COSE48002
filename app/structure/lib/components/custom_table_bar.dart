@@ -48,6 +48,52 @@ class CustomTableBar extends StatelessWidget {
   }
 }
 
+class CustomTableNormalBar extends StatelessWidget {
+  const CustomTableNormalBar({super.key, required this.isNormal});
+  final bool isNormal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey[50],
+      padding: EdgeInsets.only(top: 18.h),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 40.w,
+              ),
+              SizedBox(
+                width: 200.w,
+                child: Text('관리번호', style: Palette.h5),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 150.w,
+                child: Text('날짜', style: Palette.h5),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 80.w,
+                child: Text('관리', style: Palette.h5),
+              ),
+              SizedBox(
+                width: 80.w,
+              )
+            ],
+          ),
+          Container(
+              margin: EdgeInsets.only(top: 18.h),
+              height: 0,
+              child: const Divider()),
+        ],
+      ),
+    );
+  }
+}
+
 class CustomTableBarResearcherApprove extends StatelessWidget {
   const CustomTableBarResearcherApprove({super.key, required this.isNormal});
   final bool isNormal;

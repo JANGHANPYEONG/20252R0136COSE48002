@@ -153,7 +153,7 @@ class StepCard2 extends StatelessWidget {
             child: Center(
               // 데이터 수정이 가능한지에 따라 텍스트 스타일을 다르게 한다.
               child: Text(
-                isEditable ? '수정 가능' : '수정 불가',
+                isEditable ? '수정' : '수정 불가',
                 style:
                     isEditable ? Palette.editableText : Palette.notEditableText,
               ),

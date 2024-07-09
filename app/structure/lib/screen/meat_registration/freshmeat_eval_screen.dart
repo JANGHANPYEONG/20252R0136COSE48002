@@ -17,9 +17,7 @@ import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/meat_registration/freshmeat_eval_view_model.dart';
 
 class FreshMeatEvalScreen extends StatefulWidget {
-  const FreshMeatEvalScreen({
-    super.key,
-  });
+  const FreshMeatEvalScreen({super.key});
 
   @override
   State<FreshMeatEvalScreen> createState() => _FreshMeatEvalScreenState();
@@ -48,7 +46,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(
+      appBar: const CustomEditAppBar(
         title: '신선육 관능평가',
         backButton: true,
         closeButton: false,
@@ -237,12 +235,12 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                           context
                               .read<FreshMeatEvalViewModel>()
                               .saveMeatData(context);
-                          context
-                              .read<FreshMeatEvalViewModel>()
-                              .clickedTempSaveButton(context);
                         }
                       : null,
-                  text: '완료',
+                  text: context.read<FreshMeatEvalViewModel>().meatModel.id !=
+                          null
+                      ? '수정사항 저장'
+                      : '완료',
                   width: 658.w,
                   height: 104.h,
                   mode: 1,
