@@ -57,32 +57,32 @@ def getMeatDataById():
             if id is None:
                 raise Exception("Invalid Meat ID")
             result = get_meat(db_session, id)
-            user = get_user(db_session, result["userId"])["name"]
-            result["name"] = user
             if result:
+                user = get_user(db_session, result["userId"])["name"]
+                result["name"] = user
                 for k, v in result["rawmeat"].items():
+                    try:
+                        result["rawmeat_data_complete"] = (
+                            all(
+                                v is not None
+                                for v in result["rawmeat"][
+                                    "heatedmeat_sensory_eval"
+                                ].values()
+                            )
+                            and all(
+                                v is not None
+                                for v in result["rawmeat"]["probexpt_data"].values()
+                            )
+                            and all(
+                                (k == "deepAgingId" or v is not None)
+                                for k, v in result["rawmeat"]["sensory_eval"].items()
+                            )
+                        )
                         userId = v["userId"]
                         user = get_user(db_session, userId)["name"]
                         v["name"] = user
-                try:
-                    result["rawmeat_data_complete"] = (
-                        all(
-                            v is not None
-                            for v in result["rawmeat"][
-                                "heatedmeat_sensory_eval"
-                            ].values()
-                        )
-                        and all(
-                            v is not None
-                            for v in result["rawmeat"]["probexpt_data"].values()
-                        )
-                        and all(
-                            (k == "deepAgingId" or v is not None)
-                            for k, v in result["rawmeat"]["sensory_eval"].items()
-                        )
-                    )
-                except:
-                    result["rawmeat_data_complete"] = False
+                    except:
+                        result["rawmeat_data_complete"] = False
 
                 result["processedmeat_data_complete"] = {}
 
@@ -297,8 +297,8 @@ def getMeatDataByRangeStatusType():
             start_str = request.args.get('start')
             end_str = request.args.get('end')
 
-            start = convert2datetime(start_str, 1)
-            end = convert2datetime(end_str, 1)
+            start = convert2datetime(start_str, 0)
+            end = convert2datetime(end_str, 0)
             if statusType_value:
                 return _getMeatDataByRangeStatusType(
                     db_session, statusType_value, offset, count, start, end
