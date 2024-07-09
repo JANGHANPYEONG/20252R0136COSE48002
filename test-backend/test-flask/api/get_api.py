@@ -30,8 +30,10 @@ def getMeatData():
             db_session = current_app.db_session
             offset = request.args.get("offset")
             count = request.args.get("count")
+            start = request.args.get("start")
+            end = request.args.get("end")
             return (
-                get_range_meat_data(db_session, offset=offset, count=count)
+                get_range_meat_data(db_session, offset, count, start, end)
                 .get_json()
             )
 
