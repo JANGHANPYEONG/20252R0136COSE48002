@@ -11,7 +11,6 @@ class DataManagementHomeViewModel with ChangeNotifier {
   DataManagementHomeViewModel(this.userModel) {
     _initialize();
   }
-  late BuildContext _context;
   // 초기 리스트
   List<Map<String, String>> numList = [];
 
@@ -364,12 +363,10 @@ class DataManagementHomeViewModel with ChangeNotifier {
       notifyListeners();
       dynamic response = await RemoteDataSource.getMeatData(id);
       if (response == null) throw Error();
-      meatModel.reset();
-      meatModel.fromJson(response);
+      meatModel.reset(); // meat model 초기화
+      meatModel.fromJson(response); // by-id 불러온 정보 저장
       meatModel.seqno = 0;
-      print(meatModel);
-      _context = context;
-      _movePage();
+      if (context.mounted) context.go('/home/data-manage-normal/edit');
     } catch (e) {
       print("에러발생: $e");
     }
@@ -390,9 +387,5 @@ class DataManagementHomeViewModel with ChangeNotifier {
         return id.contains(insertedText);
       }).toList();
     }
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-normal/edit');
   }
 }

@@ -66,14 +66,12 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
           children: [
             SizedBox(height: 49.h),
             Row(
-              // mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 20.h,
-                ),
+                SizedBox(width: 20.h),
                 Form(
                   key: context.read<InsertionTraceNumViewModel>().formKey,
+
                   // MainTextField 컴포넌트를 이용하여, textfield를 구현.
                   child: MainTextField(
                     controller: context
@@ -83,6 +81,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                     formatter: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9L]'))
                     ],
+
                     // 유효성 검사
                     validateFunc: (value) {
                       if (value!.isEmpty || value.length < 12) {
@@ -91,16 +90,19 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                         return null;
                       }
                     },
+
                     // 입력된 텍스트 값(value)을 저장할 때 사용.
                     onSaveFunc: (value) {
                       context.read<InsertionTraceNumViewModel>().traceNum =
                           value!;
                     },
+
                     // 입력된 텍스트 값(value)이 변경될 때 사용.
                     onChangeFunc: (value) {
                       context.read<InsertionTraceNumViewModel>().traceNum =
                           value;
                     },
+
                     // field에서 완료 버튼을 누를 때 호출.
                     onFieldFunc: (value) {
                       context.read<InsertionTraceNumViewModel>().traceNum =
@@ -114,7 +116,6 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                             .read<InsertionTraceNumViewModel>()
                             .textEditingController
                             .text;
-                        // print('currentTExt : $currentText');
                         if (currentText.isNotEmpty &&
                             currentText.length >= 12) {
                           context.read<InsertionTraceNumViewModel>().traceNum =
@@ -124,10 +125,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                               .start(context);
                         }
                       },
-                      child: const Icon(
-                        Icons.search,
-                        size: 30.0,
-                      ),
+                      child: const Icon(Icons.search, size: 30.0),
                     ),
                     canAlert: true,
                     width: 600.w,
@@ -135,6 +133,8 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                     maxLength: 15,
                   ),
                 ),
+
+                // 취소 버튼
                 SizedBox(
                   width: 50,
                   child: TextButton(
@@ -155,9 +155,8 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                 ),
               ],
             ),
-            const SizedBox(
-              height: 5.0,
-            ),
+            const SizedBox(height: 5.0),
+
             // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
             if (context.watch<InsertionTraceNumViewModel>().isAllInserted == 1)
               Expanded(
