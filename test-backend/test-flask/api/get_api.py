@@ -61,6 +61,10 @@ def getMeatDataById():
                 user = get_user(db_session, result["userId"])["name"]
                 result["name"] = user
                 for k, v in result["rawmeat"].items():
+                    if v is not None:
+                        userId = v["userId"]
+                        user = get_user(db_session, userId)["name"]
+                        v["name"] = user
                     try:
                         result["rawmeat_data_complete"] = (
                             all(
@@ -78,9 +82,6 @@ def getMeatDataById():
                                 for k, v in result["rawmeat"]["sensory_eval"].items()
                             )
                         )
-                        userId = v["userId"]
-                        user = get_user(db_session, userId)["name"]
-                        v["name"] = user
                     except:
                         result["rawmeat_data_complete"] = False
 
@@ -292,8 +293,8 @@ def getMeatDataByRangeStatusType():
         if request.method == "GET":
             db_session = current_app.db_session
             statusType_value = safe_int(request.args.get("statusType"))
-            offset = safe_int(request.args.get("offset"))
-            count = safe_int(request.args.get("count"))
+            offset = request.args.get("offset")
+            count = request.args.get("count")
             start_str = request.args.get('start')
             end_str = request.args.get('end')
 

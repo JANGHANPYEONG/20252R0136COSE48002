@@ -1,3 +1,4 @@
+import pprint
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -821,6 +822,8 @@ def _getMeatDataByStatusType(db_session, varified):
 def _getMeatDataByRangeStatusType(
     db_session, varified, offset, count, start=None, end=None
 ):
+    offset = safe_int(offset)
+    count = safe_int(count)
     # Base query
     query = (
         db_session.query(Meat)

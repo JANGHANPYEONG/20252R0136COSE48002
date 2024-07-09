@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:structure/components/custom_dialog.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -74,7 +75,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       // 등록, 수정
       imagePath = meatModel.imagePath;
       if (imagePath != null && meatModel.freshmeat != null) {
-        userName = meatModel.freshmeat!['userName'] ?? '-';
+        userName = meatModel.freshmeat!['name'] ?? '-';
         if (meatModel.freshmeat!['createdAt'] != null) {
           fetchDate(meatModel.freshmeat!['createdAt']);
           date = '${time.year}.${time.month}.${time.day}';
@@ -141,19 +142,18 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
   Future<void> saveMeatData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
-    _context = context;
+
+    _context = context; // 팝업을 위한 context 설정
     try {
       if (meatModel.seqno == 0) {
         // 원육
         meatModel.imagePath = imagePath;
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
-        meatModel.freshmeat!['userName'] = userName;
+        meatModel.freshmeat!['name'] = userName;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
-        if (meatModel.id == null) {
-          // 등록
-        } else {
-          // 수정
+        if (meatModel.id != null) {
+          // meatModel이 존재할 때는 바로 이미지 적용
           await _sendImageToFirebase();
           await RemoteDataSource.sendMeatData(
               'sensory-eval', meatModel.toJsonFresh());
@@ -163,7 +163,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.deepAgedImage = imagePath;
         meatModel.deepAgedFreshmeat ??= {};
         meatModel.deepAgedFreshmeat!['userId'] = meatModel.userId;
-        meatModel.deepAgedFreshmeat!['userName'] = userName;
+        meatModel.deepAgedFreshmeat!['name'] = userName;
         meatModel.deepAgedFreshmeat!['createdAt'] = Usefuls.getCurrentDate();
         await _sendImageToFirebase();
         await RemoteDataSource.sendMeatData(
@@ -232,6 +232,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     } catch (e) {
       print(e);
       // 에러 페이지
+      if (_context.mounted) showFileUploadFailPopup(_context);
       throw Error();
     }
   }
