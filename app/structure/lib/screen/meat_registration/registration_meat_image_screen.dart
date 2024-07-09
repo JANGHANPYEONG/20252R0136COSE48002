@@ -23,10 +23,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomEditAppBar(
+      appBar: CustomAppBar(
         title: '육류 단면 촬영',
         backButton: true,
         closeButton: false,
+        backButtonOnPressed: context
+            .read<RegistrationMeatImageViewModel>()
+            .backBtnPressed(context),
       ),
       body: Stack(
         children: [
@@ -243,8 +246,9 @@ class RegistrationMeatImageScreen extends StatelessWidget {
               ),
             ],
           ),
+
           // 로딩 화면
-          context.watch<RegistrationMeatImageViewModel>().isLoading
+          context.read<RegistrationMeatImageViewModel>().isLoading
               ? const Center(child: LoadingScreen())
               : Container(),
         ],

@@ -6,6 +6,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_dialog.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -63,6 +65,11 @@ class FreshMeatEvalViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 뒤로가기 버튼
+  VoidCallback? backBtnPressed(BuildContext context) {
+    return () => showExitDialog(context);
+  }
+
   // 관능평가 데이터 값 할당
   void onChangedMarbling(double value) {
     marbling = double.parse(value.toStringAsFixed(1));
@@ -113,7 +120,10 @@ class FreshMeatEvalViewModel with ChangeNotifier {
   Future<void> saveMeatData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
+
+    // 임시저장
     await tempSave(context);
+
     try {
       if (meatModel.seqno == 0) {
         // 원육 - 등록
@@ -163,7 +173,9 @@ class FreshMeatEvalViewModel with ChangeNotifier {
         _context.go('/home/registration');
       } else {
         // 수정
-        _context.go('/home/data-manage-normal/edit');
+        showDataManageSucceedPopup(_context, () {
+          _context.go('/home/data-manage-normal/edit');
+        });
       }
     } else {
       // 처리육
