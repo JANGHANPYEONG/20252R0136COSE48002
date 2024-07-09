@@ -299,15 +299,14 @@ class ListCardResearcher extends StatelessWidget {
                 style: Palette.filterContent,
               ),
             ),
-            const Spacer(),
+            // const Spacer(),
+            SizedBox(width: 50.w),
             SizedBox(
-              width: 160.w,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Text(
-                  num,
-                  style: Palette.meatNumStyle,
-                ),
+              width: 250.w,
+              child: Text(
+                num,
+                style: Palette.meatNumStyle,
+                textAlign: TextAlign.left,
               ),
             ),
             const Spacer(),
@@ -317,6 +316,7 @@ class ListCardResearcher extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_outlined,
               size: 30.sp,
+              color: Colors.grey,
             )
           ],
         ),

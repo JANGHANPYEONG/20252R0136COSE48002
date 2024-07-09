@@ -100,7 +100,7 @@ class HeatedMeatEvalViewModel with ChangeNotifier {
 
     try {
       dynamic response = await RemoteDataSource.sendMeatData(
-          'heatedmeat_eval', meatModel.toJsonHeated());
+          'heatedmeat-eval', meatModel.toJsonHeated());
       if (response == null) {
         throw Error();
       } else {

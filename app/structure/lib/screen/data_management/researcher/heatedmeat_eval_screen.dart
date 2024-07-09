@@ -44,14 +44,19 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
         child: Stack(
           children: [
             Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              // crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
-                SizedBox(
-                  height: 10.h,
+                SizedBox(height: 10.h),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    'Flavor 풍미',
+                    textAlign: TextAlign.left,
+                  ),
                 ),
                 PartEval(
-                  idx : 0,
+                  idx: 0,
                   selectedText: text[0],
                   value: context.watch<HeatedMeatEvalViewModel>().flavor,
                   onChanged: (value) => context
@@ -62,7 +67,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
-                  idx : 1,
+                  idx: 1,
                   selectedText: text[1],
                   value: context.read<HeatedMeatEvalViewModel>().juiciness,
                   onChanged: (value) => context
@@ -73,7 +78,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
-                  idx : 2,
+                  idx: 2,
                   selectedText: text[2],
                   value: context.read<HeatedMeatEvalViewModel>().tenderness,
                   onChanged: (value) => context
@@ -84,7 +89,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
-                  idx : 3,
+                  idx: 3,
                   selectedText: text[3],
                   value: context.read<HeatedMeatEvalViewModel>().umami,
                   onChanged: (value) => context
@@ -95,7 +100,7 @@ class _HeatedMeatEvaluation extends State<HeatedMeatEvaluation>
                   height: 50.h,
                 ),
                 PartEval(
-                  idx : 4,
+                  idx: 4,
                   selectedText: text[4],
                   value: context.read<HeatedMeatEvalViewModel>().palatability,
                   onChanged: (value) => context

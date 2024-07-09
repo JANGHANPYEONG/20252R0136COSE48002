@@ -70,10 +70,10 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
   // 날짜 값 변환 (10 이하의 날짜면 앞에 0을 붙임 : 1일 -> 01일)
   void setDate() {
     if (int.parse(selectedMonth) < 10) {
-      selectedMonth = '0$selectedMonth';
+      selectedMonth = selectedMonth;
     }
     if (int.parse(selectedDay) < 10) {
-      selectedDay = '0$selectedDay';
+      selectedDay = selectedDay;
     }
     selectedDate = '$selectedYear-$selectedMonth-$selectedDay';
   }
@@ -99,7 +99,7 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
     print(jsonData);
     try {
       dynamic response =
-          await RemoteDataSource.sendMeatData('deep_aging_data', jsonData);
+          await RemoteDataSource.sendMeatData('deep-aging-data', jsonData);
       if (response == null) {
         throw Error();
       } else {

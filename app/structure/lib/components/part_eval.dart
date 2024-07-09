@@ -28,8 +28,7 @@ class PartEval extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 30.w),
-
+        // SizedBox(height: 30.w),
         // 기준 이미지
         Container(
           margin: EdgeInsets.only(top: 20.h),

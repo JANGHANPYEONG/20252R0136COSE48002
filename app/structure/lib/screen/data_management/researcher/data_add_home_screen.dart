@@ -6,6 +6,7 @@
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
@@ -62,6 +63,15 @@ class _DataAddHomeState extends State<DataAddHome> {
                   onPressed: () => context
                       .read<DataAddHomeViewModel>()
                       .clickedRawMeat(context),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          15), // Makes the border rectangular
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFFEAEAEA),
+                    ),
+                  ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15.h),
                     child: Row(
@@ -132,7 +142,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                 ),
               ),
               SizedBox(
-                height: 20.h,
+                height: 40.h,
               ),
               const Divider(
                 height: 0,
@@ -171,38 +181,41 @@ class _DataAddHomeState extends State<DataAddHome> {
                             .deepAgingData!
                             .length,
                         itemBuilder: (BuildContext context, int index) {
-                          return DeepAgingCard(
-                            deepAgingNum: context
-                                .read<DataAddHomeViewModel>()
-                                .meatModel
-                                .deepAgingData![index]["deepAgingNum"],
-                            minute: context
-                                .read<DataAddHomeViewModel>()
-                                .meatModel
-                                .deepAgingData![index]["minute"],
-                            butcheryDate: context
-                                .read<DataAddHomeViewModel>()
-                                .meatModel
-                                .deepAgingData![index]["date"],
-                            completed: context
-                                .read<DataAddHomeViewModel>()
-                                .meatModel
-                                .deepAgingData![index]["complete"],
-                            isLast: index ==
-                                    context
-                                            .read<DataAddHomeViewModel>()
-                                            .meatModel
-                                            .deepAgingData!
-                                            .length -
-                                        1
-                                ? true
-                                : false,
-                            onTap: () async => context
-                                .read<DataAddHomeViewModel>()
-                                .clickedProcessedMeat(index, context),
-                            delete: () async => context
-                                .read<DataAddHomeViewModel>()
-                                .deleteList(index + 1),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: DeepAgingCard(
+                              deepAgingNum: context
+                                  .read<DataAddHomeViewModel>()
+                                  .meatModel
+                                  .deepAgingData![index]["deepAgingNum"],
+                              minute: context
+                                  .read<DataAddHomeViewModel>()
+                                  .meatModel
+                                  .deepAgingData![index]["minute"],
+                              butcheryDate: context
+                                  .read<DataAddHomeViewModel>()
+                                  .meatModel
+                                  .deepAgingData![index]["date"],
+                              completed: context
+                                  .read<DataAddHomeViewModel>()
+                                  .meatModel
+                                  .deepAgingData![index]["complete"],
+                              isLast: index ==
+                                      context
+                                              .read<DataAddHomeViewModel>()
+                                              .meatModel
+                                              .deepAgingData!
+                                              .length -
+                                          1
+                                  ? true
+                                  : false,
+                              onTap: () async => context
+                                  .read<DataAddHomeViewModel>()
+                                  .clickedProcessedMeat(index, context),
+                              delete: () async => context
+                                  .read<DataAddHomeViewModel>()
+                                  .deleteList(index + 1),
+                            ),
                           );
                         },
                       ),
@@ -242,19 +255,32 @@ class _DataAddHomeState extends State<DataAddHome> {
                 ],
               ),
               SizedBox(
-                height: 35.h,
+                height: 30.h,
               ),
-              Row(
+              const Divider(
+                height: 0,
+                thickness: 0.8,
+                color: Color(0xFFEAEAEA),
+              ),
+              SizedBox(
+                height: 5.h,
+              ),
+              Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '총 처리 횟수 및 시간',
-                    style: Palette.h4,
-                  ),
-                  Text(
-                    context.watch<DataAddHomeViewModel>().total,
-                    textAlign: TextAlign.center,
-                    style: Palette.h3Green,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '총 처리 횟수 및 시간',
+                        style: Palette.h4,
+                      ),
+                      Text(
+                        context.watch<DataAddHomeViewModel>().total,
+                        textAlign: TextAlign.center,
+                        style: Palette.h3Green,
+                      ),
+                    ],
                   ),
                 ],
               ),
