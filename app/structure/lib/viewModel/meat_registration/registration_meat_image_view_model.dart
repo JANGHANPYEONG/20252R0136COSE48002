@@ -75,7 +75,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       // 등록, 수정
       imagePath = meatModel.imagePath;
       if (imagePath != null && meatModel.freshmeat != null) {
-        userName = meatModel.freshmeat!['userName'] ?? '-';
+        userName = meatModel.freshmeat!['name'] ?? '-';
         if (meatModel.freshmeat!['createdAt'] != null) {
           fetchDate(meatModel.freshmeat!['createdAt']);
           date = '${time.year}.${time.month}.${time.day}';
@@ -150,7 +150,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.imagePath = imagePath;
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
-        meatModel.freshmeat!['userName'] = userName;
+        meatModel.freshmeat!['name'] = userName;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
         if (meatModel.id != null) {
           // meatModel이 존재할 때는 바로 이미지 적용
@@ -163,7 +163,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.deepAgedImage = imagePath;
         meatModel.deepAgedFreshmeat ??= {};
         meatModel.deepAgedFreshmeat!['userId'] = meatModel.userId;
-        meatModel.deepAgedFreshmeat!['userName'] = userName;
+        meatModel.deepAgedFreshmeat!['name'] = userName;
         meatModel.deepAgedFreshmeat!['createdAt'] = Usefuls.getCurrentDate();
         await _sendImageToFirebase();
         await RemoteDataSource.sendMeatData(
