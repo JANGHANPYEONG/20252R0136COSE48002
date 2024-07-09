@@ -19,10 +19,10 @@ void showDeletePhotoDialog(BuildContext context, VoidCallback? rightFunc) {
 }
 
 /// 나가기 dialog
-void showExitDialog(BuildContext context, VoidCallback? rightFunc) {
+void showExitDialog(BuildContext context) {
   showCustomDialog(context, 'assets/images/exit.png', '데이터가 저장되지 않았습니다',
       '창을 닫으면 모든 정보가 삭제됩니다.', '취소', '나가기', null, () {
-    rightFunc;
+    FocusScope.of(context).unfocus();
     Navigator.pop(context);
     Navigator.pop(context);
   });

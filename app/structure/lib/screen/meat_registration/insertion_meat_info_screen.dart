@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_drop_down.dart';
 import 'package:structure/components/main_button.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/config/pallete.dart';
@@ -36,7 +37,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
-        appBar: const CustomAppBar(
+        appBar: const CustomEditAppBar(
           title: '육류 기본정보',
           backButton: true,
           closeButton: false,
@@ -177,9 +178,6 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         context
                             .read<InsertionMeatInfoViewModel>()
                             .clickedNextButton(context);
-                        context
-                            .read<InsertionMeatInfoViewModel>()
-                            .clickedTempSaveButton(context);
                       }
                     : null,
                 text: context.read<InsertionMeatInfoViewModel>().meatModel.id ==

@@ -50,13 +50,18 @@ class ListCardNormal extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
+              width: 200.w,
               child: Text(
                 num,
                 style: Palette.h5,
               ),
             ),
-            const Spacer(),
+            // const Spacer(),
             SizedBox(
+              width: 80.w,
+            ),
+            SizedBox(
+              width: 150.w,
               child: Text(
                 dayTime,
                 style: Palette.filterContent,

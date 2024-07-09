@@ -134,7 +134,7 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                     Container(
                         margin: EdgeInsets.symmetric(vertical: 10.h),
                         // 'CustomTableBar' 컴포넌트를 통해 table label 지정.
-                        child: const CustomTableBar(
+                        child: const CustomTableNormalBar(
                           isNormal: true,
                         )),
                     Expanded(

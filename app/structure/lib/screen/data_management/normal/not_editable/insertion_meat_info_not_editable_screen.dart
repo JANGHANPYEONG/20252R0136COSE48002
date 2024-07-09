@@ -108,18 +108,6 @@ class _InsertionMeatInfoNotEditableScreenState
               ),
             ),
             const Spacer(),
-            Container(
-              margin: EdgeInsets.only(bottom: 28.h),
-              child: MainButton(
-                onPressed: () => context
-                    .read<InsertionMeatInfoNotEditableViewModel>()
-                    .clickedNextButton(context),
-                text: '완료',
-                width: 658.w,
-                height: 104.h,
-                mode: 1,
-              ),
-            ),
           ],
         ),
       ),
