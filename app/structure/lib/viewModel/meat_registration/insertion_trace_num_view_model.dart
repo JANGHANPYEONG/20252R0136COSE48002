@@ -17,6 +17,8 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   InsertionTraceNumViewModel(this.meatModel) {
     initialize();
   }
+  // 조회 중 로딩 상태
+  bool isLoading = false;
 
   //table 조회 상태 변수
   bool isTableVisible = false;
@@ -83,6 +85,7 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   // api를 통해 얻어온 육류의 정보를 meatModel 객체에 저장
   void saveMeatData() {
     if (meatModel.traceNum != null && meatModel.traceNum != traceNum) {
+      print('a');
       meatModel.speciesValue = null;
       meatModel.primalValue = null;
       meatModel.secondaryValue = null;
@@ -138,6 +141,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
 
   // 검색 버튼을 눌렀을 때, 관련 작업을 진행.
   void start(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
     // 키보드를 내린다.
     FocusScope.of(context).unfocus();
 
@@ -154,6 +160,7 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     // textEditingController.clear();
 
     // provider에게 신호를 보낸다.
+    isLoading = false;
     notifyListeners();
   }
 
@@ -277,9 +284,13 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   // 다음 버튼을 눌렀을 때 동작.
   void clickedNextbutton(BuildContext context) {
     saveMeatData();
+    print(meatModel.speciesValue);
+
     if (meatModel.id != null) {
+      // 수정
       context.go('/home/data-manage-normal/edit/trace-editable/info-editable');
     } else {
+      // 신규 등록
       context.go('/home/registration/trace-num/meat-info');
     }
   }

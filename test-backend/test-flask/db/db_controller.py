@@ -1,3 +1,4 @@
+import pprint
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -10,6 +11,8 @@ import json
 from .db_model import *
 
 db = SQLAlchemy()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def find_id(species_value, primal_value, secondary_value, db_session):
@@ -360,8 +363,8 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
 
 def create_specific_heatedmeat_seonsory_data(db_session, data):
     # 2. 기본 데이터 받아두기
-    id = data.get("id")
-    seqno = data.get("seqno")
+    id = safe_str(data.get("id"))
+    seqno = safe_int(data.get("seqno"))
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
     if meat:  # 승인 정보 확인
         if meat.statusType != 2:
@@ -380,8 +383,8 @@ def create_specific_heatedmeat_seonsory_data(db_session, data):
 
 def create_specific_probexpt_data(db_session, data):
     # 2. 기본 데이터 받아두기
-    id = data.get("id")
-    seqno = data.get("seqno")
+    id = safe_str(data.get("id"))
+    seqno = safe_int(data.get("seqno"))
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
     if meat:  # 승인 정보 확인
         if meat.statusType != 2:
@@ -561,13 +564,13 @@ def get_range_meat_data(
 ):
     offset = safe_int(offset)
     count = safe_int(count)
-    start = convert2datetime(start, 1)
-    end = convert2datetime(end, 1)
+    start = convert2datetime(start, 0)
+    end = convert2datetime(end, 0)
     # Base Query
     query = db_session.query(Meat).join(
         User, User.userId == Meat.userId
     )  # Join with User
-
+    
     # Sorting and Filtering
     if farmAddr is not None:
         if farmAddr:  # true: 가나다순 정렬
@@ -819,6 +822,8 @@ def _getMeatDataByStatusType(db_session, varified):
 def _getMeatDataByRangeStatusType(
     db_session, varified, offset, count, start=None, end=None
 ):
+    offset = safe_int(offset)
+    count = safe_int(count)
     # Base query
     query = (
         db_session.query(Meat)
@@ -1117,8 +1122,8 @@ def _deleteSpecificDeepAgingData(db_session, s3_conn, id, seqno):
 
 def get_num_of_processed_raw(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1240,8 +1245,9 @@ def get_num_of_cattle_pig(db_session, start, end):
 
 def get_num_of_primal_part(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
+    print(start, end)
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
     # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
@@ -1256,6 +1262,7 @@ def get_num_of_primal_part(db_session, start, end):
         .group_by(CategoryInfo.primalValue)
         .all()
     )
+    # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
 
     # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
     count_by_primal_value_pork = (
@@ -1284,8 +1291,8 @@ def get_num_of_primal_part(db_session, start, end):
 
 def get_num_by_farmAddr(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
     regions = [
@@ -1350,8 +1357,8 @@ def get_num_by_farmAddr(db_session, start, end):
 
 def get_probexpt_of_rawmeat(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
     # 각 필드의 평균값, 최대값, 최소값 계산
@@ -1413,8 +1420,8 @@ def get_probexpt_of_rawmeat(db_session, start, end):
 
 def get_probexpt_of_processedmeat(db_session, seqno, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1531,8 +1538,8 @@ def get_probexpt_of_processedmeat(db_session, seqno, start, end):
 
 def get_sensory_of_rawmeat(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1595,8 +1602,8 @@ def get_sensory_of_rawmeat(db_session, start, end):
 
 def get_sensory_of_processedmeat(db_session, seqno, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1720,8 +1727,8 @@ def get_sensory_of_processedmeat(db_session, seqno, start, end):
 
 def get_sensory_of_raw_heatedmeat(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1786,8 +1793,8 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end):
 
 def get_sensory_of_processed_heatedmeat(db_session, seqno, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 
@@ -1910,8 +1917,8 @@ def get_sensory_of_processed_heatedmeat(db_session, seqno, start, end):
 
 def get_probexpt_of_processed_heatedmeat(db_session, start, end):
     # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
     if start is None or end is None:
         return jsonify({"msg": "Wrong start or end data"}), 404
 

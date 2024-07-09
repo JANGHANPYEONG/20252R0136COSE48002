@@ -4,7 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 String unselectedText = '선택되지 않은 항목이 있습니다.';
-String fileUploadFailedText = '파일 업로드 실패';
+String cameraErrorText = '카메라에 문제가 생겼습니다.';
+String fileUploadFailedText = '파일 업로드에 실패했습니다.';
 String successChangeUserInfo = '정상적으로 변경되었습니다.';
 String tempSaveText = '임시저장이 완료되었습니다.';
 String duplicateEmailText = '중복된 이메일입니다.';
@@ -21,9 +22,14 @@ void showUnselectedPopup(BuildContext context) {
   showPopup(context, unselectedText, '');
 }
 
+void showCameraErrorPopup(BuildContext context) {
+  // 실패_popup
+  showPopup(context, cameraErrorText, '확인');
+}
+
 void showFileUploadFailPopup(BuildContext context) {
   // 실패_popup
-  showPopup(context, fileUploadFailedText, '');
+  showPopup(context, fileUploadFailedText, '확인');
 }
 
 void showSuccessChangeUserInfo(BuildContext context) {

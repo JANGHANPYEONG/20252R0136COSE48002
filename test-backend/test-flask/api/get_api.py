@@ -15,6 +15,7 @@ from db.db_controller import (
     _getMeatDataByTotalStatusType,
     _getTexanomyData,
     _getPredictionData,
+    get_user
 )
 from utils import *
 
@@ -27,8 +28,10 @@ def getMeatData():
     try:
         if request.method == "GET":
             db_session = current_app.db_session
+            offset = request.args.get("offset")
+            count = request.args.get("count")
             return (
-                get_range_meat_data(db_session, 0, Meat.query.count())
+                get_range_meat_data(db_session, offset=offset, count=count)
                 .get_json()
             )
 
@@ -55,37 +58,50 @@ def getMeatDataById():
                 raise Exception("Invalid Meat ID")
             result = get_meat(db_session, id)
             if result:
-                try:
-                    result["rawmeat_data_complete"] = (
-                        all(
-                            v is not None
-                            for v in result["rawmeat"][
-                                "heatedmeat_sensory_eval"
-                            ].values()
+                user = get_user(db_session, result["userId"])["name"]
+                result["name"] = user
+                for k, v in result["rawmeat"].items():
+                    if v is not None:
+                        userId = v["userId"]
+                        user = get_user(db_session, userId)["name"]
+                        v["name"] = user
+                    try:
+                        result["rawmeat_data_complete"] = (
+                            all(
+                                v is not None
+                                for v in result["rawmeat"][
+                                    "heatedmeat_sensory_eval"
+                                ].values()
+                            )
+                            and all(
+                                v is not None
+                                for v in result["rawmeat"]["probexpt_data"].values()
+                            )
+                            and all(
+                                (k == "deepAgingId" or v is not None)
+                                for k, v in result["rawmeat"]["sensory_eval"].items()
+                            )
                         )
-                        and all(
-                            v is not None
-                            for v in result["rawmeat"]["probexpt_data"].values()
-                        )
-                        and all(
-                            (k == "deepAgingId" or v is not None)
-                            for k, v in result["rawmeat"]["sensory_eval"].items()
-                        )
-                    )
-                except:
-                    result["rawmeat_data_complete"] = False
+                    except:
+                        result["rawmeat_data_complete"] = False
 
                 result["processedmeat_data_complete"] = {}
+
                 for k, v in result["processedmeat"].items():
                     try:
                         result["processedmeat_data_complete"][k] = all(
                             all(vv is not None for vv in inner_v.values())
                             for inner_v in v.values()
                         )
+                        for vv in v.values():
+                            userId = vv["userId"]
+                            user = get_user(db_session, userId)["name"]
+                            vv["name"] = user
                     except:
                         result["processedmeat_data_complete"][k] = False
                 if not result["processedmeat_data_complete"]:
                     result["processedmeat_data_complete"] = False
+                    
 
                 return jsonify(result)
             else:
@@ -277,13 +293,13 @@ def getMeatDataByRangeStatusType():
         if request.method == "GET":
             db_session = current_app.db_session
             statusType_value = safe_int(request.args.get("statusType"))
-            offset = safe_int(request.args.get("offset"))
-            count = safe_int(request.args.get("count"))
+            offset = request.args.get("offset")
+            count = request.args.get("count")
             start_str = request.args.get('start')
             end_str = request.args.get('end')
 
-            start = convert2datetime(start_str, 1)
-            end = convert2datetime(end_str, 1)
+            start = convert2datetime(start_str, 0)
+            end = convert2datetime(end_str, 0)
             if statusType_value:
                 return _getMeatDataByRangeStatusType(
                     db_session, statusType_value, offset, count, start, end

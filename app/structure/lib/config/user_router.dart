@@ -16,7 +16,6 @@ import 'package:structure/screen/data_management/normal/not_editable/insertion_t
 import 'package:structure/screen/data_management/researcher/add_processed_meat_main_screen.dart';
 import 'package:structure/screen/data_management/researcher/add_raw_meat_main_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_home_screen.dart';
-import 'package:structure/screen/data_management/researcher/data_management_home_researcher_screen.dart';
 import 'package:structure/screen/data_management/normal/data_management_home_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_management_home_tab_screen.dart';
 import 'package:structure/screen/data_management/researcher/heatedmeat_eval_screen.dart';

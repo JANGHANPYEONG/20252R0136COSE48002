@@ -6,7 +6,11 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { CircularProgress } from '@mui/material';
-import { getAuth } from 'firebase/auth';
+import {
+  getAuth,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import { apiIP } from '../config';
@@ -23,20 +27,48 @@ export default function Profile() {
   const [homeAddr, setHomeAddr] = useState(UserInfo.homeAddr);
   const navigate = useNavigate();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [password, setPassword] = useState('');
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
+  const handleOpenPasswordModal = () => {
+    setIsPasswordModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleClosePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    setPassword('');
+  };
+
+  const handleOpenConfirmModal = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleCloseConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const reauthenticate = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user.email, password);
+
+    try {
+      await reauthenticateWithCredential(user, credential);
+      handleClosePasswordModal();
+      handleOpenConfirmModal();
+    } catch (error) {
+      console.error('Error reauthenticating:', error);
+      showSnackbar('비밀번호가 틀렸습니다.', 'error');
+    }
   };
 
   const deleteself = async () => {
     try {
-      const auth = getAuth();
-
       const response = await fetch(
         `http://${apiIP}/user/delete?userId=${UserInfo.userId}`
       );
@@ -201,7 +233,7 @@ export default function Profile() {
         </Button>
         <Button
           variant="contained"
-          onClick={handleOpenModal}
+          onClick={handleOpenPasswordModal}
           style={{ backgroundColor: 'red', color: 'white', margin: '0.5rem' }}
         >
           회원 탈퇴
@@ -209,8 +241,52 @@ export default function Profile() {
       </div>
 
       <Modal
-        open={isModalOpen}
-        onClose={handleCloseModal}
+        open={isPasswordModalOpen}
+        onClose={handleClosePasswordModal}
+        aria-labelledby="password-modal"
+        aria-describedby="password-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 300,
+            backgroundColor: 'white',
+            borderRadius: 8,
+            boxShadow: 5,
+            p: 2,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" id="password-modal-title" component="div">
+            비밀번호 확인
+          </Typography>
+          <TextField
+            label="비밀번호"
+            type="password"
+            value={password}
+            onChange={handlePasswordChange}
+            sx={{ mt: 2, mb: 2 }}
+            fullWidth
+          />
+          <Button variant="contained" onClick={reauthenticate}>
+            확인
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleClosePasswordModal}
+            style={{ marginLeft: '1rem' }}
+          >
+            취소
+          </Button>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={isConfirmModalOpen}
+        onClose={handleCloseConfirmModal}
         aria-labelledby="confirm-delete-modal"
         aria-describedby="confirm-delete-description"
       >
@@ -239,7 +315,7 @@ export default function Profile() {
           </Button>
           <Button
             variant="contained"
-            onClick={handleCloseModal}
+            onClick={handleCloseConfirmModal}
             style={{ marginLeft: '1rem' }}
           >
             취소

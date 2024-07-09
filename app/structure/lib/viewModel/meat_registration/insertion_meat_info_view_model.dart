@@ -29,7 +29,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   bool isSelectedSecondary = false;
   bool completed = false;
 
-  bool _speciesCheck = false;
+  bool _speciesCheck = false; // true - 돼지, false - 소
   bool isLoading = false;
 
   // 'DropdownButton'에 사용될 데이터 변수
@@ -43,21 +43,23 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
     Text('돼지', style: Palette.h4Grey),
   ];
 
+  //
   List<bool> selectedSpecies = List.generate(2, (index) => false);
 
+  // 소인지 확인
   bool speciesCheckFunc() {
     if (meatModel.speciesValue != null) {
-      if (meatModel.speciesValue! == '한우') {
-        _speciesCheck = false;
-      } else {
+      if (meatModel.speciesValue! == '돼지') {
         _speciesCheck = true;
       }
     }
     return _speciesCheck;
   }
 
+  /// 초기 데이터 할당
   Future<void> initialize() async {
-    // 초기 데이터 할당
+    // 수정 데이터
+
     if (meatModel.speciesValue != null) {
       if (meatModel.speciesValue! == '한우') {
         speciesValue = '소';
@@ -68,10 +70,12 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       }
       isSelectedSpecies = true;
     }
-    // data fetch
+
+    // 수정 데이터
+    // 소분할
     if (meatModel.secondaryValue != null) {
-      primalValue = meatModel.primalValue;
-      secondaryValue = meatModel.secondaryValue;
+      primalValue = meatModel.primalValue; // 대분할 설정
+      secondaryValue = meatModel.secondaryValue; // 소분할 설정
       isSelectedPrimal = true;
       isSelectedSecondary = true;
       completed = true;
@@ -79,7 +83,10 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
     // 종, 부위를 조회 하여, 데이터 할당
     Map<String, dynamic> data = await RemoteDataSource.getMeatSpecies();
+    // print(data);
+    // print(speciesValue);
     dataTable = data[speciesValue];
+    // print(dataTable);
 
     // 종에 따른 대분류 데이터 할당
     List<String> lDiv = [];
