@@ -15,6 +15,7 @@ from db.db_controller import (
     _getMeatDataByTotalStatusType,
     _getTexanomyData,
     _getPredictionData,
+    get_user
 )
 from utils import *
 
@@ -54,6 +55,8 @@ def getMeatDataById():
             if id is None:
                 raise Exception("Invalid Meat ID")
             result = get_meat(db_session, id)
+            user = get_user(db_session, result["userId"])["name"]
+            result["name"] = user
             if result:
                 try:
                     result["rawmeat_data_complete"] = (
@@ -76,16 +79,22 @@ def getMeatDataById():
                     result["rawmeat_data_complete"] = False
 
                 result["processedmeat_data_complete"] = {}
+
                 for k, v in result["processedmeat"].items():
                     try:
                         result["processedmeat_data_complete"][k] = all(
                             all(vv is not None for vv in inner_v.values())
                             for inner_v in v.values()
                         )
+                        for vv in v.values():
+                            userId = vv["userId"]
+                            user = get_user(db_session, userId)["name"]
+                            vv["name"] = user
                     except:
                         result["processedmeat_data_complete"][k] = False
                 if not result["processedmeat_data_complete"]:
                     result["processedmeat_data_complete"] = False
+                    
 
                 return jsonify(result)
             else:
