@@ -61,6 +61,10 @@ def getMeatDataById():
                 user = get_user(db_session, result["userId"])["name"]
                 result["name"] = user
                 for k, v in result["rawmeat"].items():
+                    if v is not None:
+                        userId = v["userId"]
+                        user = get_user(db_session, userId)["name"]
+                        v["name"] = user
                     try:
                         result["rawmeat_data_complete"] = (
                             all(
@@ -78,9 +82,6 @@ def getMeatDataById():
                                 for k, v in result["rawmeat"]["sensory_eval"].items()
                             )
                         )
-                        userId = v["userId"]
-                        user = get_user(db_session, userId)["name"]
-                        v["name"] = user
                     except:
                         result["rawmeat_data_complete"] = False
 
