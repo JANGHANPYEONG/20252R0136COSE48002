@@ -75,7 +75,7 @@ class RemoteDataSource {
   /// 딥에이징 데이터 삭제 (GET)
   static Future<dynamic> deleteDeepAging(String id, int seqno) async {
     dynamic response =
-        await _getApi('meat/delete/deep-aging?id=$id&seqno=$seqno');
+        await _deleteApi('meat/delete/deep-aging?id=$id&seqno=$seqno');
     return response;
   }
 
@@ -118,7 +118,7 @@ class RemoteDataSource {
         return response.body;
       } else {
         print('POST 요청 실패: (${response.statusCode})${response.body}');
-        return;
+        return response.statusCode;
       }
     } catch (e) {
       print('POST 요청 중 예외 발생: $e');
@@ -141,6 +141,24 @@ class RemoteDataSource {
       }
     } catch (e) {
       print('GET 요청 중 예외 발생: $e');
+      return;
+    }
+  }
+
+  static Future<dynamic> _deleteApi(String endPoint) async {
+    String apiUrl = '$baseUrl/$endPoint';
+    try {
+      final response = await http.delete(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        print('Delete 요청 성공');
+        return jsonDecode(response.body);
+      } else {
+        print('Delete 요청 실패: (${response.statusCode})${response.body}');
+        return;
+      }
+    } catch (e) {
+      print('Delete 요청 중 예외 발생: $e');
       return;
     }
   }

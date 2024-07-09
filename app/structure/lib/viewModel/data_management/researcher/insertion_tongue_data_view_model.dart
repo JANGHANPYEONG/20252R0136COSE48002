@@ -64,7 +64,7 @@ class InsertionTongueDataViewModel with ChangeNotifier {
 
     try {
       dynamic response = await RemoteDataSource.sendMeatData(
-          'probexpt_data', meatModel.toJsonProbexpt());
+          'probexpt-data', meatModel.toJsonProbexpt());
       if (response == null) {
         throw Error();
       } else {

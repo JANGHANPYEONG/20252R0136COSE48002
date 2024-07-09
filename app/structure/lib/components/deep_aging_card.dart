@@ -45,74 +45,86 @@ class DeepAgingCard extends StatelessWidget {
           height: 133.h,
           child: OutlinedButton(
             onPressed: onTap,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 340.w,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.sp),
-                              color: const Color.fromARGB(255, 232, 229, 255),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(15), // Makes the border rectangular
+              ),
+              side: const BorderSide(
+                color: Color(0xFFEAEAEA),
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 15.h),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 340.w,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.sp),
+                                color: const Color.fromARGB(255, 232, 229, 255),
+                              ),
+                              width: 84.w,
+                              height: 32.h,
+                              child: Center(
+                                child: Text(deepAgingNum),
+                              ),
                             ),
-                            width: 84.w,
-                            height: 32.h,
-                            child: Center(
-                              child: Text(deepAgingNum),
+                            SizedBox(
+                              width: 10.w,
                             ),
-                          ),
-                          SizedBox(
-                            width: 10.w,
-                          ),
-                          Text(butcheryDate, style: Palette.h5Grey),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 15.h,
-                      ),
-                      Text(
-                        '$minute분',
-                        style: TextStyle(
-                            fontSize: 36.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
-                VerticalDivider(
-                  thickness: 1,
-                  color: Colors.grey[300],
-                ),
-                SizedBox(
-                  width: 160.w,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('추가정보 입력', style: Palette.h5LightGrey),
-                      SizedBox(
-                        height: 15.h,
-                      ),
-                      Text(
-                        completed ? '완료' : '미완료',
-                        style: TextStyle(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.w700,
-                          color: completed
-                              ? const Color.fromARGB(255, 56, 197, 95)
-                              : const Color.fromARGB(255, 255, 73, 73),
+                            Text(butcheryDate, style: Palette.h5Grey),
+                          ],
                         ),
-                      ),
-                    ],
+                        SizedBox(
+                          height: 15.h,
+                        ),
+                        Text(
+                          '$minute분',
+                          style: TextStyle(
+                              fontSize: 36.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
                   ),
-                )
-              ],
+                  VerticalDivider(
+                    thickness: 1,
+                    color: Colors.grey[300],
+                  ),
+                  SizedBox(
+                    width: 160.w,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('추가정보 입력', style: Palette.h5LightGrey),
+                        SizedBox(
+                          height: 15.h,
+                        ),
+                        Text(
+                          completed ? '완료' : '미완료',
+                          style: TextStyle(
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.w700,
+                            color: completed
+                                ? const Color.fromARGB(255, 56, 197, 95)
+                                : const Color.fromARGB(255, 255, 73, 73),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),

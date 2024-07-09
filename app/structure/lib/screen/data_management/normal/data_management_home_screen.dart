@@ -117,7 +117,10 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                                         .read<DataManagementHomeViewModel>()
                                         .textClear(context);
                                   },
-                                  icon: const Icon(Icons.cancel),
+                                  icon: const Icon(
+                                    Icons.cancel_outlined,
+                                    color: Colors.black,
+                                  ),
                                 )
                               : null,
                         ),

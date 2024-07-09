@@ -156,7 +156,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
           // meatModel이 존재할 때는 바로 이미지 적용
           await _sendImageToFirebase();
           await RemoteDataSource.sendMeatData(
-              'sensory_eval', meatModel.toJsonFresh());
+              'sensory-eval', meatModel.toJsonFresh());
         }
       } else {
         // 처리육
@@ -167,7 +167,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.deepAgedFreshmeat!['createdAt'] = Usefuls.getCurrentDate();
         await _sendImageToFirebase();
         await RemoteDataSource.sendMeatData(
-            'sensory_eval',
+            'sensory-eval',
             jsonEncode({
               "id": meatModel.id,
               "createdAt": meatModel.deepAgedFreshmeat!['createdAt'],
