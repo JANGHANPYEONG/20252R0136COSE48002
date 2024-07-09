@@ -28,12 +28,15 @@ def add_specific_meat_data():
         if request.method == "POST":
             # 1. Data Get
             data = request.get_json()
-            return (
-                create_specific_std_meat_data(
-                    db_session, s3_conn, firestore_conn, data
-                ),
-                200,
-            )
+            try:
+                return (
+                    create_specific_std_meat_data(
+                        db_session, s3_conn, firestore_conn, data
+                    ),
+                    200,
+                )
+            except Exception as e:
+                return jsonify({"msg": "Image Path Not Found", "details": str(e)}), 400
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -56,13 +59,16 @@ def add_specific_deepAging_data():
             s3_conn = current_app.s3_conn
             firestore_conn = current_app.firestore_conn
             data = request.get_json()
-            print(data)
-            return (
-                create_specific_deep_aging_meat_data(
-                    db_session, s3_conn, firestore_conn, data
-                ),
-                200,
-            )
+            # print(data)
+            try:
+                return (
+                    create_specific_deep_aging_meat_data(
+                        db_session, s3_conn, firestore_conn, data
+                    ),
+                    200,
+                )
+            except Exception as e:
+                return jsonify({"msg": "Image Path Not Found", "details": str(e)}), 400
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -84,11 +90,14 @@ def add_specific_sensory_eval():
             s3_conn = current_app.s3_conn
             firestore_conn = current_app.firestore_conn
             data = request.get_json()
-            return (
-                create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data),
-                200,
-            )
-
+            try:
+                return (
+                    create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data),
+                    200,
+                )
+            except Exception as e:
+                return jsonify({"msg": "Image Path Not Found", "details": str(e)}), 400
+                
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
