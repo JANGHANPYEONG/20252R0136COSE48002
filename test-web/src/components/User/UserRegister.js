@@ -121,7 +121,7 @@ function UserRegister({ handleClose }) {
   const handleDuplicateCheck = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/user/duplicate_check?userId=${userId}`
+        `http://${apiIP}/user/duplicate-check?userId=${userId}`
       );
       console.log(response);
       if (response.ok) {
