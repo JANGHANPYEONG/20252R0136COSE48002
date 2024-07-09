@@ -238,25 +238,29 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                     ),
                   ),
 
-              // 데이터 저장 버튼
-              Container(
-                margin: EdgeInsets.only(bottom: 20.h),
-                child: MainButton(
-                  onPressed: context.watch<FreshMeatEvalViewModel>().completed
-                      ? () async {
-                          context
-                              .read<FreshMeatEvalViewModel>()
-                              .saveMeatData(context);
-                        }
-                      : null,
-                  text: context.read<FreshMeatEvalViewModel>().meatModel.id !=
-                          null
-                      ? '수정사항 저장'
-                      : '완료',
-                  width: 658.w,
-                  height: 104.h,
-                  mode: 1,
-                ),
+                  // 데이터 저장 버튼
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20.h),
+                    child: MainButton(
+                      onPressed:
+                          context.watch<FreshMeatEvalViewModel>().completed
+                              ? () async {
+                                  context
+                                      .read<FreshMeatEvalViewModel>()
+                                      .saveMeatData(context);
+                                }
+                              : null,
+                      text:
+                          context.read<FreshMeatEvalViewModel>().meatModel.id !=
+                                  null
+                              ? '수정사항 저장'
+                              : '완료',
+                      width: 658.w,
+                      height: 104.h,
+                      mode: 1,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
