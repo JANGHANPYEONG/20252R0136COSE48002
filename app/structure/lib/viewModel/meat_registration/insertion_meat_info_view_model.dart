@@ -58,12 +58,13 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   /// 초기 데이터 할당
   Future<void> initialize() async {
     // 수정 데이터
-    if (meatModel.speciesValue != null) {
-      speciesValue = meatModel.speciesValue!;
 
-      if (meatModel.speciesValue == '돼지') {
+    if (meatModel.speciesValue != null) {
+      if (meatModel.speciesValue! == '한우') {
+        speciesValue = '소';
         selectedSpecies[0] = true;
       } else {
+        speciesValue = meatModel.speciesValue!;
         selectedSpecies[1] = true;
       }
       isSelectedSpecies = true;
@@ -81,7 +82,10 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
     // 종, 부위를 조회 하여, 데이터 할당
     Map<String, dynamic> data = await RemoteDataSource.getMeatSpecies();
+    // print(data);
+    // print(speciesValue);
     dataTable = data[speciesValue];
+    // print(dataTable);
 
     // 종에 따른 대분류 데이터 할당
     List<String> lDiv = [];
