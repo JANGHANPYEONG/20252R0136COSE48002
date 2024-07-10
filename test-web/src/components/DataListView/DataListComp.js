@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Spinner from 'react-bootstrap/Spinner';
 import DataList from './DataList';
 import Pagination from './Pagination';
@@ -17,9 +17,8 @@ const DataListComp = ({
   const [totalData, setTotalData] = useState(0);
   // 현재 페이지 번호
   const [currentPage, setCurrentPage] = useState(1);
-
-  // 한페이지당 보여줄 개수
-  const count = 6;
+  // 한 페이지당 보여줄 개수
+  const [count, setCount] = useState(5);
 
   // API fetch 데이터 전처리
   const processMeatDatas = (data) => {
@@ -66,12 +65,26 @@ const DataListComp = ({
           <Spinner animation="border" />
         </div>
         <Box sx={style.paginationBar}>
-          <Pagination
-            totalDatas={totalData}
-            count={count}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
+          <div style={style.paginationContainer}>
+            <Pagination
+              totalDatas={totalData}
+              count={count}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <FormControl variant="outlined" size="small" sx={style.formControl}>
+              <InputLabel>Items per page</InputLabel>
+              <Select
+                value={count}
+                onChange={(e) => setCount(e.target.value)}
+                label="Items "
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
         </Box>
       </div>
     );
@@ -95,12 +108,26 @@ const DataListComp = ({
         )}
       </div>
       <Box sx={style.paginationBar}>
-        <Pagination
-          totalDatas={totalData}
-          count={count}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+        <div style={style.paginationContainer}>
+          <Pagination
+            totalDatas={totalData}
+            count={count}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <FormControl variant="outlined" size="small" sx={style.formControl}>
+            <InputLabel>Items per page</InputLabel>
+            <Select
+              value={count}
+              onChange={(e) => setCount(e.target.value)}
+              label="Items per page"
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
       </Box>
     </div>
   );
@@ -120,5 +147,14 @@ const style = {
     marginTop: '40px',
     width: '100%',
     justifyContent: 'center',
+  },
+  paginationContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  formControl: {
+    minWidth: 120,
+    marginLeft: '20px',
   },
 };

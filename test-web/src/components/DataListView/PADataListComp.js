@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DataList from './DataList';
 import Pagination from './Pagination';
 import Spinner from 'react-bootstrap/Spinner';
 import { usePredictedMeatListFetch } from '../../API/getPredictedMeatListSWR';
 
 // 데이터 예측 페이지 목록 컴포넌트
-const PADataListComp = ({ startDate, endDate }) => {
+const PADataListComp = ({ startDate, endDate, pageOffset }) => {
   // 고기 데이터 목록
   const [meatList, setMeatList] = useState([]);
   // 데이터 전체 개수
@@ -14,7 +14,7 @@ const PADataListComp = ({ startDate, endDate }) => {
   // 현재 페이지 번호
   const [currentPage, setCurrentPage] = useState(1);
   // 한페이지당 보여줄 개수
-  const count = 8;
+  const [count, setCount] = useState(5);
 
   // API fetch 데이터 전처리
   const processPAMeatDatas = (data) => {
@@ -67,12 +67,26 @@ const PADataListComp = ({ startDate, endDate }) => {
           <Spinner animation="border" />
         </div>
         <Box sx={style.paginationBar}>
-          <Pagination
-            totalDatas={totalData}
-            count={count}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
+          <div style={style.paginationContainer}>
+            <Pagination
+              totalDatas={totalData}
+              count={count}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <FormControl variant="outlined" size="small" sx={style.formControl}>
+              <InputLabel>Items per page</InputLabel>
+              <Select
+                value={count}
+                onChange={(e) => setCount(e.target.value)}
+                label="Items "
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
         </Box>
       </div>
     );
@@ -91,17 +105,31 @@ const PADataListComp = ({ startDate, endDate }) => {
             count={count}
             startDate={startDate}
             endDate={endDate}
+            pageOffset={pageOffset}
           />
         )}
       </div>
-
       <Box sx={style.paginationBar}>
-        <Pagination
-          totalDatas={totalData}
-          count={count}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+        <div style={style.paginationContainer}>
+          <Pagination
+            totalDatas={totalData}
+            count={count}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <FormControl variant="outlined" size="small" sx={style.formControl}>
+            <InputLabel>Items per page</InputLabel>
+            <Select
+              value={count}
+              onChange={(e) => setCount(e.target.value)}
+              label="Items per page"
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
       </Box>
     </div>
   );
@@ -118,17 +146,18 @@ const style = {
     height: 'auto',
   },
   paginationBar: {
-    marginTop: '20px',
+    marginTop: '40px',
     width: '100%',
-    justifyContent: 'center',
-  },
-  PABtnContainer: {
     display: 'flex',
-    margin: '20px 0',
-    padding: '0px 100px',
-    justifyContent: 'start',
-    position: 'fixed',
-    bottom: '10px',
-    left: '50px',
+    justifyContent: 'right',
+  },
+  paginationContainer: {
+    display: 'flex',
+    justifyContent: 'right',
+    alignItems: 'center',
+  },
+  formControl: {
+    minWidth: 120,
+    marginLeft: '20px',
   },
 };
