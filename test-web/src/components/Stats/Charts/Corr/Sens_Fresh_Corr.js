@@ -30,7 +30,7 @@ export default function Sense_Fresh_Corr({
     };
 
     fetchData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, animalType, grade]);
 
   // Check if prop is an array, otherwise use an empty array
   const propArray = Array.isArray(prop) ? prop : [];
