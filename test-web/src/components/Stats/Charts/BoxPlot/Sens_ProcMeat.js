@@ -3,13 +3,18 @@ import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { apiIP } from '../../../../config';
 
-export default function Sens_ProcMeat({ startDate, endDate }) {
+export default function Sens_ProcMeat({
+  startDate,
+  endDate,
+  animalType,
+  grade,
+}) {
   const [chartData, setChartData] = useState([]);
 
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}`
+        `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
       );
 
       if (!response.ok) {
