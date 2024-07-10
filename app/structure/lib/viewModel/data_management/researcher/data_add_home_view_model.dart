@@ -17,13 +17,13 @@ import 'package:structure/viewModel/data_management/researcher/add_deep_aging_da
 class DataAddHomeViewModel with ChangeNotifier {
   MeatModel meatModel;
   DataAddHomeViewModel(this.meatModel) {
-    initialize();
+    _initialize();
   }
 
   bool isLoading = false;
 
   // 필드 값 표현 변수
-  String userId = '-';
+  String userName = '-';
   String butcheryDate = '-';
   String species = '-';
   String secondary = '-';
@@ -31,12 +31,20 @@ class DataAddHomeViewModel with ChangeNotifier {
   String total = '-';
 
   // 초기 값 할당 (육류 정보 데이터)
-  void initialize() {
-    userId = meatModel.createUser ?? '-';
+  void _initialize() async {
+    if (meatModel.createUser != null) {
+      dynamic user = await RemoteDataSource.getUserInfo(meatModel.createUser!);
+      userName = user['name'];
+    } else {
+      userName = '-';
+    }
+
     butcheryDate = meatModel.butcheryYmd ?? '-';
     species = meatModel.speciesValue ?? '-';
     secondary = meatModel.secondaryValue ?? '-';
     _setTotal();
+
+    notifyListeners();
   }
 
   // 딥에이징 데이터 삭제
