@@ -28,6 +28,7 @@ function PA() {
   //const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
   const queryStartDate = new URLSearchParams(searchParams).get('startDate');
   const queryEndDate = new URLSearchParams(searchParams).get('endDate');
+  const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
 
   useEffect(() => {
     if (queryStartDate && queryEndDate) {
@@ -64,7 +65,11 @@ function PA() {
         <SearchFilterBar setStartDate={setStartDate} setEndDate={setEndDate} />
       </Box>
       {/**데이터 목록 */}
-      <PADataListComp startDate={startDate} endDate={endDate} />
+      <PADataListComp
+        startDate={startDate}
+        endDate={endDate}
+        pageOffset={pageOffset}
+      />
     </div>
   );
 }
