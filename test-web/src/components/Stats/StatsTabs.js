@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, Box, Button, useTheme } from '@mui/material';
-import BarGraph from './Charts/barGraph';
-import PieChart from './Charts/pieChart';
-import AreaChart from './Charts/BoxPlot/Sens_FreshMeat';
-import { IoBarChart, IoPieChart } from 'react-icons/io5';
-import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { Select, MenuItem } from '@mui/material';
 import Sens_FreshMeat from './Charts/BoxPlot/Sens_FreshMeat';
@@ -58,6 +53,12 @@ function a11yProps(index) {
 export default function StatsTabs({ startDate, endDate }) {
   const [value, setValue] = useState(0);
   const [slot, setSlot] = useState('week');
+  const [alignment, setAlignment] = useState('맛');
+  //const [gradeAlignment, setGradeAlignment] = useState('소');
+  const [secondary, setSecondary] = useState('원육');
+  const [animalType, setAnimalType] = useState('소');
+  const [grade, setGrade] = useState('1++');
+
   useEffect(() => {
     console.log('stat tab' + startDate, '-', endDate);
   }, [startDate, endDate]);
@@ -65,10 +66,6 @@ export default function StatsTabs({ startDate, endDate }) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  const [alignment, setAlignment] = React.useState('맛');
-  const [secondary, setSecondary] = React.useState('원육');
-
   const handleFirstChange = (event) => {
     setAlignment(event.target.value);
     setSecondary('원육'); // Initialize secondary to "원육"
@@ -76,6 +73,13 @@ export default function StatsTabs({ startDate, endDate }) {
 
   const handleSecondChange = (event) => {
     setSecondary(event.target.value);
+  };
+
+  const handleAnimalChange = (event) => {
+    setAnimalType(event.target.value);
+  };
+  const handleGradeChange = (event) => {
+    setGrade(event.target.value);
   };
 
   return (
@@ -127,51 +131,155 @@ export default function StatsTabs({ startDate, endDate }) {
                   <MenuItem value="가열육">가열육</MenuItem>
                 )}
               </Select>
+              <Select
+                labelId="animal-label"
+                id="animal"
+                value={animalType}
+                onChange={handleAnimalChange}
+                label="동물 종류"
+              >
+                <MenuItem value="소">소</MenuItem>
+                <MenuItem value="돼지">돼지</MenuItem>
+              </Select>
+              <Select
+                labelId="grade-label"
+                id="grade"
+                value={grade}
+                onChange={handleGradeChange}
+                label="등급"
+              >
+                <MenuItem value="all">전체</MenuItem>
+                {animalType === '소' && (
+                  <>
+                    <MenuItem value="1++">1++</MenuItem>
+                    <MenuItem value="1+">1+</MenuItem>
+                    <MenuItem value="1">1</MenuItem>
+                    <MenuItem value="2">2</MenuItem>
+                    <MenuItem value="3">3</MenuItem>
+                  </>
+                )}
+              </Select>
             </div>
           )}
         </Box>
       </Box>
+
       {/* BoxPlot(통계) */}
       <CustomTabPanel value={value} index={0}>
         {alignment === '관능' && secondary === '원육' ? (
-          <Sens_FreshMeat startDate={startDate} endDate={endDate} />
+          <Sens_FreshMeat
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '처리육' ? (
-          <Sens_ProcMeat startDate={startDate} endDate={endDate} />
+          <Sens_ProcMeat
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '가열육' ? (
-          <Sens_HeatedMeat startDate={startDate} endDate={endDate} />
+          <Sens_HeatedMeat
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '원육' ? (
-          <Taste_FreshMeat startDate={startDate} endDate={endDate} />
+          <Taste_FreshMeat
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '처리육' ? (
-          <Taste_ProcMeat startDate={startDate} endDate={endDate} />
+          <Taste_ProcMeat
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : null}
       </CustomTabPanel>
 
       {/* HeatMap(분포) */}
       <CustomTabPanel value={value} index={1}>
         {alignment === '관능' && secondary === '원육' ? (
-          <Sens_Fresh_Map startDate={startDate} endDate={endDate} />
+          <Sens_Fresh_Map
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '처리육' ? (
-          <Sens_Proc_Map startDate={startDate} endDate={endDate} />
+          <Sens_Proc_Map
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '가열육' ? (
-          <Sens_Heated_Map startDate={startDate} endDate={endDate} />
+          <Sens_Heated_Map
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '원육' ? (
-          <Taste_Fresh_Map startDate={startDate} endDate={endDate} />
+          <Taste_Fresh_Map
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '처리육' ? (
-          <Taste_Proc_Map startDate={startDate} endDate={endDate} />
+          <Taste_Proc_Map
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : null}
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={2}>
         {alignment === '관능' && secondary === '원육' ? (
-          <Sense_Fresh_Corr startDate={startDate} endDate={endDate} />
+          <Sense_Fresh_Corr
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '처리육' ? (
-          <Sense_Proc_Corr startDate={startDate} endDate={endDate} />
+          <Sense_Proc_Corr
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '관능' && secondary === '가열육' ? (
-          <Sense_Heated_Corr startDate={startDate} endDate={endDate} />
+          <Sense_Heated_Corr
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '원육' ? (
-          <Taste_Fresh_Corr startDate={startDate} endDate={endDate} />
+          <Taste_Fresh_Corr
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : alignment === '맛' && secondary === '처리육' ? (
-          <Taste_Proc_Corr startDate={startDate} endDate={endDate} />
+          <Taste_Proc_Corr
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
         ) : null}
       </CustomTabPanel>
 

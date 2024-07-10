@@ -3,13 +3,18 @@ import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { apiIP } from '../../../../config';
 
-export default function Taste_FreshMeat({ startDate, endDate }) {
+export default function Taste_FreshMeat({
+  startDate,
+  endDate,
+  animalType,
+  grade,
+}) {
   const [chartData, setChartData] = useState([]); // Change initial state to null
 
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}`
+        `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
       );
 
       if (!response.ok) {
