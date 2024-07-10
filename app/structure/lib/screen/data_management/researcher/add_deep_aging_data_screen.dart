@@ -110,7 +110,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                               mainText: '',
                               width: 229.w,
                               height: 88.h,
-                              canAlert: false,
+                              canAlert: true,
                               controller: context
                                   .read<AddDeepAgingDataViewModel>()
                                   .textEditingController,
