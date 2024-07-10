@@ -209,7 +209,6 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
             }));
       }
       meatModel.checkCompleted();
-
       isLoading = false;
       notifyListeners();
 
