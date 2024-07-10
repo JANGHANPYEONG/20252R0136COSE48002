@@ -121,6 +121,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
+    print('SL : $selectedList');
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
@@ -131,6 +132,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       return dateB.compareTo(dateA);
     });
     selectedList = filteredList;
+    print('selectedList : $selectedList');
   }
 
   // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터)
@@ -335,7 +337,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       // Confirm된 육류 데이터 호출
       Map<String, dynamic>? jsonData =
           await RemoteDataSource.getConfirmedMeatData();
-
+      print('jsonDAta : $jsonData');
       if (jsonData == null) {
         print('데이터 없음');
         throw Error();
@@ -349,15 +351,18 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
             String dayTime =
                 DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
             String specieValue = item['specieValue'];
+            String statusType = item['statusType'];
+            print('sts : $statusType');
             Map<String, String> idStatusPair = {
               "id": id,
               "createdAt": createdAt,
               "userId": userId,
               "dayTime": dayTime,
               "specieValue": specieValue,
+              "statusType": statusType,
             };
-
             numList.add(idStatusPair);
+            print('num : $numList');
           }
         });
       }
@@ -435,13 +440,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     try {
       isLoading = true;
       notifyListeners();
-
+      print('meatModel : 출력 : $meatModel');
       dynamic response = await RemoteDataSource.getMeatData(id);
       if (response == null) throw Error();
       meatModel.reset();
       meatModel.fromJson(response);
       meatModel.seqno = 0;
-      print(meatModel);
+
       _context = context;
       _movePageApprove();
     } catch (e) {

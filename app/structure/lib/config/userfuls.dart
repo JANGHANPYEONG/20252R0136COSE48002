@@ -34,6 +34,8 @@ class Usefuls {
     // 현재 로컬 시간 구하기
     DateTime now = DateTime.now();
     DateTime targetDateTime = DateTime.parse(targetDate);
+    print('now : $now');
+    print('target : $targetDate');
 
     // 두 날짜의 차이 계산
     Duration difference = now.difference(targetDateTime);

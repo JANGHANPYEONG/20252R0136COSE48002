@@ -80,24 +80,25 @@ class ListCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Positioned(
-                        right: 0,
-                        child: Container(
-                          width: 36.w,
-                          height: 16.h,
-                          decoration: BoxDecoration(
-                            color: Palette.starIcon,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(28.5.sp),
+                      if (dDay != -1)
+                        Positioned(
+                          right: 0,
+                          child: Container(
+                            width: 36.w,
+                            height: 16.h,
+                            decoration: BoxDecoration(
+                              color: Palette.starIcon,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(28.5.sp),
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'D-$dDay',
+                              style: TextStyle(fontSize: 13.sp),
                             ),
                           ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'D-$dDay',
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
                         ),
-                      )
                     ],
                   )
                 : Container(
@@ -136,7 +137,7 @@ class ListCardResearcherApprove extends StatelessWidget {
   final String num;
   final String dayTime;
   final String statusType;
-  final int dDay;
+  final int? dDay;
   final String userId;
 
   const ListCardResearcherApprove({
@@ -146,8 +147,8 @@ class ListCardResearcherApprove extends StatelessWidget {
     required this.num,
     required this.dayTime,
     required this.statusType,
-    required this.dDay,
     required this.userId,
+    this.dDay,
   });
 
   @override

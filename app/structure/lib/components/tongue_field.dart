@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/main.dart';
 
 class TongueFiled extends StatelessWidget {
   final String mainText;
@@ -39,8 +38,6 @@ class TongueFiled extends StatelessWidget {
               ),
             ),
           ]),
-          //
-          // const Spacer(),
           SizedBox(
             width: 640.w,
             height: 88.h,
@@ -54,29 +51,7 @@ class TongueFiled extends StatelessWidget {
                 ),
               ),
             ),
-          )
-          // SizedBox(
-          //   width: 318.w,
-          //   height: 50.h,
-          //   child: TextField(
-          //     controller: controller,
-          //     inputFormatters: [
-          //       FilteringTextInputFormatter.allow(
-          //           RegExp(r'^-?\d{0,8}(\.\d{0,4})?')),
-          //     ],
-          //     textAlign: TextAlign.center,
-          //     decoration: InputDecoration(
-          //       focusedBorder: UnderlineInputBorder(
-          //         borderSide: BorderSide(color: Colors.black, width: 5.w),
-          //       ),
-          //       enabledBorder: UnderlineInputBorder(
-          //         borderSide:
-          //             BorderSide(color: const Color(0xFFDFDFDF), width: 5.w),
-          //       ),
-          //     ),
-          //     keyboardType: TextInputType.number,
-          //   ),
-          // ),
+          ),
         ],
       ),
     );
