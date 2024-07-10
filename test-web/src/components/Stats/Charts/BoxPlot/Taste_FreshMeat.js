@@ -29,7 +29,7 @@ export default function Taste_FreshMeat({
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, animalType, grade]);
 
   const calculateBoxPlotStatistics = (data) => {
     const sortedData = data.sort((a, b) => a - b);

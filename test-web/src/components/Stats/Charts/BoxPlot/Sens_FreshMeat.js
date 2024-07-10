@@ -30,7 +30,7 @@ export default function Sens_FreshMeat({
   useEffect(() => {
     fetchData();
     console.log('new data ', chartData);
-  }, [startDate, endDate]);
+  }, [startDate, endDate, animalType, grade]);
 
   const calculateBoxPlotStatistics = (data) => {
     const sortedData = data.sort((a, b) => a - b);

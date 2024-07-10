@@ -30,7 +30,7 @@ export default function Sens_Fresh_Map({
     };
 
     fetchData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, animalType, grade]);
 
   let ChartSeries = [];
   if (prop.length > 0) {

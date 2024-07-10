@@ -30,7 +30,7 @@ export default function Taste_Proc_Map({
     };
 
     fetchData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, animalType, grade]);
 
   const propArray = Array.isArray(prop) ? prop : [];
 
