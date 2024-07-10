@@ -52,6 +52,11 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     }
   }
 
+  /// 뒤로가기 버튼
+  VoidCallback? backBtnPressed(BuildContext context) {
+    return () => showExitDialog(context);
+  }
+
   /// 등록 정보 지정 (등록 날짜, 등록자)
   void _setInfo() {
     time = DateTime.now();
@@ -143,7 +148,9 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    _context = context; // 팝업을 위한 context 설정
+    await tempSave();
+    _context = context; // movePage를 위한 context 설정
+
     try {
       if (meatModel.seqno == 0) {
         // 원육
@@ -153,10 +160,15 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.freshmeat!['name'] = userName;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
         if (meatModel.id != null) {
+          // 수정
           // meatModel이 존재할 때는 바로 이미지 적용
           await _sendImageToFirebase();
           await RemoteDataSource.sendMeatData(
               'sensory-eval', meatModel.toJsonFresh());
+
+          // 팝업 띄우기 전에 isLoading 끄기
+          isLoading = false;
+          notifyListeners();
         }
       } else {
         // 처리육
@@ -176,15 +188,14 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
             }));
       }
       meatModel.checkCompleted();
-      if (context.mounted) await tempSave(context);
+
+      isLoading = false;
+      notifyListeners();
+
       _movePage();
     } catch (e) {
       print('에러발생: $e');
     }
-
-    isLoading = false;
-
-    notifyListeners();
   }
 
   /// 페이지 이동
@@ -196,7 +207,9 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         _context.go('/home/registration');
       } else {
         // 수정
-        _context.go('/home/data-manage-normal/edit');
+        showDataManageSucceedPopup(_context, () {
+          _context.go('/home/data-manage-normal/edit');
+        });
       }
     } else {
       // 처리육
@@ -238,20 +251,13 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
   }
 
   /// 임시저장
-  Future<void> tempSave(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
+  Future<void> tempSave() async {
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      isLoading = false;
-      notifyListeners();
-      _context = context;
     } catch (e) {
       print('에러발생: $e');
     }
-    isLoading = false;
-    notifyListeners();
   }
 }

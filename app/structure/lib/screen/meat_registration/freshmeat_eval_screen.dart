@@ -46,10 +46,12 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomEditAppBar(
-        title: context.read<FreshMeatEvalViewModel>().title,
+      appBar: CustomAppBar(
+        title: '신선육 관능평가',
         backButton: true,
         closeButton: false,
+        backButtonOnPressed:
+            context.read<FreshMeatEvalViewModel>().backBtnPressed(context),
       ),
       body: Stack(
         children: [

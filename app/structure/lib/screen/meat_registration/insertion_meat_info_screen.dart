@@ -37,11 +37,13 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
-        appBar: const CustomEditAppBar(
-          title: '육류 기본정보',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: CustomAppBar(
+            title: '육류 기본정보',
+            backButton: true,
+            closeButton: false,
+            backButtonOnPressed: context
+                .read<InsertionMeatInfoViewModel>()
+                .backBtnPressed(context)),
         body: Column(
           children: [
             Container(

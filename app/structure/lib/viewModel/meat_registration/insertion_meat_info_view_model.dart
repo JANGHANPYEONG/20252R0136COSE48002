@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -140,6 +141,13 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
     isSelectedSecondary = true;
     completed = true;
     notifyListeners();
+  }
+
+  /// 뒤로가기 버튼
+  VoidCallback? backBtnPressed(BuildContext context) {
+    return () {
+      showExitDialog(context);
+    };
   }
 
   // 저장 버튼 : 객체에 데이터 할당
