@@ -60,13 +60,7 @@ def getMeatDataById():
                 raise Exception("Invalid Meat ID")
             result = get_meat(db_session, id)
             if result:
-                user = get_user(db_session, result["userId"])["name"]
-                result["name"] = user
                 for k, v in result["rawmeat"].items():
-                    if v is not None:
-                        userId = v["userId"]
-                        user = get_user(db_session, userId)["name"]
-                        v["name"] = user
                     try:
                         result["rawmeat_data_complete"] = (
                             all(
@@ -95,10 +89,6 @@ def getMeatDataById():
                             all(vv is not None for vv in inner_v.values())
                             for inner_v in v.values()
                         )
-                        for vv in v.values():
-                            userId = vv["userId"]
-                            user = get_user(db_session, userId)["name"]
-                            vv["name"] = user
                     except:
                         result["processedmeat_data_complete"][k] = False
                 if not result["processedmeat_data_complete"]:
