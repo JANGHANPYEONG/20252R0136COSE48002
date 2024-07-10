@@ -34,9 +34,10 @@ class FreshMeatEvalViewModel with ChangeNotifier {
 
   // 데이터가 존재하면 할당
   void _initialize() {
+    print(meatModel);
     if (meatModel.seqno == 0) {
       // 원육
-      title = '신선육관능평가';
+      title = '신선육 관능평가';
       meatImage = meatModel.imagePath!;
       marbling = meatModel.freshmeat?["marbling"] ?? 0;
       color = meatModel.freshmeat?["color"] ?? 0;
@@ -45,7 +46,7 @@ class FreshMeatEvalViewModel with ChangeNotifier {
       overall = meatModel.freshmeat?['overall'] ?? 0;
     } else {
       // 처리육
-      title = '처리육관능평가';
+      title = '처리육 관능평가';
       meatImage = meatModel.deepAgedImage!;
       marbling = meatModel.deepAgedFreshmeat?["marbling"] ?? 0;
       color = meatModel.deepAgedFreshmeat?["color"] ?? 0;

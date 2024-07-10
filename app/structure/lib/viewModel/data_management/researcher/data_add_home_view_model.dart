@@ -4,6 +4,8 @@
 //
 //
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -117,6 +119,14 @@ class DataAddHomeViewModel with ChangeNotifier {
   // 처리육 필드를 누를 때 작동 : 데이터 할당
   Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
     dynamic response = await RemoteDataSource.getMeatData(meatModel.id!);
+    print('meat response : $response');
+    // Map<String, dynamic> data = jsonDecode(response);
+    // deepaging_data 추출
+    var deepAgingData =
+        response['processedmeat']['1회']['sensory_eval']['deepaging_data'];
+
+    // deepaging_data 출력
+    print('deepaging_data: $deepAgingData');
     if (response == null) throw Error();
     meatModel.reset();
     meatModel.fromJson(response);

@@ -49,6 +49,7 @@ class MainTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final Widget? suffixIcon;
   final Widget? prefixIcon;
+  final bool? fillColorAlert; // 클릭했을 때 배경 색 변경
 
   const MainTextField({
     super.key,
@@ -70,6 +71,7 @@ class MainTextField extends StatelessWidget {
     this.focusNode,
     this.suffixIcon,
     this.prefixIcon,
+    this.fillColorAlert,
   });
 
   @override

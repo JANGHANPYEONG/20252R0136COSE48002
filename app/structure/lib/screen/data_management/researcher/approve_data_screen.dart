@@ -156,7 +156,7 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                         itemCount: viewModel.selectedList.length,
                         itemBuilder: (context, index) => ListCard(
                           onTap: () async =>
-                              await viewModel.onTap(index, context),
+                              await viewModel.onTapApproveCard(index, context),
                           // null, // 승인, 반려 화면 만들면 여기서 넘어가도록 함
                           idx: index + 1,
                           num: viewModel.selectedList[index]["id"]!,
