@@ -52,6 +52,11 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
       s.setMonth(s.getMonth() - 3);
     } else if (duration === 'year') {
       s.setFullYear(s.getFullYear() - 1);
+    } else if (duration === 'total') {
+      s.setFullYear(1970); // Set start date to 1970-01-01
+      s.setMonth(0);
+      s.setDate(1);
+      s.setHours(0, 0, 0, 0);
     }
     if (duration !== null) {
       setDurStart(new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5));
@@ -190,6 +195,20 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
                 onClick={handleDr}
               >
                 1년
+              </Button>
+            )}
+            {duration === 'total' ? (
+              <Button variant="contained" value="total" style={styles.button}>
+                전체
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                value="total"
+                style={styles.unClickedbutton}
+                onClick={handleDr}
+              >
+                전체
               </Button>
             )}
           </Box>
