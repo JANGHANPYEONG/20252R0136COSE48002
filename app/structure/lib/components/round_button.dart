@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/config/pallete.dart';
 
 class RoundButton extends StatelessWidget {
-  final Widget text;
+  final Text text;
   final void Function()? onPress;
   final double width;
   final double height;
@@ -30,13 +31,13 @@ class RoundButton extends StatelessWidget {
           foregroundColor: fgColor,
           backgroundColor: bgColor ?? Palette.mainButtonColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(20.r),
             side: fgColor != null
                 ? const BorderSide(color: Colors.black)
                 : BorderSide.none,
           ),
         ),
-        child: text,
+        child: Center(child: text),
       ),
     );
   }

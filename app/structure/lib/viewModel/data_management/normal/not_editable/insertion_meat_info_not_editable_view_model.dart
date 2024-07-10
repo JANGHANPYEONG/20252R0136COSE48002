@@ -20,6 +20,14 @@ class InsertionMeatInfoNotEditableViewModel with ChangeNotifier {
   String primalValue = '';
   String secondaryValue = '';
 
+  bool speciesCheck() {
+    if (meatModel.speciesValue! == '돼지') {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   void clickedNextButton(BuildContext context) {
     context.go('/home/data-manage-normal/edit');
   }

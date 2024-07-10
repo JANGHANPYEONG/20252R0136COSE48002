@@ -18,6 +18,7 @@ class Palette {
   //육류 기본정보 화면 종류 배경 색깔
   static const Color basicSpeciesColor = Color(0xFFF9F9F9);
   static const Color checkSpeciesColor = Color(0xFF38C55F);
+  static const Color checkSpeciesNotEditableColor = Color(0xFF808080);
 
   //육류 기본정보 화면 종류 글씨 색깔
   static const Color basicSpeciesTextColor = Color(0xFF9F9F9F);
@@ -90,6 +91,10 @@ class Palette {
       color: const Color(0xff9f9f9f));
   static TextStyle h5Bold =
       TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600);
+  static TextStyle h5BoldGray = TextStyle(
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w600,
+      color: checkSpeciesNotEditableColor);
 
   static TextStyle mainBtnTitle = TextStyle(
       fontSize: 36.sp,

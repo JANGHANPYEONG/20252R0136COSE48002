@@ -288,7 +288,7 @@ class InsertionTraceNumViewModel with ChangeNotifier {
 
     if (meatModel.id != null) {
       // 수정
-      context.go('/home/data-manage-normal/edit/trace-editable/info-editable');
+      context.go('/home/data-manage-normal/edit/info-editable');
     } else {
       // 신규 등록
       context.go('/home/registration/trace-num/meat-info');

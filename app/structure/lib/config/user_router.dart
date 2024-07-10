@@ -12,7 +12,6 @@ import 'package:structure/screen/data_management/normal/edit_meat_data_screen.da
 import 'package:structure/screen/data_management/normal/not_editable/freshmeat_eval_not_editable_sceen.dart';
 import 'package:structure/screen/data_management/normal/not_editable/insertion_meat_image_not_editable_screen.dart';
 import 'package:structure/screen/data_management/normal/not_editable/insertion_meat_info_not_editable_screen.dart';
-import 'package:structure/screen/data_management/normal/not_editable/insertion_trace_num_not_editable_screen.dart';
 import 'package:structure/screen/data_management/researcher/add_processed_meat_main_screen.dart';
 import 'package:structure/screen/data_management/researcher/add_raw_meat_main_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_home_screen.dart';
@@ -47,7 +46,6 @@ import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_m
 import 'package:structure/viewModel/data_management/normal/not_editable/freshmeat_eval_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_info_not_editable_view_model.dart';
-import 'package:structure/viewModel/data_management/normal/not_editable/insertion_trace_num_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/heatedmeat_eval_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
@@ -247,28 +245,18 @@ class UserRouter {
                 GoRoute(
                   path: 'edit',
                   builder: (context, state) => ChangeNotifierProvider(
-                      create: (context) => EditMeatDataViewModel(meatModel),
+                      create: (context) =>
+                          EditMeatDataViewModel(meatModel, userModel),
                       child: const EditMeatDataScreen()),
                   routes: [
                     // 수정불가
                     GoRoute(
-                      path: 'trace',
+                      path: 'info',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
-                            InsertionTraceNumNotEditableViewModel(meatModel),
-                        child: const InsertionTraceNumNotEditableScreen(),
+                            InsertionMeatInfoNotEditableViewModel(meatModel),
+                        child: const InsertionMeatInfoNotEditableScreen(),
                       ),
-                      routes: [
-                        GoRoute(
-                          path: 'info',
-                          builder: (context, state) => ChangeNotifierProvider(
-                            create: (context) =>
-                                InsertionMeatInfoNotEditableViewModel(
-                                    meatModel),
-                            child: const InsertionMeatInfoNotEditableScreen(),
-                          ),
-                        ),
-                      ],
                     ),
                     GoRoute(
                       path: 'image',
@@ -289,23 +277,31 @@ class UserRouter {
                     ),
                     // 수정 가능
                     GoRoute(
-                      path: 'trace-editable',
+                      path: 'info-editable',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
-                            InsertionTraceNumViewModel(meatModel),
-                        child: const InsertionTraceNumScreen(),
+                            InsertionMeatInfoViewModel(meatModel),
+                        child: const InsertionMeatInfoScreen(),
                       ),
-                      routes: [
-                        GoRoute(
-                          path: 'info-editable',
-                          builder: (context, state) => ChangeNotifierProvider(
-                            create: (context) =>
-                                InsertionMeatInfoViewModel(meatModel),
-                            child: const InsertionMeatInfoScreen(),
-                          ),
-                        ),
-                      ],
                     ),
+                    // GoRoute(
+                    //   path: 'trace-editable',
+                    //   builder: (context, state) => ChangeNotifierProvider(
+                    //     create: (context) =>
+                    //         InsertionTraceNumViewModel(meatModel),
+                    //     child: const InsertionTraceNumScreen(),
+                    //   ),
+                    //   routes: [
+                    //     GoRoute(
+                    //       path: 'info-editable',
+                    //       builder: (context, state) => ChangeNotifierProvider(
+                    //         create: (context) =>
+                    //             InsertionMeatInfoViewModel(meatModel),
+                    //         child: const InsertionMeatInfoScreen(),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                     GoRoute(
                       path: 'image-editable',
                       builder: (context, state) => ChangeNotifierProvider(
@@ -428,9 +424,38 @@ class UserRouter {
                 GoRoute(
                   path: 'approve',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => EditMeatDataViewModel(meatModel),
+                    create: (context) =>
+                        EditMeatDataViewModel(meatModel, userModel),
                     child: const EditMeatDataScreen(),
                   ),
+                  routes: [
+                    // 수정불가
+                    GoRoute(
+                      path: 'info',
+                      builder: (context, state) => ChangeNotifierProvider(
+                        create: (context) =>
+                            InsertionMeatInfoNotEditableViewModel(meatModel),
+                        child: const InsertionMeatInfoNotEditableScreen(),
+                      ),
+                    ),
+                    GoRoute(
+                      path: 'image',
+                      builder: (context, state) => ChangeNotifierProvider(
+                        create: (context) =>
+                            InsertionMeatImageNotEditableViewModel(
+                                meatModel, userModel, 0),
+                        child: const InsertionMeatImageNotEditableScreen(),
+                      ),
+                    ),
+                    GoRoute(
+                      path: 'freshmeat',
+                      builder: (context, state) => ChangeNotifierProvider(
+                        create: (context) =>
+                            FreshMeatEvalNotEditableViewModel(meatModel, false),
+                        child: const FreshMeatEvalNotEditableScreen(),
+                      ),
+                    ),
+                  ],
                 )
               ],
             ),

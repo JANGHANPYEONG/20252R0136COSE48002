@@ -29,29 +29,26 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                height: 30.h,
-              ),
+              SizedBox(height: 30.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // 촬영 날짜
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('촬영 날짜', style: Palette.h4),
-                      SizedBox(
-                        height: 20.h,
-                      ),
+                      SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
-                        height: 78.h,
+                        height: 88.h,
                         decoration: BoxDecoration(
                           color: Palette.fieldEmptyBg,
-                          borderRadius: BorderRadius.circular(20.w),
+                          borderRadius: BorderRadius.circular(15.r),
                         ),
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
+                          padding: EdgeInsets.only(left: 20.w),
                           child: Text(
                             context
                                 .watch<InsertionMeatImageNotEditableViewModel>()
@@ -63,28 +60,28 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
                     ],
                   ),
                   SizedBox(width: 10.w),
+
+                  // 촬영자
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('촬영자', style: Palette.h4),
-                      SizedBox(
-                        height: 20.h,
-                      ),
+                      SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
-                        height: 78.h,
+                        height: 88.h,
                         decoration: BoxDecoration(
                           color: Palette.fieldEmptyBg,
-                          borderRadius: BorderRadius.circular(20.w),
+                          borderRadius: BorderRadius.circular(15.r),
                         ),
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
+                          padding: EdgeInsets.only(left: 20.w),
                           child: Text(
                             context
                                 .watch<InsertionMeatImageNotEditableViewModel>()
                                 .userName,
-                            style: Palette.h5,
+                            style: Palette.h4,
                           ),
                         ),
                       ),
@@ -92,16 +89,16 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 30.h,
-              ),
+              SizedBox(height: 30.h),
+
+              // 사진
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('단면 촬영 사진', style: Palette.h4),
-                  SizedBox(
-                    height: 20.h,
-                  ),
+                  SizedBox(height: 20.h),
+
+                  // 촬영 사진
                   SizedBox(
                     width: 640.w,
                     height: 653.h,
@@ -126,11 +123,11 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
                           StackTrace? stackTrace) {
                         return const Icon(Icons.error);
                       },
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ],
               ),
-              const Spacer(),
             ],
           ),
           context.watch<InsertionMeatImageNotEditableViewModel>().isLoading

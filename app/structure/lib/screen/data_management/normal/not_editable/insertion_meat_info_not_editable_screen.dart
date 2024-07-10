@@ -3,6 +3,7 @@
 // 육류 분류 페이지(수정 불가!) : Normal
 //
 //
+
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_drop_down.dart';
@@ -36,50 +37,83 @@ class _InsertionMeatInfoNotEditableScreenState
         body: Column(
           children: [
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 50.w),
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 70.h,
-                  ),
+                  SizedBox(height: 56.h),
+                  Text('종류', style: Palette.h4),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
-                      Text('종류', style: Palette.h4),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  Row(
-                    children: [
+                      // 소
                       Container(
+                        width: 116.w,
+                        height: 72.h,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.sp),
-                            color: Palette.fieldEmptyBg),
-                        width: 121.w,
-                        height: 62.h,
+                          color: context
+                                  .read<InsertionMeatInfoNotEditableViewModel>()
+                                  .speciesCheck()
+                              ? Palette.basicSpeciesColor
+                              : Palette.checkSpeciesNotEditableColor,
+                          borderRadius: BorderRadius.all(Radius.circular(50.r)),
+                        ),
                         child: Center(
                           child: Text(
-                            context
-                                .read<InsertionMeatInfoNotEditableViewModel>()
-                                .speciesValue,
-                            style: Palette.h4,
+                            "소",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30.sp,
+                              fontWeight: FontWeight.w700,
+                              color: context
+                                      .read<
+                                          InsertionMeatInfoNotEditableViewModel>()
+                                      .speciesCheck()
+                                  ? Palette.basicSpeciesTextColor
+                                  : Palette.checkSpeciesTextColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+
+                      // 돼지
+                      Container(
+                        width: 116.w,
+                        height: 72.h,
+                        decoration: BoxDecoration(
+                          color: context
+                                  .read<InsertionMeatInfoNotEditableViewModel>()
+                                  .speciesCheck()
+                              ? Palette.checkSpeciesNotEditableColor
+                              : Palette.basicSpeciesColor,
+                          borderRadius: BorderRadius.all(Radius.circular(50.r)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "돼지",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30.sp,
+                              fontWeight: FontWeight.w700,
+                              color: context
+                                      .read<
+                                          InsertionMeatInfoNotEditableViewModel>()
+                                      .speciesCheck()
+                                  ? Palette.checkSpeciesTextColor
+                                  : Palette.basicSpeciesTextColor,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: 42.0.h,
-                  ),
-                  Row(
-                    children: [
-                      Text('부위', style: Palette.h4),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
+                  SizedBox(height: 30.h),
+
+                  Text('부위', style: Palette.h4),
+                  SizedBox(height: 12.h),
+
+                  // 대분류
                   CustomDropdown(
                     hintText: Text(
                         context
@@ -89,10 +123,11 @@ class _InsertionMeatInfoNotEditableScreenState
                     value: null,
                     itemList: const [],
                     onChanged: null,
+                    hasDropdown: false,
                   ),
-                  SizedBox(
-                    height: 16.h,
-                  ),
+                  SizedBox(height: 16.h),
+
+                  // 소분류
                   CustomDropdown(
                     hintText: Text(
                         context
@@ -102,11 +137,11 @@ class _InsertionMeatInfoNotEditableScreenState
                     value: null,
                     itemList: const [],
                     onChanged: null,
+                    hasDropdown: false,
                   ),
                 ],
               ),
             ),
-            const Spacer(),
           ],
         ),
       ),

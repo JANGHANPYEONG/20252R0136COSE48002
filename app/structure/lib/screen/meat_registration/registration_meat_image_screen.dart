@@ -48,14 +48,14 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
-                        height: 78.h,
+                        height: 88.h,
                         decoration: BoxDecoration(
                           color: Palette.fieldEmptyBg,
-                          borderRadius: BorderRadius.circular(20.w),
+                          borderRadius: BorderRadius.circular(15.r),
                         ),
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
+                          padding: EdgeInsets.only(left: 20.w),
                           child: Text(
                             context
                                 .watch<RegistrationMeatImageViewModel>()
@@ -76,14 +76,14 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       SizedBox(height: 20.h),
                       Container(
                         width: 315.w,
-                        height: 78.h,
+                        height: 88.h,
                         decoration: BoxDecoration(
                           color: Palette.fieldEmptyBg,
-                          borderRadius: BorderRadius.circular(20.w),
+                          borderRadius: BorderRadius.circular(15.r),
                         ),
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
+                          padding: EdgeInsets.only(left: 20.w),
                           child: Text(
                             context
                                 .watch<RegistrationMeatImageViewModel>()

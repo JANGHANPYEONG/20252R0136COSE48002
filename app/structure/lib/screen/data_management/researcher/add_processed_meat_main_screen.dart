@@ -38,23 +38,20 @@ class _AddProcessedMeatMainScreenState
       body: Center(
         child: Column(
           children: [
-            SizedBox(
-              height: 48.h,
-            ),
+            SizedBox(height: 48.h),
             InkWell(
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedImage(context),
               child: StepCard(
                 mainText: '처리육 단면 촬영',
-                isCompleted: meatModel.deepAgedImageCompleted,
-                isBefore: false,
+                status: meatModel.deepAgedImageCompleted ? 1 : 2,
+                // isCompleted: meatModel.deepAgedImageCompleted,
+                // isBefore: false,
                 imageUrl: 'assets/images/meat_image.png',
               ),
             ),
-            SizedBox(
-              height: 18.h,
-            ),
+            SizedBox(height: 18.h),
             InkWell(
               onTap: () => widget.meatModel.deepAgedImageCompleted
                   ? context
@@ -63,8 +60,13 @@ class _AddProcessedMeatMainScreenState
                   : null,
               child: StepCard(
                 mainText: '처리육 관능평가',
-                isCompleted: widget.meatModel.deepAgedFreshCompleted,
-                isBefore: !widget.meatModel.deepAgedImageCompleted,
+                status: widget.meatModel.deepAgedImageCompleted
+                    ? widget.meatModel.deepAgedFreshCompleted
+                        ? 1
+                        : 2
+                    : 0,
+                // isCompleted: widget.meatModel.deepAgedFreshCompleted,
+                // isBefore: !widget.meatModel.deepAgedImageCompleted,
                 imageUrl: 'assets/images/meat_eval.png',
               ),
             ),
@@ -77,8 +79,9 @@ class _AddProcessedMeatMainScreenState
                   .clickedHeatedEval(context),
               child: StepCard(
                 mainText: '가열육 관능평가',
-                isCompleted: widget.meatModel.heatedCompleted,
-                isBefore: false,
+                status: widget.meatModel.heatedCompleted ? 1 : 2,
+                // isCompleted: widget.meatModel.heatedCompleted,
+                // isBefore: false,
                 imageUrl: 'assets/images/meat_eval.png',
               ),
             ),
@@ -91,8 +94,9 @@ class _AddProcessedMeatMainScreenState
                   .clickedTongue(context),
               child: StepCard(
                 mainText: '전자혀 데이터',
-                isCompleted: widget.meatModel.tongueCompleted,
-                isBefore: false,
+                status: widget.meatModel.tongueCompleted ? 1 : 2,
+                // isCompleted: widget.meatModel.tongueCompleted,
+                // isBefore: false,
                 imageUrl: 'assets/images/meat_tongue.png',
               ),
             ),
@@ -104,8 +108,9 @@ class _AddProcessedMeatMainScreenState
                   context.read<AddProcessedMeatViewModel>().clickedLab(context),
               child: StepCard(
                 mainText: '실험 데이터',
-                isCompleted: widget.meatModel.labCompleted,
-                isBefore: false,
+                status: widget.meatModel.labCompleted ? 1 : 2,
+                // isCompleted: widget.meatModel.labCompleted,
+                // isBefore: false,
                 imageUrl: 'assets/images/meat_lab.png',
               ),
             ),

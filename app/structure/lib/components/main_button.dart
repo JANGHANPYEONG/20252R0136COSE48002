@@ -27,12 +27,13 @@ class MainButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-            disabledBackgroundColor: Palette.mainBtnDisabBg,
-            backgroundColor: mode == 0 ? Colors.black : Palette.mainBtnAtvBg,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.sp),
-            ),
-            elevation: 0),
+          disabledBackgroundColor: Palette.mainBtnDisabBg,
+          backgroundColor: mode == 0 ? Colors.black : Palette.mainBtnAtvBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          elevation: 0,
+        ),
         child: Center(
           child: Text(text, style: style ?? Palette.mainBtnTitle),
         ),
