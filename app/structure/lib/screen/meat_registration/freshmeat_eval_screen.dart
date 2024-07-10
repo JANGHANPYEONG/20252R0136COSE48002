@@ -60,7 +60,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 15.h),
+                  SizedBox(height: 40.h),
                   SizedBox(
                     width: 640.w,
                     height: 475.h,
@@ -100,7 +100,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                             fit: BoxFit.cover,
                           ),
                   ),
-                  SizedBox(height: 63.h),
+                  SizedBox(height: 60.h),
 
                   // 관능평가 데이터가 입력 되었는지 체크.
                   Row(

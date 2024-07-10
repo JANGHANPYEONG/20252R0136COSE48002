@@ -47,7 +47,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
         body: Column(
           children: [
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 50.w),
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

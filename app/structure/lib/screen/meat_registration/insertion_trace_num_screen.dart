@@ -64,11 +64,11 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
         ),
         body: Column(
           children: [
-            SizedBox(height: 49.h),
+            SizedBox(height: 56.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 20.h),
+                SizedBox(width: 40.h),
                 Form(
                   key: context.read<InsertionTraceNumViewModel>().formKey,
 
@@ -125,11 +125,11 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                               .start(context);
                         }
                       },
-                      child: const Icon(Icons.search, size: 30.0),
+                      child: Icon(Icons.search, size: 36.sp),
                     ),
                     canAlert: true,
-                    width: 600.w,
-                    height: 115.h,
+                    width: 546.w,
+                    height: 72.h,
                     maxLength: 15,
                   ),
                 ),
@@ -155,7 +155,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 5.0),
+            SizedBox(height: 48.h),
 
             // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
             if (context.watch<InsertionTraceNumViewModel>().isAllInserted == 1)
@@ -198,8 +198,8 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
               child: MainButton(
                 mode: 1,
                 text: '다음',
-                width: 658.w,
-                height: 104.h,
+                width: 640.w,
+                height: 96.h,
                 // 모든 데이터가 입력된 상황에서 '다음' 버튼을 활성화.
                 onPressed:
                     (context.read<InsertionTraceNumViewModel>().isAllInserted ==

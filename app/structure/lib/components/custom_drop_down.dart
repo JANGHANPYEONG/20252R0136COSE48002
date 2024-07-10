@@ -19,6 +19,7 @@ class CustomDropdown extends StatefulWidget {
   final Widget hintText;
   final String? value;
   final List<String> itemList;
+  final bool hasDropdown;
   final Function(String?)? onChanged;
 
   const CustomDropdown({
@@ -27,6 +28,7 @@ class CustomDropdown extends StatefulWidget {
     required this.value,
     required this.itemList,
     required this.onChanged,
+    this.hasDropdown = true,
   });
 
   @override
@@ -38,12 +40,14 @@ class _CustomDropdownState extends State<CustomDropdown> {
   OverlayEntry? _overlayEntry;
 
   void _toggleDropdown() {
-    if (_overlayEntry == null) {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context).insert(_overlayEntry!);
-    } else {
-      _overlayEntry!.remove();
-      _overlayEntry = null;
+    if (widget.itemList.isNotEmpty) {
+      if (_overlayEntry == null) {
+        _overlayEntry = _createOverlayEntry();
+        Overlay.of(context).insert(_overlayEntry!);
+      } else {
+        _overlayEntry!.remove();
+        _overlayEntry = null;
+      }
     }
   }
 
@@ -121,7 +125,9 @@ class _CustomDropdownState extends State<CustomDropdown> {
                       )
                     : widget.hintText,
               ),
-              const Icon(Icons.arrow_drop_down),
+              widget.hasDropdown
+                  ? const Icon(Icons.arrow_drop_down)
+                  : Container(),
             ],
           ),
         ),

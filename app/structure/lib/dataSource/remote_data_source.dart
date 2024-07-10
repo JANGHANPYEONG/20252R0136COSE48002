@@ -104,6 +104,12 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 육류 데이터 반려 (GET)
+  static Future<dynamic> rejectMeatData(String meatId) async {
+    dynamic response = await _getApi('meat/update/reject?id=$meatId');
+    return response;
+  }
+
   /// category_info 테이블에서 종, 부위 데이터 불러오기 (GET)
   static Future<dynamic> getMeatSpecies() async {
     dynamic response = await _getApi('meat/get/default-data');

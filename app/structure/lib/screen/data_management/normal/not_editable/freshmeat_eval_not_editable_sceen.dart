@@ -4,6 +4,7 @@
 //
 //
 //
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -56,10 +57,10 @@ class _FreshMeatEvalNotEditableScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 15.h),
+              SizedBox(height: 40.h),
               SizedBox(
-                width: 600.w,
-                height: 600.h,
+                width: 640.w,
+                height: 475.h,
                 child: Image.network(
                   context.read<FreshMeatEvalNotEditableViewModel>().meatImage,
                   loadingBuilder: (BuildContext context, Widget child,
@@ -75,19 +76,23 @@ class _FreshMeatEvalNotEditableScreenState
                       );
                     }
                   },
+
+                  // 이미지 불러오기 에러
                   errorBuilder: (BuildContext context, Object error,
                       StackTrace? stackTrace) {
                     return const Icon(Icons.error);
                   },
+
+                  fit: BoxFit.cover,
                 ),
               ),
-              SizedBox(height: 5.h),
+              SizedBox(height: 60.h),
+
+              // 관능평가 데이터
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 70.w,
-                  ),
+                  SizedBox(width: 70.w),
                   Icon(
                     Icons.check,
                     color: context
@@ -137,37 +142,22 @@ class _FreshMeatEvalNotEditableScreenState
                         ? Palette.mainButtonColor
                         : Colors.transparent,
                   ),
-                  SizedBox(
-                    width: 70.w,
-                  ),
+                  SizedBox(width: 70.w),
                 ],
               ),
               Container(
-                margin: EdgeInsets.only(
-                  left: 24.w,
-                  right: 24.w,
-                ),
+                margin: EdgeInsets.only(left: 24.w, right: 24.w),
                 child: TabBar(
                   controller: _tabController,
-                  tabs: [
-                    Tab(
-                      child: Text('마블링', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('육색', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('조직감', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('육즙', style: Palette.h5),
-                    ),
-                    Tab(
-                      child: Text('기호도', style: Palette.h5),
-                    ),
+                  tabs: const [
+                    Tab(child: Text('마블링')),
+                    Tab(child: Text('육색')),
+                    Tab(child: Text('조직감')),
+                    Tab(child: Text('육즙')),
+                    Tab(child: Text('기호도')),
                   ],
                   labelColor: Palette.dataMngBtndBg,
-                  labelStyle: Palette.h5,
+                  labelStyle: Palette.h5BoldGray,
                   unselectedLabelStyle: Palette.h5LightGrey,
                   indicator: ShapeDecoration(
                     shape: Border(
@@ -179,11 +169,9 @@ class _FreshMeatEvalNotEditableScreenState
                   ),
                 ),
               ),
+
               SizedBox(
-                height: 10.h,
-              ),
-              SizedBox(
-                height: 300.h,
+                height: 270.h,
                 child: Consumer<FreshMeatEvalNotEditableViewModel>(
                   builder: (context, viewModel, child) => TabBarView(
                     controller: _tabController,
@@ -191,7 +179,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 마블링
                       Center(
                         child: PartEval(
-                          idx : 0,
+                          idx: 0,
                           selectedText: text[0],
                           value: viewModel.marbling,
                           onChanged: null,
@@ -200,7 +188,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 육색
                       Center(
                         child: PartEval(
-                          idx : 1,
+                          idx: 1,
                           selectedText: text[1],
                           value: viewModel.color,
                           onChanged: null,
@@ -209,7 +197,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 조직감
                       Center(
                         child: PartEval(
-                          idx : 2,
+                          idx: 2,
                           selectedText: text[2],
                           value: viewModel.texture,
                           onChanged: null,
@@ -218,7 +206,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 육즙
                       Center(
                         child: PartEval(
-                          idx : 3,
+                          idx: 3,
                           selectedText: text[3],
                           value: viewModel.surface,
                           onChanged: null,
@@ -227,7 +215,7 @@ class _FreshMeatEvalNotEditableScreenState
                       // 기호도
                       Center(
                         child: PartEval(
-                          idx : 4,
+                          idx: 4,
                           selectedText: text[4],
                           value: viewModel.overall,
                           onChanged: null,

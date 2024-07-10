@@ -95,6 +95,7 @@ class MainTextField extends StatelessWidget {
         obscureText: isObscure ?? false,
         decoration: InputDecoration(
             prefixIcon: prefixIcon,
+            counterText: "",
             label: isCenter != null && isCenter == true
                 ? Center(
                     child: Text(

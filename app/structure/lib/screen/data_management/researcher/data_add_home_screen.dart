@@ -6,7 +6,6 @@
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
