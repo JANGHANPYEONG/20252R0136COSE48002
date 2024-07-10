@@ -15,7 +15,7 @@ from db.db_controller import (
     _getMeatDataByTotalStatusType,
     _getTexanomyData,
     _getPredictionData,
-    get_user
+    get_user,
 )
 from utils import *
 
@@ -30,10 +30,9 @@ def getMeatData():
             db_session = current_app.db_session
             offset = request.args.get("offset")
             count = request.args.get("count")
-            return (
-                get_range_meat_data(db_session, offset=offset, count=count)
-                .get_json()
-            )
+            start = request.args.get("start")
+            end = request.args.get("end")
+            return get_range_meat_data(db_session, offset, count, start, end).get_json()
 
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
@@ -101,7 +100,6 @@ def getMeatDataById():
                         result["processedmeat_data_complete"][k] = False
                 if not result["processedmeat_data_complete"]:
                     result["processedmeat_data_complete"] = False
-                    
 
                 return jsonify(result)
             else:
@@ -295,8 +293,8 @@ def getMeatDataByRangeStatusType():
             statusType_value = safe_int(request.args.get("statusType"))
             offset = request.args.get("offset")
             count = request.args.get("count")
-            start_str = request.args.get('start')
-            end_str = request.args.get('end')
+            start_str = request.args.get("start")
+            end_str = request.args.get("end")
 
             start = convert2datetime(start_str, 0)
             end = convert2datetime(end_str, 0)

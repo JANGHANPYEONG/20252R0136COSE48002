@@ -6,6 +6,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_dialog.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -32,9 +34,10 @@ class FreshMeatEvalViewModel with ChangeNotifier {
 
   // 데이터가 존재하면 할당
   void _initialize() {
+    print(meatModel);
     if (meatModel.seqno == 0) {
       // 원육
-      title = '신선육관능평가';
+      title = '신선육 관능평가';
       meatImage = meatModel.imagePath!;
       marbling = meatModel.freshmeat?["marbling"] ?? 0;
       color = meatModel.freshmeat?["color"] ?? 0;
@@ -43,7 +46,7 @@ class FreshMeatEvalViewModel with ChangeNotifier {
       overall = meatModel.freshmeat?['overall'] ?? 0;
     } else {
       // 처리육
-      title = '처리육관능평가';
+      title = '처리육 관능평가';
       meatImage = meatModel.deepAgedImage!;
       marbling = meatModel.deepAgedFreshmeat?["marbling"] ?? 0;
       color = meatModel.deepAgedFreshmeat?["color"] ?? 0;
@@ -61,6 +64,11 @@ class FreshMeatEvalViewModel with ChangeNotifier {
       completed = true;
     }
     notifyListeners();
+  }
+
+  /// 뒤로가기 버튼
+  VoidCallback? backBtnPressed(BuildContext context) {
+    return () => showExitDialog(context);
   }
 
   // 관능평가 데이터 값 할당
@@ -113,7 +121,10 @@ class FreshMeatEvalViewModel with ChangeNotifier {
   Future<void> saveMeatData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
+
+    // 임시저장
     await tempSave(context);
+
     try {
       if (meatModel.seqno == 0) {
         // 원육 - 등록
@@ -163,7 +174,9 @@ class FreshMeatEvalViewModel with ChangeNotifier {
         _context.go('/home/registration');
       } else {
         // 수정
-        _context.go('/home/data-manage-normal/edit');
+        showDataManageSucceedPopup(_context, () {
+          _context.go('/home/data-manage-normal/edit');
+        });
       }
     } else {
       // 처리육

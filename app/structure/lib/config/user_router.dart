@@ -425,6 +425,13 @@ class UserRouter {
                     ),
                   ],
                 ),
+                GoRoute(
+                  path: 'approve',
+                  builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) => EditMeatDataViewModel(meatModel),
+                    child: const EditMeatDataScreen(),
+                  ),
+                )
               ],
             ),
           ],

@@ -607,10 +607,10 @@ def get_range_meat_data(
     db_total_len = db_session.query(Meat).count()
     if start is not None and end is not None:
         query = query.filter(Meat.createdAt.between(start, end))
-        db_total_len = db_session.query.filter(
+        db_total_len = db_session.query(Meat).filter(
             Meat.createdAt.between(start, end)
         ).count()
-    query = query.offset(offset * count).limit(count)
+    query = query.offset(offset).limit(count)
 
     # 탐색
     meat_data = query.all()

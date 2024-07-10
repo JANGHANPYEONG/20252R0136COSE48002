@@ -426,6 +426,31 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  // 데이터 필드를 클릭 시에 호출된다.
+  Future<void> onTapApproveCard(int idx, BuildContext context) async {
+    String id = '';
+
+    id = selectedList[idx]['id']!;
+
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      dynamic response = await RemoteDataSource.getMeatData(id);
+      if (response == null) throw Error();
+      meatModel.reset();
+      meatModel.fromJson(response);
+      meatModel.seqno = 0;
+      print(meatModel);
+      _context = context;
+      _movePageApprove();
+    } catch (e) {
+      print("에러발생: $e");
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+
   // 검색어를 포함하는 문자열을 반환한다. (QR 시에도 호출된다.)
   void _filterStrings(bool isQr) {
     if (isQr = false) {
@@ -443,5 +468,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   void _movePage() {
     _context.go('/home/data-manage-researcher/add');
+  }
+
+  void _movePageApprove() {
+    _context.go('/home/data-manage-researcher/approve');
   }
 }

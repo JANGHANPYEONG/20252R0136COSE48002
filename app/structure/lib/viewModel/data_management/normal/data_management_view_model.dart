@@ -311,6 +311,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
         print('데이터 없음');
         throw Error();
       } else {
+        print("getbyuserid사용");
         // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
         for (var item in jsonData) {
           String id = item["id"];

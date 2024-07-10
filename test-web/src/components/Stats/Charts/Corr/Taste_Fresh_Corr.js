@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { apiIP } from '../../../../config';
 
-export default function Taste_Fresh_Corr({ startDate, endDate }) {
+export default function Taste_Fresh_Corr({
+  startDate,
+  endDate,
+  animalType,
+  grade,
+}) {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
@@ -10,7 +15,7 @@ export default function Taste_Fresh_Corr({ startDate, endDate }) {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
         );
 
         if (!response.ok) {
