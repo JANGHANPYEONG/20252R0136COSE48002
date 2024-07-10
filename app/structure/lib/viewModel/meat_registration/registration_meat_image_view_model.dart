@@ -176,8 +176,12 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
             }));
       }
       meatModel.checkCompleted();
-      if (context.mounted) await tempSave(context);
-      _movePage();
+      if (context.mounted) {
+        await tempSave(context);
+        showDataManageSucceedPopup(context, () {
+          _movePage();
+        });
+      }
     } catch (e) {
       print('에러발생: $e');
     }
@@ -239,19 +243,13 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
   /// 임시저장
   Future<void> tempSave(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      isLoading = false;
-      notifyListeners();
       _context = context;
     } catch (e) {
       print('에러발생: $e');
     }
-    isLoading = false;
-    notifyListeners();
   }
 }

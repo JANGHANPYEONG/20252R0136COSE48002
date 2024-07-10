@@ -43,7 +43,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                 // 'TongueFiled' 컴포넌트를 이용하여 전자혀 데이터 측정
                 children: [
                   SizedBox(
-                    height: 50.h,
+                    height: 30.h,
                   ),
                   TongueFiled(
                     mainText: 'Sourness',
@@ -79,19 +79,19 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                     controller:
                         context.watch<InsertionTongueDataViewModel>().richness,
                   ),
-                  SizedBox(
-                    height: 400.h,
-                  ),
+                  // SizedBox(
+                  //   height: 200.h,
+                  // ),
                   // 데이터 저장 버튼
                   Container(
-                    margin: EdgeInsets.only(bottom: 28.h),
+                    margin: EdgeInsets.only(bottom: 28.h, top: 150.h),
                     child: MainButton(
                       onPressed: () async => context
                           .read<InsertionTongueDataViewModel>()
                           .saveData(context),
                       text: '저장',
                       width: 658.w,
-                      height: 104.h,
+                      height: 96.h,
                       mode: 1,
                     ),
                   ),

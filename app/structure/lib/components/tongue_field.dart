@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:structure/main.dart';
 
 class TongueFiled extends StatelessWidget {
   final String mainText;
@@ -17,48 +18,65 @@ class TongueFiled extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 60.w),
-      child: Row(
+      margin: EdgeInsets.symmetric(horizontal: 42.w),
+      child: Column(
         children: [
-          Text(
-            mainText,
-            style: TextStyle(
-              fontSize: 36.sp,
-              fontWeight: FontWeight.w400,
+          Row(children: [
+            Text(
+              mainText,
+              style: TextStyle(
+                fontSize: 30.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          SizedBox(width: 10.w),
-          Text(
-            subText,
-            style: TextStyle(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              color: const Color.fromRGBO(96, 96, 96, 1),
+            SizedBox(width: 10.w),
+            Text(
+              subText,
+              style: TextStyle(
+                fontSize: 30.sp,
+                fontWeight: FontWeight.w400,
+                color: const Color.fromARGB(255, 61, 57, 57),
+              ),
             ),
-          ),
-          const Spacer(),
+          ]),
+          //
+          // const Spacer(),
           SizedBox(
-            width: 318.w,
-            height: 50.h,
+            width: 640.w,
+            height: 88.h,
             child: TextField(
-              controller: controller,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(
-                    RegExp(r'^-?\d{0,8}(\.\d{0,4})?')),
-              ],
-              textAlign: TextAlign.center,
               decoration: InputDecoration(
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 5.w),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide:
-                      BorderSide(color: const Color(0xFFDFDFDF), width: 5.w),
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              keyboardType: TextInputType.number,
             ),
-          ),
+          )
+          // SizedBox(
+          //   width: 318.w,
+          //   height: 50.h,
+          //   child: TextField(
+          //     controller: controller,
+          //     inputFormatters: [
+          //       FilteringTextInputFormatter.allow(
+          //           RegExp(r'^-?\d{0,8}(\.\d{0,4})?')),
+          //     ],
+          //     textAlign: TextAlign.center,
+          //     decoration: InputDecoration(
+          //       focusedBorder: UnderlineInputBorder(
+          //         borderSide: BorderSide(color: Colors.black, width: 5.w),
+          //       ),
+          //       enabledBorder: UnderlineInputBorder(
+          //         borderSide:
+          //             BorderSide(color: const Color(0xFFDFDFDF), width: 5.w),
+          //       ),
+          //     ),
+          //     keyboardType: TextInputType.number,
+          //   ),
+          // ),
         ],
       ),
     );
