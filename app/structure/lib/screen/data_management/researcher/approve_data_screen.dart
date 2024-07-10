@@ -162,12 +162,10 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                           num: viewModel.selectedList[index]["id"]!,
                           dayTime: viewModel.selectedList[index]["userId"]!,
                           statusType: viewModel.selectedList[index]
-                                  ["statusType"] ??
-                              '대기중',
-                          dDay: 3 -
-                              Usefuls.calculateDateDifference(
-                                viewModel.selectedList[index]["createdAt"]!,
-                              ),
+                              ["statusType"]!,
+                          //     ["statusType"] ??
+                          // '승인',
+                          dDay: -1,
                         ),
                       ),
                     ),

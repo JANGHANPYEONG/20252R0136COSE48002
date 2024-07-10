@@ -11,6 +11,7 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/labdata_field.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
+import 'package:structure/components/tongue_field.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 
 class InsertionLabDataScreen extends StatefulWidget {
@@ -40,67 +41,98 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
             children: [
               Column(
                 // 'LabDataField' 컴포넌트를 이용해서 실험 데이터 입력
-                mainAxisSize: MainAxisSize.max,
+                // mainAxisSize: MainAxisSize.max,
                 children: [
                   SizedBox(
                     height: 20.h,
                   ),
                   LabDataField(
-                      firstText: 'L',
-                      secondText: '명도',
+                      mainText: 'L ',
+                      subText: '명도',
                       controller: context.read<InsertionLabDataViewModel>().l),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'a',
-                      secondText: '적색도',
+                      mainText: 'a ',
+                      subText: '적색도',
                       unit: '',
                       controller: context.read<InsertionLabDataViewModel>().a),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'b',
-                      secondText: '황색도',
+                      mainText: 'b ',
+                      subText: '황색도',
                       unit: '',
                       controller: context.read<InsertionLabDataViewModel>().b),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'DL',
-                      secondText: '육즙감량',
+                      mainText: 'DL ',
+                      subText: '육즙감량',
                       unit: '%',
                       controller: context.read<InsertionLabDataViewModel>().dl,
                       isPercent: true),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'CL',
-                      secondText: '가열감량',
+                      mainText: 'CL ',
+                      subText: '가열감량',
                       unit: '%',
                       controller: context.read<InsertionLabDataViewModel>().cl,
                       isPercent: true),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'RW',
-                      secondText: '압착감량',
+                      mainText: 'RW ',
+                      subText: '압착감량',
                       unit: '%',
                       controller: context.read<InsertionLabDataViewModel>().rw,
                       isPercent: true),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'pH',
-                      secondText: '산도',
+                      mainText: 'pH ',
+                      subText: '산도',
                       controller: context.read<InsertionLabDataViewModel>().ph),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'WBSF',
-                      secondText: '전단가',
+                      mainText: 'WBSF ',
+                      subText: '전단가',
                       unit: 'kgf',
                       controller:
                           context.read<InsertionLabDataViewModel>().wbsf),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: '카텝신활성도',
-                      secondText: '',
+                      mainText: '카텝신활성도',
+                      subText: '',
                       controller: context.read<InsertionLabDataViewModel>().ct),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'MFI',
-                      secondText: '근소편화지수',
+                      mainText: 'MFI ',
+                      subText: '근소편화지수',
                       controller:
                           context.read<InsertionLabDataViewModel>().mfi),
+                  SizedBox(
+                    height: 30.h,
+                  ),
                   LabDataField(
-                      firstText: 'Collagen',
-                      secondText: '콜라겐',
+                      mainText: 'Collagen ',
+                      subText: '콜라겐',
                       controller:
                           context.read<InsertionLabDataViewModel>().collagen),
+
                   SizedBox(
                     height: 16.h,
                   ),
