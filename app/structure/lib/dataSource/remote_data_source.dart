@@ -55,6 +55,12 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 유저 정보 조회 (GET)
+  static Future<dynamic> getUserInfo(String userId) async {
+    dynamic response = await _getApi("user/get?userId=$userId");
+    return response;
+  }
+
   /* 육류 관련 API */
   /// 육류 정보 전송 (POST)
   static Future<dynamic> sendMeatData(String? dest, String jsonData) async {

@@ -74,13 +74,26 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
   }
 
   /// 초기 할당
-  void _initialize() {
+  void _initialize() async {
+    print(userModel);
+    isLoading = true;
+    notifyListeners();
+
     if (meatModel.seqno == 0) {
       // 원육 데이터
       // 등록, 수정
       imagePath = meatModel.imagePath;
       if (imagePath != null && meatModel.freshmeat != null) {
-        userName = meatModel.freshmeat!['name'] ?? '-';
+        if (meatModel.freshmeat!['userId'] == userModel.userId) {
+          // 로그인된 유저와 id가 같으면 그냥 userModel에서 이름 불러오기
+          userName = userModel.name ?? '-';
+        } else {
+          // 다른 유저면 api 호출해서 이름 정보 가져오기
+          dynamic user = await RemoteDataSource.getUserInfo(
+              meatModel.freshmeat!['userId']);
+          userName = user['name'] ?? '-';
+        }
+
         if (meatModel.freshmeat!['createdAt'] != null) {
           fetchDate(meatModel.freshmeat!['createdAt']);
           date = '${time.year}.${time.month}.${time.day}';
@@ -90,7 +103,16 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       // 처리육 데이터
       imagePath = meatModel.deepAgedImage;
       if (imagePath != null && meatModel.deepAgedFreshmeat != null) {
-        userName = meatModel.deepAgedFreshmeat!["userName"] ?? '-';
+        if (meatModel.deepAgedFreshmeat!['userId'] == userModel.userId) {
+          // 로그인된 유저와 id가 같으면 그냥 userModel에서 이름 불러오기
+          userName = userModel.name ?? '-';
+        } else {
+          // 다른 유저면 api 호출해서 이름 정보 가져오기
+          dynamic user = await RemoteDataSource.getUserInfo(
+              meatModel.deepAgedFreshmeat!['userId']);
+          userName = user['name'] ?? '-';
+        }
+
         if (meatModel.deepAgedFreshmeat!["createdAt"] != null) {
           fetchDate(meatModel.deepAgedFreshmeat!["createdAt"]);
           date = '${time.year}.${time.month}.${time.day}';
@@ -98,6 +120,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       }
     }
 
+    isLoading = false;
     notifyListeners();
   }
 
@@ -157,7 +180,6 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.imagePath = imagePath;
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
-        meatModel.freshmeat!['name'] = userName;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();
         if (meatModel.id != null) {
           // 수정
@@ -175,7 +197,6 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.deepAgedImage = imagePath;
         meatModel.deepAgedFreshmeat ??= {};
         meatModel.deepAgedFreshmeat!['userId'] = meatModel.userId;
-        meatModel.deepAgedFreshmeat!['name'] = userName;
         meatModel.deepAgedFreshmeat!['createdAt'] = Usefuls.getCurrentDate();
         await _sendImageToFirebase();
         await RemoteDataSource.sendMeatData(

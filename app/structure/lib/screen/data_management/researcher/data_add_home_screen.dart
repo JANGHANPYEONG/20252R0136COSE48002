@@ -48,7 +48,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                     style: Palette.h3,
                   ),
                   Text(
-                    context.read<DataAddHomeViewModel>().userId,
+                    context.read<DataAddHomeViewModel>().userName,
                     style: Palette.h5,
                   ),
                 ],
