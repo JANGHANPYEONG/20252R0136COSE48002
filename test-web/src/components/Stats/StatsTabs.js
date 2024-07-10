@@ -56,8 +56,8 @@ export default function StatsTabs({ startDate, endDate }) {
   const [alignment, setAlignment] = useState('맛');
   //const [gradeAlignment, setGradeAlignment] = useState('소');
   const [secondary, setSecondary] = useState('원육');
-  const [animalType, setAnimalType] = useState('소');
-  const [grade, setGrade] = useState('1++');
+  const [animalType, setAnimalType] = useState('cattle');
+  const [grade, setGrade] = useState('all');
 
   useEffect(() => {
     console.log('stat tab' + startDate, '-', endDate);
@@ -77,6 +77,7 @@ export default function StatsTabs({ startDate, endDate }) {
 
   const handleAnimalChange = (event) => {
     setAnimalType(event.target.value);
+    setGrade('all'); // Reset the grade to 'all' when the animal type changes
   };
   const handleGradeChange = (event) => {
     setGrade(event.target.value);
@@ -138,8 +139,8 @@ export default function StatsTabs({ startDate, endDate }) {
                 onChange={handleAnimalChange}
                 label="동물 종류"
               >
-                <MenuItem value="소">소</MenuItem>
-                <MenuItem value="돼지">돼지</MenuItem>
+                <MenuItem value="cattle">소</MenuItem>
+                <MenuItem value="pork">돼지</MenuItem>
               </Select>
               <Select
                 labelId="grade-label"
@@ -149,15 +150,11 @@ export default function StatsTabs({ startDate, endDate }) {
                 label="등급"
               >
                 <MenuItem value="all">전체</MenuItem>
-                {animalType === '소' && (
-                  <>
-                    <MenuItem value="1++">1++</MenuItem>
-                    <MenuItem value="1+">1+</MenuItem>
-                    <MenuItem value="1">1</MenuItem>
-                    <MenuItem value="2">2</MenuItem>
-                    <MenuItem value="3">3</MenuItem>
-                  </>
-                )}
+                {animalType === 'cattle' && <MenuItem value="0">1++</MenuItem>}
+                {animalType === 'cattle' && <MenuItem value="1">1+</MenuItem>}
+                {animalType === 'cattle' && <MenuItem value="2">1</MenuItem>}
+                {animalType === 'cattle' && <MenuItem value="3">2</MenuItem>}
+                {animalType === 'cattle' && <MenuItem value="4">3</MenuItem>}
               </Select>
             </div>
           )}
