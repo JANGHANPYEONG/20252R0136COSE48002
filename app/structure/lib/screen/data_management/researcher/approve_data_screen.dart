@@ -16,7 +16,6 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/config/userfuls.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 
 class ApproveDataScreen extends StatefulWidget {
