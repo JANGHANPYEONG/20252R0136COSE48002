@@ -43,6 +43,34 @@ void showDataRegisterDialog(
   );
 }
 
+void showDatanotCompleteDialog(
+    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '아직 입력되지 않은 정보가 있습니다. \n 저장하시겠습니까?',
+    '',
+    '취소',
+    '확인',
+    null,
+    rightFunc,
+  );
+}
+
+void showDataCompleteDialog(
+    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '완료하시겠습니까?',
+    '',
+    '취소',
+    '확인',
+    null,
+    rightFunc,
+  );
+}
+
 /// 중복 이메일 dialog
 void showDuplicateIdSigninDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {

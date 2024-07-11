@@ -11,6 +11,7 @@ import 'package:structure/components/step_card.dart';
 import 'package:structure/main.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/viewModel/data_management/researcher/add_processed_meat_view_model.dart';
+import 'package:structure/components/main_button.dart';
 
 class AddProcessedMeatMainScreen extends StatefulWidget {
   final MeatModel meatModel;
@@ -112,6 +113,21 @@ class _AddProcessedMeatMainScreenState
                 // isCompleted: widget.meatModel.labCompleted,
                 // isBefore: false,
                 imageUrl: 'assets/images/meat_lab.png',
+              ),
+            ),
+            const Spacer(),
+            Container(
+              margin: EdgeInsets.only(bottom: 40.h),
+              child: MainButton(
+                onPressed: () async {
+                  context
+                      .read<AddProcessedMeatViewModel>()
+                      .clickedbutton(context, widget.meatModel);
+                },
+                text: '완료',
+                width: 658.w,
+                height: 104.h,
+                mode: 1,
               ),
             ),
           ],
