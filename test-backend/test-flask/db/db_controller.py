@@ -562,8 +562,10 @@ def get_range_meat_data(
     statusType=None,
     company=None,
 ):
-    offset = safe_int(offset)
     count = safe_int(count)
+    offset = safe_int(offset)
+    offset = offset*count
+    
     start = convert2datetime(start, 0)
     end = convert2datetime(end, 0)
     # Base Query
