@@ -47,7 +47,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: '신선육 관능평가',
+        title: context.read<FreshMeatEvalViewModel>().title,
         backButton: true,
         closeButton: false,
         backButtonOnPressed:

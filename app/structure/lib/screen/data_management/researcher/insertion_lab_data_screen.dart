@@ -11,7 +11,6 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/labdata_field.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
-import 'package:structure/components/tongue_field.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 
 class InsertionLabDataScreen extends StatefulWidget {

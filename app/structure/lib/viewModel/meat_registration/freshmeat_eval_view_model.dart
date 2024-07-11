@@ -37,7 +37,7 @@ class FreshMeatEvalViewModel with ChangeNotifier {
     print(meatModel);
     if (meatModel.seqno == 0) {
       // 원육
-      title = '신선육 관능평가';
+      title = '원육 관능평가';
       meatImage = meatModel.imagePath!;
       marbling = meatModel.freshmeat?["marbling"] ?? 0;
       color = meatModel.freshmeat?["color"] ?? 0;

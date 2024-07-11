@@ -12,22 +12,27 @@ import 'package:structure/components/custom_dialog.dart';
 
 class AddProcessedMeatViewModel with ChangeNotifier {
   bool popup = true;
+  
   void clickedImage(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/image');
   }
 
-  void clickedProcessedEval(BuildContext context) {
+  /// 관능평가 페이지로 이동
+  void clickedEval(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/eval');
   }
 
+  /// 관능평가 페이지로 이동
   void clickedHeatedEval(BuildContext context) {
-    context.go('/home/data-manage-researcher/add/processed-meat/heated-meat');
+    context.go('/home/data-manage-researcher/add/processed-meat/heated-eval');
   }
 
+  /// 전자혀 페이지로 이동
   void clickedTongue(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/tongue');
   }
 
+  /// 실험실 데이터 페이지로 이동
   void clickedLab(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/lab');
   }

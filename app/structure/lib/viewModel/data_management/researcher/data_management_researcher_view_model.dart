@@ -18,7 +18,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   DataManagementHomeResearcherViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
-  late BuildContext _context;
 
   // 초기 리스트
   List<Map<String, String>> numList = [];
@@ -421,9 +420,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       meatModel.reset();
       meatModel.fromJson(response);
       meatModel.seqno = 0;
-      print(meatModel);
-      _context = context;
-      _movePage();
+      if (context.mounted) context.go('/home/data-manage-researcher/add');
     } catch (e) {
       print("에러발생: $e");
     }
@@ -447,8 +444,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       meatModel.fromJson(response);
       meatModel.seqno = 0;
 
-      _context = context;
-      _movePageApprove();
+      if (context.mounted) context.go('/home/data-manage-researcher/approve');
     } catch (e) {
       print("에러발생: $e");
     }
@@ -469,13 +465,5 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
         return id.contains(insertedText);
       }).toList();
     }
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-researcher/add');
-  }
-
-  void _movePageApprove() {
-    _context.go('/home/data-manage-researcher/approve');
   }
 }

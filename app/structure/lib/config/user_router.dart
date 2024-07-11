@@ -284,24 +284,6 @@ class UserRouter {
                         child: const InsertionMeatInfoScreen(),
                       ),
                     ),
-                    // GoRoute(
-                    //   path: 'trace-editable',
-                    //   builder: (context, state) => ChangeNotifierProvider(
-                    //     create: (context) =>
-                    //         InsertionTraceNumViewModel(meatModel),
-                    //     child: const InsertionTraceNumScreen(),
-                    //   ),
-                    //   routes: [
-                    //     GoRoute(
-                    //       path: 'info-editable',
-                    //       builder: (context, state) => ChangeNotifierProvider(
-                    //         create: (context) =>
-                    //             InsertionMeatInfoViewModel(meatModel),
-                    //         child: const InsertionMeatInfoScreen(),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
                     GoRoute(
                       path: 'image-editable',
                       builder: (context, state) => ChangeNotifierProvider(
@@ -379,13 +361,13 @@ class UserRouter {
                               AddProcessedMeatMainScreen(meatModel: meatModel)),
                       routes: [
                         GoRoute(
-                            path: 'image',
-                            builder: (context, state) => ChangeNotifierProvider(
-                                  create: (context) =>
-                                      RegistrationMeatImageViewModel(
-                                          meatModel, userModel),
-                                  child: const RegistrationMeatImageScreen(),
-                                )),
+                          path: 'image',
+                          builder: (context, state) => ChangeNotifierProvider(
+                            create: (context) => RegistrationMeatImageViewModel(
+                                meatModel, userModel),
+                            child: const RegistrationMeatImageScreen(),
+                          ),
+                        ),
                         GoRoute(
                           path: 'eval',
                           builder: (context, state) => ChangeNotifierProvider(
@@ -395,11 +377,12 @@ class UserRouter {
                           ),
                         ),
                         GoRoute(
-                          path: 'heated-meat',
+                          path: 'heated-eval',
                           builder: (context, state) => ChangeNotifierProvider(
-                              create: (context) =>
-                                  HeatedMeatEvalViewModel(meatModel),
-                              child: const HeatedMeatEvaluation()),
+                            create: (context) =>
+                                HeatedMeatEvalViewModel(meatModel),
+                            child: const HeatedMeatEvaluation(),
+                          ),
                         ),
                         GoRoute(
                           path: 'tongue',
