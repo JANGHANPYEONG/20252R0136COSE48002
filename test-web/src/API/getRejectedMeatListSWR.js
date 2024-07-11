@@ -20,6 +20,7 @@ const fetcher = (...args) =>
 
 //custom Hook인 useRejectedMeatListFetch를 export
 export const useRejectedMeatListFetch = (offset, count, startDate, endDate) => {
+  console.log(offset, count)
   //육류 반려 데이터 리스트를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : offset, count, startDate, endDate

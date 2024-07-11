@@ -835,9 +835,16 @@ def _getMeatDataByRangeStatusType(
     )
 
     # Date Filter
+    #db_total_len = db_session.query(Meat).count()
     if start is not None and end is not None:
-        query = query.filter(Meat.createdAt.between(start, end))
-
+        query = query.filter(
+            Meat.createdAt.between(start, end),
+            Meat.statusType == 1
+        )
+        db_total_len = db_session.query(Meat).filter(
+            Meat.createdAt.between(start, end),
+            Meat.statusType == varified
+        ).count()
     query = query.offset(offset * count).limit(count)
 
     result = []
@@ -867,9 +874,7 @@ def _getMeatDataByRangeStatusType(
     return (
         jsonify(
             {
-                "DB Total len": db_session.query(Meat)
-                .filter_by(statusType=varified_id)
-                .count(),
+                "DB Total len": db_total_len,
                 f"{varified}": result,
             }
         ),
