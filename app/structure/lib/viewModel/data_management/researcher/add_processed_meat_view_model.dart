@@ -7,11 +7,12 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/model/meat_model.dart';
+import 'package:structure/components/custom_dialog.dart';
 
 class AddProcessedMeatViewModel with ChangeNotifier {
-  AddProcessedMeatViewModel();
-
-  /// 사진 촬영 페이지로 이동
+  bool popup = true;
+  
   void clickedImage(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/image');
   }
@@ -34,5 +35,22 @@ class AddProcessedMeatViewModel with ChangeNotifier {
   /// 실험실 데이터 페이지로 이동
   void clickedLab(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/lab');
+  }
+
+  void clickedbutton(BuildContext context, MeatModel model) {
+    popup = model.deepAgedImageCompleted &&
+        model.deepAgedFreshCompleted &&
+        model.heatedCompleted &&
+        model.tongueCompleted &&
+        model.labCompleted;
+    if (popup == true) {
+      showDataCompleteDialog(context, null, () {
+        context.go('/home/data-manage-researcher/add');
+      });
+    } else {
+      showDatanotCompleteDialog(context, null, () {
+        context.go('/home/data-manage-researcher/add');
+      });
+    }
   }
 }
