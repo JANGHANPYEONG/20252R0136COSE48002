@@ -140,6 +140,7 @@ class MeatModel with ChangeNotifier {
 
     // 데이터 입력 완료시 저장
     rawmeatDataComplete = jsonData['rawmeat_data_complete'];
+    // rawmeatDataComplete = jsonData['rawmeat_data_complete'] ? true : false;
     processedmeatDataComplete = jsonData['processedmeat_data_complete'] == false
         ? {}
         : jsonData['processedmeat_data_complete'];

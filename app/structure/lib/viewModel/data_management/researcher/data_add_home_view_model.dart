@@ -20,6 +20,8 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   bool isLoading = false;
 
+  bool infoCheck = false;
+
   // 필드 값 표현 변수
   String userName = '-';
   String butcheryDate = '-';
@@ -88,6 +90,11 @@ class DataAddHomeViewModel with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     });
+  }
+
+  bool? infoCheckFunc() {
+    if (meatModel.rawmeatDataComplete == true) infoCheck = true;
+    return infoCheck;
   }
 
   // 처리육 총 결산

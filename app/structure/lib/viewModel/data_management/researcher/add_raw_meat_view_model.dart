@@ -20,4 +20,48 @@ class AddRawMeatViewModel with ChangeNotifier {
   void clickedLab(BuildContext context) {
     context.go('/home/data-manage-researcher/add/raw-meat/lab');
   }
+
+  void clickedImage(BuildContext context) {
+    //바꿔야함
+    context.go('/home/data-manage-researcher/add/raw-meat/image');
+  }
+
+  bool isEditable = false;
+  bool isNormal = true;
+
+  void clicekdBasic(BuildContext context) {
+    if (isNormal) {
+      if (isEditable) {
+        context.go('/home/data-manage-normal/edit/info-editable');
+      } else {
+        context.go('/home/data-manage-normal/edit/info');
+      }
+    } else {
+      context.go('/home/data-manage-researcher/approve/info');
+    }
+  }
+
+  void clickedBasicImage(BuildContext context) {
+    if (isNormal) {
+      if (isEditable) {
+        context.go('/home/data-manage-normal/edit/image-editable');
+      } else {
+        context.go('/home/data-manage-normal/edit/image');
+      }
+    } else {
+      context.go('/home/data-manage-researcher/approve/image');
+    }
+  }
+
+  void clicekdFresh(BuildContext context) {
+    if (isNormal) {
+      if (isEditable) {
+        context.go('/home/data-manage-normal/edit/freshmeat-editable');
+      } else {
+        context.go('/home/data-manage-normal/edit/freshmeat');
+      }
+    } else {
+      context.go('/home/data-manage-researcher/approve/freshmeat');
+    }
+  }
 }
