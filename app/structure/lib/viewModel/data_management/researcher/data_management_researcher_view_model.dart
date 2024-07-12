@@ -134,7 +134,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     print('selectedList : $selectedList');
   }
 
-  // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터) //////////
+  // 데이터 종류에 따라 필터링 진행. (나의 데이터 / 전체 / 일반 데이터/ 연구 데이터)
   void setData() {
     if (dataSelectedIdx == 0) {
       filteredList = filteredList.where((data) {
@@ -358,10 +358,12 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
                 DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
             String specieValue = item['specieValue'];
             String statusType = item['statusType'];
-            String userType = item['Type'];
-            print('sts : $statusType');
+
+            ///
+            // String userType = item['Type'];
+            // print('sts : $statusType');
             Map<String, String> idStatusPair = {
-              "Type": userType,
+              // "Type": userType,
               "id": id,
               "createdAt": createdAt,
               "userId": userId,
