@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
 
 class StepFreshMeat extends StatelessWidget {
@@ -28,8 +29,98 @@ class StepFreshMeat extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
+            // 육류 기본 정보
+            InkWell(
+              onTap: () =>
+                  context.read<AddRawMeatViewModel>().clicekdBasic(context),
+              child: const StepCard(
+                mainText: '육류 기본정보',
+                status: 4, // 없음
+                imageUrl: 'assets/images/meat_info.png',
+              ),
+            ),
+            SizedBox(height: 10.h),
+
+            // 육류 단면 촬영
+            InkWell(
+              onTap: () => context
+                  .read<AddRawMeatViewModel>()
+                  .clickedBasicImage(context),
+              child: const StepCard(
+                mainText: '육류 단면 촬영',
+                status: 4, // 없음
+                // isEditable: context.read<EditMeatDataViewModel>().isEditable,
+                imageUrl: 'assets/images/meat_image.png',
+              ),
+            ),
+            SizedBox(height: 10.h),
+
+            // 신선육 관능 평가
+            InkWell(
+              onTap: () =>
+                  context.read<AddRawMeatViewModel>().clicekdFresh(context),
+              child: const StepCard(
+                mainText: '신선육 관능평가',
+                status: 4, // 없음
+                imageUrl: 'assets/images/meat_eval.png',
+              ),
+            ),
+
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              child: const Divider(
+                color: Color.fromARGB(255, 156, 156, 156),
+                thickness: 1,
+              ),
+            ),
             SizedBox(
-              height: 48.h,
+              height: 10.h,
+            ),
+            InkWell(
+              onTap: () =>
+                  context.read<AddRawMeatViewModel>().clickedTongue(context),
+              child: StepCard(
+                mainText: '원육 전자혀 데이터',
+                status: meatModel.tongueCompleted ? 1 : 2,
+                // isCompleted: meatModel.tongueCompleted,
+                // isBefore: false,
+                imageUrl: 'assets/images/meat_tongue.png',
+              ),
+            ),
+            SizedBox(
+              height: 10.h,
+            ),
+            InkWell(
+              onTap: () =>
+                  context.read<AddRawMeatViewModel>().clickedLab(context),
+              child: StepCard(
+                mainText: '원육 실험 데이터',
+                status: meatModel.labCompleted ? 1 : 2,
+                // isCompleted: meatModel.labCompleted,
+                // isBefore: false,
+                imageUrl: 'assets/images/meat_lab.png',
+              ),
+            ),
+            SizedBox(
+              height: 10.h,
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              child: const Divider(
+                color: Color.fromARGB(255, 155, 155, 155),
+                thickness: 1,
+              ),
+            ),
+            InkWell(
+              onTap: () =>
+                  context.read<AddRawMeatViewModel>().clickedImage(context),
+              child: StepCard(
+                mainText: '처리육 단면 촬영',
+                status: meatModel.deepAgedImageCompleted ? 1 : 2,
+                // isCompleted: meatModel.deepAgedImageCompleted,
+                // isBefore: false,
+                imageUrl: 'assets/images/meat_image.png',
+              ),
             ),
             InkWell(
               onTap: () =>
@@ -43,13 +134,13 @@ class StepFreshMeat extends StatelessWidget {
               ),
             ),
             SizedBox(
-              height: 18.h,
+              height: 10.h,
             ),
             InkWell(
               onTap: () =>
                   context.read<AddRawMeatViewModel>().clickedTongue(context),
               child: StepCard(
-                mainText: '전자혀 데이터',
+                mainText: '가열육 전자혀 데이터',
                 status: meatModel.tongueCompleted ? 1 : 2,
                 // isCompleted: meatModel.tongueCompleted,
                 // isBefore: false,
@@ -57,13 +148,13 @@ class StepFreshMeat extends StatelessWidget {
               ),
             ),
             SizedBox(
-              height: 18.h,
+              height: 10.h,
             ),
             InkWell(
               onTap: () =>
                   context.read<AddRawMeatViewModel>().clickedLab(context),
               child: StepCard(
-                mainText: '실험 데이터',
+                mainText: '가열육 실험 데이터',
                 status: meatModel.labCompleted ? 1 : 2,
                 // isCompleted: meatModel.labCompleted,
                 // isBefore: false,

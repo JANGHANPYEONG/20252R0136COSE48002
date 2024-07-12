@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class LabDataField extends StatelessWidget {
+class DataField extends StatelessWidget {
   final String mainText;
   final String subText;
   final String? unit;
   final TextEditingController controller;
   final bool? isPercent;
 
-  const LabDataField({
+  const DataField({
     super.key,
     required this.mainText,
     required this.subText,
@@ -77,10 +77,6 @@ class LabDataField extends StatelessWidget {
                             ),
                           )
                         : null,
-                    // suffixStyle: TextStyle(
-                    //   color: const Color(0xFF686868),
-                    //   fontSize: 7.sp,
-                    // ),
                   ),
                   textAlign: TextAlign.center,
                   controller: controller,
@@ -95,17 +91,6 @@ class LabDataField extends StatelessWidget {
                   keyboardType: TextInputType.number,
                 ),
               ),
-              // unit != null
-              //     ? Text(
-              //         unit!,
-              //         style: TextStyle(
-              //           color: const Color(0xFF686868),
-              //           fontSize: 30.sp,
-              //           fontStyle: FontStyle.normal,
-              //           fontWeight: FontWeight.w400,
-              //         ),
-              //       )
-              //     : const Text(''),
             ],
           ),
         ],

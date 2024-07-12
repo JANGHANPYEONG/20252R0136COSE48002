@@ -323,10 +323,11 @@ class UserRouter {
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                          create: (context) => AddRawMeatViewModel(),
-                          child: StepFreshMeat(
-                            meatModel: meatModel,
-                          )),
+                        create: (context) => AddRawMeatViewModel(),
+                        child: StepFreshMeat(
+                          meatModel: meatModel,
+                        ),
+                      ),
                       routes: [
                         GoRoute(
                           path: 'heated-meat',
@@ -349,6 +350,14 @@ class UserRouter {
                             create: (context) =>
                                 InsertionLabDataViewModel(meatModel),
                             child: const InsertionLabDataScreen(),
+                          ),
+                        ),
+                        GoRoute(
+                          path: 'image',
+                          builder: (context, state) => ChangeNotifierProvider(
+                            create: (context) => RegistrationMeatImageViewModel(
+                                meatModel, userModel),
+                            child: const RegistrationMeatImageScreen(),
                           ),
                         ),
                       ],
