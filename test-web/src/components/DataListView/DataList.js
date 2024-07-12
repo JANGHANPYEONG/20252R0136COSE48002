@@ -204,6 +204,7 @@ function DataList({
 
           <TableBody>
             {meatList.map((content, index) => {
+              console.log("content:",content.name, "index:",index)
               const isItemSelected = isSelected(content);
               const labelId = `enhanced-table-checkbox-${index}`;
               return (
