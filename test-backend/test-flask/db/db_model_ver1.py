@@ -116,7 +116,7 @@ def load_initial_data(db_session):
     db_session.commit()
     
     # 8. User
-    default_user = db_session.query(User).get(default_user_id)
+    default_user = User.query.get(default_user_id)
 
     if not default_user:
         current_date = datetime.now().strftime('%Y-%m-%d')
@@ -166,6 +166,8 @@ class GradeInfo(Base):
     __tablename__ = "grade_info"
     id = Column(Integer, primary_key=True)  # 등급 ID
     value = Column(String(255))  # 등급
+    meats = relationship("Meat", backref="grade_info")
+    aiSensoryEvals = relationship("AI_SensoryEval", backref="ai_sensory_eval")
 
 
 class SexInfo(Base):
@@ -179,6 +181,7 @@ class SexInfo(Base):
     __tablename__ = "sex_info"
     id = Column(Integer, primary_key=True)  # 성별 ID
     value = Column(String(255))  # 성별 값
+    meats = relationship("Meat", backref="sex_info")
 
 
 class StatusInfo(Base):
@@ -191,6 +194,7 @@ class StatusInfo(Base):
     __tablename__ = "status_info"
     id = Column(Integer, primary_key=True)  # 승인 ID
     value = Column(String(255))  # 승인 정보
+    meats = relationship("Meat", backref="status_info")
 
 
 class UserTypeInfo(Base):
@@ -204,6 +208,7 @@ class UserTypeInfo(Base):
     __tablename__ = "userType_info"
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
+    users = relationship("User", backref="user")
     
     
 class User(Base):
@@ -224,30 +229,11 @@ class User(Base):
             onupdate="CASCADE"
         ),
     )
-
-
-class DeepAgingInfo(Base):
-    __tablename__ = "deepAging_info"
     
-    # 1. 복합키 설정
-    id = Column(
-        String(255),
-        ForeignKey("meat.id"),
-        primary_key=True,
-    )  # 육류 관리번호
-    seqno = Column(Integer, primary_key=True)  # 가공 횟수
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
-        ForeignKeyConstraint(
-            ["id"], ["meat.id"],
-            ondelete="CASCADE",
-            onupdate="CASCADE"
-        ),
-    )
-
-    # 2. 딥에이징 데이터
-    date = Column(DateTime, nullable=False)  # 딥에이징 실시 날짜
-    minute = Column(Integer, nullable=False)  # 딥에이징 진행 시간 (분)
+    meats = relationship("Meat", backref="meat")
+    sensoryEvals = relationship("SensoryEval", backref="sensory_eval")
+    heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", backref="heatedmeat_sensory_eval")
+    probexptDatas = relationship("ProbexptData", backref="probexpt_data")
 
 
 class Meat(Base):
@@ -299,7 +285,36 @@ class Meat(Base):
             onupdate="CASCADE"
         ),
     )
+    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAging_info")
+
+
+class DeepAgingInfo(Base):
+    __tablename__ = "deepAging_info"
     
+    # 1. 복합키 설정
+    id = Column(
+        String(255),
+        ForeignKey("meat.id"),
+        primary_key=True,
+    )  # 육류 관리번호
+    seqno = Column(Integer, primary_key=True)  # 가공 횟수
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id"], ["meat.id"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+    )
+
+    # 2. 딥에이징 데이터
+    date = Column(DateTime, nullable=False)  # 딥에이징 실시 날짜
+    minute = Column(Integer, nullable=False)  # 딥에이징 진행 시간 (분)
+    
+    heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", backref="heatedmeat_sensory_eval")
+    sensoryEvals = relationship("SensoryEval", backref="sensory_eval")
+    probexptDatas = relationship("ProbexptData", backref="probexpt_data")
+
     
 class SensoryEval(Base):
     __tablename__ = "sensory_eval"
@@ -346,6 +361,8 @@ class SensoryEval(Base):
         CheckConstraint("surfaceMoisture >= 1 AND surfaceMoisture <= 10", name="check_surfaceMoisture_range"),
         CheckConstraint("overall >= 1 AND overall <= 10", name="check_overall_range"),
     )
+    
+    aiSensoryEvals = relationship("AI_SensoryEval", backref="ai_sensory_eval")
     
     
 class AI_SensoryEval(Base):
@@ -428,6 +445,8 @@ class HeatedmeatSensoryEval(Base):
         CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
         CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
     )
+    
+    aiHeatedmeatSensoryEvals = relationship("AI_HeatedmeatSensoryEval", backref="ai_heatedmeat_sensory_eval")
 
 
 class AI_HeatedmeatSeonsoryEval(Base):
