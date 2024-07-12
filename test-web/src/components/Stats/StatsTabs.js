@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, Box, Button, useTheme } from '@mui/material';
 import * as React from 'react';
@@ -13,13 +14,13 @@ import Sens_Heated_Map from './Charts/HeatMap/Sens_Heated_Map';
 import Taste_Fresh_Map from './Charts/HeatMap/Taste_Fresh_Map';
 import Taste_Proc_Map from './Charts/HeatMap/Taste_Proc_Map';
 import Taste_Time from './Charts/Time/Taste_Time';
-import { useEffect } from 'react';
 import Sens_Proc_Map from './Charts/HeatMap/Sens_Proc_Map';
 import Taste_Fresh_Corr from './Charts/Corr/Taste_Fresh_Corr';
 import Sense_Proc_Corr from './Charts/Corr/Sens_Proc_Corr';
 import Sense_Heated_Corr from './Charts/Corr/Sens_Heated_Corr';
 import Sense_Fresh_Corr from './Charts/Corr/Sens_Fresh_Corr';
 import Taste_Proc_Corr from './Charts/Corr/Taste_Proc_Corr';
+
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -51,6 +52,9 @@ function a11yProps(index) {
 }
 
 export default function StatsTabs({ startDate, endDate }) {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
   const [value, setValue] = useState(0);
   const [slot, setSlot] = useState('week');
   const [alignment, setAlignment] = useState('맛');
@@ -165,6 +169,7 @@ export default function StatsTabs({ startDate, endDate }) {
       <CustomTabPanel value={value} index={0}>
         {alignment === '관능' && secondary === '원육' ? (
           <Sens_FreshMeat
+            key={`${startDate}-${endDate}-${animalType}-${grade}`}
             startDate={startDate}
             endDate={endDate}
             animalType={animalType}
@@ -172,6 +177,7 @@ export default function StatsTabs({ startDate, endDate }) {
           />
         ) : alignment === '관능' && secondary === '처리육' ? (
           <Sens_ProcMeat
+            key={`${startDate}-${endDate}-${animalType}-${grade}`}
             startDate={startDate}
             endDate={endDate}
             animalType={animalType}
@@ -179,6 +185,7 @@ export default function StatsTabs({ startDate, endDate }) {
           />
         ) : alignment === '관능' && secondary === '가열육' ? (
           <Sens_HeatedMeat
+            key={`${startDate}-${endDate}-${animalType}-${grade}`}
             startDate={startDate}
             endDate={endDate}
             animalType={animalType}
@@ -186,6 +193,7 @@ export default function StatsTabs({ startDate, endDate }) {
           />
         ) : alignment === '맛' && secondary === '원육' ? (
           <Taste_FreshMeat
+            key={`${startDate}-${endDate}-${animalType}-${grade}`}
             startDate={startDate}
             endDate={endDate}
             animalType={animalType}
@@ -193,6 +201,7 @@ export default function StatsTabs({ startDate, endDate }) {
           />
         ) : alignment === '맛' && secondary === '처리육' ? (
           <Taste_ProcMeat
+            key={`${startDate}-${endDate}-${animalType}-${grade}`}
             startDate={startDate}
             endDate={endDate}
             animalType={animalType}

@@ -48,8 +48,7 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     setIsDur(true);
   };
 
-  // 탭으로 변경 시
-  useEffect(() => {
+  const updateDates = () => {
     const s = new Date();
     if (duration === 'week') {
       s.setDate(s.getDate() - 7);
@@ -60,20 +59,15 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     } else if (duration === 'year') {
       s.setFullYear(s.getFullYear() - 1);
     } else if (duration === 'total') {
-      s.setFullYear(1970); // Set start date to 1970-01-01
+      s.setFullYear(1970);
       s.setMonth(0);
       s.setDate(1);
       s.setHours(0, 0, 0, 0);
     }
-    if (duration !== null) {
-      const start = new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-      const end = new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5);
-      setDurStart(start);
-      setDurEnd(end);
-      setStartDate(start);
-      setEndDate(end);
-    }
-  }, [duration]);
+    const start = new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5);
+    const end = new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5);
+    return { start, end };
+  };
 
   //완료 버튼 클릭하면 변함
   const handleCompleteBtn = () => {
@@ -94,12 +88,9 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     } else {
       //탭으로 클릭할시
       queryParams.set('duration', duration);
-      if (durStart) {
-        setStartDate(durStart);
-      }
-      if (durEnd) {
-        setEndDate(durEnd);
-      }
+      const { start, end } = updateDates();
+      setStartDate(start);
+      setEndDate(end);
     }
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
