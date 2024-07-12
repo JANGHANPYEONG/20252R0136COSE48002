@@ -31,6 +31,6 @@ export const useMapFetch = (startDate, endDate) => {
   return {
     data,
     isLoading: !error && !data,
-    error,
+    isError: error,
   };
 };

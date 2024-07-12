@@ -23,7 +23,10 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   const chartOptions = useChart({
     colors: chartColors, // Colors for the chart series.
     labels: CHART_LABLE, // Labels for the chart.
-    stroke: { colors: [theme.palette.background.paper] }, // Stroke colors for the chart.
+    stroke: {
+      width: 0, // 선의 두께를 0으로 설정
+      colors: [theme.palette.background.paper],
+    }, // Stroke colors for the chart.
     legend: { floating: true, horizontalAlign: 'center' }, // Legend configuration.
     dataLabels: { enabled: true, dropShadow: { enabled: true } }, // Data label configuration
     tooltip: {
