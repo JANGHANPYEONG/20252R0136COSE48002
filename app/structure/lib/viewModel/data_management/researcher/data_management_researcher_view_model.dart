@@ -359,6 +359,8 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
                 DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
             String specieValue = item['specieValue'];
             String statusType = item['statusType'];
+
+            ///
             // String userType = item['Type'];
             // print('sts : $statusType');
             Map<String, String> idStatusPair = {
