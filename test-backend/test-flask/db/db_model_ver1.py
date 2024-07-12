@@ -221,12 +221,12 @@ class User(Base):
     company = Column(String(255))  # 직장명
     jobTitle = Column(String(255))  # 직위명
     homeAddr = Column(String(255))  # 유저 주소
-    alarm = Column(Boolean, default=False)  # 유저 알람 허용 여부
+    alarm = Column(Boolean, nullable=False)  # 유저 알람 허용 여부
     type = Column(Integer, nullable=False)  # 유저 타입 ID
     __table_args__ = (
         ForeignKeyConstraint(
             ["type"], ["userType_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
     )
     
@@ -240,13 +240,20 @@ class Meat(Base):
     __tablename__ = "meat"
     # 1. 기본 정보
     id = Column(String(255), primary_key=True)  # 육류 관리번호
-    userId = Column(String(255), 
-                    nullable=False, 
-                    default=default_user_id)  # 생성한 유저 ID
+    userId = Column(
+        String(255), 
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )  # 생성한 유저 ID
     sexType = Column(Integer)  # 성별 ID
     categoryId = Column(Integer, nullable=False)  # 육종 ID
     gradeNum = Column(Integer)  # 등급 ID
-    statusType = Column(Integer, default=0)  # 승인 여부 ID
+    statusType = Column(
+        Integer, 
+        default=True,
+        server_default='0'
+    )  # 승인 여부 ID
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
@@ -262,24 +269,24 @@ class Meat(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ["userId"], ["user.userId"],
-            ondelete="SET DEFAULT",
-            onupdate="CASCADE"
+            ondelete='SET DEFAULT',
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["sexType"], ["sex_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["categoryId"], ["category_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["gradeNum"], ["grade_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["statusType"], ["status_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
     )
     deepAgingInfos = relationship("DeepAgingInfo", backref="meat")
@@ -289,17 +296,14 @@ class DeepAgingInfo(Base):
     __tablename__ = "deepAging_info"
     
     # 1. 복합키 설정
-    id = Column(
-        String(255),
-        primary_key=True,
-    )  # 육류 관리번호
+    id = Column(String(255), primary_key=True)  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
             ["id"], ["meat.id"],
-            ondelete="CASCADE",
-            onupdate="CASCADE"
+            ondelete='CASCADE',
+            onupdate='CASCADE'
         ),
     )
 
@@ -316,16 +320,16 @@ class SensoryEval(Base):
     __tablename__ = "sensory_eval"
 
     # 1. 복합키 설정
-    id = Column(
-        String(255),
-        primary_key=True,
-    )  # 육류 관리번호
+    id = Column(String(255), primary_key=True)  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)  # 관능검사 생성 시간
     userId = Column(
-        String(255), nullable=False
+        String(255), 
+        nullable=False,
+        default=True,
+        server_default=default_user_id
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
@@ -341,13 +345,13 @@ class SensoryEval(Base):
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
             ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
-            ondelete="CASCADE",
-            onupdate="CASCADE"
+            ondelete='CASCADE',
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["userId"], ["user.userId"],
-            ondelete="SET DEFAULT",
-            onupdate="CASCADE"
+            ondelete='SET DEFAULT',
+            onupdate='CASCADE'
         ),
         CheckConstraint('"period" >= 0', name="check_period_non_negative"),
         CheckConstraint('"marbling" >= 1 AND "marbling" <= 10', name="check_marbling_range"),
@@ -383,12 +387,12 @@ class AI_SensoryEval(Base):
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
             ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"],
-            ondelete="CASCADE",
-            onupdate="CASCADE"
+            ondelete='CASCADE',
+            onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
             ["xai_gradeNum"], ["grade_info.id"],
-            onupdate="CASCADE"
+            onupdate='CASCADE'
         ),
         CheckConstraint('"marbling" >= 1 AND "marbling" <= 10', name="check_marbling_range"),
         CheckConstraint('"color" >= 1 AND "color" <= 10', name="check_color_range"),
@@ -406,30 +410,31 @@ class HeatedmeatSensoryEval(Base):
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), 
-                    nullable=False, 
-                    default=default_user_id)
+    userId = Column(
+        String(255), 
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
-    imagePath = Column(String(255), nullable=True)  # 가열육 관능검사 이미지 경로
+    imagePath = Column(String(255))  # 가열육 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
-    flavor = Column(Float, nullable=True)
-    juiciness = Column(Float, nullable=True)
-    tenderness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    palatability = Column(Float, nullable=True)
+    flavor = Column(Float)
+    juiciness = Column(Float)
+    tenderness = Column(Float)
+    umami = Column(Float)
+    palatability = Column(Float)
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
-            ["id", "seqno"], 
-            ["deepAging_info.id", "deepAging_info.seqno"],
+            ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
             ondelete='CASCADE', 
             onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
-            ["userId"], 
-            ["user.userId"], 
+            ["userId"], ["user.userId"], 
             ondelete='SET DEFAULT', 
             onupdate='CASCADE'
         ),
@@ -452,20 +457,19 @@ class AI_HeatedmeatSensoryEval(Base):
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    xai_imagePath = Column(String(255), nullable=True)  # 예측 관능검사 이미지 경로
+    xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
 
     # 3. 관능검사 AI 예측 데이터
-    flavor = Column(Float, nullable=True)
-    juiciness = Column(Float, nullable=True)
-    tenderness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    palatability = Column(Float, nullable=True)
+    flavor = Column(Float)
+    juiciness = Column(Float)
+    tenderness = Column(Float)
+    umami = Column(Float)
+    palatability = Column(Float)
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
-            ["id", "seqno"], 
-            ["heatedmeat_sensory_eval.id", "heatedmeat_sensory_eval.seqno"], 
+            ["id", "seqno"], ["heatedmeat_sensory_eval.id", "heatedmeat_sensory_eval.seqno"], 
             ondelete='CASCADE', 
             onupdate='CASCADE'
         ),
@@ -485,42 +489,43 @@ class ProbexptData(Base):
     isHeated = Column(Boolean, primary_key=True)
 
     # 2. 연구실 메타 데이터
-    updatedAt = Column(DateTime, nullable=True)
-    userId = Column(String(255), 
-                    nullable=False, 
-                    default=default_user_id)
-    period = Column(Integer, nullable=True)
+    updatedAt = Column(DateTime)
+    userId = Column(
+        String(255), 
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )
+    period = Column(Integer, nullable=False)
 
     # 3. 실험 데이터
-    L = Column(Float, nullable=True)
-    a = Column(Float, nullable=True)
-    b = Column(Float, nullable=True)
-    DL = Column(Float, nullable=True)
-    CL = Column(Float, nullable=True)
-    RW = Column(Float, nullable=True)
-    ph = Column(Float, nullable=True)
-    WBSF = Column(Float, nullable=True)
-    cardepsin_activity = Column(Float, nullable=True)
-    MFI = Column(Float, nullable=True)
-    Collagen = Column(Float, nullable=True)
+    L = Column(Float)
+    a = Column(Float)
+    b = Column(Float)
+    DL = Column(Float)
+    CL = Column(Float)
+    RW = Column(Float)
+    ph = Column(Float)
+    WBSF = Column(Float)
+    cardepsin_activity = Column(Float)
+    MFI = Column(Float)
+    Collagen = Column(Float)
 
     # 4. 전자혀 데이터
-    sourness = Column(Float, nullable=True)
-    bitterness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    richness = Column(Float, nullable=True) 
+    sourness = Column(Float)
+    bitterness = Column(Float)
+    umami = Column(Float)
+    richness = Column(Float) 
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isHeated"),
         ForeignKeyConstraint(
-            ["id", "seqno"], 
-            ["deepAging_info.id", "deepAging_info.seqno"], 
+            ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"], 
             ondelete='CASCADE', 
             onupdate='CASCADE'
         ),
         ForeignKeyConstraint(
-            ['userId'],
-            ['user.userId'],
+            ['userId'],['user.userId'],
             ondelete='SET DEFAULT',
             onupdate='CASCADE'
         ),
