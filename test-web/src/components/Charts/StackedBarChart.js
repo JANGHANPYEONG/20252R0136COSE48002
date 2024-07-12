@@ -10,18 +10,23 @@ const StackedBarChart = ({ startDate, endDate }) => {
   const line = theme.palette.divider;
   // 누적 바 차트 부위 별 색
   const stackColors = [
-    theme.palette.success.light,
-    theme.palette.primary.main,
-    theme.palette.warning.main,
-    '#BB86FC',
-    theme.palette.error.main,
-    '#FF0266',
-    theme.palette.info.light,
-    theme.palette.warning.light,
-    theme.palette.secondary.main,
-    theme.palette.success.dark,
-    '#03DAC5',
-    theme.palette.error.light,
+    // 빨강, 주황, 노랑, 초록, 파랑
+    theme.palette.error.main, // 빨강 (theme.palette.error.main)
+    theme.palette.warning.main, // 주황 (theme.palette.warning.main)
+    theme.palette.warning.light, // 노랑 (theme.palette.warning.light)
+    theme.palette.success.light, // 초록 (theme.palette.success.light)
+    theme.palette.primary.main, // 파랑 (theme.palette.primary.main)
+
+    // 짙은 남색, 짙은 보라색, 짙은 분홍색, 진홍색
+    '#01579B', // 짙은 남색
+    '#6A1B9A', // 짙은 보라색
+    '#C2185B', // 짙은 분홍색
+    '#FF4081', // 진홍색
+
+    // 옅은 남색, 옅은 보라색, 옅은 분홍색
+    '#DBC0AF', // 옅은 남색
+    '#CE93D8', // 옅은 보라색
+    '#F48FB1', // 옅은 분홍색
   ];
 
   // API fetch 데이터 저장
@@ -29,8 +34,8 @@ const StackedBarChart = ({ startDate, endDate }) => {
 
   // 결합된 카테고리
   const combinedCategories = ['안심', '등심', '목심', '앞다리', '갈비'];
-  const cattleCategories = ['채끝', '우둔', '설도', '양지'];
-  const porkCategories = ['사태', '삼겹살', '뒷다리'];
+  const cattleCategories = ['채끝', '우둔', '설도', '양지', '사태'];
+  const porkCategories = ['삼겹살', '뒷다리'];
 
   // fetch한 JSON 데이터에서 필요한 값 parsing 및 전처리하여 series에 저장
   const processStackedBarData = (data) => {
@@ -185,10 +190,6 @@ const columnChartOptions = {
     title: {
       text: '개',
     },
-  },
-  legend: {
-    position: 'right',
-    offsetY: 40,
   },
   fill: {
     opacity: 1,

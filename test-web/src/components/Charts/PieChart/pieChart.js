@@ -27,7 +27,7 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
       width: 0, // 선의 두께를 0으로 설정
       colors: [theme.palette.background.paper],
     }, // Stroke colors for the chart.
-    legend: { floating: true, horizontalAlign: 'center' }, // Legend configuration.
+    legend: { floating: true, horizontalAlign: 'center', top: -20 }, // Legend configuration.
     dataLabels: { enabled: true, dropShadow: { enabled: true } }, // Data label configuration
     tooltip: {
       fillSeriesColor: true, // Whether to fill the tooltip with series color.
@@ -39,7 +39,17 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
       },
     },
     plotOptions: {
-      pie: { donut: { labels: { show: true } } }, // Plot options for a donut chart. (가운데 설명 표시)
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              offsetY: -20, // 이름 위치를 위로 조정
+            },
+          },
+        },
+      },
     },
   });
 
