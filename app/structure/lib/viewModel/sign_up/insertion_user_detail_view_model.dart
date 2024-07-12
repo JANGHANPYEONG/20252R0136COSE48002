@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -99,16 +98,10 @@ class InsertionUserDetailViewModel with ChangeNotifier {
   }
 
   String _convertUserInfoToJson() {
-    DateTime now = DateTime.now();
-    String createdAt = DateFormat('yyyy-MM-ddTHH:mm:ssZ').format(now);
-
     Map<String, dynamic> data = {
       "userId": userModel.userId,
-      "createdAt": createdAt,
-      "updatedAt": createdAt,
-      "loginAt": null,
-      "password": userModel.password,
       "name": userModel.name,
+      "password": userModel.password, // TODO : 삭제
       "company": userModel.company,
       "jobTitle": userModel.jobTitle,
       "homeAddr": userModel.homeAdress,

@@ -16,6 +16,7 @@ Future<void> main() async {
   runApp(const DeepPlantApp());
 }
 
+/// auto.json에 자동 로그인이 설정됐으면 자동으로 로그이
 Future<void> checkAutoLogin() async {
   dynamic response = await LocalDataSource.getLocalData('auto.json');
   if (response != null) {
@@ -34,7 +35,7 @@ Future<bool> saveUserInfo(String userId) async {
   // 로그인 API 호출
   try {
     // 유저 정보 가져오기 시도
-    dynamic userInfo = await RemoteDataSource.signIn(userId)
+    dynamic userInfo = await RemoteDataSource.login(userId)
         .timeout(const Duration(seconds: 10));
     if (userInfo == null) {
       // 가져오기 실패
@@ -43,7 +44,6 @@ Future<bool> saveUserInfo(String userId) async {
       // 가져오기 성공
       // 데이터 fetch
       userModel.fromJson(userInfo);
-      print(userModel);
       // 육류 정보 생성자 id 저장
       meatModel.userId = userModel.userId;
       return true;

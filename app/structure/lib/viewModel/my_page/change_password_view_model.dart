@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 import 'package:structure/config/labels.dart';
 
@@ -104,11 +101,11 @@ class ChangePasswordViewModel with ChangeNotifier {
         );
         await user.updatePassword(newPW.text); // Firebase update password
         // DB에 비밀번호 변경
-        final response =
-            await RemoteDataSource.changeUserPw(_convertChangeUserPwToJson());
-        if (response == null) {
-          throw Error();
-        }
+        // final response =
+        //     await RemoteDataSource.changeUserPw(_convertChangeUserPwToJson());
+        // if (response == null) {
+        //   throw Error();
+        // }
         _success();
       } else {
         print('User does not exist.');
@@ -123,14 +120,6 @@ class ChangePasswordViewModel with ChangeNotifier {
     }
     isLoading = false;
     notifyListeners();
-  }
-
-  /// 유저 비밀번호 변경 시 반환
-  String _convertChangeUserPwToJson() {
-    return jsonEncode({
-      "userId": userModel.userId,
-      "password": newPW.text,
-    });
   }
 
   /// 오류 snackbar
