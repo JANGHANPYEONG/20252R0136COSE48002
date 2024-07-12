@@ -31,6 +31,6 @@ export const useStackedBarFetch = (startDate, endDate) => {
   return {
     data,
     isLoading: !error && !data,
-    error,
+    isError: error,
   };
 };
