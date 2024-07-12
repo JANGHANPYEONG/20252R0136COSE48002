@@ -8,8 +8,32 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
 
-class PasswordResetScreen extends StatelessWidget {
+class PasswordResetScreen extends StatefulWidget {
   const PasswordResetScreen({super.key});
+
+  @override
+  State<PasswordResetScreen> createState() => _PasswordResetScreenState();
+}
+
+class _PasswordResetScreenState extends State<PasswordResetScreen> {
+  late PasswordResetViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = context.read<PasswordResetViewModel>();
+    _viewModel.email.addListener(_validateInput);
+  }
+
+  @override
+  void dispose() {
+    _viewModel.email.removeListener(_validateInput);
+    super.dispose();
+  }
+
+  void _validateInput() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +59,6 @@ class PasswordResetScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text('이메일', style: Palette.fieldTitle)),
                     SizedBox(height: 8.h),
-
                     // 이메일 입력 input field
                     MainInputField(
                       mode: 1,
@@ -47,7 +70,6 @@ class PasswordResetScreen extends StatelessWidget {
                           .emailValidate(value),
                     ),
                     SizedBox(height: 820.h),
-
                     // 재설정 버튼
                     MainButton(
                       onPressed:

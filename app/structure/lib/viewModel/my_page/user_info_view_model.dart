@@ -26,11 +26,11 @@ class UserInfoViewModel with ChangeNotifier {
     // Type 텍스트 변환
     if (userModel.type != null) {
       if (userModel.type == 'Normal') {
-        userType = '일반데이터 수집자';
+        userType = 'Normal';
       } else if (userModel.type == 'Researcher') {
-        userType = '연구데이터 수집자';
+        userType = 'Researcher';
       } else if (userModel.type == 'Manager') {
-        userType = '관리자';
+        userType = 'Manager';
       } else {
         userType = 'None';
       }

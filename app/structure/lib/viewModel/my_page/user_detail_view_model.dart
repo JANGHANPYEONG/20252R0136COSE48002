@@ -17,6 +17,9 @@ class UserDetailViewModel with ChangeNotifier {
   bool isLoading = false;
   bool isActivateButton = false;
 
+  //약관 동의 여부
+  bool isChecked = false;
+
   final TextEditingController mainAddress = TextEditingController();
   final TextEditingController subAddress = TextEditingController();
   final TextEditingController company = TextEditingController();
@@ -63,6 +66,10 @@ class UserDetailViewModel with ChangeNotifier {
     );
   }
 
+  void clicked1stCheckBox(bool? value) {
+    isChecked = value!;
+  }
+
   Future<void> clickedSaveButton(BuildContext context) async {
     isLoading = true;
     isActivateButton = false;
@@ -94,6 +101,8 @@ class UserDetailViewModel with ChangeNotifier {
 
   void _initialize() {
     userId = userModel.userId ?? 'None';
+    isChecked = userModel.alarm!;
+    print('체크 : $isChecked');
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');
       if (index != -1 && userModel.homeAdress!.substring(0, index).isNotEmpty) {
