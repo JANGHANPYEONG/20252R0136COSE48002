@@ -60,7 +60,7 @@ class AddRawMeatViewModel with ChangeNotifier {
         context.go('/home/data-manage-researcher/add');
       });
     } else {
-      showDatanotCompleteDialog(context, null, () {
+      showDataNotCompleteDialog(context, null, () {
         context.go('/home/data-manage-researcher/add');
       });
     }
