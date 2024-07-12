@@ -239,7 +239,7 @@ class NormalFilterBox extends StatelessWidget {
                 SizedBox(
                   height: 15.w,
                 ),
-                context.read<DataManagementHomeViewModel>().dateStatus[3]
+                context.watch<DataManagementHomeViewModel>().dateStatus[3]
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

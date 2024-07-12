@@ -237,68 +237,72 @@ class ResercherFilterBox extends StatelessWidget {
                 SizedBox(
                   height: 15.w,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                    Consumer<DataManagementHomeResearcherViewModel>(
-                      builder: (context, viewModel, child) => InkWell(
-                        onTap: (viewModel.dateStatus[3])
-                            ? () => viewModel.onTapTable(0)
-                            : null,
-                        child: Container(
-                          width: 290.w,
-                          height: 64.h,
-                          decoration: BoxDecoration(
-                            color: viewModel.dateStatus[3]
-                                ? Palette.fieldEmptyBg
-                                : Palette.dataMngCardBg,
-                            borderRadius: BorderRadius.circular(20.w),
+                context
+                        .watch<DataManagementHomeResearcherViewModel>()
+                        .dateStatus[3]
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                          Consumer<DataManagementHomeResearcherViewModel>(
+                            builder: (context, viewModel, child) => InkWell(
+                              onTap: (viewModel.dateStatus[3])
+                                  ? () => viewModel.onTapTable(0)
+                                  : null,
+                              child: Container(
+                                width: 290.w,
+                                height: 64.h,
+                                decoration: BoxDecoration(
+                                  color: viewModel.dateStatus[3]
+                                      ? Palette.fieldEmptyBg
+                                      : Palette.dataMngCardBg,
+                                  borderRadius: BorderRadius.circular(20.w),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Text(
+                                  viewModel.firstDayText,
+                                  style: viewModel.dateStatus[3]
+                                      ? Palette.h5
+                                      : Palette.h5LightGrey,
+                                ),
+                              ),
+                            ),
                           ),
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            viewModel.firstDayText,
-                            style: viewModel.dateStatus[3]
-                                ? Palette.h5
-                                : Palette.h5LightGrey,
+                          SizedBox(
+                            width: 20.w,
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 20.w,
-                    ),
-                    const Text('-'),
-                    SizedBox(
-                      width: 20.w,
-                    ),
-                    // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                    Consumer<DataManagementHomeResearcherViewModel>(
-                      builder: (context, viewModel, child) => InkWell(
-                        onTap: (viewModel.dateStatus[3])
-                            ? () => viewModel.onTapTable(1)
-                            : null,
-                        child: Container(
-                          width: 290.w,
-                          height: 64.h,
-                          decoration: BoxDecoration(
-                            color: viewModel.dateStatus[3]
-                                ? Palette.fieldEmptyBg
-                                : Palette.dataMngCardBg,
-                            borderRadius: BorderRadius.circular(20.w),
+                          const Text('-'),
+                          SizedBox(
+                            width: 20.w,
                           ),
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            viewModel.lastDayText,
-                            style: Palette.h5,
+                          // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                          Consumer<DataManagementHomeResearcherViewModel>(
+                            builder: (context, viewModel, child) => InkWell(
+                              onTap: (viewModel.dateStatus[3])
+                                  ? () => viewModel.onTapTable(1)
+                                  : null,
+                              child: Container(
+                                width: 290.w,
+                                height: 64.h,
+                                decoration: BoxDecoration(
+                                  color: viewModel.dateStatus[3]
+                                      ? Palette.fieldEmptyBg
+                                      : Palette.dataMngCardBg,
+                                  borderRadius: BorderRadius.circular(20.w),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Text(
+                                  viewModel.lastDayText,
+                                  style: Palette.h5,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                        ],
+                      )
+                    : Container(),
                 SizedBox(
                   height: 15.w,
                 ),
