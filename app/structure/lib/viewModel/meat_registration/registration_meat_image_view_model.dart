@@ -178,6 +178,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       if (meatModel.seqno == 0) {
         // 원육
         meatModel.imagePath = imagePath;
+        print('adsfasdfads: ${imagePath}');
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();

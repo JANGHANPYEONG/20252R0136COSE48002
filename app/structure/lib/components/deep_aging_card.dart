@@ -23,7 +23,6 @@ class DeepAgingCard extends StatelessWidget {
   final int minute;
   final String butcheryDate;
   final bool completed;
-  final bool isLast;
   final VoidCallback onTap;
   final VoidCallback? delete;
   const DeepAgingCard({
@@ -32,7 +31,6 @@ class DeepAgingCard extends StatelessWidget {
     required this.minute,
     required this.butcheryDate,
     required this.completed,
-    required this.isLast,
     required this.onTap,
     this.delete,
   });
@@ -47,12 +45,9 @@ class DeepAgingCard extends StatelessWidget {
             onPressed: onTap,
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(15), // Makes the border rectangular
+                borderRadius: BorderRadius.circular(15),
               ),
-              side: const BorderSide(
-                color: Color(0xFFEAEAEA),
-              ),
+              side: const BorderSide(color: Color(0xFFEAEAEA)),
             ),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -73,33 +68,25 @@ class DeepAgingCard extends StatelessWidget {
                               ),
                               width: 84.w,
                               height: 32.h,
-                              child: Center(
-                                child: Text(deepAgingNum),
-                              ),
+                              child: Center(child: Text(deepAgingNum)),
                             ),
-                            SizedBox(
-                              width: 10.w,
-                            ),
+                            SizedBox(width: 10.w),
                             Text(butcheryDate, style: Palette.h5Grey),
                           ],
                         ),
-                        SizedBox(
-                          height: 15.h,
-                        ),
+                        SizedBox(height: 15.h),
                         Text(
                           '$minute분',
                           style: TextStyle(
-                              fontSize: 36.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black),
+                            fontSize: 36.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  VerticalDivider(
-                    thickness: 1,
-                    color: Colors.grey[300],
-                  ),
+                  VerticalDivider(thickness: 1, color: Colors.grey[300]),
                   SizedBox(
                     width: 160.w,
                     child: Column(
@@ -107,9 +94,7 @@ class DeepAgingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('추가정보 입력', style: Palette.h5LightGrey),
-                        SizedBox(
-                          height: 15.h,
-                        ),
+                        SizedBox(height: 15.h),
                         Text(
                           completed ? '완료' : '미완료',
                           style: TextStyle(
@@ -128,20 +113,18 @@ class DeepAgingCard extends StatelessWidget {
             ),
           ),
         ),
-        isLast == true
-            ? Positioned(
-                top: -5.h,
-                right: -10.w,
-                child: IconButton(
-                  onPressed: delete,
-                  icon: Icon(
-                    Icons.delete,
-                    size: 30.sp,
-                    color: Palette.greyTextColor,
-                  ),
-                ),
-              )
-            : Container(),
+        Positioned(
+          top: -5.h,
+          right: -10.w,
+          child: IconButton(
+            onPressed: delete,
+            icon: Icon(
+              Icons.delete,
+              size: 30.sp,
+              color: Palette.greyTextColor,
+            ),
+          ),
+        )
       ],
     );
   }

@@ -12,7 +12,7 @@ import 'package:structure/components/custom_dialog.dart';
 
 class AddProcessedMeatViewModel with ChangeNotifier {
   bool popup = true;
-  
+
   void clickedImage(BuildContext context) {
     context.go('/home/data-manage-researcher/add/processed-meat/image');
   }
@@ -48,7 +48,7 @@ class AddProcessedMeatViewModel with ChangeNotifier {
         context.go('/home/data-manage-researcher/add');
       });
     } else {
-      showDatanotCompleteDialog(context, null, () {
+      showDataNotCompleteDialog(context, null, () {
         context.go('/home/data-manage-researcher/add');
       });
     }

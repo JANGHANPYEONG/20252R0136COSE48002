@@ -66,6 +66,16 @@ class FreshMeatEvalViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 저장 버튼 텍스트
+  String saveBtnText() {
+    if (meatModel.seqno == 0) {
+      // 원육
+      return meatModel.id != null ? '수정사항 저장' : '완료';
+    } else {
+      return '저장';
+    }
+  }
+
   /// 뒤로가기 버튼
   VoidCallback? backBtnPressed(BuildContext context) {
     return () => showExitDialog(context);
