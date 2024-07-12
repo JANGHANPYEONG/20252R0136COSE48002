@@ -17,11 +17,13 @@ import { TIME_ZONE } from '../config';
 // import icon
 import { FaBoxOpen } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
+import SearchById from '../components/DataListView/SearchById';
+import DataSingle from '../components/DataListView/DataSingle';
 
 const navy = '#0F3659';
 
 function Dashboard() {
-  // 목록/ 통계/ 반려함 탭 메뉴
+  const [data, setData] = useState(null);
   const [value, setValue] = useState('list');
   const s = new Date();
   s.setDate(s.getDate() - 7);
@@ -44,6 +46,14 @@ function Dashboard() {
       setEndDate(queryEndDate);
     }
   }, [queryStartDate, queryEndDate]);
+
+  const handleDataFetch = (fetchedData) => {
+    setData(fetchedData);
+  };
+
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+  };
 
   return (
     <div
@@ -84,6 +94,7 @@ function Dashboard() {
             Dashboard
           </span>
         )}
+
         <div style={{ display: 'flex', justifyContent: 'end' }}>
           <Button
             style={
@@ -116,22 +127,35 @@ function Dashboard() {
           >
             목록
           </Button>
-          <Button
-            style={value === 'stat' ? styles.tabBtnCilcked : styles.tabBtn}
-            value="stat"
-            variant="outlined"
-            onClick={(e) => {
-              setValue(e.target.value);
-            }}
-          >
-            통계
-          </Button>
+          {value !== 'single' && (
+            <Button
+              style={value === 'stat' ? styles.tabBtnCilcked : styles.tabBtn}
+              value="stat"
+              variant="outlined"
+              onClick={(e) => {
+                setValue(e.target.value);
+              }}
+            >
+              통계
+            </Button>
+          )}
         </div>
       </Box>
 
       {/**검색필터, 엑셀  */}
       <Box sx={styles.fixed}>
-        <SearchFilterBar setStartDate={setStartDate} setEndDate={setEndDate} />
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
+        >
+          <SearchFilterBar
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          />
+          <SearchById
+            onDataFetch={handleDataFetch}
+            onValueChange={handleValueChange}
+          />
+        </Box>
         <div
           style={{
             display: 'flex',
@@ -140,10 +164,12 @@ function Dashboard() {
             paddingRight: '85px',
           }}
         >
-          {value === 'list' && <ExcelController />}
+          {(value === 'list' || value === 'single') && <ExcelController />}
           {value === 'stat' && <StatsExport />}
         </div>
       </Box>
+
+      {value === 'single' && <DataSingle data={data} />}
 
       {value === 'list' && (
         <DataListComp
@@ -178,6 +204,7 @@ const styles = {
     borderRadius: '0',
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center', // Add this line to vertically align items
     backgroundColor: 'white',
     margin: '10px 0px',
   },
