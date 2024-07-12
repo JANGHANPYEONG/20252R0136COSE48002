@@ -52,12 +52,14 @@ class DataAddHomeViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
+      int deepAgeIdx = int.parse(
+          meatModel.deepAgingData![idx]["deepAgingNum"].split('회')[0]);
       dynamic response =
-          await RemoteDataSource.deleteDeepAging(meatModel.id!, idx);
+          await RemoteDataSource.deleteDeepAging(meatModel.id!, deepAgeIdx);
       if (response == null) {
         throw Error();
       } else {
-        meatModel.deepAgingData!.removeLast();
+        meatModel.deepAgingData!.removeAt(idx);
       }
     } catch (e) {
       print("에러발생: $e");

@@ -253,10 +253,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                                 }
                               : null,
                       text:
-                          context.read<FreshMeatEvalViewModel>().meatModel.id !=
-                                  null
-                              ? '수정사항 저장'
-                              : '완료',
+                          context.read<FreshMeatEvalViewModel>().saveBtnText(),
                       width: 658.w,
                       height: 104.h,
                       mode: 1,

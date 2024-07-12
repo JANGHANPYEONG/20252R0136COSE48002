@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
-import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
 
 class StepFreshMeat extends StatelessWidget {

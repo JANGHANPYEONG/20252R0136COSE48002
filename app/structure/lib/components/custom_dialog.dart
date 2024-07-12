@@ -43,13 +43,13 @@ void showDataRegisterDialog(
   );
 }
 
-void showDatanotCompleteDialog(
+void showDataNotCompleteDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
-    '아직 입력되지 않은 정보가 있습니다. \n 저장하시겠습니까?',
-    '',
+    '아직 입력되지 않은 정보가 있습니다.',
+    '저장하시겠습니까?',
     '취소',
     '확인',
     null,

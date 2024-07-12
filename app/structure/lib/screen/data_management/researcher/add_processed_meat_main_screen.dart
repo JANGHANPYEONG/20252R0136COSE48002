@@ -37,10 +37,10 @@ class _AddProcessedMeatMainScreenState
         backButton: true,
         closeButton: false,
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 48.h),
+            SizedBox(height: 40.h),
 
             // 처리육 단면 촬영
             InkWell(
@@ -151,7 +151,8 @@ class _AddProcessedMeatMainScreenState
                 imageUrl: 'assets/images/meat_lab.png',
               ),
             ),
-            const Spacer(),
+            SizedBox(height: 40.h),
+
             Container(
               margin: EdgeInsets.only(bottom: 40.h),
               child: MainButton(
