@@ -107,7 +107,7 @@ function UserList() {
     { field: 'userId', headerName: '아이디', width: 250 },
     {
       field: 'type',
-      headerName: '소속',
+      headerName: '권한',
       width: 200,
       renderCell: (params) => (
         <CustomEditCell
