@@ -47,8 +47,8 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> dataList = ['나의 데이터', '전체'];
-  List<bool> dataStatus = [false, true];
+  List<String> dataList = ['나의 데이터', '전체', '일반 데이터', '연구 데이터']; //
+  List<bool> dataStatus = [false, true, false, false];
   int dataSelectedIdx = 1;
 
   List<String> speciesList = ['소', '돼지', '전체'];
@@ -135,11 +135,15 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     print('selectedList : $selectedList');
   }
 
-  // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터)
+  // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터) //////////
   void setData() {
     if (dataSelectedIdx == 0) {
       filteredList = filteredList.where((data) {
         return (data["userId"] == userModel.userId);
+      }).toList();
+    } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data["userType"] == userModel.type);
       }).toList();
     } else {}
   }
@@ -196,12 +200,15 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   // 날짜 fomatting
   void formatting() {
+    isOpenTable = !isOpenTable;
+
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
     }
     if (lastDay != null) {
       lastDayText = DateFormat('yyyy.MM.dd').format(lastDay!);
     }
+    notifyListeners();
   }
 
   // 직접 설정 과정에서 범위를 재 지정함. (범위의 앞 보다 뒤가 더 빠른 날짜 일 때, 둘을 뒤 바꿈.)
@@ -261,7 +268,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (firstDay == null || lastDay == null) {
       focused = DateTime.now();
     }
-    isOpenTable = !isOpenTable;
+    isOpenTable = true;
     indexDay = index;
     // 날짜 지정 이후 선택할 시 이전 날짜 호출
     if (index == 0 && temp1 != null) {
@@ -352,8 +359,10 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
                 DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
             String specieValue = item['specieValue'];
             String statusType = item['statusType'];
+            String userType = item['Type'];
             print('sts : $statusType');
             Map<String, String> idStatusPair = {
+              "Type": userType,
               "id": id,
               "createdAt": createdAt,
               "userId": userId,

@@ -332,7 +332,7 @@ class ResercherFilterBox extends StatelessWidget {
                 SizedBox(
                   height: 15.w,
                 ),
-                Row(
+                Column(
                   children: [
                     SizedBox(
                       width: 15.w,
@@ -423,37 +423,41 @@ class FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(
-        filterList.length,
-        (index) => InkWell(
-          onTap: onTap != null ? () => onTap!(index) : null,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          child: Container(
-            height: 48.h,
-            margin: EdgeInsets.only(right: 10.w),
-            alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(horizontal: 30.w),
-            decoration: BoxDecoration(
-                color: status[index] ? Colors.white : Palette.fieldEmptyBg,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(50.sp),
+    return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            filterList.length,
+            (index) => InkWell(
+              onTap: onTap != null ? () => onTap!(index) : null,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              child: Container(
+                height: 48.h,
+                margin: EdgeInsets.only(right: 10.w),
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: 30.w),
+                decoration: BoxDecoration(
+                    color: status[index] ? Colors.white : Palette.fieldEmptyBg,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(50.sp),
+                    ),
+                    border: Border.all(
+                      color: status[index]
+                          ? Palette.editableBg
+                          : Colors.transparent,
+                    )),
+                child: Text(
+                  filterList[index],
+                  style: TextStyle(
+                    color: status[index]
+                        ? Palette.editableBg
+                        : Palette.waitingCardBg,
+                  ),
                 ),
-                border: Border.all(
-                  color:
-                      status[index] ? Palette.editableBg : Colors.transparent,
-                )),
-            child: Text(
-              filterList[index],
-              style: TextStyle(
-                color:
-                    status[index] ? Palette.editableBg : Palette.waitingCardBg,
               ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }
