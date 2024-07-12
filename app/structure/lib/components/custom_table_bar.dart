@@ -118,7 +118,7 @@ class CustomTableBarResearcherApprove extends StatelessWidget {
               const Spacer(),
               SizedBox(
                 width: 250.w,
-                child: Text('작성자', style: Palette.h5),
+                child: Text('날짜', style: Palette.h5),
               ),
               const Spacer(),
               SizedBox(

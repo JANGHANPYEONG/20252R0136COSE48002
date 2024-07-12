@@ -360,6 +360,34 @@ class UserRouter {
                             child: const RegistrationMeatImageScreen(),
                           ),
                         ),
+                        //수정불가 육류 기본정보, 육류 단면 촬영, 신선육 관능평가
+                        GoRoute(
+                          path: 'info',
+                          builder: (context, state) => ChangeNotifierProvider(
+                            create: (context) =>
+                                InsertionMeatInfoNotEditableViewModel(
+                                    meatModel),
+                            child: const InsertionMeatInfoNotEditableScreen(),
+                          ),
+                        ),
+                        GoRoute(
+                          path: 'image-noteditable',
+                          builder: (context, state) => ChangeNotifierProvider(
+                            create: (context) =>
+                                InsertionMeatImageNotEditableViewModel(
+                                    meatModel, userModel, 0),
+                            child: const InsertionMeatImageNotEditableScreen(),
+                          ),
+                        ),
+                        GoRoute(
+                          path: 'freshmeat',
+                          builder: (context, state) => ChangeNotifierProvider(
+                            create: (context) =>
+                                FreshMeatEvalNotEditableViewModel(
+                                    meatModel, false),
+                            child: const FreshMeatEvalNotEditableScreen(),
+                          ),
+                        ),
                       ],
                     ),
                     GoRoute(
