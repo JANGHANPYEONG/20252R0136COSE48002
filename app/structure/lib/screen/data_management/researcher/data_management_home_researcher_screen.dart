@@ -227,68 +227,72 @@ class ResercherFilterBox extends StatelessWidget {
                 SizedBox(
                   height: 15.w,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                    Consumer<DataManagementHomeResearcherViewModel>(
-                      builder: (context, viewModel, child) => InkWell(
-                        onTap: (viewModel.dateStatus[3])
-                            ? () => viewModel.onTapTable(0)
-                            : null,
-                        child: Container(
-                          width: 290.w,
-                          height: 64.h,
-                          decoration: BoxDecoration(
-                            color: viewModel.dateStatus[3]
-                                ? Palette.fieldEmptyBg
-                                : Palette.dataMngCardBg,
-                            borderRadius: BorderRadius.circular(20.w),
+                context
+                        .watch<DataManagementHomeResearcherViewModel>()
+                        .dateStatus[3]
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                          Consumer<DataManagementHomeResearcherViewModel>(
+                            builder: (context, viewModel, child) => InkWell(
+                              onTap: (viewModel.dateStatus[3])
+                                  ? () => viewModel.onTapTable(0)
+                                  : null,
+                              child: Container(
+                                width: 290.w,
+                                height: 64.h,
+                                decoration: BoxDecoration(
+                                  color: viewModel.dateStatus[3]
+                                      ? Palette.fieldEmptyBg
+                                      : Palette.dataMngCardBg,
+                                  borderRadius: BorderRadius.circular(20.w),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Text(
+                                  viewModel.firstDayText,
+                                  style: viewModel.dateStatus[3]
+                                      ? Palette.h5
+                                      : Palette.h5LightGrey,
+                                ),
+                              ),
+                            ),
                           ),
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            viewModel.firstDayText,
-                            style: viewModel.dateStatus[3]
-                                ? Palette.h5
-                                : Palette.h5LightGrey,
+                          SizedBox(
+                            width: 20.w,
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 20.w,
-                    ),
-                    const Text('-'),
-                    SizedBox(
-                      width: 20.w,
-                    ),
-                    // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                    Consumer<DataManagementHomeResearcherViewModel>(
-                      builder: (context, viewModel, child) => InkWell(
-                        onTap: (viewModel.dateStatus[3])
-                            ? () => viewModel.onTapTable(1)
-                            : null,
-                        child: Container(
-                          width: 290.w,
-                          height: 64.h,
-                          decoration: BoxDecoration(
-                            color: viewModel.dateStatus[3]
-                                ? Palette.fieldEmptyBg
-                                : Palette.dataMngCardBg,
-                            borderRadius: BorderRadius.circular(20.w),
+                          const Text('-'),
+                          SizedBox(
+                            width: 20.w,
                           ),
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            viewModel.lastDayText,
-                            style: Palette.h5,
+                          // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                          Consumer<DataManagementHomeResearcherViewModel>(
+                            builder: (context, viewModel, child) => InkWell(
+                              onTap: (viewModel.dateStatus[3])
+                                  ? () => viewModel.onTapTable(1)
+                                  : null,
+                              child: Container(
+                                width: 290.w,
+                                height: 64.h,
+                                decoration: BoxDecoration(
+                                  color: viewModel.dateStatus[3]
+                                      ? Palette.fieldEmptyBg
+                                      : Palette.dataMngCardBg,
+                                  borderRadius: BorderRadius.circular(20.w),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Text(
+                                  viewModel.lastDayText,
+                                  style: Palette.h5,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                        ],
+                      )
+                    : Container(),
                 SizedBox(
                   height: 15.w,
                 ),
@@ -322,7 +326,7 @@ class ResercherFilterBox extends StatelessWidget {
                 SizedBox(
                   height: 15.w,
                 ),
-                Row(
+                Column(
                   children: [
                     SizedBox(
                       width: 15.w,
@@ -423,37 +427,41 @@ class FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(
-        filterList.length,
-        (index) => InkWell(
-          onTap: onTap != null ? () => onTap!(index) : null,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          child: Container(
-            height: 48.h,
-            margin: EdgeInsets.only(right: 10.w),
-            alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(horizontal: 30.w),
-            decoration: BoxDecoration(
-                color: status[index] ? Colors.white : Palette.fieldEmptyBg,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(50.sp),
+    return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            filterList.length,
+            (index) => InkWell(
+              onTap: onTap != null ? () => onTap!(index) : null,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              child: Container(
+                height: 48.h,
+                margin: EdgeInsets.only(right: 10.w),
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: 30.w),
+                decoration: BoxDecoration(
+                    color: status[index] ? Colors.white : Palette.fieldEmptyBg,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(50.sp),
+                    ),
+                    border: Border.all(
+                      color: status[index]
+                          ? Palette.editableBg
+                          : Colors.transparent,
+                    )),
+                child: Text(
+                  filterList[index],
+                  style: TextStyle(
+                    color: status[index]
+                        ? Palette.editableBg
+                        : Palette.waitingCardBg,
+                  ),
                 ),
-                border: Border.all(
-                  color:
-                      status[index] ? Palette.editableBg : Colors.transparent,
-                )),
-            child: Text(
-              filterList[index],
-              style: TextStyle(
-                color:
-                    status[index] ? Palette.editableBg : Palette.waitingCardBg,
               ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

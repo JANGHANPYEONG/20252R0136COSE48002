@@ -98,6 +98,20 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 모든 고기의 데이터 조회 (GET)
+  static Future<dynamic> getALLMeatData() async {
+    String endPoint = 'meat/get';
+    dynamic response = await _getApi(endPoint);
+    return response;
+  }
+
+  /// 일반 데이터와 연구 데이터 조회 (GET)
+  static Future<dynamic> getNormalResearchMeatData(String userType) async {
+    String endPoint = 'meat/get/by-user-type?userType=$userType';
+    dynamic response = await _getApi(endPoint);
+    return response;
+  }
+
   /// 육류 데이터 승인 (GET)
   static Future<dynamic> confirmMeatData(String meatId) async {
     dynamic response = await _getApi('meat/update/confirm?id=$meatId');
