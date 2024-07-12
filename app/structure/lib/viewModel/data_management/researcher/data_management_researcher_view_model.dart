@@ -433,7 +433,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     String id = '';
 
     id = selectedList[idx]['id']!;
-
+    print("selectedList :::: $selectedList");
     try {
       isLoading = true;
       notifyListeners();

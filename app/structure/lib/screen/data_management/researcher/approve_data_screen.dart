@@ -16,6 +16,7 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
+import 'package:structure/config/userfuls.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 
 class ApproveDataScreen extends StatefulWidget {
@@ -154,18 +155,16 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                       builder: (context, viewModel, child) => ListView.builder(
                         itemCount: viewModel.selectedList.length,
                         itemBuilder: (context, index) => ListCard(
-                          onTap: () async =>
-                              await viewModel.onTapApproveCard(index, context),
-                          // null, // 승인, 반려 화면 만들면 여기서 넘어가도록 함
-                          idx: index + 1,
-                          num: viewModel.selectedList[index]["id"]!,
-                          dayTime: viewModel.selectedList[index]["userId"]!,
-                          statusType: viewModel.selectedList[index]
-                              ["statusType"]!,
-                          //     ["statusType"] ??
-                          // '승인',
-                          dDay: -1,
-                        ),
+                            onTap: () async => await viewModel.onTapApproveCard(
+                                index, context),
+                            idx: index + 1,
+                            num: viewModel.selectedList[index]["id"]!,
+                            dayTime: viewModel.selectedList[index]["userId"]!,
+                            statusType: viewModel.selectedList[index]
+                                ["statusType"]!,
+                            dDay: -1,
+                            userName: Usefuls.parseDate(
+                                viewModel.selectedList[index]["createdAt"]!)),
                       ),
                     ),
                   ),

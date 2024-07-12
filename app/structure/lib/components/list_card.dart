@@ -25,6 +25,7 @@ class ListCard extends StatelessWidget {
   final String dayTime;
   final String statusType;
   final int dDay;
+  final String userName;
   const ListCard({
     super.key,
     required this.onTap,
@@ -33,6 +34,7 @@ class ListCard extends StatelessWidget {
     required this.dayTime,
     required this.statusType,
     required this.dDay,
+    required this.userName,
   });
 
   @override
@@ -58,7 +60,7 @@ class ListCard extends StatelessWidget {
             const Spacer(),
             SizedBox(
               child: Text(
-                dayTime,
+                userName,
                 style: Palette.filterContent,
               ),
             ),
