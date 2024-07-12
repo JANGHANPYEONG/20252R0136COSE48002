@@ -146,12 +146,23 @@ function Sidebar() {
 
   useEffect(() => {}, [location]);
 
+  const createFilterQueryParams = () => {
+    const queryParams = new URLSearchParams(location.search); // 현재 쿼리 파라미터를 복사
+    return queryParams.toString();
+  };
+
   const handleListItemClick = (item) => {
     if (item.label === '사용자 관리' && UserInfo.type !== 'Manager') {
       setSnackbarMessage('권한이 없습니다');
       setSnackbarOpen(true);
     } else {
       navigate(item.path);
+      if (item.label !== '홈' && item.label !== '사용자 관리') {
+        const queryParams = createFilterQueryParams();
+        navigate(`${item.path}?${queryParams}`);
+      }
+      //const queryParams = createFilterQueryParams();
+      //navigate(`${item.path}?${queryParams}`);
     }
   };
 

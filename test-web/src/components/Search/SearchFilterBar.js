@@ -18,19 +18,26 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import { useNavigate, useLocation } from 'react-router-dom';
 // import timezone
 import { TIME_ZONE } from '../../config';
 const navy = '#0F3659';
 
 function SearchFilterBar({ setStartDate, setEndDate }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
   //조회 기간 (탭으로 클릭 시)
   const [isDur, setIsDur] = useState(true);
-  const [duration, setDuration] = useState('week');
+  const [duration, setDuration] = useState(searchParams.get('duration') || 'week');
   const [durStart, setDurStart] = useState(null);
   const [durEnd, setDurEnd] = useState(null);
   // 조회 기간 (직접 입력할 시)
-  const [calenderStart, setCalenderStart] = useState(null);
-  const [calenderEnd, setCalenderEnd] = useState(null);
+  const [calenderStart, setCalenderStart] = useState(dayjs(searchParams.get('start') || null));
+  const [calenderEnd, setCalenderEnd] = useState(dayjs(searchParams.get('end') || null));
+
+  console.log(duration)
 
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
@@ -59,28 +66,34 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
       s.setHours(0, 0, 0, 0);
     }
     if (duration !== null) {
-      setDurStart(new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5));
-      setDurEnd(
-        new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5)
-      );
+      const start = new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5);
+      const end = new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5);
+      setDurStart(start);
+      setDurEnd(end);
+      setStartDate(start);
+      setEndDate(end);
     }
   }, [duration]);
 
   //완료 버튼 클릭하면 변함
   const handleCompleteBtn = () => {
+    const queryParams = new URLSearchParams();
     if (!isDur) {
       //직접 입력할 시
       if (calenderStart) {
         const startVal = `${calenderStart.$y}-${String(calenderStart.$M + 1).padStart(2, '0')}-${String(calenderStart.$D).padStart(2, '0')}T00:00:00`;
         setStartDate(startVal);
+        queryParams.set('start', calenderStart.format('YYYY-MM-DD'));
       }
       if (calenderEnd) {
         const endVal = `${calenderEnd.$y}-${String(calenderEnd.$M + 1).padStart(2, '0')}-${String(calenderEnd.$D).padStart(2, '0')}T23:59:59`;
         setEndDate(endVal);
+        queryParams.set('end', calenderEnd.format('YYYY-MM-DD'));
       }
       setDuration(null);
     } else {
       //탭으로 클릭할시
+      queryParams.set('duration', duration);
       if (durStart) {
         setStartDate(durStart);
       }
@@ -88,6 +101,7 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
         setEndDate(durEnd);
       }
     }
+    navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
   // pop over 결정
