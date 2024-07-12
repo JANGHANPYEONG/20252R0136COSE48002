@@ -83,7 +83,6 @@ def login_user():
                     "userId": user.userId,
                     "createdAt": user.createdAt,
                     "updatedAt": user.updatedAt,
-                    "password": user.password,
                     "name": user.name,
                     "company": user.company,
                     "jobTitle": user.jobTitle,

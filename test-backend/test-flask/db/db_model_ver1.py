@@ -241,15 +241,12 @@ class Meat(Base):
     # 1. 기본 정보
     id = Column(String(255), primary_key=True)  # 육류 관리번호
     userId = Column(String(255), 
-                    ForeignKey("user.userId"), 
                     nullable=False, 
                     default=default_user_id)  # 생성한 유저 ID
-    sexType = Column(Integer, ForeignKey("sex_info.id"))  # 성별 ID
-    categoryId = Column(
-        Integer, ForeignKey("category_info.id"), nullable=False
-    )  # 육종 ID
-    gradeNum = Column(Integer, ForeignKey("grade_info.id"))  # 등급 ID
-    statusType = Column(Integer, ForeignKey("status_info.id"), default=0)  # 승인 여부 ID
+    sexType = Column(Integer)  # 성별 ID
+    categoryId = Column(Integer, nullable=False)  # 육종 ID
+    gradeNum = Column(Integer)  # 등급 ID
+    statusType = Column(Integer, default=0)  # 승인 여부 ID
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
@@ -294,7 +291,6 @@ class DeepAgingInfo(Base):
     # 1. 복합키 설정
     id = Column(
         String(255),
-        ForeignKey("meat.id"),
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
@@ -322,7 +318,6 @@ class SensoryEval(Base):
     # 1. 복합키 설정
     id = Column(
         String(255),
-        ForeignKey("meat.id"),
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
@@ -330,7 +325,7 @@ class SensoryEval(Base):
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)  # 관능검사 생성 시간
     userId = Column(
-        String(255), ForeignKey("user.userId"), nullable=False
+        String(255), nullable=False
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
@@ -374,7 +369,7 @@ class AI_SensoryEval(Base):
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
     xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
-    xai_gradeNum = Column(Integer, ForeignKey("grade_info.id"))  # 예측 등급
+    xai_gradeNum = Column(Integer)  # 예측 등급
     xai_gradeNum_imagePath = Column(String(255))  # 예측 등급 image path
 
     # 3. 관능검사 AI 예측 데이터
