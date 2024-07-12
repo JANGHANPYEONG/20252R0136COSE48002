@@ -148,8 +148,7 @@ const style = {
   paginationBar: {
     marginTop: '40px',
     width: '100%',
-    display: 'flex',
-    justifyContent: 'right',
+    justifyContent: 'center',
   },
   paginationContainer: {
     display: 'flex',
