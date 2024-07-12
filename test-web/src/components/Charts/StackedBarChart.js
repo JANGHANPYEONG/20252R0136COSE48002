@@ -11,19 +11,17 @@ const StackedBarChart = ({ startDate, endDate }) => {
   // 누적 바 차트 부위 별 색
   const stackColors = [
     // 빨강, 주황, 노랑, 초록, 파랑
-    theme.palette.error.main, // 빨강 (theme.palette.error.main)
-    theme.palette.warning.main, // 주황 (theme.palette.warning.main)
-    theme.palette.warning.light, // 노랑 (theme.palette.warning.light)
-    theme.palette.success.light, // 초록 (theme.palette.success.light)
-    theme.palette.primary.main, // 파랑 (theme.palette.primary.main)
+    theme.palette.error.main,
+    theme.palette.warning.main,
+    theme.palette.warning.light,
+    theme.palette.success.light,
+    theme.palette.primary.main,
 
-    // 짙은 남색, 짙은 보라색, 짙은 분홍색, 진홍색
     '#01579B', // 짙은 남색
     '#6A1B9A', // 짙은 보라색
     '#C2185B', // 짙은 분홍색
     '#FF4081', // 진홍색
 
-    // 옅은 남색, 옅은 보라색, 옅은 분홍색
     '#DBC0AF', // 옅은 남색
     '#CE93D8', // 옅은 보라색
     '#F48FB1', // 옅은 분홍색
