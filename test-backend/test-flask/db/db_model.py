@@ -87,7 +87,7 @@ def load_initial_data(db_session):
                 db_session.add(temp)
     db_session.commit()
 
-    # 4. User
+    # 4. UserType
     for id, Type in usrType.items():
         if not UserTypeInfo.query.get(id):
             temp = UserTypeInfo(id=id, name=Type)
@@ -114,6 +114,26 @@ def load_initial_data(db_session):
             temp = StatusInfo(id=id, value=Type)
             db_session.add(temp)
     db_session.commit()
+    
+    # 8. User
+    default_user = User.query.get(default_user_id)
+
+    if not default_user:
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        temp = User(
+            userId=default_user_id,
+            createdAt=current_date,
+            name='deeplant',
+            type=default_user_type,
+            updatedAt=None,
+            loginAt=None,
+            company=None,
+            jobTitle=None,
+            homeAddr=None,
+            alarm=False
+        )
+        db_session.add(temp)
+    db_session.commit()
 
 
 # Texonomy Table
@@ -121,7 +141,6 @@ class SpeciesInfo(Base):
     __tablename__ = "species_info"
     id = Column(Integer, primary_key=True)  # 종 ID
     value = Column(String(255))  # 종명(ex. cattle, pig)
-    categories = relationship("CategoryInfo", backref="species_info")
 
 
 class CategoryInfo(Base):
@@ -130,7 +149,8 @@ class CategoryInfo(Base):
     speciesId = Column(Integer, ForeignKey("species_info.id"))
     primalValue = Column(String(255), nullable=False)
     secondaryValue = Column(String(255), nullable=False)
-    meats = relationship("Meat", backref="category_info")
+    
+    speciesInfos = relationship("SpeciesInfo", backref="speciesInfoCategories")
 
 
 class GradeInfo(Base):
@@ -184,41 +204,37 @@ class UserTypeInfo(Base):
     __tablename__ = "userType_info"
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-
-
-class DeepAgingInfo(Base):
-    __tablename__ = "deepAging_info"
-    # 1. 기본키
-    deepAgingId = Column(String(255), primary_key=True)
-
-    # 2. 딥에이징 데이터
-    date = Column(DateTime, nullable=False)  # 딥에이징 실시 날짜
-    minute = Column(Integer, nullable=False)  # 딥에이징 진행 시간 (분)
-
-
-# Main Table
-
-
+    
+    
 class User(Base):
     __tablename__ = "user"
-    userId = Column(String(255), primary_key=True)  # 유저 ID(이메일)
-    createdAt = Column(DateTime, nullable=False)  # 유저 ID 생성 시간
-    updatedAt = Column(DateTime)  # 유저 정보 최근 수정 시간
-    loginAt = Column(DateTime)  # 유저 로그인 시간
-    password = Column(String(255), nullable=False)  # 유저 비밀번호(해시화)
-    name = Column(String(255), nullable=False)  # 유저명
+    userId = Column(String(255), primary_key=True) # 유저 ID(이메일)
+    createdAt = Column(DateTime, nullable=False) # 유저 ID 생성 시간
+    updatedAt = Column(DateTime) # 최신의 유저 정보 수정 시간
+    loginAt = Column(DateTime) # 유저 로그인 시간
+    name = Column(String(255), nullable=False) # 유저명
     company = Column(String(255))  # 직장명
     jobTitle = Column(String(255))  # 직위명
     homeAddr = Column(String(255))  # 유저 주소
     alarm = Column(Boolean, default=False)  # 유저 알람 허용 여부
-    type = Column(Integer, ForeignKey("userType_info.id"), nullable=False)  # 유저 타입 ID
+    type = Column(Integer, nullable=False)  # 유저 타입 ID
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["type"], ["userType_info.id"],
+            onupdate="CASCADE"
+        ),
+    )
+    userTypeInfos = relationship("UserTypeInfo", backref="userTypeInfos")
 
 
 class Meat(Base):
     __tablename__ = "meat"
     # 1. 기본 정보
     id = Column(String(255), primary_key=True)  # 육류 관리번호
-    userId = Column(String(255), ForeignKey("user.userId"), nullable=False)  # 생성한 유저 ID
+    userId = Column(String(255), 
+                    ForeignKey("user.userId"), 
+                    nullable=False, 
+                    default=default_user_id)  # 생성한 유저 ID
     sexType = Column(Integer, ForeignKey("sex_info.id"))  # 성별 ID
     categoryId = Column(
         Integer, ForeignKey("category_info.id"), nullable=False
@@ -236,9 +252,64 @@ class Meat(Base):
 
     # 3. 이미지 Path
     imagePath = Column(String(255))  # QR 이미지 S3 경로
+    
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["userId"], ["user.userId"],
+            ondelete="SET DEFAULT",
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["sexType"], ["sex_info.id"],
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["categoryId"], ["category_info.id"],
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["gradeNum"], ["grade_info.id"],
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["statusType"], ["status_info.id"],
+            onupdate="CASCADE"
+        ),
+    )
+    users = relationship("User", backref="userMeats")
+    categoryInfos = relationship("CategoryInfo", backref="categoryInfoMeats")
+    gradeInfos = relationship("GradeInfo", backref="gradeInfoMeats")
+    sexInfos = relationship("SexInfo", backref="sexInfoMeats")
+    statusInfos = relationship("StatusInfo", backref="statusInfoMeats")
 
 
-class SensoryEval(Base):  # Assuming Base is defined and imported appropriately
+class DeepAgingInfo(Base):
+    __tablename__ = "deepAging_info"
+    
+    # 1. 복합키 설정
+    id = Column(
+        String(255),
+        ForeignKey("meat.id"),
+        primary_key=True,
+    )  # 육류 관리번호
+    seqno = Column(Integer, primary_key=True)  # 가공 횟수
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id"], ["meat.id"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+    )
+
+    # 2. 딥에이징 데이터
+    date = Column(DateTime, nullable=False)  # 딥에이징 실시 날짜
+    minute = Column(Integer, nullable=False)  # 딥에이징 진행 시간 (분)
+    
+    meats = relationship("Meat", backref="MeatdeepAgingInfos")
+
+    
+class SensoryEval(Base):
     __tablename__ = "sensory_eval"
 
     # 1. 복합키 설정
@@ -248,7 +319,6 @@ class SensoryEval(Base):  # Assuming Base is defined and imported appropriately
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
-    __table_args__ = (PrimaryKeyConstraint("id", "seqno"),)
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)  # 관능검사 생성 시간
@@ -257,9 +327,6 @@ class SensoryEval(Base):  # Assuming Base is defined and imported appropriately
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
-    deepAgingId = Column(
-        String(255), ForeignKey("deepAging_info.deepAgingId")
-    )  # 원육이면 null, 가공육이면 해당 딥에이징 정보 ID
 
     # 3. 관능검사 측정 데이터
     marbling = Column(Float)
@@ -267,24 +334,39 @@ class SensoryEval(Base):  # Assuming Base is defined and imported appropriately
     texture = Column(Float)
     surfaceMoisture = Column(Float)
     overall = Column(Float)
-
-
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["userId"], ["user.userId"],
+            ondelete="SET DEFAULT",
+            onupdate="CASCADE"
+        ),
+        CheckConstraint("period >= 0", name="check_period_non_negative"),
+        CheckConstraint("marbling >= 1 AND marbling <= 10", name="check_marbling_range"),
+        CheckConstraint("color >= 1 AND color <= 10", name="check_color_range"),
+        CheckConstraint("texture >= 1 AND texture <= 10", name="check_texture_range"),
+        CheckConstraint('"surfaceMoisture" >= 1 AND "surfaceMoisture" <= 10', name="check_surfaceMoisture_range"),
+        CheckConstraint("overall >= 1 AND overall <= 10", name="check_overall_range"),
+    )
+    
+    users = relationship("User", backref="userSensoryEvals")
+    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingInfoSensoryEvals")
+    
+    
 class AI_SensoryEval(Base):
     __tablename__ = "ai_sensory_eval"
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
-        ForeignKeyConstraint(
-            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"]
-        ),
-    )
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), ForeignKey("user.userId"), nullable=False)
-    period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
     xai_gradeNum = Column(Integer, ForeignKey("grade_info.id"))  # 예측 등급
     xai_gradeNum_imagePath = Column(String(255))  # 예측 등급 image path
@@ -295,32 +377,74 @@ class AI_SensoryEval(Base):
     texture = Column(Float)
     surfaceMoisture = Column(Float)
     overall = Column(Float)
-
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["xai_gradeNum"], ["grade_info.id"],
+            onupdate="CASCADE"
+        ),
+        CheckConstraint("marbling >= 1 AND marbling <= 10", name="check_marbling_range"),
+        CheckConstraint("color >= 1 AND color <= 10", name="check_color_range"),
+        CheckConstraint("texture >= 1 AND texture <= 10", name="check_texture_range"),
+        CheckConstraint('"surfaceMoisture" >= 1 AND "surfaceMoisture" <= 10', name="check_surfaceMoisture_range"),
+        CheckConstraint("overall >= 1 AND overall <= 10", name="check_overall_range"),
+    )
+    
+    SensoryEvals = relationship("SensoryEval", backref="aiSensoryEvals")
+    gradeInfos = relationship("GradeInfo", backref="gradeInfoAiSensoryEvals")
+    
 
 class HeatedmeatSensoryEval(Base):
     __tablename__ = "heatedmeat_sensory_eval"
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
-        ForeignKeyConstraint(
-            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"]
-        ),
-    )
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), ForeignKey("user.userId"), nullable=False)
+    userId = Column(String(255), 
+                    nullable=False, 
+                    default=default_user_id)
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
-    imagePath = Column(String(255))  # 가열육 관능검사 이미지 경로
+    imagePath = Column(String(255), nullable=True)  # 가열육 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
-    flavor = Column(Float)
-    juiciness = Column(Float)
-    tenderness = Column(Float)
-    umami = Column(Float)
-    palability = Column(Float)
+    flavor = Column(Float, nullable=True)
+    juiciness = Column(Float, nullable=True)
+    tenderness = Column(Float, nullable=True)
+    umami = Column(Float, nullable=True)
+    palatability = Column(Float, nullable=True)
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], 
+            ["deepAging_info.id", "deepAging_info.seqno"],
+            ondelete='CASCADE', 
+            onupdate='CASCADE'
+        ),
+        ForeignKeyConstraint(
+            ["userId"], 
+            ["user.userId"], 
+            ondelete='SET DEFAULT', 
+            onupdate='CASCADE'
+        ),
+        CheckConstraint('"period" >= 0', name="check_period_value"),
+        CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
+        CheckConstraint('"juiciness" >= 1 and "juiciness" <= 10', name="check_juiciness_stat"),
+        CheckConstraint('"tenderness" >= 1 and "tenderness" <= 10', name="check_tenderness_stat"),
+        CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
+        CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
+    )
+    
+    users = relationship("User", backref="userHeatedmeatSensoryEvals")
+    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingHeatedmeatSensoryEvals")
 
 
 class AI_HeatedmeatSeonsoryEval(Base):
@@ -328,26 +452,34 @@ class AI_HeatedmeatSeonsoryEval(Base):
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
-        ForeignKeyConstraint(
-            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"]
-        ),
-    )
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), ForeignKey("user.userId"), nullable=False)
-    period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
-    imagePath = Column(String(255))  # 가열육 관능검사 이미지 경로
-    xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
+    xai_imagePath = Column(String(255), nullable=True)  # 예측 관능검사 이미지 경로
 
     # 3. 관능검사 AI 예측 데이터
-    flavor = Column(Float)
-    juiciness = Column(Float)
-    tenderness = Column(Float)
-    umami = Column(Float)
-    palability = Column(Float)
+    flavor = Column(Float, nullable=True)
+    juiciness = Column(Float, nullable=True)
+    tenderness = Column(Float, nullable=True)
+    umami = Column(Float, nullable=True)
+    palatability = Column(Float, nullable=True)
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], 
+            ["heatedmeat_sensory_eval.id", "heatedmeat_sensory_eval.seqno"], 
+            ondelete='CASCADE', 
+            onupdate='CASCADE'
+        ),
+        CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
+        CheckConstraint('"juiciness" >= 1 and "juiciness" <= 10', name="check_juiciness_stat"),
+        CheckConstraint('"tenderness" >= 1 and "tenderness" <= 10', name="check_tenderness_stat"),
+        CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
+        CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
+    )
+    
+    heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", backref="aiHeatedmeatSensoryEvals")
 
 
 class ProbexptData(Base):
@@ -355,36 +487,53 @@ class ProbexptData(Base):
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
-        ForeignKeyConstraint(
-            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"]
-        ),
-        CheckConstraint('0 <= "DL" AND "DL" <= 100', name="check_DL_percentage"),
-        CheckConstraint('0 <= "CL" AND "CL" <= 100', name="check_CL_percentage"),
-        CheckConstraint('0 <= "RW" AND "RW" <= 100', name="check_RW_percentage"),
-    )
+    isHeated = Column(Boolean, primary_key=True)
 
     # 2. 연구실 메타 데이터
-    updatedAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), ForeignKey("user.userId"), nullable=False)
-    period = Column(Integer, nullable=False)
+    updatedAt = Column(DateTime, nullable=True)
+    userId = Column(String(255), 
+                    nullable=False, 
+                    default=default_user_id)
+    period = Column(Integer, nullable=True)
 
     # 3. 실험 데이터
-    L = Column(Float)
-    a = Column(Float)
-    b = Column(Float)
-    DL = Column(Float)
-    CL = Column(Float)
-    RW = Column(Float)
-    ph = Column(Float)
-    WBSF = Column(Float)
-    cardepsin_activity = Column(Float)
-    MFI = Column(Float)
-    Collagen = Column(Float)
+    L = Column(Float, nullable=True)
+    a = Column(Float, nullable=True)
+    b = Column(Float, nullable=True)
+    DL = Column(Float, nullable=True)
+    CL = Column(Float, nullable=True)
+    RW = Column(Float, nullable=True)
+    ph = Column(Float, nullable=True)
+    WBSF = Column(Float, nullable=True)
+    cardepsin_activity = Column(Float, nullable=True)
+    MFI = Column(Float, nullable=True)
+    Collagen = Column(Float, nullable=True)
 
     # 4. 전자혀 데이터
-    sourness = Column(Float)
-    bitterness = Column(Float)
-    umami = Column(Float)
-    richness = Column(Float)
+    sourness = Column(Float, nullable=True)
+    bitterness = Column(Float, nullable=True)
+    umami = Column(Float, nullable=True)
+    richness = Column(Float, nullable=True) 
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno", "isHeated"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], 
+            ["deepAging_info.id", "deepAging_info.seqno"], 
+            ondelete='CASCADE', 
+            onupdate='CASCADE'
+        ),
+        ForeignKeyConstraint(
+            ['userId'],
+            ['user.userId'],
+            ondelete='SET DEFAULT',
+            onupdate='CASCADE'
+        ),
+        CheckConstraint('"period" >= 0', name="check_period_value"),
+        CheckConstraint('"DL" >= 0 AND "DL" <= 100', name="check_DL_percentage"),
+        CheckConstraint('"CL" >= 0 AND "CL" <= 100', name="check_CL_percentage"),
+        CheckConstraint('"RW" >= 0 AND "RW" <= 100', name="check_RW_percentage"),
+    )
+    
+    users = relationship("User", backref="userProbexptDatas")
+    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingProexptDatas")
