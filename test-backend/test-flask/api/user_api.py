@@ -1,7 +1,7 @@
 import logging
 
 from flask import Blueprint, jsonify, request, current_app
-from db.db_model import User
+from db.db_model_ver1 import User
 from db.db_controller import create_user, get_user, _get_users_by_type, update_user
 import hashlib
 import firebase_admin
@@ -46,7 +46,6 @@ def read_user_list():
                 "createdAt": user.createdAt,
                 "updatedAt": user.updatedAt,
                 "loginAt": user.loginAt,
-                "password": user.password,
                 "name": user.name,
                 "company": user.company,
                 "jobTitle": user.jobTitle,
@@ -84,7 +83,6 @@ def login_user():
                     "userId": user.userId,
                     "createdAt": user.createdAt,
                     "updatedAt": user.updatedAt,
-                    "password": user.password,
                     "name": user.name,
                     "company": user.company,
                     "jobTitle": user.jobTitle,
