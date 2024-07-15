@@ -14,6 +14,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
   InsertionUserDetailViewModel({required this.userModel});
 
   bool isLoading = false;
+  bool emailcheck = false;
 
   final TextEditingController mainAddressController = TextEditingController();
 
@@ -80,6 +81,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
       // 이메일 인증 메일 전송
       if (credential.user != null) {
         await credential.user!.sendEmailVerification();
+        emailcheck = true;
       } else {
         throw Error();
       }

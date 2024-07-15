@@ -21,143 +21,170 @@ class UserDetailScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(
             title: '상세정보 변경', backButton: true, closeButton: false),
-        body: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Row(),
-                SizedBox(
-                  height: 40.h,
-                ),
-                Container(
-                    margin: EdgeInsets.only(left: 38.w),
-                    alignment: Alignment.centerLeft,
-                    child: Text('주소', style: Palette.fieldTitle)),
-                SizedBox(
-                  height: 8.h,
-                ),
-                Stack(
-                  children: [
-                    MainInputField(
-                      mode: 1,
-                      width: 640.w,
-                      controller:
-                          context.read<UserDetailViewModel>().mainAddress,
-                      readonly: true,
-                      hintText: '주소',
-                      contentPadding: EdgeInsets.only(left: 30.w, right: 200.w),
-                    ),
-                    Positioned(
-                      right: 30.w,
-                      child: TextButton(
-                        onPressed: () async => await context
-                            .read<UserDetailViewModel>()
-                            .clickedSearchButton(context),
-                        child: Text(
-                          '검색',
-                          style: Palette.fieldContent
-                              .copyWith(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 8.h,
-                ),
-                MainInputField(
-                  mode: 1,
-                  width: 640.w,
-                  readonly: context
-                          .watch<UserDetailViewModel>()
-                          .mainAddress
-                          .text
-                          .isEmpty
-                      ? true
-                      : false,
-                  controller: context.read<UserDetailViewModel>().subAddress,
-                  onChangeFunc: (value) => context
-                      .read<UserDetailViewModel>()
-                      .onChangedSubAdress(value),
-                  hintText: '상세주소 (동/호수)',
-                ),
-                SizedBox(
-                  height: 20.h,
-                ),
-                Container(
-                    margin: EdgeInsets.only(left: 38.w),
-                    alignment: Alignment.centerLeft,
-                    child: Text('회사정보', style: Palette.fieldTitle)),
-                SizedBox(
-                  height: 8.h,
-                ),
-                MainInputField(
-                  mode: 1,
-                  width: 640.w,
-                  controller: context.read<UserDetailViewModel>().company,
-                  hintText: '회사명',
-                  onChangeFunc: (value) => context
-                      .read<UserDetailViewModel>()
-                      .onChangedCompany(value),
-                ),
-                SizedBox(
-                  height: 8.h,
-                ),
-                SizedBox(
-                  width: 640.w,
-                  child: Row(
+        body: SingleChildScrollView(
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Row(),
+                  SizedBox(
+                    height: 40.h,
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(left: 38.w),
+                      alignment: Alignment.centerLeft,
+                      child: Text('주소', style: Palette.fieldTitle)),
+                  SizedBox(
+                    height: 8.h,
+                  ),
+                  Stack(
                     children: [
                       MainInputField(
                         mode: 1,
-                        width: 315.w,
+                        width: 640.w,
                         controller:
-                            context.read<UserDetailViewModel>().department,
-                        onChangeFunc: (value) => context
-                            .read<UserDetailViewModel>()
-                            .onChangedDepartment(value),
-                        hintText: '부서명',
+                            context.read<UserDetailViewModel>().mainAddress,
+                        readonly: true,
+                        hintText: '주소',
+                        contentPadding:
+                            EdgeInsets.only(left: 30.w, right: 200.w),
                       ),
-                      const Spacer(),
-                      MainInputField(
-                        mode: 1,
-                        width: 315.w,
-                        controller:
-                            context.read<UserDetailViewModel>().jobTitle,
-                        onChangeFunc: (value) => context
-                            .read<UserDetailViewModel>()
-                            .onChangedJobTitle(value),
-                        hintText: '직위',
+                      Positioned(
+                        right: 30.w,
+                        child: TextButton(
+                          onPressed: () async => await context
+                              .read<UserDetailViewModel>()
+                              .clickedSearchButton(context),
+                          child: Text(
+                            '검색',
+                            style: Palette.fieldContent
+                                .copyWith(color: Colors.black),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  height: 520.h,
-                ),
-                Container(
-                  margin: EdgeInsets.only(bottom: 40.h),
-                  child: MainButton(
-                    onPressed:
-                        context.watch<UserDetailViewModel>().isActivateButton
-                            ? () async {
-                                await context
-                                    .read<UserDetailViewModel>()
-                                    .clickedSaveButton(context);
-                              }
-                            : null,
-                    text: '저장',
-                    width: 658.w,
-                    height: 106.h,
-                    mode: 1,
+                  SizedBox(
+                    height: 8.h,
                   ),
-                ),
-              ],
-            ),
-            context.watch<UserDetailViewModel>().isLoading
-                ? const Center(child: LoadingScreen())
-                : Container(),
-          ],
+                  MainInputField(
+                    mode: 1,
+                    width: 640.w,
+                    readonly: context
+                            .watch<UserDetailViewModel>()
+                            .mainAddress
+                            .text
+                            .isEmpty
+                        ? true
+                        : false,
+                    controller: context.read<UserDetailViewModel>().subAddress,
+                    onChangeFunc: (value) => context
+                        .read<UserDetailViewModel>()
+                        .onChangedSubAdress(value),
+                    hintText: '상세주소 (동/호수)',
+                  ),
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(left: 38.w),
+                      alignment: Alignment.centerLeft,
+                      child: Text('회사정보', style: Palette.fieldTitle)),
+                  SizedBox(
+                    height: 8.h,
+                  ),
+                  MainInputField(
+                    mode: 1,
+                    width: 640.w,
+                    controller: context.read<UserDetailViewModel>().company,
+                    hintText: '회사명',
+                    onChangeFunc: (value) => context
+                        .read<UserDetailViewModel>()
+                        .onChangedCompany(value),
+                  ),
+                  SizedBox(
+                    height: 8.h,
+                  ),
+                  SizedBox(
+                    width: 640.w,
+                    child: Row(
+                      children: [
+                        MainInputField(
+                          mode: 1,
+                          width: 315.w,
+                          controller:
+                              context.read<UserDetailViewModel>().department,
+                          onChangeFunc: (value) => context
+                              .read<UserDetailViewModel>()
+                              .onChangedDepartment(value),
+                          hintText: '부서명',
+                        ),
+                        const Spacer(),
+                        MainInputField(
+                          mode: 1,
+                          width: 315.w,
+                          controller:
+                              context.read<UserDetailViewModel>().jobTitle,
+                          onChangeFunc: (value) => context
+                              .read<UserDetailViewModel>()
+                              .onChangedJobTitle(value),
+                          hintText: '직위',
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 5.h,
+                      ),
+                      Checkbox(
+                        value: context.watch<UserDetailViewModel>().isChecked
+                            ? true
+                            : false,
+                        onChanged: (value) => context
+                            .read<UserDetailViewModel>()
+                            .clicked1stCheckBox(value),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        activeColor: Palette.mainBtnAtvBg,
+                        checkColor: Colors.white,
+                      ),
+                      Text(
+                        '(선택) 알림받기',
+                        style: Palette.h5,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 450.h,
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 40.h),
+                    child: MainButton(
+                      onPressed:
+                          context.watch<UserDetailViewModel>().isActivateButton
+                              ? () async {
+                                  await context
+                                      .read<UserDetailViewModel>()
+                                      .clickedSaveButton(context);
+                                }
+                              : null,
+                      text: '저장',
+                      width: 658.w,
+                      height: 106.h,
+                      mode: 1,
+                    ),
+                  ),
+                ],
+              ),
+              context.watch<UserDetailViewModel>().isLoading
+                  ? const Center(child: LoadingScreen())
+                  : Container(),
+            ],
+          ),
         ),
       ),
     );

@@ -18,6 +18,25 @@ class InsertionUserInfoScreen extends StatefulWidget {
 }
 
 class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
+  // late InsertionUserInfoViewModel _viewModel;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _viewModel = context.read<InsertionUserInfoViewModel>();
+  //   _viewModel.email.addListener(_validateInput);
+  // }
+
+  // @override
+  // void dispose() {
+  //   _viewModel.email.removeListener(_validateInput);
+  //   super.dispose();
+  // }
+
+  // void _validateInput() {
+  //   setState(() {});
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

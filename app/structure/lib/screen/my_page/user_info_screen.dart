@@ -45,7 +45,7 @@ class UserInfoScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    width: 340.w,
+                    width: 250.w,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -72,25 +72,23 @@ class UserInfoScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10.w),
-                ],
-              ),
-            ),
-            SizedBox(height: 20.h),
-            SizedBox(
-              width: 640.w,
-              child: Row(
-                children: [
                   SizedBox(
-                    width: 82.w,
-                    child: Text(
-                      "가입일",
-                      style: Palette.userInfoTitle,
+                    width: 300.w,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 82.w,
+                          child: Text(
+                            "가입날짜",
+                            style: Palette.userInfoTitle,
+                          ),
+                        ),
+                        Text(
+                          context.read<UserInfoViewModel>().createdAt,
+                          style: Palette.userInfoContent,
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    context.read<UserInfoViewModel>().createdAt,
-                    style: Palette.userInfoContent,
                   ),
                 ],
               ),
