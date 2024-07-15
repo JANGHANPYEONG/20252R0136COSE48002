@@ -5,6 +5,7 @@ import 'package:kpostal/kpostal.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
+import 'package:structure/main.dart';
 import 'package:structure/model/user_model.dart';
 
 class UserDetailViewModel with ChangeNotifier {
@@ -67,7 +68,7 @@ class UserDetailViewModel with ChangeNotifier {
   }
 
   void clicked1stCheckBox(bool? value) {
-    isChecked = value!;
+    // isChecked = ;
   }
 
   Future<void> clickedSaveButton(BuildContext context) async {
@@ -101,7 +102,11 @@ class UserDetailViewModel with ChangeNotifier {
 
   void _initialize() {
     userId = userModel.userId ?? 'None';
-    isChecked = userModel.alarm!;
+    if (userModel.alarm != null) {
+      isChecked = userModel.alarm!;
+      print('');
+    }
+    // isChecked =
     print('체크 : $isChecked');
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');

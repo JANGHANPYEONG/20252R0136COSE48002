@@ -30,9 +30,13 @@ class HomeScreen extends StatelessWidget {
                   'assets/images/deepaging_logo.svg',
                   width: 220.w,
                 ),
-                const Spacer(),
+                const Spacer(), //'assets/images/managerperson.svg'
                 CustomIconButton(
-                  image: 'assets/images/person.svg',
+                  image: (context.read<HomeViewModel>().userType == 'normal')
+                      ? 'assets/images/normalperson.svg'
+                      : (context.read<HomeViewModel>().userType == 'researcher')
+                          ? 'assets/images/managerperson.svg'
+                          : 'assets/images/researcherperson.svg',
                   onTap: () =>
                       context.read<HomeViewModel>().clickedMyPage(context),
                   width: 80.w,

@@ -5,7 +5,25 @@ import 'package:structure/model/user_model.dart';
 
 class HomeViewModel with ChangeNotifier {
   UserModel userModel;
-  HomeViewModel({required this.userModel});
+
+  String userType = '';
+
+  HomeViewModel({required this.userModel}) {
+    _initialize();
+  }
+  void _initialize() {
+    if (userModel.type != null) {
+      if (userModel.type == 'Normal') {
+        userType = 'Normal';
+      } else if (userModel.type == 'Researcher') {
+        userType = 'Researcher';
+      } else if (userModel.type == 'Manager') {
+        userType = 'Manager';
+      } else {
+        userType = 'None';
+      }
+    }
+  }
 
   void clickedMyPage(BuildContext context) {
     context.go('/home/my-page');
