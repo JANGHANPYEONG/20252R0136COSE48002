@@ -1,4 +1,5 @@
 # DB Model Config File
+import sqlalchemy
 from sqlalchemy import (
     Column,
     Integer,
@@ -224,8 +225,7 @@ class User(Base):
     homeAddr = Column(String(255))  # 유저 주소
     alarm = Column(
         Boolean, 
-        nullable=False, 
-        default=True, 
+        nullable=False,
         server_default='0'
     )  # 유저 알람 허용 여부
     type = Column(Integer, nullable=False)  # 유저 타입 ID
@@ -245,15 +245,12 @@ class Meat(Base):
     userId = Column(
         String(255),
         nullable=False, 
-        default=True,
         server_default=default_user_id
     )  # 생성한 유저 ID
     sexType = Column(Integer)  # 성별 ID
-    categoryId = Column(
-        Integer, ForeignKey("category_info.id"), nullable=False
-    )  # 육종 ID
+    categoryId = Column(Integer, nullable=False)  # 육종 ID
     gradeNum = Column(Integer)  # 등급 ID
-    statusType = Column(Integer, default=True, server_default='0')  # 승인 여부 ID
+    statusType = Column(Integer, server_default='0')  # 승인 여부 ID
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
@@ -327,7 +324,6 @@ class SensoryEval(Base):
     # 1. 복합키 설정
     id = Column(
         String(255),
-        ForeignKey("meat.id"),
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
@@ -337,7 +333,6 @@ class SensoryEval(Base):
     userId = Column(
         String(255), 
         nullable=False, 
-        default=True, 
         server_default=default_user_id
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
@@ -425,12 +420,11 @@ class HeatedmeatSensoryEval(Base):
     createdAt = Column(DateTime, nullable=False)
     userId = Column(
         String(255), 
-        nullable=False, 
-        default=True,
+        nullable=False,
         server_default=default_user_id
     )
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
-    imagePath = Column(String(255), nullable=True)  # 가열육 관능검사 이미지 경로
+    imagePath = Column(String(255))  # 가열육 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
     flavor = Column(Float)
@@ -508,19 +502,17 @@ class ProbexptData(Base):
     isHeated = Column(
         Boolean, 
         primary_key=True,
-        default=True,
-        server_default=sqlalchemy.sql.expression.false()
+        server_default='0'
     )
 
     # 2. 연구실 메타 데이터
-    updatedAt = Column(DateTime, nullable=True)
+    updatedAt = Column(DateTime)
     userId = Column(
         String(255), 
-        nullable=False, 
-        default=True,
+        nullable=False,
         server_default=default_user_id
     )
-    period = Column(Integer, nullable=True)
+    period = Column(Integer)
 
     # 3. 실험 데이터
     L = Column(Float)
