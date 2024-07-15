@@ -61,46 +61,54 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(height: 40.h),
-                  SizedBox(
-                    width: 640.w,
-                    height: 475.h,
-                    // 관능평가를 위한 이미지 할당.
-                    child: context
-                            .read<FreshMeatEvalViewModel>()
-                            .meatImage
-                            .contains('http')
-                        ? Image.network(
-                            context.read<FreshMeatEvalViewModel>().meatImage,
-                            loadingBuilder: (BuildContext context, Widget child,
-                                ImageChunkEvent? loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              } else {
-                                return LoadingScreen(
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          (loadingProgress.expectedTotalBytes ??
-                                              1)
-                                      : null,
-                                );
-                              }
-                            },
-                            // 에러 정의
-                            errorBuilder: (BuildContext context, Object error,
-                                StackTrace? stackTrace) {
-                              return const Icon(Icons.error);
-                            },
-                            fit: BoxFit.cover,
-                          )
-                        : Image.file(
-                            File(context
+                  ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: SizedBox(
+                        width: 640.w,
+                        height: 640.w,
+                        // 관능평가를 위한 이미지 할당.
+                        child: context
                                 .read<FreshMeatEvalViewModel>()
-                                .meatImage),
-                            fit: BoxFit.cover,
-                          ),
-                  ),
-                  SizedBox(height: 60.h),
+                                .meatImage
+                                .contains('http')
+                            ? Image.network(
+                                context
+                                    .read<FreshMeatEvalViewModel>()
+                                    .meatImage,
+                                loadingBuilder: (BuildContext context,
+                                    Widget child,
+                                    ImageChunkEvent? loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    return child;
+                                  } else {
+                                    return LoadingScreen(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  (loadingProgress
+                                                          .expectedTotalBytes ??
+                                                      1)
+                                              : null,
+                                    );
+                                  }
+                                },
+                                // 에러 정의
+                                errorBuilder: (BuildContext context,
+                                    Object error, StackTrace? stackTrace) {
+                                  return const Icon(Icons.error);
+                                },
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(context
+                                    .read<FreshMeatEvalViewModel>()
+                                    .meatImage),
+                                fit: BoxFit.cover,
+                              ),
+                      )),
+                  // SizedBox(height: 60.h),
 
                   // 관능평가 데이터가 입력 되었는지 체크.
                   Row(

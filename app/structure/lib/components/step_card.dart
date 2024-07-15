@@ -20,10 +20,12 @@ class StepCard extends StatelessWidget {
   final String mainText;
   // 0 - 미진행, 1 - 완료, 2 - 미완료, 3 - 수정 가능, 4 - 수정 불가
   final int? status;
+  final Function onTap;
   final String imageUrl;
   const StepCard({
     super.key,
     required this.mainText,
+    required this.onTap,
     this.status,
     required this.imageUrl,
   });
@@ -53,45 +55,53 @@ class StepCard extends StatelessWidget {
     ];
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 10.h),
-      width: 588.w,
-      height: 109.h,
-      decoration: const BoxDecoration(
-        border: null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 이미지 지정
-          Image.asset(imageUrl, width: 62.w, height: 62.h),
-          SizedBox(width: 35.w),
+        // padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.symmetric(
+          horizontal: 20.w,
+        ),
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        // width: 588.w,
+        height: 109.h,
+        decoration: const BoxDecoration(
+          border: null,
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.r),
+          onTap: () => onTap(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 이미지 지정
+              Image.asset(imageUrl, width: 62.w, height: 62.h),
+              SizedBox(width: 35.w),
 
-          // 메인 텍스트
-          Text(mainText, style: Palette.h4),
-          const Spacer(),
+              // 메인 텍스트
+              Text(mainText, style: Palette.h4),
+              const Spacer(),
 
-          // status 상자 - null이면 표시하지 않음
-          if (status != null)
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.sp),
-                color: statusColor[status!],
-              ),
-              width: 108.w,
-              height: 48.h,
-              child: Center(
-                child: Text(
-                  statusString[status!],
-                  style: statusTextStyle[status!],
+              // status 상자 - null이면 표시하지 않음
+              if (status != null)
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.sp),
+                    color: statusColor[status!],
+                  ),
+                  width: 108.w,
+                  height: 48.h,
+                  child: Center(
+                    child: Text(
+                      statusString[status!],
+                      style: statusTextStyle[status!],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          SizedBox(width: 20.w),
+              SizedBox(width: 20.w),
 
-          // 오른쪽 화살표
-          Image.asset('assets/images/arrow-r.png', width: 33.w, height: 33.h),
-        ],
-      ),
-    );
+              // 오른쪽 화살표
+              Image.asset('assets/images/arrow-r.png',
+                  width: 33.w, height: 33.h),
+            ],
+          ),
+        ));
   }
 }

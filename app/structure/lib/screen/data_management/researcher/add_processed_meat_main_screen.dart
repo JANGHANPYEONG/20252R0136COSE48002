@@ -43,54 +43,49 @@ class _AddProcessedMeatMainScreenState
             SizedBox(height: 40.h),
 
             // 처리육 단면 촬영
-            InkWell(
+            StepCard(
+              mainText: '처리육 단면 촬영',
+              status: widget.meatModel.deepAgedImageCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedImage(context),
-              child: StepCard(
-                mainText: '처리육 단면 촬영',
-                status: widget.meatModel.deepAgedImageCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_image.png',
-              ),
+              imageUrl: 'assets/images/meat_image.png',
             ),
+
             SizedBox(height: 18.h),
 
             // 처리육 관능평가
-            InkWell(
+            StepCard(
+              mainText: '처리육 관능평가',
+              status: widget.meatModel.deepAgedFreshCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedEval(context),
-              child: StepCard(
-                mainText: '처리육 관능평가',
-                status: widget.meatModel.deepAgedFreshCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_eval.png',
-              ),
+              imageUrl: 'assets/images/meat_eval.png',
             ),
             SizedBox(height: 18.h),
 
             // 처리육 전자혀
-            InkWell(
+            StepCard(
+              mainText: '처리육 전자혀 데이터',
+              status: widget.meatModel.tongueCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedTongue(context),
-              child: StepCard(
-                mainText: '처리육 전자혀 데이터',
-                status: widget.meatModel.tongueCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_tongue.png',
-              ),
+              imageUrl: 'assets/images/meat_tongue.png',
             ),
+
             SizedBox(height: 18.h),
 
             // 처리육 실험
-            InkWell(
+            StepCard(
+              mainText: '처리육 실험 데이터',
+              status: widget.meatModel.labCompleted ? 1 : 2,
               onTap: () =>
                   context.read<AddProcessedMeatViewModel>().clickedLab(context),
-              child: StepCard(
-                mainText: '처리육 실험 데이터',
-                status: widget.meatModel.labCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_lab.png',
-              ),
+              imageUrl: 'assets/images/meat_lab.png',
             ),
+
             SizedBox(height: 18.h),
 
             // Divdier
@@ -103,54 +98,50 @@ class _AddProcessedMeatMainScreenState
             ),
 
             // 가열육 단면 촬영
-            InkWell(
+            StepCard(
+              mainText: '가열육 단면 촬영',
+              status: widget.meatModel.deepAgedImageCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedImage(context),
-              child: StepCard(
-                mainText: '가열육 단면 촬영',
-                status: widget.meatModel.deepAgedImageCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_image.png',
-              ),
+              imageUrl: 'assets/images/meat_image.png',
             ),
+
             SizedBox(height: 18.h),
 
             // 가열육 관능 평가
-            InkWell(
+            StepCard(
+              mainText: '가열육 관능평가',
+              status: widget.meatModel.heatedCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedHeatedEval(context),
-              child: StepCard(
-                mainText: '가열육 관능평가',
-                status: widget.meatModel.heatedCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_eval.png',
-              ),
+              imageUrl: 'assets/images/meat_eval.png',
             ),
+
             SizedBox(height: 18.h),
 
             // 가열육 전자혀
-            InkWell(
+            StepCard(
+              mainText: '가열육 전자혀 데이터',
+              status: widget.meatModel.tongueCompleted ? 1 : 2,
               onTap: () => context
                   .read<AddProcessedMeatViewModel>()
                   .clickedTongue(context),
-              child: StepCard(
-                mainText: '가열육 전자혀 데이터',
-                status: widget.meatModel.tongueCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_tongue.png',
-              ),
+              imageUrl: 'assets/images/meat_tongue.png',
             ),
+
             SizedBox(height: 18.h),
 
             // 가열육 실험 데이터
-            InkWell(
+            StepCard(
+              mainText: '가열육 실험 데이터',
+              status: widget.meatModel.labCompleted ? 1 : 2,
               onTap: () =>
                   context.read<AddProcessedMeatViewModel>().clickedLab(context),
-              child: StepCard(
-                mainText: '가열육 실험 데이터',
-                status: widget.meatModel.labCompleted ? 1 : 2,
-                imageUrl: 'assets/images/meat_lab.png',
-              ),
+              imageUrl: 'assets/images/meat_lab.png',
             ),
+
             SizedBox(height: 40.h),
 
             Container(

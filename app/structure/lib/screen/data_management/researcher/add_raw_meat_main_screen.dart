@@ -32,70 +32,64 @@ class StepFreshMeat extends StatelessWidget {
             Column(
               children: [
                 // 육류 기본 정보
-                InkWell(
+                StepCard(
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clicekdBasic(context),
-                  child: const StepCard(
-                    mainText: '육류 기본정보',
-                    status: 4, // 없음
-                    imageUrl: 'assets/images/meat_info.png',
-                  ),
+                  mainText: '육류 기본정보',
+                  status: 4, // 없음
+                  imageUrl: 'assets/images/meat_info.png',
                 ),
+
                 SizedBox(height: 10.h),
 
                 // 육류 단면 촬영
-                InkWell(
+
+                StepCard(
+                  mainText: '육류 단면 촬영',
+                  status: 4, // 없음
                   onTap: () => context
                       .read<AddRawMeatViewModel>()
                       .clickedBasicImage(context),
-                  child: const StepCard(
-                    mainText: '육류 단면 촬영',
-                    status: 4, // 없음
-                    // isEditable: context.read<EditMeatDataViewModel>().isEditable,
-                    imageUrl: 'assets/images/meat_image.png',
-                  ),
+                  // isEditable: context.read<EditMeatDataViewModel>().isEditable,
+                  imageUrl: 'assets/images/meat_image.png',
                 ),
                 SizedBox(height: 10.h),
 
                 // 신선육 관능 평가
-                InkWell(
+                StepCard(
+                  mainText: '신선육 관능평가',
+                  status: 4, // 없음
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clicekdFresh(context),
-                  child: const StepCard(
-                    mainText: '신선육 관능평가',
-                    status: 4, // 없음
-                    imageUrl: 'assets/images/meat_eval.png',
-                  ),
+                  imageUrl: 'assets/images/meat_eval.png',
                 ),
+
                 SizedBox(
                   height: 10.h,
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '원육 전자혀 데이터',
+                  status: meatModel.tongueCompleted ? 1 : 2,
                   onTap: () => context
                       .read<AddRawMeatViewModel>()
                       .clickedTongue(context),
-                  child: StepCard(
-                    mainText: '원육 전자혀 데이터',
-                    status: meatModel.tongueCompleted ? 1 : 2,
-                    // isCompleted: meatModel.tongueCompleted,
-                    // isBefore: false,
-                    imageUrl: 'assets/images/meat_tongue.png',
-                  ),
+                  // isCompleted: meatModel.tongueCompleted,
+                  // isBefore: false,
+                  imageUrl: 'assets/images/meat_tongue.png',
                 ),
                 SizedBox(
                   height: 10.h,
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '원육 실험 데이터',
+                  status: meatModel.labCompleted ? 1 : 2,
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clickedLab(context),
-                  child: StepCard(
-                    mainText: '원육 실험 데이터',
-                    status: meatModel.labCompleted ? 1 : 2,
-                    // isCompleted: meatModel.labCompleted,
-                    // isBefore: false,
-                    imageUrl: 'assets/images/meat_lab.png',
-                  ),
+                  // isCompleted: meatModel.labCompleted,
+                  // isBefore: false,
+                  imageUrl: 'assets/images/meat_lab.png',
                 ),
+
                 SizedBox(
                   height: 10.h,
                 ),
@@ -106,57 +100,50 @@ class StepFreshMeat extends StatelessWidget {
                     thickness: 1,
                   ),
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '가열육 단면 촬영',
+                  //가열육 단면촬영 체크하는 변수 meatModel의 변수 추가하고 변경
+                  status: meatModel.deepAgedImageCompleted ? 1 : 2,
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clickedImage(context),
-                  child: StepCard(
-                    mainText: '가열육 단면 촬영',
-                    //가열육 단면촬영 체크하는 변수 meatModel의 변수 추가하고 변경
-                    status: meatModel.deepAgedImageCompleted ? 1 : 2,
-                    // isCompleted: meatModel.deepAgedImageCompleted,
-                    // isBefore: false,
-                    imageUrl: 'assets/images/meat_image.png',
-                  ),
+                  // isCompleted: meatModel.deepAgedImageCompleted,
+                  // isBefore: false,
+                  imageUrl: 'assets/images/meat_image.png',
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '가열육 관능평가',
+                  status: meatModel.heatedCompleted ? 1 : 2,
                   onTap: () => context
                       .read<AddRawMeatViewModel>()
                       .clickedHeated(context),
-                  child: StepCard(
-                    mainText: '가열육 관능평가',
-                    status: meatModel.heatedCompleted ? 1 : 2,
-                    // isCompleted: meatModel.heatedCompleted,
-                    // isBefore: false,
-                    imageUrl: 'assets/images/meat_eval.png',
-                  ),
+                  // isCompleted: meatModel.heatedCompleted,
+                  // isBefore: false,
+                  imageUrl: 'assets/images/meat_eval.png',
                 ),
                 SizedBox(
                   height: 10.h,
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '가열육 전자혀 데이터',
+                  status: meatModel.tongueCompleted ? 1 : 2,
                   onTap: () => context
                       .read<AddRawMeatViewModel>()
                       .clickedTongue(context),
-                  child: StepCard(
-                    mainText: '가열육 전자혀 데이터',
-                    status: meatModel.tongueCompleted ? 1 : 2,
-                    // isCompleted: meatModel.tongueCompleted,
-                    // isBefore: false,
-                    imageUrl: 'assets/images/meat_tongue.png',
-                  ),
+                  // isCompleted: meatModel.tongueCompleted,
+                  // isBefore: false,
+                  imageUrl: 'assets/images/meat_tongue.png',
                 ),
                 SizedBox(
                   height: 10.h,
                 ),
-                InkWell(
+                StepCard(
+                  mainText: '가열육 실험 데이터',
+                  status: meatModel.labCompleted ? 1 : 2,
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clickedLab(context),
-                  child: StepCard(
-                    mainText: '가열육 실험 데이터',
-                    status: meatModel.labCompleted ? 1 : 2,
-                    imageUrl: 'assets/images/meat_lab.png',
-                  ),
+                  imageUrl: 'assets/images/meat_lab.png',
                 ),
+
                 Container(
                   margin: EdgeInsets.only(bottom: 20.h),
                   child: MainButton(

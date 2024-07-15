@@ -52,41 +52,38 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   SizedBox(height: 55.h),
 
                   // STEP 1 : 육류 기본정보 등록
-                  InkWell(
+                  //       onTap: () => context
+                  // .read<MeatRegistrationViewModel>()
+                  // .clickedBasic(context),
+                  StepCard(
+                    mainText: '육류 기본정보',
+                    status: widget.meatModel.basicCompleted ? 1 : 2,
                     onTap: () => context
                         .read<MeatRegistrationViewModel>()
                         .clickedBasic(context),
-                    child: StepCard(
-                      mainText: '육류 기본정보',
-                      status: widget.meatModel.basicCompleted ? 1 : 2,
-                      // isCompleted: widget.meatModel.basicCompleted,
-                      // isBefore: false,
-                      imageUrl: 'assets/images/meat_info.png',
-                    ),
+                    imageUrl: 'assets/images/meat_info.png',
                   ),
-                  SizedBox(height: 4.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40.w),
+
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 40.w),
                     child: const Divider(
                       thickness: 1,
                     ),
                   ),
-                  SizedBox(height: 4.h),
 
                   // STEP 2 : 육류 단면 촬영
-                  InkWell(
-                      onTap: () => widget.meatModel.basicCompleted
-                          ? context
-                              .read<MeatRegistrationViewModel>()
-                              .clickedImage(context)
-                          : null,
-                      child: StepCard(
-                        mainText: '육류 단면 촬영',
-                        status: widget.meatModel.freshImageCompleted ? 1 : 2,
-                        // isCompleted: widget.meatModel.freshImageCompleted,
-                        // isBefore: false,
-                        imageUrl: 'assets/images/meat_image.png',
-                      )),
+                  StepCard(
+                    mainText: '육류 단면 촬영',
+                    status: widget.meatModel.freshImageCompleted ? 1 : 2,
+                    onTap: () => widget.meatModel.basicCompleted
+                        ? context
+                            .read<MeatRegistrationViewModel>()
+                            .clickedImage(context)
+                        : null,
+                    // isCompleted: widget.meatModel.freshImageCompleted,
+                    // isBefore: false,
+                    imageUrl: 'assets/images/meat_image.png',
+                  ),
                   SizedBox(height: 4.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40.w),
@@ -97,19 +94,18 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   SizedBox(height: 4.h),
 
                   // STEP 3 : 신선육 관능평가
-                  InkWell(
-                      onTap: () => widget.meatModel.freshImageCompleted
-                          ? context
-                              .read<MeatRegistrationViewModel>()
-                              .clickedFreshmeat(context)
-                          : null,
-                      child: StepCard(
-                        mainText: '신선육 관능평가',
-                        status: widget.meatModel.rawFreshCompleted ? 1 : 2,
-                        // isCompleted: widget.meatModel.rawFreshCompleted,
-                        // isBefore: false,
-                        imageUrl: 'assets/images/meat_eval.png',
-                      )),
+                  StepCard(
+                    mainText: '신선육 관능평가',
+                    status: widget.meatModel.rawFreshCompleted ? 1 : 2,
+                    onTap: () => widget.meatModel.freshImageCompleted
+                        ? context
+                            .read<MeatRegistrationViewModel>()
+                            .clickedFreshmeat(context)
+                        : null,
+                    // isCompleted: widget.meatModel.rawFreshCompleted,
+                    // isBefore: false,
+                    imageUrl: 'assets/images/meat_eval.png',
+                  ),
                   SizedBox(height: 116.h),
 
                   // 하단 완료 버튼
