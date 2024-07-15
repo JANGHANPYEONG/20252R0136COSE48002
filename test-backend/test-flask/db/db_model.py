@@ -1,5 +1,4 @@
 # DB Model Config File
-import sqlalchemy
 from sqlalchemy import (
     Column,
     Integer,
@@ -227,7 +226,7 @@ class User(Base):
         Boolean, 
         nullable=False, 
         default=True, 
-        server_default=sqlalchemy.sql.expression.false()
+        server_default='0'
     )  # 유저 알람 허용 여부
     type = Column(Integer, nullable=False)  # 유저 타입 ID
     __table_args__ = (
