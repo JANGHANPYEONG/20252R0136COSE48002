@@ -154,6 +154,7 @@ const style = {
     display: 'flex',
     justifyContent: 'right',
     alignItems: 'center',
+    minWidth: '640px',
   },
   formControl: {
     minWidth: 120,

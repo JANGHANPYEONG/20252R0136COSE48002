@@ -260,143 +260,154 @@ function UserList() {
   };
 
   return (
-    <div>
-      <Toolbar />
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Typography
-          component="h2"
-          variant="h4"
-          gutterBottom
-          style={{
-            color: '#151D48',
-            fontFamily: 'Poppins',
-            fontSize: `${(36 / 1920) * 100}vw`,
-            fontStyle: 'normal',
-            fontWeight: 600,
-            lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
-          }}
-        >
-          User Management
-        </Typography>
-      </div>
-      <Modal
-        show={registerShow}
-        onHide={handleRegisterClose}
-        backdrop="true"
-        keyboard={false}
-        centered
-      >
-        <Modal.Body>
-          <Modal.Title
+    <div
+      style={{
+        alignContent: 'center',
+        overflow: 'auto',
+        width: '100%', //
+        marginTop: '100px',
+        paddingBottom: '100px',
+        marginLeft: '100px', //
+      }}
+    >
+      <div>
+        <Toolbar />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Typography
+            component="h2"
+            variant="h4"
+            gutterBottom
             style={{
               color: '#151D48',
               fontFamily: 'Poppins',
-              fontSize: `${(36 / 1920) * 100}vw`,
-              fontWeight: 600,
-              lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
-            }}
-          >
-            신규 회원 등록
-          </Modal.Title>
-          <UserRegister handleClose={handleRegisterClose} />
-        </Modal.Body>
-      </Modal>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Box
-          component="form"
-          sx={{
-            marginBottom: `${(16 / 1080) * 100}vh`,
-            paddingX: `${(16 / 1920) * 100}vw`,
-            paddingY: `${(12 / 1080) * 100}vh`,
-            width: `${(513 / 1920) * 100}vw`,
-            height: `${(60 / 1080) * 100}vh`,
-            backgroundColor: '#FFF',
-          }}
-        >
-          <SearchIcon />
-          <InputBase
-            placeholder=" 사용자 검색"
-            onChange={(event) => handleSearch(event)}
-            sx={{
-              color: '#737791',
-              fontFamily: 'Poppins',
-              fontSize: `${(20 / 1920) * 100}vw`,
+              fontSize: `30px`,
               fontStyle: 'normal',
-              fontWeight: 500,
-              lineHeight: `${(20 / 1080) * 100}vh`,
+              fontWeight: 600,
+              // lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
             }}
-          />
-        </Box>
-
-        <div style={{ marginLeft: 'auto' }}>
-          <OverlayTrigger
-            placement="top"
-            delay={{ show: 250, hide: 400 }}
-            overlay={renderTooltip}
           >
-            <Button
-              className="mb-3"
-              onClick={handleRegisterShow}
+            User Management
+          </Typography>
+        </div>
+        <Modal
+          show={registerShow}
+          onHide={handleRegisterClose}
+          backdrop="true"
+          keyboard={false}
+          centered
+        >
+          <Modal.Body>
+            <Modal.Title
               style={{
-                display: 'inline-flex',
-                paddingX: `${(12 / 1920) * 100}vw`,
-                paddingY: `${(16 / 1080) * 100}vh`,
-                alignItems: 'center',
-                gap: `${(8 / 1920) * 100}vw`,
-                borderRadius: `${(10 / 1920) * 100}vw`,
-                background: '#32CD32',
-                borderColor: '#32CD32',
+                color: '#151D48',
+                fontFamily: 'Poppins',
+                fontSize: `24px`,
+                fontWeight: 600,
               }}
             >
-              <IoMdPersonAdd />
-            </Button>
-          </OverlayTrigger>
-        </div>
-      </div>
+              신규 회원 등록
+            </Modal.Title>
+            <UserRegister handleClose={handleRegisterClose} />
+          </Modal.Body>
+        </Modal>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            component="form"
+            sx={{
+              marginBottom: `${(16 / 1080) * 100}vh`,
+              paddingX: `${(16 / 1920) * 100}vw`,
+              paddingY: `${(12 / 1080) * 100}vh`,
+              // width: `${(513 / 1920) * 100}vw`,
+              height: `${(60 / 1080) * 100}vh`,
+              backgroundColor: '#FFF',
+            }}
+          >
+            <SearchIcon />
+            <InputBase
+              placeholder=" 사용자 검색"
+              onChange={(event) => handleSearch(event)}
+              sx={{
+                color: '#737791',
+                fontFamily: 'Poppins',
+                fontSize: `20px`,
+                fontStyle: 'normal',
+                fontWeight: 500,
+                // lineHeight: `${(20 / 1080) * 100}vh`,
+              }}
+            />
+          </Box>
 
-      {isLoading ? (
-        <CircularProgress />
-      ) : (
-        <DataGrid
-          rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
-          columns={columns.map((column) =>
-            column.field === 'type'
-              ? { ...column, editable: true } // Enable editing for the "type" field
-              : column
-          )}
-          pageSize={5}
-          pageSizeOptions={[5, 10, 20]}
-          pagination
-          autoHeight
-          onEditCellChange={handleCellEdit} // Attach the event handler for cell edits
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+          <div style={{ marginLeft: 'auto' }}>
+            <OverlayTrigger
+              placement="top"
+              delay={{ show: 250, hide: 400 }}
+              overlay={renderTooltip}
+            >
+              <Button
+                className="mb-3"
+                onClick={handleRegisterShow}
+                style={{
+                  display: 'inline-flex',
+                  paddingX: `${(12 / 1920) * 100}vw`,
+                  paddingY: `${(16 / 1080) * 100}vh`,
+                  alignItems: 'center',
+                  gap: `${(8 / 1920) * 100}vw`,
+                  borderRadius: `${(10 / 1920) * 100}vw`,
+                  background: '#32CD32',
+                  borderColor: '#32CD32',
+                }}
+              >
+                <IoMdPersonAdd />
+              </Button>
+            </OverlayTrigger>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <CircularProgress />
+        ) : (
+          <DataGrid
+            rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
+            columns={columns.map((column) =>
+              column.field === 'type'
+                ? { ...column, editable: true } // Enable editing for the "type" field
+                : column
+            )}
+            pageSize={5}
+            pageSizeOptions={[5, 10, 20]}
+            pagination
+            autoHeight
+            onEditCellChange={handleCellEdit} // Attach the event handler for cell edits
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
               },
-            },
-          }}
-          //pageSizeOptions={[5]}
-          disableRowSelectionOnClick
-          sx={{
-            width: `${(1470 / 1920) * 100}vw`,
-            height: `${(560 / 1080) * 100}vh`,
-            flexShrink: 0,
-            borderRadius: `${(20 / 1920) * 100}vw`,
-            border: '1px solid #F8F9FA',
-            backgroundColor: '#FFF',
-            boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
-              (20 / 1920) * 100
-            }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,
-          }}
+            }}
+            //pageSizeOptions={[5]}
+            disableRowSelectionOnClick
+            sx={{
+              width: `${(1470 / 1920) * 100}vw`,
+              height: `${(560 / 1080) * 100}vh`,
+              flexShrink: 0,
+              borderRadius: `${(20 / 1920) * 100}vw`,
+              border: '1px solid #F8F9FA',
+              backgroundColor: '#FFF',
+              boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
+                (20 / 1920) * 100
+              }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,
+              minWidth: '700px',
+            }}
+          />
+        )}
+        <CustomSnackbar
+          open={snackbarOpen}
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+          onClose={closeSnackbar}
         />
-      )}
-      <CustomSnackbar
-        open={snackbarOpen}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={closeSnackbar}
-      />
+      </div>
     </div>
   );
 }

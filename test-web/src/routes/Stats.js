@@ -18,11 +18,11 @@ function Stats() {
     const queryStartDate = searchParams.get('startDate');
     const queryEndDate = searchParams.get('endDate');
     const queryDuration = searchParams.get('duration');
-  
+
     const now = new Date();
     let start = new Date(now);
     let end = new Date(now);
-  
+
     if (queryDuration) {
       // duration 파라미터에 따라 시작 날짜 설정
       switch (queryDuration) {
@@ -52,13 +52,16 @@ function Stats() {
       // 기본값 설정 (7일 전부터 현재까지)
       start.setDate(now.getDate() - 7);
     }
-  
-    const formattedStartDate = new Date(start.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-    const formattedEndDate = new Date(end.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-  
+
+    const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+    const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  
   }, [searchParams]);
 
   return (
@@ -77,10 +80,10 @@ function Stats() {
           style={{
             color: '#151D48',
             fontFamily: 'Poppins',
-            fontSize: `${(36 / 1920) * 100}vw`,
+            fontSize: `30px`,
             fontStyle: 'normal',
             fontWeight: 600,
-            lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
+            // lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
           }}
         >
           Statistics Analysis
