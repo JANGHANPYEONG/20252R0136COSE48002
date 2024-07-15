@@ -27,7 +27,7 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
       width: 0, // 선의 두께를 0으로 설정
       colors: [theme.palette.background.paper],
     }, // Stroke colors for the chart.
-    legend: { floating: true, horizontalAlign: 'center' }, // Legend configuration.
+    legend: { floating: true, horizontalAlign: 'center', top: -20 }, // Legend configuration.
     dataLabels: { enabled: true, dropShadow: { enabled: true } }, // Data label configuration
     tooltip: {
       fillSeriesColor: true, // Whether to fill the tooltip with series color.
@@ -39,21 +39,45 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
       },
     },
     plotOptions: {
-      pie: { donut: { labels: { show: true } } }, // Plot options for a donut chart. (가운데 설명 표시)
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              offsetY: -20, // 이름 위치를 위로 조정
+            },
+          },
+        },
+      },
     },
   });
-
-  // fetch한 JSON 데이터에서 필요한 값 parsing 및 chartSeries에 저장
-  const processPieData = (data) => {
-    setChartSeries([
-      data['total_counts']['raw'],
-      data['total_counts']['processed'],
-    ]);
-  };
 
   // pie chart 데이터 API fetch
   const { data, isLoading, isError } = usePieChartFetch(startDate, endDate);
   console.log('pie chart fetch 결과:', data);
+
+  // fetch한 JSON 데이터에서 필요한 값 parsing 및 chartSeries에 저장
+  // 렌더링 시 데이터 받지 못하면 -1, -1
+  const processPieData = (data) => {
+    if (
+      data &&
+      'total_counts' in data &&
+      'raw' in data.total_counts &&
+      'processed' in data.total_counts
+    ) {
+      const raw = data.total_counts.raw;
+      const processed = data.total_counts.processed;
+
+      setChartSeries([
+        !Number.isNaN(raw) ? raw : -1,
+        !Number.isNaN(processed) ? processed : -1,
+      ]);
+    } else {
+      console.log('Invalid data structure:', data);
+      setChartSeries([-1, -1]); // Default to [-1, -1] if data is invalid
+    }
+  };
 
   // fetch한 데이터 parsing 함수 호출
   useEffect(() => {
@@ -65,9 +89,29 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   // 토글 버튼 handle (전체, 소, 돼지)
   const handleBtnClick = (e) => {
     const value = e.target.value;
-    const chart_series = [data[value]['raw'], data[value]['processed']];
+    let newChartSeries = [-1, -1]; // 기본값으로 [-1, -1]을 설정
+
+    if (data && data !== null && data !== undefined && value in data) {
+      const categoryData = data[value];
+      if (
+        categoryData &&
+        'raw' in categoryData &&
+        'processed' in categoryData
+      ) {
+        const raw = categoryData.raw;
+        const processed = categoryData.processed;
+
+        newChartSeries = [
+          !Number.isNaN(raw) ? raw : -1,
+          !Number.isNaN(processed) ? processed : -1,
+        ];
+      }
+    } else {
+      console.log('Invalid data structure:', value);
+    }
+
     setLabel(value);
-    setChartSeries(chart_series);
+    setChartSeries(newChartSeries);
   };
 
   return (
@@ -104,7 +148,12 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
       </Box>
 
       <StyledChartWrapper dir="ltr" style={{ marginTop: '20px' }}>
-        {chartSeries[0] === 0 && chartSeries[1] === 0 ? (
+        {chartSeries[0] === -1 && chartSeries[1] === -1 ? (
+          // 데이터 불러오기 실패한 경우
+          <div style={style.chartWrapperDiv}>
+            <span>데이터를 불러올 수 없습니다</span>
+          </div>
+        ) : chartSeries[0] === 0 && chartSeries[1] === 0 ? (
           // 데이터가 없는 경우
           <div style={style.chartWrapperDiv}>
             <span>데이터가 존재하지 않습니다</span>
