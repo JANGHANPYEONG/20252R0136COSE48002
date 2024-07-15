@@ -1,11 +1,9 @@
 # DB Model Config File
-import sqlalchemy
 from sqlalchemy import (
     Column,
     Integer,
     String,
     DateTime,
-    ForeignKey,
     Float,
     PrimaryKeyConstraint,
     ForeignKeyConstraint,
@@ -438,14 +436,14 @@ class HeatedmeatSensoryEval(Base):
         ForeignKeyConstraint(
             ["id", "seqno"], 
             ["deepAging_info.id", "deepAging_info.seqno"],
-            ondelete='CASCADE', 
-            onupdate='CASCADE'
+            ondelete="CASCADE",
+            onupdate="CASCADE"
         ),
         ForeignKeyConstraint(
             ["userId"], 
             ["user.userId"], 
-            ondelete='SET DEFAULT', 
-            onupdate='CASCADE'
+            ondelete="SET DEFAULT", 
+            onupdate="CASCADE"
         ),
         CheckConstraint('"period" >= 0', name="check_period_value"),
         CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
@@ -481,8 +479,8 @@ class AI_HeatedmeatSeonsoryEval(Base):
         ForeignKeyConstraint(
             ["id", "seqno"], 
             ["heatedmeat_sensory_eval.id", "heatedmeat_sensory_eval.seqno"], 
-            ondelete='CASCADE', 
-            onupdate='CASCADE'
+            ondelete="CASCADE", 
+            onupdate="CASCADE"
         ),
         CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
         CheckConstraint('"juiciness" >= 1 and "juiciness" <= 10', name="check_juiciness_stat"),
@@ -538,14 +536,14 @@ class ProbexptData(Base):
         ForeignKeyConstraint(
             ["id", "seqno"], 
             ["deepAging_info.id", "deepAging_info.seqno"], 
-            ondelete='CASCADE', 
-            onupdate='CASCADE'
+            ondelete="CASCADE", 
+            onupdate="CASCADE"
         ),
         ForeignKeyConstraint(
             ['userId'],
             ['user.userId'],
-            ondelete='SET DEFAULT',
-            onupdate='CASCADE'
+            ondelete="SET DEFAULT",
+            onupdate="CASCADE"
         ),
         CheckConstraint('"period" >= 0', name="check_period_value"),
         CheckConstraint('"DL" >= 0 AND "DL" <= 100', name="check_DL_percentage"),

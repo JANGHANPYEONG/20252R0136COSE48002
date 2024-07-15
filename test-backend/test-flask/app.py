@@ -9,7 +9,6 @@ import os
 
 from flask_sqlalchemy import SQLAlchemy
 
-# from db.db_model import User, initialize_db
 from db.db_model import initialize_db
 from utils import logger
 import firebase_admin
