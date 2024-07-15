@@ -216,7 +216,12 @@ class User(Base):
     company = Column(String(255))  # 직장명
     jobTitle = Column(String(255))  # 직위명
     homeAddr = Column(String(255))  # 유저 주소
-    alarm = Column(Boolean, default=False)  # 유저 알람 허용 여부
+    alarm = Column(
+        Boolean, 
+        nullable=False, 
+        default=True, 
+        server_default='False'
+    )  # 유저 알람 허용 여부
     type = Column(Integer, nullable=False)  # 유저 타입 ID
     __table_args__ = (
         ForeignKeyConstraint(
@@ -231,16 +236,18 @@ class Meat(Base):
     __tablename__ = "meat"
     # 1. 기본 정보
     id = Column(String(255), primary_key=True)  # 육류 관리번호
-    userId = Column(String(255), 
-                    ForeignKey("user.userId"), 
-                    nullable=False, 
-                    default=default_user_id)  # 생성한 유저 ID
-    sexType = Column(Integer, ForeignKey("sex_info.id"))  # 성별 ID
+    userId = Column(
+        String(255),
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )  # 생성한 유저 ID
+    sexType = Column(Integer)  # 성별 ID
     categoryId = Column(
         Integer, ForeignKey("category_info.id"), nullable=False
     )  # 육종 ID
-    gradeNum = Column(Integer, ForeignKey("grade_info.id"))  # 등급 ID
-    statusType = Column(Integer, ForeignKey("status_info.id"), default=0)  # 승인 여부 ID
+    gradeNum = Column(Integer)  # 등급 ID
+    statusType = Column(Integer, default=True, server_default='0')  # 승인 여부 ID
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
@@ -289,7 +296,6 @@ class DeepAgingInfo(Base):
     # 1. 복합키 설정
     id = Column(
         String(255),
-        ForeignKey("meat.id"),
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
@@ -323,7 +329,10 @@ class SensoryEval(Base):
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)  # 관능검사 생성 시간
     userId = Column(
-        String(255), ForeignKey("user.userId"), nullable=False
+        String(255), 
+        nullable=False, 
+        default=True, 
+        server_default=default_user_id
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
@@ -368,7 +377,7 @@ class AI_SensoryEval(Base):
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
     xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
-    xai_gradeNum = Column(Integer, ForeignKey("grade_info.id"))  # 예측 등급
+    xai_gradeNum = Column(Integer)  # 예측 등급
     xai_gradeNum_imagePath = Column(String(255))  # 예측 등급 image path
 
     # 3. 관능검사 AI 예측 데이터
@@ -408,18 +417,21 @@ class HeatedmeatSensoryEval(Base):
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    userId = Column(String(255), 
-                    nullable=False, 
-                    default=default_user_id)
+    userId = Column(
+        String(255), 
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     imagePath = Column(String(255), nullable=True)  # 가열육 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
-    flavor = Column(Float, nullable=True)
-    juiciness = Column(Float, nullable=True)
-    tenderness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    palatability = Column(Float, nullable=True)
+    flavor = Column(Float)
+    juiciness = Column(Float)
+    tenderness = Column(Float)
+    umami = Column(Float)
+    palatability = Column(Float)
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
@@ -455,14 +467,14 @@ class AI_HeatedmeatSeonsoryEval(Base):
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
-    xai_imagePath = Column(String(255), nullable=True)  # 예측 관능검사 이미지 경로
+    xai_imagePath = Column(String(255))  # 예측 관능검사 이미지 경로
 
     # 3. 관능검사 AI 예측 데이터
-    flavor = Column(Float, nullable=True)
-    juiciness = Column(Float, nullable=True)
-    tenderness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    palatability = Column(Float, nullable=True)
+    flavor = Column(Float)
+    juiciness = Column(Float)
+    tenderness = Column(Float)
+    umami = Column(Float)
+    palatability = Column(Float)
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
@@ -493,27 +505,28 @@ class ProbexptData(Base):
     updatedAt = Column(DateTime, nullable=True)
     userId = Column(String(255), 
                     nullable=False, 
-                    default=default_user_id)
+                    default=True,
+                    server_default=default_user_id)
     period = Column(Integer, nullable=True)
 
     # 3. 실험 데이터
-    L = Column(Float, nullable=True)
-    a = Column(Float, nullable=True)
-    b = Column(Float, nullable=True)
-    DL = Column(Float, nullable=True)
-    CL = Column(Float, nullable=True)
-    RW = Column(Float, nullable=True)
-    ph = Column(Float, nullable=True)
-    WBSF = Column(Float, nullable=True)
-    cardepsin_activity = Column(Float, nullable=True)
-    MFI = Column(Float, nullable=True)
-    Collagen = Column(Float, nullable=True)
+    L = Column(Float)
+    a = Column(Float)
+    b = Column(Float)
+    DL = Column(Float)
+    CL = Column(Float)
+    RW = Column(Float)
+    ph = Column(Float)
+    WBSF = Column(Float)
+    cardepsin_activity = Column(Float)
+    MFI = Column(Float)
+    Collagen = Column(Float)
 
     # 4. 전자혀 데이터
-    sourness = Column(Float, nullable=True)
-    bitterness = Column(Float, nullable=True)
-    umami = Column(Float, nullable=True)
-    richness = Column(Float, nullable=True) 
+    sourness = Column(Float)
+    bitterness = Column(Float)
+    umami = Column(Float)
+    richness = Column(Float) 
     
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isHeated"),
