@@ -1,4 +1,5 @@
 # DB Model Config File
+import sqlalchemy
 from sqlalchemy import (
     Column,
     Integer,
@@ -146,9 +147,15 @@ class SpeciesInfo(Base):
 class CategoryInfo(Base):
     __tablename__ = "category_info"
     id = Column(Integer, primary_key=True)  # 카테고리 ID
-    speciesId = Column(Integer, ForeignKey("species_info.id"))
+    speciesId = Column(Integer)
     primalValue = Column(String(255), nullable=False)
     secondaryValue = Column(String(255), nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["speciesId"], ["species_info.id"],
+            onupdate="CASCADE"
+        ),
+    )
     
     speciesInfos = relationship("SpeciesInfo", backref="speciesInfoCategories")
 
@@ -220,7 +227,7 @@ class User(Base):
         Boolean, 
         nullable=False, 
         default=True, 
-        server_default='False'
+        server_default=sqlalchemy.sql.expression.false()
     )  # 유저 알람 허용 여부
     type = Column(Integer, nullable=False)  # 유저 타입 ID
     __table_args__ = (
@@ -499,14 +506,21 @@ class ProbexptData(Base):
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
-    isHeated = Column(Boolean, primary_key=True)
+    isHeated = Column(
+        Boolean, 
+        primary_key=True,
+        default=True,
+        server_default=sqlalchemy.sql.expression.false()
+    )
 
     # 2. 연구실 메타 데이터
     updatedAt = Column(DateTime, nullable=True)
-    userId = Column(String(255), 
-                    nullable=False, 
-                    default=True,
-                    server_default=default_user_id)
+    userId = Column(
+        String(255), 
+        nullable=False, 
+        default=True,
+        server_default=default_user_id
+    )
     period = Column(Integer, nullable=True)
 
     # 3. 실험 데이터
