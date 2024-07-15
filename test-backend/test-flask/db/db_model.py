@@ -254,7 +254,7 @@ class Meat(Base):
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
     traceNum = Column(String(255), nullable=False)  # 이력번호(혹은 묶은 번호)
     farmAddr = Column(String(255))  # 농장 주소
-    farmerNm = Column(String(255))  # 농장주 이름
+    farmerName = Column(String(255))  # 농장주 이름
     butcheryYmd = Column(DateTime, nullable=False)  # 도축 일자
     birthYmd = Column(DateTime)  # 출생일자
 

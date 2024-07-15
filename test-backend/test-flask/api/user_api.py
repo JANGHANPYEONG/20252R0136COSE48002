@@ -3,12 +3,11 @@ import logging
 from flask import Blueprint, jsonify, request, current_app
 from db.db_model import User
 from db.db_controller import create_user, get_user, _get_users_by_type, update_user
-import hashlib
+
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
-from connection.firebase_connect import FireBase_
 from datetime import datetime
 from utils import logger, usrType
 
@@ -207,70 +206,26 @@ def update_user_data():
 
 
 # 유저 아이디 중복 체크 API
-@user_api.route("/duplicate-check", methods=["GET", "POST"])
+@user_api.route("/duplicate-check", methods=["GET"])
 def check_duplicate():
     try:
         if request.method == "GET":
             db_session = current_app.db_session
-            id = request.args.get("userId")
-            user = db_session.query(User).filter_by(userId=id).first()
+            userId = request.args.get("userId")
+            user = db_session.query(User).filter_by(userId=userId).first()
             if user is None:
                 return jsonify({"msg": "None Duplicated Id"}), 200
             else:
-                return jsonify({"msg": "Duplicated Id"}), 401
+                return jsonify({"msg": "Duplicated Id"}), 403
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Route, Please Try Again."}), 403
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
-        )
-
-
-# 유저 비밀번호 체크 API
-@user_api.route("/pwd-check", methods=["GET", "POST"])
-def check_pwd():
-    try:
-        if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            id = data.get("userId")
-            password = data.get("password")
-            user = db_session.query(User).filter_by(userId=id).first()
-            if user is None:
-                return (
-                    jsonify(
-                        {
-                            "msg": f"No user data in Database",
-                            "userId": id,
-                        }
-                    ),
-                    404,
-                )
-            if user.password != hashlib.sha256(password.encode()).hexdigest():
-                return (
-                    jsonify(
-                        {
-                            "msg": f"Invalid password for userId",
-                            "userId": id,
-                        }
-                    ),
-                    401,
-                )
-
-            return jsonify(get_user(db_session, id)), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
+            500,
         )
 
 
