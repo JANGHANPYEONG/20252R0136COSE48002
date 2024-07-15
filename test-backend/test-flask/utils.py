@@ -132,6 +132,8 @@ gradeNum = {0: "1++", 1: "1+", 2: "1", 3: "2", 4: "3", 5: None}
 statusType = {0: "대기중", 1: "반려", 2: "승인"}
 CATTLE = 0
 PIG = 1
+default_user_id = 'deeplant@example.com'
+default_user_type = 2
 
 
 def safe_float(val):
