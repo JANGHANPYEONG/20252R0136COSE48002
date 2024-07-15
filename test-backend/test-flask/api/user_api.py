@@ -220,7 +220,7 @@ def check_duplicate():
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 403
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -230,35 +230,31 @@ def check_duplicate():
 
 
 # 유저 정보 삭제 API
-@user_api.route("/delete", methods=["GET", "POST"])
+@user_api.route("/delete", methods=["DELETE"])
 def delete_user():
     try:
         db_session = current_app.db_session
-        id = request.args.get("userId")
-        user = db_session.query(User).filter_by(userId=id).first()
-        if user is None:
+        userId = request.args.get("userId")
+        user = db_session.query(User).filter_by(userId=userId).first()
+        if not user:
             return (
                 jsonify(
                     {
                         "msg": f"No user data in Database",
-                        "userId": id,
+                        "userId": userId,
                     }
                 ),
-                404,
+                401,
             )
         try:
-            # Firebase에서 유저 삭제
-            user_record = firebase_auth.get_user_by_email(id)
-            firebase_auth.delete_user(user_record.uid)
-
             # 로컬 데이터베이스에서 유저 삭제
             db_session.delete(user)
             db_session.commit()
             return (
                 jsonify(
                     {
-                        "msg": f"User with userId {id} has been deleted",
-                        "userId": id,
+                        "msg": f"User with userId {userId} has been deleted",
+                        "userId": userId,
                     }
                 ),
                 200,
@@ -266,7 +262,7 @@ def delete_user():
         except Exception as e:
             db_session.rollback()
             logger.exception(str(e))
-            return jsonify({"msg": "Delete Failed", "error": str(e)}), 500
+            return jsonify({"msg": "Delete Failed", "error": str(e)}), 401
 
     except Exception as e:
         logger.exception(str(e))
