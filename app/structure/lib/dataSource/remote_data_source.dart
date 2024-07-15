@@ -14,48 +14,47 @@ class RemoteDataSource {
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
+  /// 입력한 정보들 토대로 사용자 정보 DB에 생성하는 함수
+  /// 전송 데이터 : userId, name, company, jobTitle, homeAddr alarm, type
   static Future<dynamic> signUp(String jsonData) async {
     dynamic response = await _postApi('user/register', jsonData);
     return response;
   }
 
-  /// 유저 업데이트 (POST)
-  static Future<dynamic> updateUser(String jsonData) async {
-    dynamic response = await _postApi('user/update', jsonData);
-    return response;
-  }
-
-  /// 유저 비밀번호 변경 (POST)
-  static Future<dynamic> changeUserPw(String jsonData) async {
-    dynamic response = await _postApi('user/update', jsonData);
-    return response;
-  }
-
-  /// 유저 비밀번호 검사 (POST)
-  static Future<dynamic> checkUserPw(String jsonData) async {
-    dynamic response = await _postApi('user/pwd-check', jsonData);
-    return response;
-  }
-
-  /// 유저 로그인 (GET)
-  static Future<dynamic> signIn(String userId) async {
-    dynamic response = await _getApi('user/login?userId=$userId');
-    return response;
-  }
-
   /// 유저 중복검사 (GET)
+  /// 회원가입하려는 userId가 중복되는지 확인하는 함수
+  /// null이 아니면 중복되지 않은 이메일
   static Future<dynamic> dupliCheck(String userId) async {
     dynamic response = await _getApi('user/duplicate-check?userId=$userId');
     return response;
   }
 
+  /// 유저 로그인 (GET)
+  /// 로그인시 입력한 userId를 토대로 사용자 정보를 불러오는 함수
+  static Future<dynamic> login(String userId) async {
+    dynamic response = await _getApi('user/login?userId=$userId');
+    return response;
+  }
+
+  /// 유저 업데이트 (POST)
+  /// 유저 정보 수정 후 DB에 반영하는 함수
+  /// 전송 데이터 : userId, name, homeAddr, company, jobTitle, alarm, type
+  // TODO : patch로 변경
+  static Future<dynamic> updateUser(String jsonData) async {
+    dynamic response = await _postApi('user/update', jsonData);
+    return response;
+  }
+
   /// 유저 회원 탈퇴 (GET)
+  /// 로그인된 사용자를 DB에서 삭제하는 함수
+  // TODO : delete로 변경
   static Future<dynamic> deleteUser(String userId) async {
     dynamic response = await _getApi("user/delete?userId=$userId");
     return response;
   }
 
   /// 유저 정보 조회 (GET)
+  // TODO : 삭제
   static Future<dynamic> getUserInfo(String userId) async {
     dynamic response = await _getApi("user/get?userId=$userId");
     return response;

@@ -132,9 +132,9 @@ class UserDetailViewModel with ChangeNotifier {
     Map<String, dynamic> jsonData = {
       "userId": userModel.userId,
       "name": userModel.name,
+      "homeAddr": userModel.homeAdress,
       "company": userModel.company,
       "jobTitle": userModel.jobTitle,
-      "homeAddr": userModel.homeAdress,
       "alarm": userModel.alarm,
       "type": userModel.type,
     };

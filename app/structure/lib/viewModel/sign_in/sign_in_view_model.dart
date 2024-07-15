@@ -57,6 +57,7 @@ class SignInViewModel with ChangeNotifier {
       );
 
       // 이메일 validation
+      // 이메일 인증을 위해서 필요
       final bool isValidEmail = await validateEmail();
       if (!isValidEmail) {
         // 이메일 invalid
@@ -64,7 +65,7 @@ class SignInViewModel with ChangeNotifier {
         throw InvalidEmailException('이메일 인증을 완료하세요.');
       } else {
         // 이메일 valid
-        // 유저 정보 저장
+        // DB에서 로그인하는 사용자 정보 불러와서 로컬 스토리지에 저장
         if (await saveUserInfo()) {
           // 자동 로그인 설정
           if (isAutoLogin) {
@@ -143,7 +144,7 @@ class SignInViewModel with ChangeNotifier {
     // 로그인 API 호출
     try {
       // 유저 정보 가져오기 시도
-      dynamic userInfo = await RemoteDataSource.signIn(userId)
+      dynamic userInfo = await RemoteDataSource.login(userId)
           .timeout(const Duration(seconds: 10));
       if (userInfo == null) {
         // 가져오기 실패
@@ -152,7 +153,6 @@ class SignInViewModel with ChangeNotifier {
         // 가져오기 성공
         // 데이터 fetch
         userModel.fromJson(userInfo);
-        print(userModel);
         // 육류 정보 생성자 id 저장
         meatModel.userId = userModel.userId;
         return true;

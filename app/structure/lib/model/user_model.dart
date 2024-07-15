@@ -34,14 +34,14 @@ class UserModel with ChangeNotifier {
   // Data fetch
   void fromJson(Map<String, dynamic> jsonData) {
     userId = jsonData['userId'];
-    password = jsonData['password'];
     name = jsonData['name'];
+    password = jsonData['password']; // TODO : 삭제
     homeAdress = jsonData['homeAddr'];
     company = jsonData['company'];
     jobTitle = jsonData['jobTitle'];
     type = jsonData['type'];
-    createdAt = jsonData['createdAt'];
     alarm = jsonData['alarm'];
+    createdAt = jsonData['createdAt'];
   }
 
   // Data reset
