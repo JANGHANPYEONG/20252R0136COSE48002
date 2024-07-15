@@ -111,62 +111,65 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       ? Stack(
                           // 삭제 버튼을 이미지 위에 띄우기 위한 'stack' 위젯 사용
                           children: [
-                            SizedBox(
-                              width: 640.w,
-                              height: 653.h,
+                            ClipRRect(
+                                borderRadius: BorderRadius.circular(20.0),
+                                child: SizedBox(
+                                  width: 640.w,
+                                  height: 640.w,
 
-                              // 이미지 할당
-                              child: context
+                                  // 이미지 할당
+                                  child: context
+                                                  .watch<
+                                                      RegistrationMeatImageViewModel>()
+                                                  .imagePath !=
+                                              null &&
+                                          context
                                               .watch<
                                                   RegistrationMeatImageViewModel>()
-                                              .imagePath !=
-                                          null &&
-                                      context
-                                          .watch<
-                                              RegistrationMeatImageViewModel>()
-                                          .imagePath!
-                                          .contains('http')
-                                  // s3에 업로드 된 이미지 (수정)
-                                  ? Image.network(
-                                      context
-                                          .read<
-                                              RegistrationMeatImageViewModel>()
-                                          .imagePath!,
-                                      loadingBuilder: (BuildContext context,
-                                          Widget child,
-                                          ImageChunkEvent? loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        } else {
-                                          return LoadingScreen(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    (loadingProgress
-                                                            .expectedTotalBytes ??
-                                                        1)
-                                                : null,
-                                          );
-                                        }
-                                      },
-                                      errorBuilder: (BuildContext context,
-                                          Object error,
-                                          StackTrace? stackTrace) {
-                                        return const Icon(Icons.error);
-                                      },
-                                      fit: BoxFit.cover,
-                                    )
-                                  // 이미지 촬영 중 임시저장 된 사진
-                                  : Image.file(
-                                      File(context
-                                          .read<
-                                              RegistrationMeatImageViewModel>()
-                                          .imagePath!),
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
+                                              .imagePath!
+                                              .contains('http')
+                                      // s3에 업로드 된 이미지 (수정)
+                                      ? Image.network(
+                                          context
+                                              .read<
+                                                  RegistrationMeatImageViewModel>()
+                                              .imagePath!,
+                                          loadingBuilder: (BuildContext context,
+                                              Widget child,
+                                              ImageChunkEvent?
+                                                  loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            } else {
+                                              return LoadingScreen(
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        (loadingProgress
+                                                                .expectedTotalBytes ??
+                                                            1)
+                                                    : null,
+                                              );
+                                            }
+                                          },
+                                          errorBuilder: (BuildContext context,
+                                              Object error,
+                                              StackTrace? stackTrace) {
+                                            return const Icon(Icons.error);
+                                          },
+                                          fit: BoxFit.cover,
+                                        )
+                                      // 이미지 촬영 중 임시저장 된 사진
+                                      : Image.file(
+                                          File(context
+                                              .read<
+                                                  RegistrationMeatImageViewModel>()
+                                              .imagePath!),
+                                          fit: BoxFit.cover,
+                                        ),
+                                )),
 
                             // 삭제 버튼
                             Positioned(

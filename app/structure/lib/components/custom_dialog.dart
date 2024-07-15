@@ -252,7 +252,7 @@ void showSaveImageDialog(BuildContext context, String imgPath,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
         child: SizedBox(
-          height: 790.h,
+          height: 850.h,
           width: 650.w,
           child: Center(
             child: Column(
@@ -270,7 +270,7 @@ void showSaveImageDialog(BuildContext context, String imgPath,
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20.r),
                   child: Image.file(File(imgPath),
-                      width: 570.w, height: 410.h, fit: BoxFit.fitWidth),
+                      width: 570.w, height: 570.w, fit: BoxFit.fitWidth),
                 ),
                 SizedBox(height: 55.h),
 
