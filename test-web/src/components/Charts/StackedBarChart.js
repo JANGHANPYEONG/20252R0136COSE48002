@@ -17,7 +17,7 @@ const StackedBarChart = ({ startDate, endDate }) => {
     theme.palette.success.light,
     theme.palette.primary.main,
 
-    '#01579B', // 짙은 남색
+    '#0322AB', // 짙은 남색
     '#6A1B9A', // 짙은 보라색
     '#C2185B', // 짙은 분홍색
     '#FF4081', // 진홍색
@@ -35,9 +35,16 @@ const StackedBarChart = ({ startDate, endDate }) => {
   const cattleCategories = ['채끝', '우둔', '설도', '양지', '사태'];
   const porkCategories = ['삼겹살', '뒷다리'];
 
+  // 누적 바 데이터 API fetch
+  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
+  console.log('stacked bar chart fetch 결과:', data);
+
   // fetch한 JSON 데이터에서 필요한 값 parsing 및 전처리하여 series에 저장
   const processStackedBarData = (data) => {
-    if (isLoading) {
+    if (
+      !data['beef_counts_by_primal_value'] ||
+      !data['pork_counts_by_primal_value']
+    ) {
       console.error('올바르지 않은 데이터 형식:', data);
       return;
     }
@@ -69,10 +76,6 @@ const StackedBarChart = ({ startDate, endDate }) => {
     // series에 저장
     setSeries(seriesArr);
   };
-
-  // 누적 바 데이터 API fetch
-  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
-  console.log('stacked bar chart fetch 결과:', data);
 
   // fetch한 데이터 parsing 함수 호출
   useEffect(() => {
