@@ -95,6 +95,21 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
+  const handleReset = () => {
+    setDuration('week');
+    setCalenderStart(null);
+    setCalenderEnd(null);
+    setIsDur(true);
+  
+    const { start, end } = updateDates();
+    setStartDate(start);
+    setEndDate(end);
+  
+    const queryParams = new URLSearchParams();
+    queryParams.set('duration', 'week');
+    navigate(`${location.pathname}?${queryParams.toString()}`);
+  };
+
   // pop over 결정
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -279,13 +294,14 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
           padding: '0px',
         }}
         size="small"
-        onClick={() => {
-          setDuration('week');
-          setCalenderStart(null);
-          setCalenderEnd(null);
-          setIsDur(true);
-          handleCompleteBtn();
-        }}
+        // onClick={() => {
+        //   setDuration('week');
+        //   setCalenderStart(null);
+        //   setCalenderEnd(null);
+        //   setIsDur(true);
+        //   handleCompleteBtn();
+        // }}
+        onClick={handleReset}
       >
         <FaArrowRotateLeft />
       </IconButton>
