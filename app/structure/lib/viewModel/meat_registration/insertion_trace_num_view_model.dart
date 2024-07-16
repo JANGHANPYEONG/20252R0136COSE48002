@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -26,9 +27,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   // form key
   final formKey = GlobalKey<FormState>();
 
-  // api key
-  var apikey =
-      "%2FuEP%2BvIjYfPTyaHNlxRx2Ry5cVUer92wa6lHcxnXEEekVjUCZ1N41traj3s8sGhHpKS54SVDbg9m4sHOEuMNuw%3D%3D";
+  // api
+  final baseUrl = dotenv.env['TRACEAPI']!;
+  final apikey = dotenv.env['TRACEAPIKEY'];
 
   // text controller
   final TextEditingController textEditingController = TextEditingController();
@@ -172,7 +173,7 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   // fetchData
   Future<void> fetchData(String historyNo) async {
     // 모든 공백을 제거한다.
-    historyNo = historyNo.replaceAll(RegExp('\\s'), "");
+    historyNo = historyNo.replaceAll(RegExp('\\s'), '');
 
     // 변수와 테이블을 먼저 초기화.
     reset();
@@ -181,7 +182,7 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     if (historyNo.startsWith('L1')) {
       try {
         final pigAPIData = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$historyNo&optionNo=9");
+            '$baseUrl?serviceKey=$apikey&traceNo=$historyNo&optionNo=9');
         if (pigAPIData == null) throw Error();
 
         if (pigAPIData['response']['body']['items']['item'][0] == null) {
@@ -203,39 +204,39 @@ class InsertionTraceNumViewModel with ChangeNotifier {
     if (traceNum!.startsWith('0')) {
       try {
         final meatAPIData1 = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$traceNum&optionNo=1");
+            '$baseUrl?serviceKey=$apikey&traceNo=$traceNum&optionNo=1');
         final meatAPIData2 = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$traceNum&optionNo=2");
+            '$baseUrl?serviceKey=$apikey&traceNo=$traceNum&optionNo=2');
         final meatAPIData3 = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$traceNum&optionNo=3");
+            '$baseUrl?serviceKey=$apikey&traceNo=$traceNum&optionNo=3');
 
         String? date =
-            meatAPIData1['response']['body']['items']['item']['birthYmd'] ?? "";
+            meatAPIData1['response']['body']['items']['item']['birthYmd'] ?? '';
         birthYmd = DateFormat('yyyyMMdd')
             .format(DateTime.parse(date!))
             .toString(); // 날짜 형식을 yyyyMMdd로 변경
 
         species =
-            meatAPIData1['response']['body']['items']['item']['lsTypeNm'] ?? "";
+            meatAPIData1['response']['body']['items']['item']['lsTypeNm'] ?? '';
         sexType =
-            meatAPIData1['response']['body']['items']['item']['sexNm'] ?? "";
+            meatAPIData1['response']['body']['items']['item']['sexNm'] ?? '';
 
         farmerNm = meatAPIData2['response']['body']['items']['item'][0]
                 ['farmerNm'] ??
-            "";
+            '';
         farmAddr = meatAPIData2['response']['body']['items']['item'][0]
                 ['farmAddr'] ??
-            "";
+            '';
 
         String? butDate = meatAPIData3['response']['body']['items']['item']
                 ['butcheryYmd'] ??
-            "";
+            '';
         butcheryYmd = DateFormat('yyyyMMdd')
             .format(DateTime.parse(butDate!))
             .toString(); // 날짜 형식을 yyyyMMdd로 변경
 
         gradeNum =
-            meatAPIData3['response']['body']['items']['item']['gradeNm'] ?? "";
+            meatAPIData3['response']['body']['items']['item']['gradeNm'] ?? '';
       } catch (e) {
         reset();
         isAllInserted = 2;
@@ -244,15 +245,15 @@ class InsertionTraceNumViewModel with ChangeNotifier {
       // 이력 번호의 시작이 '1'인 경우. (돼지의 경우)
       try {
         final meatAPIData4 = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$traceNum&optionNo=4");
+            '$baseUrl?serviceKey=$apikey&traceNo=$traceNum&optionNo=4');
         final meatAPIData3 = await RemoteDataSource.getMeatTraceData(
-            "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch?serviceKey=$apikey&traceNo=$traceNum&optionNo=3");
+            '$baseUrl?serviceKey=$apikey&traceNo=$traceNum&optionNo=3');
 
         gradeNum = meatAPIData4['response']['body']['items']['item']['gradeNm'];
 
         String? time = meatAPIData3['response']['body']['items']['item']
                 ['butcheryYmd'] ??
-            "";
+            '';
         butcheryYmd = DateFormat('yyyyMMdd')
             .format(DateTime.parse(time!))
             .toString(); // 날짜 형식을 yyyyMMdd로 변경
@@ -284,8 +285,6 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   // 다음 버튼을 눌렀을 때 동작.
   void clickedNextbutton(BuildContext context) {
     saveMeatData();
-    print(meatModel.speciesValue);
-
     if (meatModel.id != null) {
       // 수정
       context.go('/home/data-manage-normal/edit/info-editable');

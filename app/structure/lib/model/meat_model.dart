@@ -10,18 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:structure/main.dart';
 
 class MeatModel with ChangeNotifier {
-  // 현재 유저의 id 저장
+  // 육류를 등록한 사용자 id
   String? userId;
 
   // 관리 번호 생성 시 저장
-  String? id;
+  String? id; // TODO : meatId 변경
   String? createUser;
   String? createdAt;
 
   // 육류 오픈 API 데이터
   String? traceNum;
   String? farmAddr;
-  String? farmerNm;
+  String? farmerNm; // TODO : farmerName 변경
   String? butcheryYmd;
   String? birthYmd;
   String? sexType;
