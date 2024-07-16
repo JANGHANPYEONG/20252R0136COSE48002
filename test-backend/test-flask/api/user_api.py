@@ -197,12 +197,14 @@ def update_user_data():
             jsonify(
                 {
                     "userId": updated_user.userId,
+                    "name": updated_user.name,
                     "homeAddr": updated_user.homeAddr,
                     "company": updated_user.company,
                     "jobTitle": updated_user.jobTitle,
                     "alarm": updated_user.alarm,
                     "type": usrType[updated_user.type],
-                    "updatedAt": updated_user.updatedAt
+                    "updatedAt": updated_user.updatedAt,
+                    "createdAt": updated_user.createdAt
                 }
             ), 
             200,
