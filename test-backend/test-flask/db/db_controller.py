@@ -707,12 +707,12 @@ def get_all_user(db_session):
     except Exception as e:
         raise Exception(str(e))
 
-def get_user(db_session, userId):
+def get_user(db_session, user_id):
     try:
-        userData = db_session.query(User).filter(User.userId == userId).first()
-        if userData is not None:
-            userData.createdAt = convert2string(userData.createdAt, 1)
-        return userData
+        user_data = db_session.query(User).filter(User.userId == user_id).first()
+        if user_data is not None:
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
+        return user_data
 
     except Exception as e:
         raise Exception(str(e))

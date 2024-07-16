@@ -110,10 +110,10 @@ def register_user_data():
     db_session = current_app.db_session
     try:
         data = request.get_json()
-        userId = data["userId"]
+        user_id = data["userId"]
 
         # Check if user already exists
-        existing_user = get_user(db_session, userId)
+        existing_user = get_user(db_session, user_id)
         if existing_user:
             return jsonify({"msg": "User already exists"}), 400
         data["createdAt"] = datetime.now()
@@ -124,7 +124,7 @@ def register_user_data():
         # firebase_db.collection('users').document(data['userId']).set(data)
 
         return (
-            jsonify({"msg": f"User {data['userId']} registered successfully"}),
+            jsonify({"msg": f"User {user_id} registered successfully"}),
             200,
         )
     except Exception as e:
@@ -138,48 +138,48 @@ def register_user_data():
 
 
 # 유저 상세 정보 조회 API
-@user_api.route("/get", methods=["GET", "POST"])
-def read_user_data():
-    try:
-        db_session = current_app.db_session
-        if request.method == "GET":
-            userId = request.args.get("userId")
-            if userId:
-                result = get_user(db_session, userId)
-            else:
-                result = _get_users_by_type(db_session)
+# @user_api.route("/get", methods=["GET", "POST"])
+# def read_user_data():
+#     try:
+#         db_session = current_app.db_session
+#         if request.method == "GET":
+#             userId = request.args.get("userId")
+#             if userId:
+#                 result = get_user(db_session, userId)
+#             else:
+#                 result = _get_users_by_type(db_session)
 
-            # Ensure result is serializable
-            if isinstance(result, dict):
-                response_data = result
-            else:
-                response_data = result._asdict()
+#             # Ensure result is serializable
+#             if isinstance(result, dict):
+#                 response_data = result
+#             else:
+#                 response_data = result._asdict()
 
-            # Remove None values from response_data
-            response_data = {k: v for k, v in response_data.items() if v is not None}
+#             # Remove None values from response_data
+#             response_data = {k: v for k, v in response_data.items() if v is not None}
 
-            return jsonify(response_data), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except AttributeError as e:
-        logger.exception("AttributeError: %s", e)
-        return (
-            jsonify(
-                {
-                    "msg": "Server Error - Attribute Error",
-                    "time": datetime.now().strftime("%H:%M:%S"),
-                }
-            ),
-            505,
-        )
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
-        )
+#             return jsonify(response_data), 200
+#         else:
+#             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+#     except AttributeError as e:
+#         logger.exception("AttributeError: %s", e)
+#         return (
+#             jsonify(
+#                 {
+#                     "msg": "Server Error - Attribute Error",
+#                     "time": datetime.now().strftime("%H:%M:%S"),
+#                 }
+#             ),
+#             505,
+#         )
+#     except Exception as e:
+#         logger.exception(str(e))
+#         return (
+#             jsonify(
+#                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+#             ),
+#             505,
+#         )
 
 
 # 유저 정보 수정 API
