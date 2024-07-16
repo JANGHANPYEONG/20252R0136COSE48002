@@ -50,6 +50,7 @@ class MainTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final bool? fillColorAlert; // 클릭했을 때 배경 색 변경
+  final bool hideFloatingLabel;
 
   const MainTextField({
     super.key,
@@ -72,6 +73,7 @@ class MainTextField extends StatelessWidget {
     this.suffixIcon,
     this.prefixIcon,
     this.fillColorAlert,
+    this.hideFloatingLabel = false,
   });
 
   @override
@@ -95,53 +97,44 @@ class MainTextField extends StatelessWidget {
         obscureText: isObscure ?? false,
         decoration: InputDecoration(
             prefixIcon: prefixIcon,
-            counterText: "",
+            counterText: '',
+            floatingLabelBehavior:
+                hideFloatingLabel ? FloatingLabelBehavior.never : null,
             label: isCenter != null && isCenter == true
-                ? Center(
-                    child: Text(
-                      mainText,
-                      style: Palette.h4Grey,
-                    ),
-                  )
-                : Text(
-                    mainText,
-                    style: Palette.mainTextFieldTextStyle,
-                  ),
+                ? Center(child: Text(mainText, style: Palette.h4Grey))
+                : Text(mainText, style: Palette.mainTextFieldTextStyle),
             filled: true,
             fillColor: Palette.fieldEmptyBg,
             hintText: hintText,
             hintStyle: Palette.h4,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20.w),
+              borderRadius: BorderRadius.circular(15.r),
               borderSide: BorderSide.none,
             ),
             errorBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.sp),
+                    borderRadius: BorderRadius.circular(15.r),
                     borderSide:
                         const BorderSide(color: Palette.fieldAlertBorder),
                   )
                 : null,
             focusedErrorBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.sp),
+                    borderRadius: BorderRadius.circular(15.r),
                     borderSide:
                         const BorderSide(color: Palette.fieldAlertBorder),
                   )
                 : null,
             enabledBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.sp),
+                    borderRadius: BorderRadius.circular(15.r),
                     borderSide: BorderSide.none,
-                    // borderSide: BorderSide(
-                    //   color: Palette.fieldDisabBg,
-                    // ),
                   )
                 : null,
             focusedBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.sp),
+                    borderRadius: BorderRadius.circular(15.r),
                     borderSide: const BorderSide(
                       color: Palette.fieldAtvBorder,
                     ),

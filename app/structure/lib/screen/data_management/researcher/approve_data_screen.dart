@@ -48,7 +48,7 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                         // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
                         onTap: () => context
                             .read<DataManagementHomeResearcherViewModel>()
-                            .clickedFilter(),
+                            .clickedFilter(context),
                         child: Container(
                           alignment: Alignment.center,
                           child: Row(

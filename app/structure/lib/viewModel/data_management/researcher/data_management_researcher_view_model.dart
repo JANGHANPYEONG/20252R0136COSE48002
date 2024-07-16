@@ -1,6 +1,6 @@
 //
 //
-// 데이터 관리 페이지(ViewModel) : Researcher
+// 추가정보 입력 페이지(ViewModel) : Researcher
 //
 //
 
@@ -74,13 +74,16 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     await _fetchData();
     filterlize();
-    print('filteredList = $filteredList');
+
     isLoading = false;
     notifyListeners();
   }
 
   // 필터가 활성화 되면 호출.
-  void clickedFilter() {
+  void clickedFilter(BuildContext context) {
+    // 키보드 내리기
+    FocusScope.of(context).unfocus();
+
     // 이전의 필터 값을 받아 필터 초기화.
     dateStatus = List.filled(dateStatus.length, false);
     dateStatus[dateSelectedIdx] = true;
@@ -197,9 +200,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     }
   }
 
-  // 날짜 fomatting
+  /// 날짜 직접입력 fomatting
   void formatting() {
-    isOpenTable = !isOpenTable;
+    // 초기화
+    isOpenTable = true;
+    indexDay = 0;
+    firstDayText = '';
+    lastDayText = '';
 
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
@@ -227,14 +234,14 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   // 날짜 필터를 이용할 때 호출된다.
   void onTapDate(int index) {
-    dateStatus = List.filled(dateStatus.length, false);
-    dateStatus[index] = true;
-    // 직접 설정이면 TableCalendar 호출
+    dateStatus = List.filled(dateStatus.length, false); // 전체 false로 초기화
+    dateStatus[index] = true; // 현재 선택된 필터만 true로 변경
     if (index != 3) {
       isOpenTable = false;
       firstDayText = '';
       lastDayText = '';
     } else {
+      // 직접 입력
       formatting();
     }
 
@@ -267,8 +274,10 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (firstDay == null || lastDay == null) {
       focused = DateTime.now();
     }
+
     isOpenTable = true;
     indexDay = index;
+
     // 날짜 지정 이후 선택할 시 이전 날짜 호출
     if (index == 0 && temp1 != null) {
       focused = temp1!;
@@ -286,6 +295,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (indexDay == 0) {
       temp1 = selectedDay;
       firstDayText = DateFormat('yyyy.MM.dd').format(temp1!);
+      indexDay = 1;
     } else {
       temp2 = selectedDay;
       lastDayText = DateFormat('yyyy.MM.dd').format(temp2!);
@@ -308,25 +318,21 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   void setDay() {
     filteredList = numList;
     if (dateSelectedIdx == 0) {
-      print('3일');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
-      print('1개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
-      print('3개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
-      print('직접설정');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(DateTime(

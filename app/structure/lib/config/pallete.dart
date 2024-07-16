@@ -274,6 +274,6 @@ class Palette {
     fontSize: 27.sp,
     fontWeight: FontWeight.w600,
     color: Colors.black,
-    decoration: TextDecoration.underline,
+    // decoration: TextDecoration.underline,
   );
 }

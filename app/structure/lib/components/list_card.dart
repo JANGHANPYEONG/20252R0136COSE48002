@@ -283,39 +283,30 @@ class ListCardResearcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
-        width: 640.w,
-        height: 72.w,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
-          ),
-        ),
+        padding: EdgeInsets.all(16.w),
+        height: 72.h,
         child: Row(
           children: [
+            // idx
             SizedBox(
-              width: 5.w,
-            ),
-            SizedBox(
+              width: 60.w,
               child: Text(
                 idx.toString(),
                 style: Palette.filterContent,
               ),
             ),
-            // const Spacer(),
-            SizedBox(width: 50.w),
-            SizedBox(
-              width: 250.w,
-              child: Text(
-                num,
-                style: Palette.meatNumStyle,
-                textAlign: TextAlign.left,
-              ),
+
+            // 관리번호
+            Text(
+              num,
+              style: Palette.meatNumStyle,
+              textAlign: TextAlign.left,
             ),
             const Spacer(),
-            SizedBox(
-              width: 5.w,
-            ),
+
+            // 오른쪽 화살표
             Icon(
               Icons.arrow_forward_ios_outlined,
               size: 30.sp,
@@ -327,79 +318,3 @@ class ListCardResearcher extends StatelessWidget {
     );
   }
 }
-
-
-// class ListCardResearcherApprove extends StatelessWidget {
-//   final VoidCallback? onTap;
-//   final int idx;
-//   final String num;
-//   final String dayTime;
-//   final String userId;
-//   // final String statusType;
-
-//   const ListCardResearcherApprove({
-//     super.key,
-//     required this.onTap,
-//     required this.idx,
-//     required this.num,
-//     required this.dayTime,
-//     required this.userId,
-//     // required this.statusType,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return InkWell(
-//       onTap: onTap,
-//       child: Container(
-//         width: 640.w,
-//         height: 72.w,
-//         decoration: BoxDecoration(
-//           border: Border(
-//             bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
-//           ),
-//         ),
-//         child: Row(
-//           children: [
-//             SizedBox(
-//               width: 5.w,
-//             ),
-//             SizedBox(
-//               child: Text(
-//                 num,
-//                 style: Palette.h4,
-//               ),
-//             ),
-//             const Spacer(),
-//             SizedBox(
-//               width: 160.w,
-//               child: SingleChildScrollView(
-//                 scrollDirection: Axis.horizontal,
-//                 child: Text(
-//                   // idx.toString(),
-//                   userId,
-//                   style: Palette.filterContent,
-//                 ),
-//               ),
-//             ),
-//             const Spacer(),
-//             SizedBox(
-//               child: Text(
-//                 // statusType,
-//                 dayTime,
-//                 style: Palette.filterContent,
-//               ),
-//             ),
-//             SizedBox(
-//               width: 5.w,
-//             ),
-//             Icon(
-//               Icons.arrow_forward_ios_outlined,
-//               size: 30.sp,
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
