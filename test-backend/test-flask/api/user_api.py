@@ -102,7 +102,7 @@ def login_user():
             500,
         )
 
-      
+
 # 유저 등록 API
 @user_api.route("/register", methods=["POST"])
 def register_user_data():

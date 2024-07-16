@@ -284,15 +284,16 @@ def getMeatDataByRangeStatusType():
         count = request.args.get("count")
         start_str = request.args.get("start")
         end_str = request.args.get("end")
+        specie_value = request.args.get("specieValue")
 
-        start = convert2datetime(start_str, 0)
-        end = convert2datetime(end_str, 0)
-        if status_type:
+        # start = convert2datetime(start_str, 0)
+        # end = convert2datetime(end_str, 0)
+        if status_type and specie_value:
             return _getMeatDataByRangeStatusType(
-                db_session, status_type, offset, count, start, end
+                db_session, status_type, offset, count, specie_value, start_str, end_str
             )
         else:
-            return jsonify("No statusType in parameter"), 400
+            return jsonify("No statusType or specieValue in parameter"), 400
     except Exception as e:
         # logger.exception(str(e))
         return (
@@ -324,22 +325,18 @@ def getMeatDataByTotalStatusType():
 
 
 # Texanomy 하드코딩 기본 데이터 출력
-@get_api.route("/default-data", methods=["GET", "POST"])
+@get_api.route("/default-data", methods=["GET"])
 def getTexanomyData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            return _getTexanomyData(db_session)
-
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        db_session = current_app.db_session
+        return _getTexanomyData(db_session)
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

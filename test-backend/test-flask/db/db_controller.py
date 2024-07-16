@@ -829,16 +829,30 @@ def _getMeatDataByStatusType(db_session, varified):
 
 
 def _getMeatDataByRangeStatusType(
-    db_session, status_type, offset, count, start=None, end=None
+    db_session, status_type, offset, count, specie_value, start=None, end=None
 ):
     offset = safe_int(offset)
     count = safe_int(count)
-    # Base query
-    query = (
-        db_session.query(Meat)
-        .filter_by(statusType=status_type)
-        .order_by(Meat.createdAt.desc())
-    )
+    if specie_value == '소':
+        # Base query
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type,
+                Meat.categoryId < 100
+            )
+            .order_by(Meat.createdAt.desc())
+        )
+    else:
+        # Base query
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type,
+                Meat.categoryId >= 100
+            )
+            .order_by(Meat.createdAt.desc())
+        )
 
     # Date Filter
     if start and end:
@@ -901,10 +915,8 @@ def _getTexanomyData(db_session):
     species_all = db_session.query(SpeciesInfo).all()
     result = {}
     for species in species_all:
-        # Use joinedload to avoid N+1 problem
         categories = (
             db_session.query(CategoryInfo)
-            .options(joinedload(CategoryInfo.meats))
             .filter_by(speciesId=species.id)
             .all()
         )
