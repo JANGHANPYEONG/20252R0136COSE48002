@@ -650,11 +650,7 @@ def get_range_meat_data(
 def create_user(db_session, user_data: dict):
     try:
         for field, value in user_data.items():
-            if field == "password":
-                item_encoder(
-                    user_data, field, hashlib.sha256(value.encode()).hexdigest()
-                )
-            elif field == "type":
+            if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
                 if user_type:  # check if user_type exists
                     item_encoder(user_data, field, user_type.id)
@@ -663,7 +659,9 @@ def create_user(db_session, user_data: dict):
             else:
                 item_encoder(user_data, field)
         new_user = User(**user_data)
-        return new_user
+
+        db_session.add(new_user)
+        db_session.commit()
     except Exception as e:
         raise Exception(str(e))
 
@@ -700,21 +698,21 @@ def update_user(db_session, user_data: dict):
     except Exception as e:
         raise Exception(str(e))
 
-
-def get_user(db_session, userId):
+def get_all_user(db_session):
     try:
-        userData = db_session.query(User).filter(User.userId == userId).first()
-        userData_dict = to_dict(userData)
-        userData_dict["createdAt"] = convert2string(userData_dict.get("createdAt"), 1)
-        userData_dict["updatedAt"] = convert2string(userData_dict.get("updatedAt"), 1)
-        userData_dict["loginAt"] = convert2string(userData_dict.get("loginAt"), 1)
-        userData_dict["type"] = (
-            db_session.query(UserTypeInfo)
-            .filter(UserTypeInfo.id == userData_dict.get("type"))
-            .first()
-            .name
-        )
-        return userData_dict
+        users = db_session.query(User).all()
+        for user in users:
+            user.createdAt = convert2string(user.createdAt, 1)
+        return users
+    except Exception as e:
+        raise Exception(str(e))
+
+def get_user(db_session, user_id):
+    try:
+        user_data = db_session.query(User).filter(User.userId == user_id).first()
+        if user_data is not None:
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
+        return user_data
 
     except Exception as e:
         raise Exception(str(e))
