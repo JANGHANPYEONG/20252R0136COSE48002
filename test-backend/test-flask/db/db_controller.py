@@ -670,20 +670,17 @@ def create_user(db_session, user_data: dict):
 
 def update_user(db_session, user_data: dict):
     try:
+        userId = user_data.get("userId")
         history = (
-            db_session.query(User).filter_by(userId=user_data.get("userId")).first()
+            db_session.query(User).filter_by(userId=userId).first()
         )
         # 1. 기존 유저 없음
         if history == None:
-            raise Exception(f"No User ID {user_data.get('userId')}")
+            return jsonify({"message": f"No User ID {userId}"}), 400
 
         # 2. 기존 유저 있음
         for field, value in user_data.items():
-            if field == "password":
-                item_encoder(
-                    user_data, field, hashlib.sha256(value.encode()).hexdigest()
-                )
-            elif field == "type":
+            if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
                 if user_type:  # check if user_type exists
                     item_encoder(user_data, field, user_type.id)
@@ -695,9 +692,13 @@ def update_user(db_session, user_data: dict):
 
         for attr, value in user_data.items():
             setattr(history, attr, value)
+
+        db_session.merge(history)
+        db_session.commit()
         return history
 
     except Exception as e:
+        db_session.rollback()
         raise Exception(str(e))
 
 

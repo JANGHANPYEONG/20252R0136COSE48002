@@ -182,26 +182,37 @@ def read_user_data():
 
 
 # 유저 정보 수정 API
-@user_api.route("/update", methods=["GET", "POST"])
+@user_api.route("/update", methods=["PATCH"])
 def update_user_data():
     try:
-        if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            user = update_user(db_session, data)
+        db_session = current_app.db_session
+        data = request.get_json()
+        update_user(db_session, data)
 
-            db_session.merge(user)
-            db_session.commit()
-            return jsonify(get_user(db_session, data.get("userId"))), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        
+        updated_user = get_user(db_session, data.get("userId"))
+
+        return (
+            jsonify(
+                {
+                    "userId": updated_user.userId,
+                    "homeAddr": updated_user.homeAddr,
+                    "company": updated_user.company,
+                    "jobTitle": updated_user.jobTitle,
+                    "alarm": updated_user.alarm,
+                    "type": usrType[updated_user.type],
+                    "updatedAt": datetime.now().strftime("%Y-%m-%d")
+                }
+            ), 
+            200,
+        )
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
