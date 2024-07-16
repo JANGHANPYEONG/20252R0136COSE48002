@@ -614,7 +614,7 @@ def get_range_meat_data(
         db_total_len = query.filter(
             Meat.createdAt.between(start, end)
         ).count()
-    query = query.offset(offset).limit(count)
+    query = query.order_by(Meat.createdAt.desc()).offset(offset).limit(count)
 
     # 탐색
     meat_data = query.all()
