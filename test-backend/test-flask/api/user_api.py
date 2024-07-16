@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, jsonify, request, current_app
 from db.db_model import User
-from db.db_controller import create_user, get_user, _get_users_by_type, update_user
+from db.db_controller import create_user, get_user, _get_users_by_type, update_user, get_all_user
 import hashlib
 import firebase_admin
 from firebase_admin import credentials
@@ -38,31 +38,32 @@ logger = logging.getLogger(__name__)
 def read_user_list():
     db_session = current_app.db_session
     try:
-        users = db_session.query(User).all()
+        users = get_all_user(db_session)
         user_list = []
         for user in users:
             user_data = {
-                "userId": user.userId,
-                "createdAt": user.createdAt,
-                "updatedAt": user.updatedAt,
-                "loginAt": user.loginAt,
                 "name": user.name,
+                "userId": user.userId,
+                "type": user.type,                
                 "company": user.company,
-                "jobTitle": user.jobTitle,
-                "homeAddr": user.homeAddr,
-                "alarm": user.alarm,
-                "type": user.type,
+                "createdAt": user.createdAt,
             }
             user_list.append(user_data)
 
         return jsonify(user_list), 200
     except:
-        return jsonify({"msg": "User Not found"}), 404
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
+        )
 
 
 # 유저 로그인 API
 @user_api.route("/login", methods=["GET"])
 def login_user():
+    db_session = current_app.db_session
     try:
         # 쿼리 파라미터에서 userId 가져오기
         user_id = request.args.get("userId")
@@ -72,23 +73,22 @@ def login_user():
             return jsonify({"msg": "userId is required"}), 400
 
         # 사용자 데이터베이스에서 userId 확인
-        user = User.query.filter_by(userId=user_id).first()
+        user = get_user(db_session, user_id)
 
         if not user:
             return jsonify({"msg": "User not found"}), 404
         return (
             jsonify(
                 {
-                    "msg": "Login successful",
                     "userId": user.userId,
-                    "createdAt": user.createdAt,
-                    "updatedAt": user.updatedAt,
                     "name": user.name,
+                    "homeAddr": user.homeAddr,
                     "company": user.company,
                     "jobTitle": user.jobTitle,
-                    "homeAddr": user.homeAddr,
-                    "alarm": user.alarm,
                     "type": usrType[user.type],
+                    "alarm": user.alarm,
+                    "createdAt": user.createdAt,
+                    "msg": "Login successful",
                 }
             ),
             200,
@@ -96,44 +96,44 @@ def login_user():
 
     except Exception as e:
         logger.exception("Exception: %s", e)
-        return jsonify({"msg": "Server Error"}), 500
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
+        )
 
 
 # 유저 등록 API
-@user_api.route("/register", methods=["GET", "POST"])
+@user_api.route("/register", methods=["POST"])
 def register_user_data():
+    db_session = current_app.db_session
     try:
-        if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
+        data = request.get_json()
+        userId = data["userId"]
 
-            # Check if user already exists
-            existing_user = (
-                db_session.query(User).filter_by(userId=data["userId"]).first()
-            )
-            if existing_user:
-                return jsonify({"msg": "User already exists"}), 400
+        # Check if user already exists
+        existing_user = get_user(db_session, userId)
+        if existing_user:
+            return jsonify({"msg": "User already exists"}), 400
+        data["createdAt"] = datetime.now()
 
-            user = create_user(db_session, data)
-            db_session.add(user)
-            db_session.commit()
+        create_user(db_session, data)
 
-            # Save user to Firebase Firestore - firebase에 등록은 프론트에서 처리
-            # firebase_db.collection('users').document(data['userId']).set(data)
+        # Save user to Firebase Firestore - firebase에 등록은 프론트에서 처리
+        # firebase_db.collection('users').document(data['userId']).set(data)
 
-            return (
-                jsonify({"msg": f"User {data['userId']} registered successfully"}),
-                200,
-            )
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        return (
+            jsonify({"msg": f"User {data['userId']} registered successfully"}),
+            200,
+        )
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
