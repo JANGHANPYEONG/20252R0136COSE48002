@@ -644,6 +644,14 @@ def get_range_meat_data(
 # UPDATE
 
 # DELETE
+def delete_user(db_session, user):
+    try:
+        # 로컬 데이터베이스에서 유저 삭제
+        db_session.delete(user)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise Exception(str(e))
 
 
 # USER
@@ -668,20 +676,17 @@ def create_user(db_session, user_data: dict):
 
 def update_user(db_session, user_data: dict):
     try:
+        user_id = user_data.get("userId")
         history = (
-            db_session.query(User).filter_by(userId=user_data.get("userId")).first()
+            db_session.query(User).filter_by(userId=user_id).first()
         )
         # 1. 기존 유저 없음
-        if history == None:
-            raise Exception(f"No User ID {user_data.get('userId')}")
+        if not history:
+            return jsonify({"message": f"No User ID {user_id}"}), 400
 
         # 2. 기존 유저 있음
         for field, value in user_data.items():
-            if field == "password":
-                item_encoder(
-                    user_data, field, hashlib.sha256(value.encode()).hexdigest()
-                )
-            elif field == "type":
+            if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
                 if user_type:  # check if user_type exists
                     item_encoder(user_data, field, user_type.id)
@@ -693,9 +698,13 @@ def update_user(db_session, user_data: dict):
 
         for attr, value in user_data.items():
             setattr(history, attr, value)
+
+        db_session.merge(history)
+        db_session.commit()
         return history
 
     except Exception as e:
+        db_session.rollback()
         raise Exception(str(e))
 
 def get_all_user(db_session):
@@ -713,7 +722,6 @@ def get_user(db_session, user_id):
         if user_data is not None:
             user_data.createdAt = convert2string(user_data.createdAt, 1)
         return user_data
-
     except Exception as e:
         raise Exception(str(e))
 

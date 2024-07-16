@@ -2,15 +2,14 @@ import logging
 
 from flask import Blueprint, jsonify, request, current_app
 from db.db_model import User
-from db.db_controller import create_user, get_user, _get_users_by_type, update_user, get_all_user
-import hashlib
+from db.db_controller import create_user, get_user, _get_users_by_type, update_user, get_all_user, delete_user
+
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
-from connection.firebase_connect import FireBase_
 from datetime import datetime
-from utils import logger, usrType
+from utils import logger, to_dict, usrType
 
 user_api = Blueprint("user_api", __name__)
 
@@ -103,7 +102,7 @@ def login_user():
             500,
         )
 
-
+      
 # 유저 등록 API
 @user_api.route("/register", methods=["POST"])
 def register_user_data():
@@ -183,138 +182,91 @@ def register_user_data():
 
 
 # 유저 정보 수정 API
-@user_api.route("/update", methods=["GET", "POST"])
+@user_api.route("/update", methods=["PATCH"])
 def update_user_data():
     try:
-        if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            user = update_user(db_session, data)
+        db_session = current_app.db_session
+        data = request.get_json()
+        data["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
+        update_user(db_session, data)
 
-            db_session.merge(user)
-            db_session.commit()
-            return jsonify(get_user(db_session, data.get("userId"))), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        
+        updated_user = get_user(db_session, data.get("userId"))
+
+        return (
+            jsonify(
+                {
+                    "userId": updated_user.userId,
+                    "homeAddr": updated_user.homeAddr,
+                    "company": updated_user.company,
+                    "jobTitle": updated_user.jobTitle,
+                    "alarm": updated_user.alarm,
+                    "type": usrType[updated_user.type],
+                    "updatedAt": updated_user.updatedAt
+                }
+            ), 
+            200,
+        )
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
 # 유저 아이디 중복 체크 API
-@user_api.route("/duplicate-check", methods=["GET", "POST"])
+@user_api.route("/duplicate-check", methods=["GET"])
 def check_duplicate():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = request.args.get("userId")
-            user = db_session.query(User).filter_by(userId=id).first()
-            if user is None:
-                return jsonify({"msg": "None Duplicated Id"}), 200
-            else:
-                return jsonify({"msg": "Duplicated Id"}), 401
+        db_session = current_app.db_session
+        user_id = request.args.get("userId")
+        user = get_user(db_session, user_id)
+        if user is None:
+            return jsonify({"isDuplicated": False}), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"isDuplicated": True}), 200
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
-        )
-
-
-# 유저 비밀번호 체크 API
-@user_api.route("/pwd-check", methods=["GET", "POST"])
-def check_pwd():
-    try:
-        if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            id = data.get("userId")
-            password = data.get("password")
-            user = db_session.query(User).filter_by(userId=id).first()
-            if user is None:
-                return (
-                    jsonify(
-                        {
-                            "msg": f"No user data in Database",
-                            "userId": id,
-                        }
-                    ),
-                    404,
-                )
-            if user.password != hashlib.sha256(password.encode()).hexdigest():
-                return (
-                    jsonify(
-                        {
-                            "msg": f"Invalid password for userId",
-                            "userId": id,
-                        }
-                    ),
-                    401,
-                )
-
-            return jsonify(get_user(db_session, id)), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
+            500,
         )
 
 
 # 유저 정보 삭제 API
-@user_api.route("/delete", methods=["GET", "POST"])
-def delete_user():
+@user_api.route("/delete", methods=["DELETE"])
+def delete_user_data():
     try:
         db_session = current_app.db_session
-        id = request.args.get("userId")
-        user = db_session.query(User).filter_by(userId=id).first()
-        if user is None:
+        user_id = request.args.get("userId")
+        user = get_user(db_session, user_id)
+        if not user:
             return (
                 jsonify(
                     {
                         "msg": f"No user data in Database",
-                        "userId": id,
+                        "userId": user_id,
                     }
                 ),
-                404,
+                401,
             )
-        try:
-            # Firebase에서 유저 삭제
-            user_record = firebase_auth.get_user_by_email(id)
-            firebase_auth.delete_user(user_record.uid)
-
-            # 로컬 데이터베이스에서 유저 삭제
-            db_session.delete(user)
-            db_session.commit()
-            return (
-                jsonify(
-                    {
-                        "msg": f"User with userId {id} has been deleted",
-                        "userId": id,
-                    }
-                ),
-                200,
-            )
-        except Exception as e:
-            db_session.rollback()
-            logger.exception(str(e))
-            return jsonify({"msg": "Delete Failed", "error": str(e)}), 500
-
+        delete_user(db_session, user)
+        return (
+            jsonify(
+                {
+                    "msg": f"User with userId {user_id} has been deleted",
+                    "userId": user_id,
+                }
+            ),
+            200,
+        )
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
