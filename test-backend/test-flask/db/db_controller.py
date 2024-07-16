@@ -555,6 +555,7 @@ def get_range_meat_data(
     count,
     start=None,
     end=None,
+    specie_value=None,
     farmAddr=None,
     userId=None,
     type=None,
@@ -565,51 +566,52 @@ def get_range_meat_data(
     count = safe_int(count)
     offset = safe_int(offset)
     offset = offset*count
-    
     start = convert2datetime(start, 0)
     end = convert2datetime(end, 0)
+
     # Base Query
-    query = db_session.query(Meat).join(
-        User, User.userId == Meat.userId
-    )  # Join with User
-    
+    query = db_session.query(Meat)
+
+    if specie_value != 2:
+        query = query.join(CategoryInfo).filter(CategoryInfo.speciesId == specie_value)
+
     # Sorting and Filtering
-    if farmAddr is not None:
-        if farmAddr:  # true: 가나다순 정렬
-            query = query.order_by(Meat.farmAddr.asc())
-        else:  # false: 역순
-            query = query.order_by(Meat.farmAddr.desc())
-    if userId is not None:
-        if userId:  # true: 알파벳 오름차순 정렬
-            query = query.order_by(Meat.userId.asc())
-        else:  # false: 알파벳 내림차순 정렬
-            query = query.order_by(Meat.userId.desc())
-    if type is not None:
-        if type:  # true: 숫자 오름차순 정렬
-            query = query.order_by(User.type.asc())
-        else:  # false: 숫자 내림차순 정렬
-            query = query.order_by(User.type.desc())
-    if company is not None:
-        if company:  # true: 가나다순 정렬
-            query = query.order_by(User.company.asc())
-        else:  # false: 역순
-            query = query.order_by(User.company.desc())
-    if createdAt is not None:
-        if createdAt:  # true: 최신순
-            query = query.order_by(Meat.createdAt.desc())
-        else:  # false: 역순
-            query = query.order_by(Meat.createdAt.asc())
-    if statusType is not None:
-        if statusType:  # true: 숫자 오름차순 정렬
-            query = query.order_by(Meat.statusType.asc())
-        else:  # false: 숫자 내림차순 정렬
-            query = query.order_by(Meat.statusType.desc())
+    # if farmAddr is not None:
+    #     if farmAddr:  # true: 가나다순 정렬
+    #         query = query.order_by(Meat.farmAddr.asc())
+    #     else:  # false: 역순
+    #         query = query.order_by(Meat.farmAddr.desc())
+    # if userId is not None:
+    #     if userId:  # true: 알파벳 오름차순 정렬
+    #         query = query.order_by(Meat.userId.asc())
+    #     else:  # false: 알파벳 내림차순 정렬
+    #         query = query.order_by(Meat.userId.desc())
+    # if type is not None:
+    #     if type:  # true: 숫자 오름차순 정렬
+    #         query = query.order_by(User.type.asc())
+    #     else:  # false: 숫자 내림차순 정렬
+    #         query = query.order_by(User.type.desc())
+    # if company is not None:
+    #     if company:  # true: 가나다순 정렬
+    #         query = query.order_by(User.company.asc())
+    #     else:  # false: 역순
+    #         query = query.order_by(User.company.desc())
+    # if createdAt is not None:
+    #     if createdAt:  # true: 최신순
+    #         query = query.order_by(Meat.createdAt.desc())
+    #     else:  # false: 역순
+    #         query = query.order_by(Meat.createdAt.asc())
+    # if statusType is not None:
+    #     if statusType:  # true: 숫자 오름차순 정렬
+    #         query = query.order_by(Meat.statusType.asc())
+    #     else:  # false: 숫자 내림차순 정렬
+    #         query = query.order_by(Meat.statusType.desc())
 
     # 기간 설정 쿼리
-    db_total_len = db_session.query(Meat).count()
+    db_total_len = query.count()
     if start is not None and end is not None:
         query = query.filter(Meat.createdAt.between(start, end))
-        db_total_len = db_session.query(Meat).filter(
+        db_total_len = query.filter(
             Meat.createdAt.between(start, end)
         ).count()
     query = query.offset(offset).limit(count)
@@ -622,13 +624,13 @@ def get_range_meat_data(
         meat_result[id] = get_meat(db_session, id)
         userTemp = get_user(db_session, meat_result[id].get("userId"))
         if userTemp:
-            meat_result[id]["name"] = userTemp.get("name")
-            meat_result[id]["company"] = userTemp.get("company")
-            meat_result[id]["type"] = userTemp.get("type")
+            meat_result[id]["userName"] = userTemp.name
+            meat_result[id]["company"] = userTemp.company
+            meat_result[id]["userType"] = usrType[userTemp.type]
         else:
-            meat_result[id]["name"] = userTemp
+            meat_result[id]["userName"] = userTemp
             meat_result[id]["company"] = userTemp
-            meat_result[id]["type"] = userTemp
+            meat_result[id]["userType"] = userTemp
         del meat_result[id]["processedmeat"]
         del meat_result[id]["rawmeat"]
 
@@ -711,7 +713,7 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            user.createdAt = convert2string(user.createdAt, 1)
+            user.createdAt = convert2string(user.createdAt, 0)
         return users
     except Exception as e:
         raise Exception(str(e))
@@ -719,8 +721,9 @@ def get_all_user(db_session):
 def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
+        print(user_data.createdAt)
         if user_data is not None:
-            user_data.createdAt = convert2string(user_data.createdAt, 1)
+            user_data.createdAt = convert2string(user_data.createdAt, 0)
         return user_data
     except Exception as e:
         raise Exception(str(e))

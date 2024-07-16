@@ -23,26 +23,27 @@ get_api = Blueprint("get_api", __name__)
 
 
 # 전체 육류 데이터 출력
-@get_api.route("/", methods=["GET", "POST"])
+@get_api.route("/", methods=["GET"])
 def getMeatData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            offset = request.args.get("offset")
-            count = request.args.get("count")
-            start = request.args.get("start")
-            end = request.args.get("end")
-            return get_range_meat_data(db_session, offset, count, start, end).get_json()
-
+        db_session = current_app.db_session
+        offset = request.args.get("offset")
+        count = request.args.get("count")
+        start = request.args.get("start")
+        end = request.args.get("end")
+        specie = request.args.get("specieValue")
+        if specie == '전체':
+            specie_value = 2
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            specie_value = species.index(specie)
+        return get_range_meat_data(db_session, offset, count, start, end, specie_value).get_json()
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
