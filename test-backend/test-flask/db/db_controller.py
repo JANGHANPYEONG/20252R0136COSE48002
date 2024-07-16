@@ -684,13 +684,13 @@ def create_user(db_session, user_data: dict):
 
 def update_user(db_session, user_data: dict):
     try:
-        userId = user_data.get("userId")
+        user_id = user_data.get("userId")
         history = (
-            db_session.query(User).filter_by(userId=userId).first()
+            db_session.query(User).filter_by(userId=user_id).first()
         )
         # 1. 기존 유저 없음
         if not history:
-            return jsonify({"message": f"No User ID {userId}"}), 400
+            return jsonify({"message": f"No User ID {user_id}"}), 400
 
         # 2. 기존 유저 있음
         for field, value in user_data.items():

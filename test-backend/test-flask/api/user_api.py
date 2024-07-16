@@ -136,49 +136,49 @@ def register_user_data():
         )
 
 
-# 유저 상세 정보 조회 API
-@user_api.route("/get", methods=["GET", "POST"])
-def read_user_data():
-    try:
-        db_session = current_app.db_session
-        if request.method == "GET":
-            userId = request.args.get("userId")
-            if userId:
-                result = get_user(db_session, userId)
-            else:
-                result = _get_users_by_type(db_session)
+# 유저 상세 정보 조회 API - login 기능과 동일하기 때문에 사용하지 않기로 결정
+# @user_api.route("/get", methods=["GET", "POST"])
+# def read_user_data():
+#     try:
+#         db_session = current_app.db_session
+#         if request.method == "GET":
+#             userId = request.args.get("userId")
+#             if userId:
+#                 result = get_user(db_session, userId)
+#             else:
+#                 result = _get_users_by_type(db_session)
 
-            # Ensure result is serializable
-            if isinstance(result, dict):
-                response_data = result
-            else:
-                response_data = result._asdict()
+#             # Ensure result is serializable
+#             if isinstance(result, dict):
+#                 response_data = result
+#             else:
+#                 response_data = result._asdict()
 
-            # Remove None values from response_data
-            response_data = {k: v for k, v in response_data.items() if v is not None}
+#             # Remove None values from response_data
+#             response_data = {k: v for k, v in response_data.items() if v is not None}
 
-            return jsonify(response_data), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except AttributeError as e:
-        logger.exception("AttributeError: %s", e)
-        return (
-            jsonify(
-                {
-                    "msg": "Server Error - Attribute Error",
-                    "time": datetime.now().strftime("%H:%M:%S"),
-                }
-            ),
-            505,
-        )
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
-        )
+#             return jsonify(response_data), 200
+#         else:
+#             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+#     except AttributeError as e:
+#         logger.exception("AttributeError: %s", e)
+#         return (
+#             jsonify(
+#                 {
+#                     "msg": "Server Error - Attribute Error",
+#                     "time": datetime.now().strftime("%H:%M:%S"),
+#                 }
+#             ),
+#             505,
+#         )
+#     except Exception as e:
+#         logger.exception(str(e))
+#         return (
+#             jsonify(
+#                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+#             ),
+#             505,
+#         )
 
 
 # 유저 정보 수정 API
@@ -222,8 +222,8 @@ def update_user_data():
 def check_duplicate():
     try:
         db_session = current_app.db_session
-        userId = request.args.get("userId")
-        user = get_user(db_session, userId)
+        user_id = request.args.get("userId")
+        user = get_user(db_session, user_id)
         if user is None:
             return jsonify({"isDuplicated": False}), 200
         else:
@@ -243,28 +243,28 @@ def check_duplicate():
 def delete_user_data():
     try:
         db_session = current_app.db_session
-        userId = request.args.get("userId")
-        user = get_user(db_session, userId)
+        user_id = request.args.get("userId")
+        user = get_user(db_session, user_id)
         if not user:
             return (
                 jsonify(
                     {
                         "msg": f"No user data in Database",
-                        "userId": userId,
+                        "userId": user_id,
                     }
                 ),
                 401,
             )
         delete_user(db_session, user)
         return (
-                jsonify(
-                    {
-                        "msg": f"User with userId {userId} has been deleted",
-                        "userId": userId,
-                    }
-                ),
-                200,
-            )
+            jsonify(
+                {
+                    "msg": f"User with userId {user_id} has been deleted",
+                    "userId": user_id,
+                }
+            ),
+            200,
+        )
     except Exception as e:
         # logger.exception(str(e))
         return (
