@@ -699,7 +699,7 @@ def update_user(db_session, user_data: dict):
 
     except Exception as e:
         db_session.rollback()
-        raise Exception(str(e))
+        raise jsonify({"msg": "Update Failed", "error": str(e)}), 400
 
 
 def get_user(db_session, userId):
