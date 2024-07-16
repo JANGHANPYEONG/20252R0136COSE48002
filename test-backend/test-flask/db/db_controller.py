@@ -651,13 +651,7 @@ def delete_user(db_session, user):
         db_session.commit()
     except Exception as e:
         db_session.rollback()
-        return jsonify(
-                {
-                    "msg": "Delete Failed", 
-                    "error": str(e)
-                },
-                401,
-            )
+        raise Exception(str(e))
 
 
 # USER
@@ -713,13 +707,7 @@ def update_user(db_session, user_data: dict):
 
     except Exception as e:
         db_session.rollback()
-        raise jsonify(
-            {
-                "msg": "Update Failed", 
-                "error": str(e)
-            }, 
-            400,
-        )
+        raise Exception(str(e))
 
 
 def get_user(db_session, userId):

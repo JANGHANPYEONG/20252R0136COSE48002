@@ -9,7 +9,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
 from datetime import datetime
-from utils import logger, usrType
+from utils import logger, to_dict, usrType
 
 user_api = Blueprint("user_api", __name__)
 
