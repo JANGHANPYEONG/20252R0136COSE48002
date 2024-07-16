@@ -644,6 +644,20 @@ def get_range_meat_data(
 # UPDATE
 
 # DELETE
+def delete_user(db_session, user):
+    try:
+        # 로컬 데이터베이스에서 유저 삭제
+        db_session.delete(user)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        return jsonify(
+                {
+                    "msg": "Delete Failed", 
+                    "error": str(e)
+                },
+                401,
+            )
 
 
 # USER
@@ -711,10 +725,9 @@ def update_user(db_session, user_data: dict):
 def get_user(db_session, userId):
     try:
         userData = db_session.query(User).filter(User.userId == userId).first()
-        userData.createdAt = convert2string(userData.createdAt, 1)
-
+        if userData is not None:
+            userData.createdAt = convert2string(userData.createdAt, 1)
         return userData
-
     except Exception as e:
         raise Exception(str(e))
 

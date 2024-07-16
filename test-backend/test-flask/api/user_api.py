@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, jsonify, request, current_app
 from db.db_model import User
-from db.db_controller import create_user, get_user, _get_users_by_type, update_user
+from db.db_controller import create_user, get_user, _get_users_by_type, update_user, delete_user
 
 import firebase_admin
 from firebase_admin import credentials
@@ -187,6 +187,7 @@ def update_user_data():
     try:
         db_session = current_app.db_session
         data = request.get_json()
+        data["updatedAt"] = datetime.now().strftime("%Y-%m-%d")
         update_user(db_session, data)
 
         
@@ -201,7 +202,7 @@ def update_user_data():
                     "jobTitle": updated_user.jobTitle,
                     "alarm": updated_user.alarm,
                     "type": usrType[updated_user.type],
-                    "updatedAt": datetime.now().strftime("%Y-%m-%d")
+                    "updatedAt": updated_user.updatedAt
                 }
             ), 
             200,
@@ -220,16 +221,13 @@ def update_user_data():
 @user_api.route("/duplicate-check", methods=["GET"])
 def check_duplicate():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            userId = request.args.get("userId")
-            user = db_session.query(User).filter_by(userId=userId).first()
-            if user is None:
-                return jsonify({"msg": "None Duplicated Id"}), 200
-            else:
-                return jsonify({"msg": "Duplicated Id"}), 403
+        db_session = current_app.db_session
+        userId = request.args.get("userId")
+        user = get_user(db_session, userId)
+        if user is None:
+            return jsonify({"isDuplicated": False}), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 403
+            return jsonify({"isDuplicated": True}), 200
     except Exception as e:
         # logger.exception(str(e))
         return (
@@ -242,11 +240,11 @@ def check_duplicate():
 
 # 유저 정보 삭제 API
 @user_api.route("/delete", methods=["DELETE"])
-def delete_user():
+def delete_user_data():
     try:
         db_session = current_app.db_session
         userId = request.args.get("userId")
-        user = db_session.query(User).filter_by(userId=userId).first()
+        user = get_user(db_session, userId)
         if not user:
             return (
                 jsonify(
@@ -257,11 +255,8 @@ def delete_user():
                 ),
                 401,
             )
-        try:
-            # 로컬 데이터베이스에서 유저 삭제
-            db_session.delete(user)
-            db_session.commit()
-            return (
+        delete_user(db_session, user)
+        return (
                 jsonify(
                     {
                         "msg": f"User with userId {userId} has been deleted",
@@ -270,13 +265,8 @@ def delete_user():
                 ),
                 200,
             )
-        except Exception as e:
-            db_session.rollback()
-            logger.exception(str(e))
-            return jsonify({"msg": "Delete Failed", "error": str(e)}), 401
-
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
