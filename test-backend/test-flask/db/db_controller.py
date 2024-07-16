@@ -712,7 +712,7 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            user.createdAt = convert2string(user.createdAt, 1)
+            user.createdAt = convert2string(user.createdAt, 0)
         return users
     except Exception as e:
         raise Exception(str(e))
@@ -833,8 +833,8 @@ def _getMeatDataByRangeStatusType(
 ):
     offset = safe_int(offset)
     count = safe_int(count)
+    # Base query
     if specie_value == '소':
-        # Base query
         query = (
             db_session.query(Meat)
             .filter(
@@ -844,7 +844,6 @@ def _getMeatDataByRangeStatusType(
             .order_by(Meat.createdAt.desc())
         )
     else:
-        # Base query
         query = (
             db_session.query(Meat)
             .filter(

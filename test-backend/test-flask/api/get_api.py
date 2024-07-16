@@ -286,11 +286,11 @@ def getMeatDataByRangeStatusType():
         end_str = request.args.get("end")
         specie_value = request.args.get("specieValue")
 
-        # start = convert2datetime(start_str, 0)
-        # end = convert2datetime(end_str, 0)
+        start = convert2datetime(start_str, 0)
+        end = convert2datetime(end_str, 0)
         if status_type and specie_value:
             return _getMeatDataByRangeStatusType(
-                db_session, status_type, offset, count, specie_value, start_str, end_str
+                db_session, status_type, offset, count, specie_value, start, end
             )
         else:
             return jsonify("No statusType or specieValue in parameter"), 400
@@ -331,7 +331,7 @@ def getTexanomyData():
         db_session = current_app.db_session
         return _getTexanomyData(db_session)
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
