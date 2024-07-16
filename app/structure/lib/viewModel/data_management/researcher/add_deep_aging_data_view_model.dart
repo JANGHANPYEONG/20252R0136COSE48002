@@ -96,12 +96,10 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
         "minute": int.parse(selectedMinute!),
       }
     });
-    print(jsonData);
 
     try {
       dynamic response =
           await RemoteDataSource.sendMeatData('deep-aging-data', jsonData);
-      print('response : $response');
       if (response == null) {
         throw Error();
       } else if (response == 400) {
