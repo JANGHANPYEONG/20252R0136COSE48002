@@ -675,7 +675,7 @@ def update_user(db_session, user_data: dict):
             db_session.query(User).filter_by(userId=userId).first()
         )
         # 1. 기존 유저 없음
-        if history == None:
+        if not history:
             return jsonify({"message": f"No User ID {userId}"}), 400
 
         # 2. 기존 유저 있음
