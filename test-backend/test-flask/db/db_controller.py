@@ -699,23 +699,21 @@ def update_user(db_session, user_data: dict):
 
     except Exception as e:
         db_session.rollback()
-        raise jsonify({"msg": "Update Failed", "error": str(e)}), 400
+        raise jsonify(
+            {
+                "msg": "Update Failed", 
+                "error": str(e)
+            }, 
+            400,
+        )
 
 
 def get_user(db_session, userId):
     try:
         userData = db_session.query(User).filter(User.userId == userId).first()
-        userData_dict = to_dict(userData)
-        userData_dict["createdAt"] = convert2string(userData_dict.get("createdAt"), 1)
-        userData_dict["updatedAt"] = convert2string(userData_dict.get("updatedAt"), 1)
-        userData_dict["loginAt"] = convert2string(userData_dict.get("loginAt"), 1)
-        userData_dict["type"] = (
-            db_session.query(UserTypeInfo)
-            .filter(UserTypeInfo.id == userData_dict.get("type"))
-            .first()
-            .name
-        )
-        return userData_dict
+        userData.createdAt = convert2string(userData.createdAt, 1)
+
+        return userData
 
     except Exception as e:
         raise Exception(str(e))
