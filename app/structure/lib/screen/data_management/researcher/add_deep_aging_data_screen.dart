@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_calendar.dart';
+import 'package:structure/components/data_field.dart';
 
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
@@ -62,7 +63,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                             decoration: BoxDecoration(
                               color: Palette.fieldEmptyBg,
                               borderRadius: BorderRadius.circular(20.w),
-                              border: Border.all(color: Palette.fieldDisabBg),
+                              // border: Border.all(color: Palette.fieldDisabBg),
                             ),
                             alignment: Alignment.centerLeft,
                             padding: EdgeInsets.only(left: 25.w),
@@ -118,7 +119,15 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                                 FilteringTextInputFormatter.allow(
                                     RegExp(r'[0-9]'))
                               ],
+                              isNum: 1,
                             ),
+                            //     DataField(
+                            //   mainText: '',
+                            //   subText: '',
+                            //   controller: context
+                            //       .read<AddDeepAgingDataViewModel>()
+                            //       .textEditingController,
+                            // ),
                           ),
                           Expanded(
                             flex: 2,

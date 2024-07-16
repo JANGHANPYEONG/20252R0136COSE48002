@@ -50,6 +50,7 @@ class MainTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final bool? fillColorAlert; // 클릭했을 때 배경 색 변경
+  final int? isNum;
 
   const MainTextField({
     super.key,
@@ -72,6 +73,7 @@ class MainTextField extends StatelessWidget {
     this.suffixIcon,
     this.prefixIcon,
     this.fillColorAlert,
+    this.isNum,
   });
 
   @override
@@ -149,6 +151,7 @@ class MainTextField extends StatelessWidget {
                 : null,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+        keyboardType: isNum == 1 ? TextInputType.number : TextInputType.text,
       ),
     );
   }

@@ -35,7 +35,7 @@ class StepFreshMeat extends StatelessWidget {
                 StepCard(
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clicekdBasic(context),
-                  mainText: '육류 기본정보',
+                  mainText: '원육 기본정보',
                   status: 4, // 없음
                   imageUrl: 'assets/images/meat_info.png',
                 ),
@@ -45,7 +45,7 @@ class StepFreshMeat extends StatelessWidget {
                 // 육류 단면 촬영
 
                 StepCard(
-                  mainText: '육류 단면 촬영',
+                  mainText: '원육 단면 촬영',
                   status: 4, // 없음
                   onTap: () => context
                       .read<AddRawMeatViewModel>()
@@ -57,7 +57,7 @@ class StepFreshMeat extends StatelessWidget {
 
                 // 신선육 관능 평가
                 StepCard(
-                  mainText: '신선육 관능평가',
+                  mainText: '원육 관능평가',
                   status: 4, // 없음
                   onTap: () =>
                       context.read<AddRawMeatViewModel>().clicekdFresh(context),
