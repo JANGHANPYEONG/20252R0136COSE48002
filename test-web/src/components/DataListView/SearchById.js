@@ -12,7 +12,7 @@ function SearchById({ onDataFetch, onValueChange }) {
 
   const handleSearch = async () => {
     try {
-      const response = await fetch(`http://${apiIP}/meat/get/by-id?id=${id}`);
+      const response = await fetch(`http://${apiIP}/meat/get/by-meat-id?meatId=${id}`);
       
       if (!response.ok) {
         throw new Error('Network response was not ok');

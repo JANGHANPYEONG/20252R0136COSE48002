@@ -44,7 +44,6 @@ const DataListComp = ({
     });
 
     setMeatList(meatData);
-    console.log(meatData);
   };
 
   // API fetch
