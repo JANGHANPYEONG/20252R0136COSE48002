@@ -68,7 +68,7 @@ function DataList({
     if (checked) {
       // 체크한 경우 전체 id를 배열에 추가
       const idArray = [];
-      meatList.forEach((el) => idArray.push(el.id));
+      meatList.forEach((el) => idArray.push(el.meatId));
       setCheckItems(idArray);
     } else {
       // 체크 해제한 경우 배열을 []로 설정
@@ -150,12 +150,12 @@ function DataList({
           }
           {headCells.map((headCell) => (
             <TableCell
-              key={headCell.id}
+              key={headCell.meatId}
               align={headCell.align}
               padding={headCell.disablePadding ? 'none' : 'none'} // normal
-              sortDirection={orderBy === headCell.id ? order : false}
+              sortDirection={orderBy === headCell.meatId ? order : false}
             >
-              <div key={headCell.id} style={style.tableHeader}>
+              <div key={headCell.meatId} style={style.tableHeader}>
                 {headCell.label}
               </div>
             </TableCell>
@@ -217,18 +217,19 @@ function DataList({
                   key={index}
                   selected={isItemSelected}
                 >
+                  
                   {
                     //반려함이나 예측 페이지인 경우 삭제 체크박스 추가
                     pageProp === 'reject' && (
                       <TableCell style={style.tableCell}>
                         <Checkbox
-                          value={content.id}
-                          key={content.id}
+                          value={content.meatId}
+                          key={content.meatId}
                           checked={
-                            checkItems.includes(content.id) ? true : false
+                            checkItems.includes(content.meatId) ? true : false
                           }
                           onChange={(e) =>
-                            handleSingleCheck(e.target.checked, content.id)
+                            handleSingleCheck(e.target.checked, content.meatId)
                           }
                           inputProps={{ 'aria-label': 'controlled' }}
                         />
@@ -252,30 +253,30 @@ function DataList({
                       to={
                         pageProp === 'pa'
                           ? {
-                              pathname: `/dataPA/${content.id}`,
+                              pathname: `/dataPA/${content.meatId}`,
                               search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                             }
                           : content.statusType === '승인'
                             ? {
-                                pathname: `/dataView/${content.id}`,
+                                pathname: `/dataView/${content.meatId}`,
                                 search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                               }
                             : {
-                                pathname: `/DataConfirm/${content.id}`,
+                                pathname: `/DataConfirm/${content.meatId}`,
                                 search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                               }
                       }
                     >
-                      {content.id}
+                      {content.meatId}
                     </Link>
                   </TableCell>
                   <TableCell style={style.tableCell}>
                     {content.farmAddr ? content.farmAddr : '-'}
                   </TableCell>
-                  <TableCell style={style.tableCell}>{content.name}</TableCell>
+                  <TableCell style={style.tableCell}>{content.userName}</TableCell>
                   <TableCell style={style.tableCell}>
                     {' '}
-                    {content.type}{' '}
+                    {content.userType}{' '}
                   </TableCell>
                   <TableCell style={style.tableCell}>
                     {' '}
@@ -300,7 +301,7 @@ function DataList({
                     <IconButton
                       aria-label="delete"
                       color="#90a4ae"
-                      onClick={() => handleTableCellDelete(content.id)}
+                      onClick={() => handleTableCellDelete(content.meatId)}
                     >
                       <FaRegTrashAlt />
                     </IconButton>
@@ -361,7 +362,7 @@ const headCells = [
     label: 'No.',
   },
   {
-    id: 'id',
+    id: 'meatId',
     align: 'center',
     disablePadding: true,
     label: '관리번호',
