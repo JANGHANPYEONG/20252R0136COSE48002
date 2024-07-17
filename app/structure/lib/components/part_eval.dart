@@ -32,7 +32,7 @@ class PartEval extends StatelessWidget {
         // SizedBox(height: 30.w),
         // 기준 이미지
         Container(
-          margin: EdgeInsets.only(top: 20.h),
+          // margin: EdgeInsets.only(top: 20.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -61,7 +61,7 @@ class PartEval extends StatelessWidget {
 
         // 슬라이더
         Container(
-          width: 650.w,
+          width: 770.w,
           height: 12.h,
           margin: EdgeInsets.symmetric(vertical: 50.h, horizontal: 16.w),
           child: SfSliderTheme(
@@ -85,12 +85,13 @@ class PartEval extends StatelessWidget {
               onChanged: onChanged,
               tooltipTextFormatterCallback:
                   (dynamic actualValue, String formattedText) {
-                final double newValue = actualValue + 1;
+                final double newValue = actualValue;
                 return newValue.toStringAsFixed(1);
               },
             ),
           ),
-          const SizedBox(height: 10),
+        ),    
+        const SizedBox(height: 10),
       ],
     );
   }

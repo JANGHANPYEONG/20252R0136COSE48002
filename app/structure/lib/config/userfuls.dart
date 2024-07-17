@@ -53,4 +53,14 @@ class Usefuls {
 
     return formattedDate;
   }
+
+  static String parseDateDot(String? inputDate) {
+    if (inputDate == null) return '-';
+    DateTime dateTime = DateTime.parse(inputDate);
+
+    String formattedDate =
+        "${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day}";
+
+    return formattedDate;
+  }
 }

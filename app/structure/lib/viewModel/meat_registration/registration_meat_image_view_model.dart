@@ -69,7 +69,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
   /// 등록 정보 지정 (등록 날짜, 등록자)
   void _setInfo() {
     time = DateTime.now();
-    date = '${time.year}.${time.month}.${time.day}';
+    date = '${time.year}.${time.month.toString().padLeft(2, '0')}.${time.day}';
     userName = userModel.name ?? '-';
   }
 
@@ -105,7 +105,8 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
         if (meatModel.freshmeat!['createdAt'] != null) {
           fetchDate(meatModel.freshmeat!['createdAt']);
-          date = '${time.year}.${time.month}.${time.day}';
+          date =
+              '${time.year}.${time.month..toString().padLeft(2, '0')}.${time.day}';
         }
       }
     } else {
@@ -124,7 +125,8 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
         if (meatModel.deepAgedFreshmeat!["createdAt"] != null) {
           fetchDate(meatModel.deepAgedFreshmeat!["createdAt"]);
-          date = '${time.year}.${time.month}.${time.day}';
+          date =
+              '${time.year}.${time.month.toString().padLeft(2, '0')}.${time.day}';
         }
       }
     }
