@@ -37,6 +37,9 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    MeatRegistrationViewModel meatRegistrationViewModel =
+        context.watch<MeatRegistrationViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
@@ -45,7 +48,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
         closeButton: false,
       ),
       body: Center(
-        child: context.watch<MeatRegistrationViewModel>().isLoading
+        child: meatRegistrationViewModel.isLoading
             ? const LoadingScreen()
             : Column(
                 children: [
@@ -58,49 +61,31 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   StepCard(
                     mainText: '육류 기본정보',
                     status: widget.meatModel.basicCompleted ? 1 : 2,
-                    onTap: () => context
-                        .read<MeatRegistrationViewModel>()
-                        .clickedBasic(context),
+                    onTap: () =>
+                        meatRegistrationViewModel.clickedBasic(context),
                     imageUrl: 'assets/images/meat_info.png',
                   ),
-
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: const Divider(
-                      thickness: 1,
-                    ),
-                  ),
+                  SizedBox(height: 8.h),
 
                   // STEP 2 : 육류 단면 촬영
                   StepCard(
                     mainText: '육류 단면 촬영',
                     status: widget.meatModel.freshImageCompleted ? 1 : 2,
                     onTap: () => widget.meatModel.basicCompleted
-                        ? context
-                            .read<MeatRegistrationViewModel>()
-                            .clickedImage(context)
+                        ? meatRegistrationViewModel.clickedImage(context)
                         : null,
                     // isCompleted: widget.meatModel.freshImageCompleted,
                     // isBefore: false,
                     imageUrl: 'assets/images/meat_image.png',
                   ),
-                  SizedBox(height: 4.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: const Divider(
-                      thickness: 1,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 8.h),
 
                   // STEP 3 : 신선육 관능평가
                   StepCard(
                     mainText: '신선육 관능평가',
                     status: widget.meatModel.rawFreshCompleted ? 1 : 2,
                     onTap: () => widget.meatModel.freshImageCompleted
-                        ? context
-                            .read<MeatRegistrationViewModel>()
-                            .clickedFreshmeat(context)
+                        ? meatRegistrationViewModel.clickedFreshmeat(context)
                         : null,
                     // isCompleted: widget.meatModel.rawFreshCompleted,
                     // isBefore: false,
@@ -122,9 +107,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         // 관리번호 생성 버튼
                         MainButton(
                           onPressed: () async {
-                            context
-                                .read<MeatRegistrationViewModel>()
-                                .clickCreateBtn(context);
+                            meatRegistrationViewModel.clickCreateBtn(context);
                           },
                           text: '관리번호 만들기',
                           width: 282.w,
@@ -137,8 +120,10 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         // 임시저장 버튼
                         CustomTextButton(
                           title: '임시저장 하기',
-                          onPressed: () async =>
-                              context.read<MeatRegistrationViewModel>(),
+                          onPressed: () {
+                            meatRegistrationViewModel
+                                .clickedTempSaveButton(context);
+                          },
                         ),
                       ],
                     ),

@@ -91,21 +91,15 @@ class MeatRegistrationViewModel with ChangeNotifier {
 
   /// 임시저장 버튼
   Future<void> clickedTempSaveButton(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      isLoading = false;
-      notifyListeners();
       _context = context;
-      // _showTempSavePopup();
+      _showTempSavePopup();
     } catch (e) {
       print('에러발생: $e');
     }
-    isLoading = false;
-    notifyListeners();
   }
 
   /// 임시저장 완료
