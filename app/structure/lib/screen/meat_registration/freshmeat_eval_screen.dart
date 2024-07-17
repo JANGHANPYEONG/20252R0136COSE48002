@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
-import 'package:structure/components/image_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
@@ -62,11 +61,48 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 40.h),
-                  
-                  ImageCard(
-                      imagePath:
-                          context.read<FreshMeatEvalViewModel>().meatImage),
+                  // SizedBox(height: 40.h),
+                  ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: SizedBox(
+                        width: 640.w,
+                        height: 640.w,
+                        // 관능평가를 위한 이미지 할당.
+                        child: freshMeatEvalViewModel.meatImage.contains('http')
+                            ? Image.network(
+                                freshMeatEvalViewModel.meatImage,
+                                loadingBuilder: (BuildContext context,
+                                    Widget child,
+                                    ImageChunkEvent? loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    return child;
+                                  } else {
+                                    return LoadingScreen(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  (loadingProgress
+                                                          .expectedTotalBytes ??
+                                                      1)
+                                              : null,
+                                    );
+                                  }
+                                },
+                                // 에러 정의
+                                errorBuilder: (BuildContext context,
+                                    Object error, StackTrace? stackTrace) {
+                                  return const Icon(Icons.error);
+                                },
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(freshMeatEvalViewModel.meatImage),
+                                fit: BoxFit.cover,
+                              ),
+                      )),
+                  SizedBox(height: 30.h),
 
                   // 관능평가 데이터가 입력 되었는지 체크.
                   Row(
@@ -137,8 +173,9 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                     ),
                   ),
 
-                  SizedBox(
-                    height: 270.h,
+                  Container(
+                    margin: EdgeInsets.only(top: 10.h),
+                    height: 250.h,
                     child: Consumer<FreshMeatEvalViewModel>(
                       // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
                       builder: (context, viewModel, child) => TabBarView(
@@ -205,7 +242,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
 
                   // 데이터 저장 버튼
                   Container(
-                    margin: EdgeInsets.only(bottom: 20.h),
+                    margin: EdgeInsets.only(bottom: 10.h),
                     child: MainButton(
                       onPressed: freshMeatEvalViewModel.completed
                           ? () async {
