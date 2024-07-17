@@ -246,7 +246,9 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
 
         else: 
             existing_meat = db_session.query(Meat).get(meat_id)
-            
+            if existing_meat.statusType == 2:
+                raise Exception("Already accepted Meat Data")
+                
             new_category = db_session.query(CategoryInfo).filter(
                 CategoryInfo.primalValue == data.get("primalValue"),
                 CategoryInfo.secondaryValue == data.get("secondaryValue")
@@ -978,7 +980,7 @@ def _updateConfirmData(db_session, id):
         meat.statusType = 2
         db_session.merge(meat)
         db_session.commit()
-        return jsonify(id), 200
+        return jsonify({"msg": "Success to update StatusType"}), 200
     else:
         return jsonify({"msg": "No Data In Meat DB"}), 404
 
@@ -989,7 +991,7 @@ def _updateRejectData(db_session, id):
         meat.statusType = 1
         db_session.merge(meat)
         db_session.commit()
-        return jsonify(id), 200
+        return jsonify({"msg": "Success to update StatusType"}), 200
     else:
         return jsonify({"msg": "No Data In Meat DB"}), 404
 
