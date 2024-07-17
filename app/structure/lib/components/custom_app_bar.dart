@@ -13,16 +13,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? closeButtonOnPressed;
   final bool? centerTitle;
   final double? top;
+  final TabController? tabController;
+  final List<Tab>? tabs;
 
   const CustomAppBar({
     super.key,
     required this.title,
-    required this.backButton,
-    required this.closeButton,
+    this.backButton = false,
+    this.closeButton = false,
     this.backButtonOnPressed,
     this.closeButtonOnPressed,
     this.centerTitle,
     this.top,
+    this.tabController,
+    this.tabs,
   });
 
   @override
@@ -34,11 +38,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? IconButton(
               onPressed: backButtonOnPressed ??
                   () {
-                    // showExitDialog(context);
                     FocusScope.of(context).unfocus();
                     context.pop();
                   },
-              icon: const Icon(Icons.arrow_back_ios))
+              icon: const Icon(Icons.arrow_back_ios),
+            )
           : null,
       foregroundColor: Palette.appBarIcon,
       centerTitle: centerTitle,
@@ -54,7 +58,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               Container(
                 margin: EdgeInsets.only(
                   right: 45.w,
-                  top: top ?? 39.h,
+                  top: top ?? 40.h,
                 ),
                 child: Row(
                   children: [
@@ -70,10 +74,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ]
           : null,
+      bottom: tabController != null
+          ? TabBar(
+              indicatorColor: Palette.mainBtnAtvBg,
+              labelColor: Colors.black,
+              controller: tabController,
+              tabs: tabs ?? [],
+            )
+          : null,
       backgroundColor: Colors.white,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize {
+    final tabBarHeight = tabController != null ? kTextTabBarHeight : 0.0;
+    return Size.fromHeight(kToolbarHeight + tabBarHeight);
+  }
 }
