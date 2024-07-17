@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/image_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
@@ -48,7 +49,7 @@ class _FreshMeatEvalNotEditableScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
-        title: '신선육 관능평가',
+        title: '원육 관능평가',
         backButton: true,
         closeButton: false,
       ),
@@ -58,34 +59,39 @@ class _FreshMeatEvalNotEditableScreenState
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: 40.h),
-              SizedBox(
-                width: 640.w,
-                height: 475.h,
-                child: Image.network(
-                  context.read<FreshMeatEvalNotEditableViewModel>().meatImage,
-                  loadingBuilder: (BuildContext context, Widget child,
-                      ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    } else {
-                      return LoadingScreen(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                (loadingProgress.expectedTotalBytes ?? 1)
-                            : null,
-                      );
-                    }
-                  },
+              // SizedBox(
+              //   width: 640.w,
+              //   height: 475.h,
+              //   child: Image.network(
+              //     context.read<FreshMeatEvalNotEditableViewModel>().meatImage,
+              //     loadingBuilder: (BuildContext context, Widget child,
+              //         ImageChunkEvent? loadingProgress) {
+              //       if (loadingProgress == null) {
+              //         return child;
+              //       } else {
+              //         return LoadingScreen(
+              //           value: loadingProgress.expectedTotalBytes != null
+              //               ? loadingProgress.cumulativeBytesLoaded /
+              //                   (loadingProgress.expectedTotalBytes ?? 1)
+              //               : null,
+              //         );
+              //       }
+              //     },
 
-                  // 이미지 불러오기 에러
-                  errorBuilder: (BuildContext context, Object error,
-                      StackTrace? stackTrace) {
-                    return const Icon(Icons.error);
-                  },
+              //     // 이미지 불러오기 에러
+              //     errorBuilder: (BuildContext context, Object error,
+              //         StackTrace? stackTrace) {
+              //       return const Icon(Icons.error);
+              //     },
 
-                  fit: BoxFit.cover,
-                ),
-              ),
+              //     fit: BoxFit.cover,
+              //   ),
+              // ),
+              ImageCard(
+                  imagePath: context
+                          .read<FreshMeatEvalNotEditableViewModel>()
+                          .meatImage ??
+                      '없음'),
               SizedBox(height: 60.h),
 
               // 관능평가 데이터
