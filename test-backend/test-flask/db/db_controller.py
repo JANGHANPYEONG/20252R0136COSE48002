@@ -576,9 +576,10 @@ def get_range_meat_data(
     statusType=None,
     company=None,
 ):
-    count = safe_int(count)
-    offset = safe_int(offset)
-    offset = offset*count
+    if count and offset:
+        count = safe_int(count)
+        offset = safe_int(offset)
+        offset = offset*count
     start = convert2datetime(start, 0)
     end = convert2datetime(end, 0)
 
@@ -627,7 +628,9 @@ def get_range_meat_data(
         db_total_len = query.filter(
             Meat.createdAt.between(start, end)
         ).count()
-    query = query.order_by(Meat.createdAt.desc()).offset(offset).limit(count)
+    query = query.order_by(Meat.createdAt.desc())
+    if offset and count:
+        query = query.offset(offset).limit(count)
 
     # 탐색
     meat_data = query.all()
