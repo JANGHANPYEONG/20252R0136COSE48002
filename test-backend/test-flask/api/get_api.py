@@ -36,7 +36,7 @@ def getMeatData():
             specie_value = 2
         else:
             specie_value = species.index(specie)
-        return get_range_meat_data(db_session, offset, count, start, end, specie_value).get_json()
+        return jsonify(get_range_meat_data(db_session, offset, count, start, end, specie_value)), 200
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -48,62 +48,25 @@ def getMeatData():
 
 
 # 특정 ID에 해당하는 육류 데이터 출력
-@get_api.route("/by-id", methods=["GET", "POST"])
+@get_api.route("/by-meat-id", methods=["GET"])
 def getMeatDataById():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = request.args.get("id")
-            if id is None:
-                raise Exception("Invalid Meat ID")
-            result = get_meat(db_session, id)
-            if result:
-                for k, v in result["rawmeat"].items():
-                    try:
-                        result["rawmeat_data_complete"] = (
-                            all(
-                                v is not None
-                                for v in result["rawmeat"][
-                                    "heatedmeat_sensory_eval"
-                                ].values()
-                            )
-                            and all(
-                                v is not None
-                                for v in result["rawmeat"]["probexpt_data"].values()
-                            )
-                            and all(
-                                (k == "deepAgingId" or v is not None)
-                                for k, v in result["rawmeat"]["sensory_eval"].items()
-                            )
-                        )
-                    except:
-                        result["rawmeat_data_complete"] = False
-
-                result["processedmeat_data_complete"] = {}
-
-                for k, v in result["processedmeat"].items():
-                    try:
-                        result["processedmeat_data_complete"][k] = all(
-                            all(vv is not None for vv in inner_v.values())
-                            for inner_v in v.values()
-                        )
-                    except:
-                        result["processedmeat_data_complete"][k] = False
-                if not result["processedmeat_data_complete"]:
-                    result["processedmeat_data_complete"] = False
-
-                return jsonify(result)
-            else:
-                raise Exception(f"No Meat data found for {id}")
+        db_session = current_app.db_session
+        meat_id = request.args.get("meatId")
+        if meat_id is None:
+            return jsonify({"msg": "Invalid Meat ID"}), 400
+        result = get_meat(db_session, meat_id)
+        if result:
+            return jsonify(result), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": f"No Meat data found for {meat_id}"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
