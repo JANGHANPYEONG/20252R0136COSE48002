@@ -32,39 +32,33 @@ def add_specific_meat_data():
         meat = get_meat(db_session, meat_id)
         
         if request.method == "POST": # 기본 원육 정보 생성(POST)
-            try:
-                if meat:
-                    return jsonify({"msg": "Already Existing Meat", "details": str(e)}), 400
+            if meat:
+                return jsonify({"msg": "Already Existing Meat"}), 400
                 
-                new_meat_id = create_specific_std_meat_data(
-                    db_session, s3_conn, firestore_conn, data, meat_id, is_post=1
-                )
-                if new_meat_id:
-                    create_raw_meat_deep_aging_info(db_session, new_meat_id)
-                    return jsonify({"msg": "Success to store Raw Meat and Initial DeepAging Information"}), 200
-            except Exception as e:                    
-                return jsonify({"msg": "Fail to store Raw Meat", "details": str(e)}), 400
+            new_meat_id = create_specific_std_meat_data(
+                db_session, s3_conn, firestore_conn, data, meat_id, is_post=1
+            )
+            if new_meat_id:
+                create_raw_meat_deep_aging_info(db_session, new_meat_id)
+                return jsonify({"msg": "Success to store Raw Meat and Initial DeepAging Information"}), 200
                 
         else: # 기본 원육 정보 수정(PATCH)
-            try:
-                if not meat:
-                    return jsonify({"msg": "Not Existing Meat", "details": str(e)}), 400
+            if not meat:
+                return jsonify({"msg": "Not Existing Meat"}), 404
 
-                updated_meat_id = create_specific_std_meat_data(
-                    db_session, s3_conn, firestore_conn, data, meat_id, is_post=0
-                )
-                if updated_meat_id:
-                    return jsonify({"msg": f"Success to update Raw Meat {updated_meat_id} Information"}), 200
-            
-            except Exception as e:
-                return jsonify({"msg": "Fail to update Raw Meat", "details": str(e)}), 400
+            updated_meat_id = create_specific_std_meat_data(
+                db_session, s3_conn, firestore_conn, data, meat_id, is_post=0
+            )
+            if updated_meat_id:
+                return jsonify({"msg": f"Success to update Raw Meat {updated_meat_id} Information"}), 200
+
     except Exception as e:
         # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
