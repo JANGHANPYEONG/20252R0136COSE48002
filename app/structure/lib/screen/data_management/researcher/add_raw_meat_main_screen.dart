@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/custom_scroll.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
@@ -27,7 +28,7 @@ class StepFreshMeat extends StatelessWidget {
         closeButton: false,
       ),
       body: ScrollConfiguration(
-        behavior: CustomScrollBehavior(),
+        behavior: CustomScroll(),
         child: SingleChildScrollView(
           child: Stack(
             children: [
@@ -173,10 +174,10 @@ class StepFreshMeat extends StatelessWidget {
   }
 }
 
-class CustomScrollBehavior extends ScrollBehavior {
-  @override
-  Widget buildOverscrollIndicator(
-      BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
-  }
-}
+// class CustomScrollBehavior extends ScrollBehavior {
+//   @override
+//   Widget buildOverscrollIndicator(
+//       BuildContext context, Widget child, ScrollableDetails details) {
+//     return child;
+//   }
+// }
