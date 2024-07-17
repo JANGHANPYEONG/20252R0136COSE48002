@@ -247,7 +247,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
         else: 
             existing_meat = db_session.query(Meat).get(meat_id)
             if existing_meat.statusType == 2:
-                raise Exception("Already accepted Meat Data")
+                raise Exception("Already Confirmed Meat Data")
                 
             new_category = db_session.query(CategoryInfo).filter(
                 CategoryInfo.primalValue == data.get("primalValue"),
@@ -976,24 +976,24 @@ def get_AI_SensoryEval(db_session, id, seqno):
 
 def _updateConfirmData(db_session, id):
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if meat:
+    if meat and meat.statusType != 2:
         meat.statusType = 2
         db_session.merge(meat)
         db_session.commit()
         return jsonify({"msg": "Success to update StatusType"}), 200
     else:
-        return jsonify({"msg": "No Data In Meat DB"}), 404
+        return jsonify({"msg": "No Data In Meat DB or Already Confirmed"}), 404
 
 
 def _updateRejectData(db_session, id):
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if meat:
+    if meat and meat.statusType != 1:
         meat.statusType = 1
         db_session.merge(meat)
         db_session.commit()
         return jsonify({"msg": "Success to update StatusType"}), 200
     else:
-        return jsonify({"msg": "No Data In Meat DB"}), 404
+        return jsonify({"msg": "No Data In Meat DB or Already Rejected"}), 404
 
 
 def _addSpecificPredictData(db_session, data):
