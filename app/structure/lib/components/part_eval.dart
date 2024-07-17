@@ -77,6 +77,21 @@ class PartEval extends StatelessWidget {
             onChanged: onChanged,
           ),
         ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(value.toString(),
+                    textAlign: TextAlign.left,
+                    style: Palette.dropDownTitleStyle),
+              ),
+            ),
+          ],
+        )
       ],
     );
   }

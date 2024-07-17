@@ -114,8 +114,9 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                           children: [
                             ImageCard(
                               imagePath: context
-                                  .read<RegistrationMeatImageViewModel>()
-                                  .imagePath!,
+                                      .read<RegistrationMeatImageViewModel>()
+                                      .imagePath ??
+                                  '없음',
                             ),
                             // 삭제 버튼
                             Positioned(
