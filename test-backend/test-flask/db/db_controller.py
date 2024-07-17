@@ -224,32 +224,42 @@ def create_ProbexptData(meat_data: dict, seqno: int, id: str):
 
 
 # API MiddleWare
-def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
-    meat_id = data.get("meatId")
-    meat = db_session.query(Meat).get(meat_id)
-    if meat:
-        raise Exception("Already accepted meat")
+def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, meat_id, is_post):
     try:
-        # 1. DB merge
-        new_meat = create_meat(db_session=db_session, meat_data=data)
-        new_meat.statusType = 0
-        
-        db_session.merge(new_meat)
-        db_session.commit()
+        if is_post:
+            # 1. DB merge
+            new_meat = create_meat(db_session=db_session, meat_data=data)
+            new_meat.statusType = 0
+            
+            db_session.merge(new_meat)
+            db_session.commit()
+            
+            # 2. Firestore -> S3
+            transfer_folder_image(
+                s3_conn=s3_conn,
+                firestore_conn=firestore_conn,
+                db_session=db_session,
+                id=meat_id,
+                new_meat=new_meat,
+                folder="qr_codes",
+            )
 
-        # 2. Firestore -> S3
-        transfer_folder_image(
-            s3_conn=s3_conn,
-            firestore_conn=firestore_conn,
-            db_session=db_session,
-            id=meat_id,
-            new_meat=new_meat,
-            folder="qr_codes",
-        )
-        
+        else: 
+            existing_meat = db_session.query(Meat).get(meat_id)
+            
+            new_category = db_session.query(CategoryInfo).filter(
+                CategoryInfo.primalValue == data.get("primalValue"),
+                CategoryInfo.secondaryValue == data.get("secondaryValue")
+            ).first()
+            existing_meat.categoryId = new_category.id
+            
+            db_session.add(existing_meat)
+            db_session.commit()
+
     except Exception as e:
         db_session.rollback()
         raise e
+
     return meat_id
 
 

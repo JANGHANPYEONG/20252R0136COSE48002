@@ -12,6 +12,7 @@ from db.db_controller import (
     create_specific_deep_aging_meat_data,
     create_specific_heatedmeat_seonsory_data,
     _addSpecificPredictData,
+    get_meat,
 )
 from utils import *
 import uuid
@@ -27,16 +28,38 @@ def add_specific_meat_data():
     firestore_conn = current_app.firestore_conn
     try:
         data = request.get_json()
-        if data:
+        meat_id = data.get("meatId")
+        meat = get_meat(db_session, meat_id)
+        
+        if request.method == "POST": # 기본 원육 정보 생성(POST)
             try:
-                new_meat_id = create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data)
+                if meat:
+                    return jsonify({"msg": "Already Existing Meat", "details": str(e)}), 400
+                
+                new_meat_id = create_specific_std_meat_data(
+                    db_session, s3_conn, firestore_conn, data, meat_id, is_post=1
+                )
                 if new_meat_id:
                     create_raw_meat_deep_aging_info(db_session, new_meat_id)
                     return jsonify({"msg": "Success to store Raw Meat and Initial DeepAging Information"}), 200
-            except Exception as e:
+            except Exception as e:                    
                 return jsonify({"msg": "Fail to store Raw Meat", "details": str(e)}), 400
+                
+        else: # 기본 원육 정보 수정(PATCH)
+            try:
+                if not meat:
+                    return jsonify({"msg": "Not Existing Meat", "details": str(e)}), 400
+
+                updated_meat_id = create_specific_std_meat_data(
+                    db_session, s3_conn, firestore_conn, data, meat_id, is_post=0
+                )
+                if updated_meat_id:
+                    return jsonify({"msg": f"Success to update Raw Meat {updated_meat_id} Information"}), 200
+            
+            except Exception as e:
+                return jsonify({"msg": "Fail to update Raw Meat", "details": str(e)}), 400
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
