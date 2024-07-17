@@ -108,7 +108,9 @@ class FreshMeatEvalViewModel with ChangeNotifier {
 
   void onChangedOverall(double value) {
     overall = double.parse(value.toStringAsFixed(1));
+
     _checkCompleted();
+    print(overall);
     notifyListeners();
   }
 
@@ -132,9 +134,6 @@ class FreshMeatEvalViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    // 임시저장
-    await tempSave(context);
-
     try {
       if (meatModel.seqno == 0) {
         // 원육 - 등록
@@ -146,6 +145,7 @@ class FreshMeatEvalViewModel with ChangeNotifier {
         meatModel.freshmeat!['texture'] = texture;
         meatModel.freshmeat!['surfaceMoisture'] = surface;
         meatModel.freshmeat!['overall'] = overall;
+        // print(overall);
 
         // 수정
         if (meatModel.id != null) {
@@ -170,6 +170,11 @@ class FreshMeatEvalViewModel with ChangeNotifier {
       meatModel.checkCompleted();
       isLoading = false;
       notifyListeners();
+
+      // 임시저장
+      await tempSave();
+
+      _context = context;
       _goNext();
     } catch (e) {
       print('에러발생: $e');
@@ -195,12 +200,12 @@ class FreshMeatEvalViewModel with ChangeNotifier {
   }
 
   /// 임시저장 버튼
-  Future<void> tempSave(BuildContext context) async {
+  Future<void> tempSave() async {
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
-      _context = context;
+      // _context = context;
     } catch (e) {
       print('에러발생: $e');
     }
