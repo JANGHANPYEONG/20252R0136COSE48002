@@ -84,6 +84,7 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
     if (data !== null && data !== undefined) {
       processPieData(data);
     }
+    setLabel('total_counts');
   }, [data]);
 
   // 토글 버튼 handle (전체, 소, 돼지)

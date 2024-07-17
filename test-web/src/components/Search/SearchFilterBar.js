@@ -30,14 +30,20 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
 
   //조회 기간 (탭으로 클릭 시)
   const [isDur, setIsDur] = useState(true);
-  const [duration, setDuration] = useState(searchParams.get('duration') || 'week');
+  const [duration, setDuration] = useState(
+    searchParams.get('duration') || 'week'
+  );
   const [durStart, setDurStart] = useState(null);
   const [durEnd, setDurEnd] = useState(null);
   // 조회 기간 (직접 입력할 시)
-  const [calenderStart, setCalenderStart] = useState(dayjs(searchParams.get('start') || null));
-  const [calenderEnd, setCalenderEnd] = useState(dayjs(searchParams.get('end') || null));
+  const [calenderStart, setCalenderStart] = useState(
+    dayjs(searchParams.get('start') || null)
+  );
+  const [calenderEnd, setCalenderEnd] = useState(
+    dayjs(searchParams.get('end') || null)
+  );
 
-  console.log(duration)
+  console.log(duration);
 
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
@@ -65,7 +71,9 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
       s.setHours(0, 0, 0, 0);
     }
     const start = new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-    const end = new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5);
+    const end = new Date(new Date().getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
     return { start, end };
   };
 
@@ -100,11 +108,11 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     setCalenderStart(null);
     setCalenderEnd(null);
     setIsDur(true);
-  
+
     const { start, end } = updateDates();
     setStartDate(start);
     setEndDate(end);
-  
+
     const queryParams = new URLSearchParams();
     queryParams.set('duration', 'week');
     navigate(`${location.pathname}?${queryParams.toString()}`);
@@ -340,6 +348,7 @@ const styles = {
     gap: '10px',
     gridTemplateColumns: 'minmax(400px, max-content) 1fr',
     width: 'fit-content',
+    minWidth: '500px',
     height: 'fit-content',
     borderRadius: '10px',
   },

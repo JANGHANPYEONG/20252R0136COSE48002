@@ -39,7 +39,7 @@ const DataListComp = ({
     });
 
     setMeatList(meatData);
-    console.log(meatData)
+    console.log(meatData);
   };
 
   // API fetch
@@ -94,7 +94,6 @@ const DataListComp = ({
 
   // 정상 데이터 로드 된 경우
   return (
-    
     <div>
       <div style={style.listContainer}>
         {meatList !== undefined && (
@@ -144,6 +143,7 @@ const style = {
     paddingRight: '0px',
     paddingBottom: '0',
     height: 'auto',
+    minWidth: '640px',
   },
   paginationBar: {
     marginTop: '40px',
@@ -154,6 +154,7 @@ const style = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minWidth: '640px',
   },
   formControl: {
     minWidth: 120,

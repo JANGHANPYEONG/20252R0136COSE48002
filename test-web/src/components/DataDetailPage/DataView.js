@@ -257,14 +257,17 @@ function DataView({ dataProps }) {
           userId={userId}
           createdAt={createdAt}
         />
-
         {/* 3. 세부 데이터 정보*/}
         <Card
           style={{
             width: '27vw',
             margin: '0px 10px',
             boxShadow: 24,
+            minWidth: '360px',
             height: '65vh',
+            minHeight: '500px',
+            // display: 'flex',
+            // flexDirection: 'column',
           }}
         >
           <Tabs
@@ -466,13 +469,13 @@ const style = {
     justifyContent: 'space-between',
   },
   editBtnWrapper: {
-    paddingTop: '0px',
+    padding: '0px',
+    margin: '10px 0px 0px',
+    paddingRight: '10px',
     width: '100%',
     display: 'flex',
     justifyContent: 'end',
-    marginTop: 'auto',
-    borderBottomLeftRadius: '10px',
-    borderBottomRightRadius: '10px',
+    minWidth: '1140px',
   },
   dataFieldColumn: {
     backgroundColor: '#9e9e9e',
@@ -499,7 +502,7 @@ const style = {
   dataContainer: {
     height: '33px',
     borderBottom: '0.8px solid #e0e0e0',
-    width: '',
+    width: '60px',
     borderRight: '0.8px solid #e0e0e0',
     padding: '4px 5px',
   },

@@ -37,15 +37,15 @@ function Dashboard() {
   // 쿼리스트링 추출
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  
+
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
   const queryStartDate = new URLSearchParams(searchParams).get('startDate');
   const queryEndDate = new URLSearchParams(searchParams).get('endDate');
   const queryDuration = searchParams.get('duration');
 
   const now = new Date();
-    let start = new Date(now);
-    let end = new Date(now);
+  let start = new Date(now);
+  let end = new Date(now);
 
   useEffect(() => {
     if (queryDuration) {
@@ -77,13 +77,16 @@ function Dashboard() {
       // 기본값 설정 (7일 전부터 현재까지)
       start.setDate(now.getDate() - 7);
     }
-  
-    const formattedStartDate = new Date(start.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-    const formattedEndDate = new Date(end.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-  
+
+    const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+    const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  
   }, [searchParams]);
 
   const handleDataFetch = (fetchedData) => {
@@ -97,7 +100,7 @@ function Dashboard() {
   return (
     <div
       style={{
-        overflow: 'overlay',
+        overflow: 'auto',
         width: '100%',
         marginTop: '100px',
         height: '100%',
@@ -111,6 +114,7 @@ function Dashboard() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          minWidth: '634px', // minimum width
         }}
       >
         {value === 'reject' ? (
@@ -175,7 +179,7 @@ function Dashboard() {
                 setValue(e.target.value);
               }}
             >
-              통계
+              현황
             </Button>
           )}
         </div>
@@ -246,6 +250,7 @@ const styles = {
     alignItems: 'center', // Add this line to vertically align items
     backgroundColor: 'white',
     margin: '10px 0px',
+    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
   },
   fixedTab: {
     right: '0',
@@ -256,6 +261,7 @@ const styles = {
     marginTop: '30px',
     borderBottom: 'solid rgba(0, 0, 0, 0.12)',
     borderBottomWidth: 'thin',
+    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
   },
   tabBtn: {
     border: 'none',

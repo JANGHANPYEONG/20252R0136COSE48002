@@ -21,8 +21,8 @@ function PA() {
   const handleValueChange = (newValue) => {
     setValue(newValue);
   };
-  const [value, setValue] = useState('list')
-  const [data, setData] = useState(null)
+  const [value, setValue] = useState('list');
+  const [data, setData] = useState(null);
   /**default 조회 날짜 : 현재 날짜 기준 일주일 전  */
   const s = new Date();
   s.setDate(s.getDate() - 7);
@@ -37,15 +37,15 @@ function PA() {
   // 쿼리스트링 추출
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  
+
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
   const queryStartDate = new URLSearchParams(searchParams).get('startDate');
   const queryEndDate = new URLSearchParams(searchParams).get('endDate');
   const queryDuration = searchParams.get('duration');
 
   const now = new Date();
-    let start = new Date(now);
-    let end = new Date(now);
+  let start = new Date(now);
+  let end = new Date(now);
 
   useEffect(() => {
     if (queryDuration) {
@@ -77,13 +77,16 @@ function PA() {
       // 기본값 설정 (7일 전부터 현재까지)
       start.setDate(now.getDate() - 7);
     }
-  
-    const formattedStartDate = new Date(start.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-    const formattedEndDate = new Date(end.getTime() + TIME_ZONE).toISOString().slice(0, -5);
-  
+
+    const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+    const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
+      .toISOString()
+      .slice(0, -5);
+
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  
   }, [searchParams]);
 
   return (
@@ -105,12 +108,19 @@ function PA() {
           alignItems: 'center',
         }}
       >
-        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>
+        <span
+          style={{
+            color: `${navy}`,
+            fontSize: '30px',
+            fontWeight: '600',
+            minWidth: '720px', //720보다 좀 더 작아도 됨
+          }}
+        >
           Data prediction
         </span>
       </Box>
-          {/**이동 탭 (목록, 통계 , 반려) */}
-          <Box sx={styles.fixedTab}>
+      {/**이동 탭 (목록, 통계 , 반려) */}
+      <Box sx={styles.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
             style={value === 'list' ? styles.tabBtnCilcked : styles.tabBtn}
@@ -163,6 +173,7 @@ const styles = {
     margin: '10px 0px',
     borderBottom: 'solid rgba(0, 0, 0, 0.12)',
     borderBottomWidth: 'thin',
+    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
   },
   fixedTab: {
     right: '0',
@@ -173,6 +184,7 @@ const styles = {
     marginTop: '30px',
     borderBottom: 'solid rgba(0, 0, 0, 0.12)',
     borderBottomWidth: 'thin',
+    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
   },
   tabBtn: {
     border: 'none',

@@ -100,7 +100,6 @@ function UserList() {
       신규 회원 등록
     </Tooltip>
   );
-  ////////////
 
   const columns = [
     { field: 'name', headerName: '이름', width: 100 },
@@ -260,7 +259,17 @@ function UserList() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        // alignContent: 'center',
+        overflow: 'auto',
+        width: '100%', //
+        marginTop: '100px',
+        paddingBottom: '100px',
+        marginLeft: `${(720 / 1920) * 100}vw`, //
+        // marginright: `${(380 / 1920) * 100}vw`, //
+      }}
+    >
       <Toolbar />
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Typography
@@ -270,10 +279,10 @@ function UserList() {
           style={{
             color: '#151D48',
             fontFamily: 'Poppins',
-            fontSize: `${(36 / 1920) * 100}vw`,
+            fontSize: `30px`,
             fontStyle: 'normal',
             fontWeight: 600,
-            lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
+            // lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
           }}
         >
           User Management
@@ -291,9 +300,8 @@ function UserList() {
             style={{
               color: '#151D48',
               fontFamily: 'Poppins',
-              fontSize: `${(36 / 1920) * 100}vw`,
+              fontSize: `24px`,
               fontWeight: 600,
-              lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
             }}
           >
             신규 회원 등록
@@ -301,15 +309,23 @@ function UserList() {
           <UserRegister handleClose={handleRegisterClose} />
         </Modal.Body>
       </Modal>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          // maxWidth: `${(1470 / 1920) * 100}vw`,
+          maxWidth: '1040px',
+        }}
+      >
         <Box
           component="form"
           sx={{
             marginBottom: `${(16 / 1080) * 100}vh`,
-            paddingX: `${(16 / 1920) * 100}vw`,
-            paddingY: `${(12 / 1080) * 100}vh`,
-            width: `${(513 / 1920) * 100}vw`,
-            height: `${(60 / 1080) * 100}vh`,
+            paddingX: `8px`,
+            paddingY: `8px`,
+            width: '280px',
+            height: '50px',
+            // minHeight: '60px',
             backgroundColor: '#FFF',
           }}
         >
@@ -320,10 +336,10 @@ function UserList() {
             sx={{
               color: '#737791',
               fontFamily: 'Poppins',
-              fontSize: `${(20 / 1920) * 100}vw`,
+              fontSize: `18px`,
               fontStyle: 'normal',
               fontWeight: 500,
-              lineHeight: `${(20 / 1080) * 100}vh`,
+              // lineHeight: `${(20 / 1080) * 100}vh`,
             }}
           />
         </Box>
@@ -388,6 +404,7 @@ function UserList() {
             boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
               (20 / 1920) * 100
             }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,
+            maxWidth: '1040px',
           }}
         />
       )}

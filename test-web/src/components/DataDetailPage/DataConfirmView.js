@@ -70,7 +70,7 @@ function DataConfirmView({ dataProps }) {
   const [confirmVal, setConfirmVal] = useState(null);
 
   return (
-    <div style={{ width: '100%', marginTop: '40px' }}>
+    <div style={{ width: '100%', height: '100%', marginTop: '40px' }}>
       <div style={style.editBtnWrapper}>
         <IconButton
           style={style.acceptBtn}
@@ -136,7 +136,11 @@ function DataConfirmView({ dataProps }) {
             width: '27vw',
             margin: '0px 10px',
             boxShadow: 24,
+            minWidth: '360px',
             height: '65vh',
+            minHeight: '500px',
+            // display: 'flex',
+            // flexDirection: 'column',
           }}
         >
           <Tabs
@@ -267,8 +271,10 @@ const style = {
     display: 'flex',
     justifyContent: 'end',
     marginTop: 'auto',
+    paddingRight: '20px',
     borderBottomLeftRadius: '10px',
     borderBottomRightRadius: '10px',
+    minWidth: '1140px',
   },
   dataFieldColumn: {
     backgroundColor: '#9e9e9e',
