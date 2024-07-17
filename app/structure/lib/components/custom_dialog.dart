@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:structure/components/image_card.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -272,6 +273,7 @@ void showSaveImageDialog(BuildContext context, String imgPath,
                   child: Image.file(File(imgPath),
                       width: 570.w, height: 570.w, fit: BoxFit.fitWidth),
                 ),
+                // ImageCard(imagePath: Image.file(File(imgPath))),
                 SizedBox(height: 55.h),
 
                 // 버튼

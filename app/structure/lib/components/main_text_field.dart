@@ -51,6 +51,7 @@ class MainTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final bool? fillColorAlert; // 클릭했을 때 배경 색 변경
   final bool hideFloatingLabel;
+  final int? isNum;
 
   const MainTextField({
     super.key,
@@ -74,6 +75,7 @@ class MainTextField extends StatelessWidget {
     this.prefixIcon,
     this.fillColorAlert,
     this.hideFloatingLabel = false,
+    this.isNum,
   });
 
   @override
@@ -142,6 +144,7 @@ class MainTextField extends StatelessWidget {
                 : null,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+        keyboardType: isNum == 1 ? TextInputType.number : TextInputType.text,
       ),
     );
   }

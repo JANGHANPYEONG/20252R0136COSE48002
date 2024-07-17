@@ -63,6 +63,8 @@ class Palette {
 
   static const Color starIcon = Color(0xffffe871);
   static const Color loadingIcon = Color(0xff38c55f);
+
+  static const Color imageErrorColor = Color.fromARGB(255, 180, 179, 179);
   // Text Style Palette
   static TextStyle h1 = TextStyle(fontSize: 50.sp, fontWeight: FontWeight.w700);
   static TextStyle h2 = TextStyle(fontSize: 40.sp, fontWeight: FontWeight.w700);
