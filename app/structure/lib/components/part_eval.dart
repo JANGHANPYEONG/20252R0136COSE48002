@@ -90,7 +90,8 @@ class PartEval extends StatelessWidget {
               },
             ),
           ),
-        ),
+        ),    
+        const SizedBox(height: 10),
       ],
     );
   }
