@@ -41,6 +41,8 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
 
   late BuildContext _context;
 
+  bool imagePathNullCheck = false;
+
   /// String_to_DateTime method
   void fetchDate(String dateString) {
     DateTime? date = parseDate(dateString);
@@ -50,6 +52,13 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
     } else {
       print('DateString format is not valid.');
     }
+  }
+
+  bool imageCheck() {
+    if (imagePath != null) {
+      imagePathNullCheck = true;
+    }
+    return imagePathNullCheck;
   }
 
   /// 뒤로가기 버튼
@@ -178,7 +187,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
       if (meatModel.seqno == 0) {
         // 원육
         meatModel.imagePath = imagePath;
-        print('adsfasdfads: ${imagePath}');
+        print('adsfasdfads: $imagePath');
         meatModel.freshmeat ??= {};
         meatModel.freshmeat!['userId'] = meatModel.userId;
         meatModel.freshmeat!['createdAt'] = Usefuls.getCurrentDate();

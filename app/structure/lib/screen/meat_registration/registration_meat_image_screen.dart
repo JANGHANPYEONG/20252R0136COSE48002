@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/image_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
@@ -111,66 +112,11 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       ? Stack(
                           // 삭제 버튼을 이미지 위에 띄우기 위한 'stack' 위젯 사용
                           children: [
-                            ClipRRect(
-                                borderRadius: BorderRadius.circular(20.0),
-                                child: SizedBox(
-                                  width: 640.w,
-                                  height: 640.w,
-
-                                  // 이미지 할당
-                                  child: context
-                                                  .watch<
-                                                      RegistrationMeatImageViewModel>()
-                                                  .imagePath !=
-                                              null &&
-                                          context
-                                              .watch<
-                                                  RegistrationMeatImageViewModel>()
-                                              .imagePath!
-                                              .contains('http')
-                                      // s3에 업로드 된 이미지 (수정)
-                                      ? Image.network(
-                                          context
-                                              .read<
-                                                  RegistrationMeatImageViewModel>()
-                                              .imagePath!,
-                                          loadingBuilder: (BuildContext context,
-                                              Widget child,
-                                              ImageChunkEvent?
-                                                  loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            } else {
-                                              return LoadingScreen(
-                                                value: loadingProgress
-                                                            .expectedTotalBytes !=
-                                                        null
-                                                    ? loadingProgress
-                                                            .cumulativeBytesLoaded /
-                                                        (loadingProgress
-                                                                .expectedTotalBytes ??
-                                                            1)
-                                                    : null,
-                                              );
-                                            }
-                                          },
-                                          errorBuilder: (BuildContext context,
-                                              Object error,
-                                              StackTrace? stackTrace) {
-                                            return const Icon(Icons.error);
-                                          },
-                                          fit: BoxFit.cover,
-                                        )
-                                      // 이미지 촬영 중 임시저장 된 사진
-                                      : Image.file(
-                                          File(context
-                                              .read<
-                                                  RegistrationMeatImageViewModel>()
-                                              .imagePath!),
-                                          fit: BoxFit.cover,
-                                        ),
-                                )),
-
+                            ImageCard(
+                              imagePath: context
+                                  .read<RegistrationMeatImageViewModel>()
+                                  .imagePath!,
+                            ),
                             // 삭제 버튼
                             Positioned(
                               right: 15.h,
@@ -259,3 +205,55 @@ class RegistrationMeatImageScreen extends StatelessWidget {
     );
   }
 }
+
+// class ImageCard extends StatelessWidget {
+//   const ImageCard({
+//     super.key,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ClipRRect(
+//       borderRadius: BorderRadius.circular(20.r),
+//       child: SizedBox(
+//         width: 640.w,
+//         height: 640.w,
+
+//         // 이미지 할당
+//         child: context.watch<RegistrationMeatImageViewModel>().imagePath !=
+//                     null &&
+//                 context
+//                     .watch<RegistrationMeatImageViewModel>()
+//                     .imagePath!
+//                     .contains('http')
+//             // s3에 업로드 된 이미지 (수정)
+//             ? Image.network(
+//                 context.read<RegistrationMeatImageViewModel>().imagePath!,
+//                 loadingBuilder: (BuildContext context, Widget child,
+//                     ImageChunkEvent? loadingProgress) {
+//                   if (loadingProgress == null) {
+//                     return child;
+//                   } else {
+//                     return LoadingScreen(
+//                       value: loadingProgress.expectedTotalBytes != null
+//                           ? loadingProgress.cumulativeBytesLoaded /
+//                               (loadingProgress.expectedTotalBytes ?? 1)
+//                           : null,
+//                     );
+//                   }
+//                 },
+//                 errorBuilder: (BuildContext context, Object error,
+//                     StackTrace? stackTrace) {
+//                   return const Icon(Icons.error);
+//                 },
+//                 fit: BoxFit.cover,
+//               )
+//             // 이미지 촬영 중 임시저장 된 사진
+//             : Image.file(
+//                 File(context.read<RegistrationMeatImageViewModel>().imagePath!),
+//                 fit: BoxFit.cover,
+//               ),
+//       ),
+//     );
+//   }
+// }
