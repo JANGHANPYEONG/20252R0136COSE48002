@@ -409,6 +409,7 @@ def get_meat(db_session, id):
     if meat is None:
         return None
     result = to_dict(meat)
+    result['meatId'] = result.pop('id')
     sexType = db_session.query(SexInfo).filter(SexInfo.id == result["sexType"]).first()
     gradeNum = (
         db_session.query(GradeInfo).filter(GradeInfo.id == result["gradeNum"]).first()
@@ -644,17 +645,21 @@ def get_range_meat_data(
 # UPDATE
 
 # DELETE
+def delete_user(db_session, user):
+    try:
+        # 로컬 데이터베이스에서 유저 삭제
+        db_session.delete(user)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise Exception(str(e))
 
 
 # USER
 def create_user(db_session, user_data: dict):
     try:
         for field, value in user_data.items():
-            if field == "password":
-                item_encoder(
-                    user_data, field, hashlib.sha256(value.encode()).hexdigest()
-                )
-            elif field == "type":
+            if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
                 if user_type:  # check if user_type exists
                     item_encoder(user_data, field, user_type.id)
@@ -663,27 +668,26 @@ def create_user(db_session, user_data: dict):
             else:
                 item_encoder(user_data, field)
         new_user = User(**user_data)
-        return new_user
+
+        db_session.add(new_user)
+        db_session.commit()
     except Exception as e:
         raise Exception(str(e))
 
 
 def update_user(db_session, user_data: dict):
     try:
+        user_id = user_data.get("userId")
         history = (
-            db_session.query(User).filter_by(userId=user_data.get("userId")).first()
+            db_session.query(User).filter_by(userId=user_id).first()
         )
         # 1. 기존 유저 없음
-        if history == None:
-            raise Exception(f"No User ID {user_data.get('userId')}")
+        if not history:
+            return jsonify({"message": f"No User ID {user_id}"}), 400
 
         # 2. 기존 유저 있음
         for field, value in user_data.items():
-            if field == "password":
-                item_encoder(
-                    user_data, field, hashlib.sha256(value.encode()).hexdigest()
-                )
-            elif field == "type":
+            if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
                 if user_type:  # check if user_type exists
                     item_encoder(user_data, field, user_type.id)
@@ -695,27 +699,30 @@ def update_user(db_session, user_data: dict):
 
         for attr, value in user_data.items():
             setattr(history, attr, value)
+
+        db_session.merge(history)
+        db_session.commit()
         return history
 
     except Exception as e:
+        db_session.rollback()
         raise Exception(str(e))
 
-
-def get_user(db_session, userId):
+def get_all_user(db_session):
     try:
-        userData = db_session.query(User).filter(User.userId == userId).first()
-        userData_dict = to_dict(userData)
-        userData_dict["createdAt"] = convert2string(userData_dict.get("createdAt"), 1)
-        userData_dict["updatedAt"] = convert2string(userData_dict.get("updatedAt"), 1)
-        userData_dict["loginAt"] = convert2string(userData_dict.get("loginAt"), 1)
-        userData_dict["type"] = (
-            db_session.query(UserTypeInfo)
-            .filter(UserTypeInfo.id == userData_dict.get("type"))
-            .first()
-            .name
-        )
-        return userData_dict
+        users = db_session.query(User).all()
+        for user in users:
+            user.createdAt = convert2string(user.createdAt, 0)
+        return users
+    except Exception as e:
+        raise Exception(str(e))
 
+def get_user(db_session, user_id):
+    try:
+        user_data = db_session.query(User).filter(User.userId == user_id).first()
+        if user_data is not None:
+            user_data.createdAt = convert2string(user_data.createdAt, 0)
+        return user_data
     except Exception as e:
         raise Exception(str(e))
 
@@ -822,29 +829,43 @@ def _getMeatDataByStatusType(db_session, varified):
 
 
 def _getMeatDataByRangeStatusType(
-    db_session, varified, offset, count, start=None, end=None
+    db_session, status_type, offset, count, specie_value, start=None, end=None
 ):
+    status_type = safe_int(status_type)
     offset = safe_int(offset)
     count = safe_int(count)
-    # Base query
-    query = (
-        db_session.query(Meat)
-        .options()
-        .filter_by(statusType=varified)
-        .order_by(Meat.createdAt.desc())
-    )
+    # Specie_value별로 Base query를 다르게 설정 - 소, 돼지, 전체
+    if specie_value == '소':
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type,
+                Meat.categoryId < 100
+            )
+        )
+    elif specie_value == '돼지':
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type,
+                Meat.categoryId >= 100
+            )
+        )
+    else:
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type
+            )
+        )
 
     # Date Filter
-    #db_total_len = db_session.query(Meat).count()
-    if start is not None and end is not None:
+    if start and end:
         query = query.filter(
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 1
-        )
-        db_total_len = db_session.query(Meat).filter(
-            Meat.createdAt.between(start, end),
-            Meat.statusType == varified
-        ).count()
+            Meat.createdAt.between(start, end)
+        ).order_by(Meat.createdAt.desc())
+        
+        db_total_len = query.count()
     query = query.offset(offset * count).limit(count)
 
     result = []
@@ -852,30 +873,32 @@ def _getMeatDataByRangeStatusType(
 
     for meat in meat_data:
         temp = get_meat(db_session, meat.id)
-        userTemp = get_user(db_session, temp.get("userId"))
-        if userTemp:
-            temp["name"] = userTemp.get("name")
-            temp["company"] = userTemp.get("company")
-            temp["type"] = userTemp.get("type")
+        user_temp = get_user(db_session, temp["userId"])
+
+        if user_temp:
+            temp["userName"] = user_temp.name
+            temp["company"] = user_temp.company
+            temp["userType"] = usrType[user_temp.type]
         else:
-            temp["name"] = userTemp
-            temp["company"] = userTemp
-            temp["type"] = userTemp
+            temp["userName"] = user_temp
+            temp["company"] = user_temp
+            temp["userType"] = user_temp
+
         del temp["processedmeat"]
         del temp["rawmeat"]
         result.append(temp)
-    varified_id = varified
-    if varified == 2:
-        varified = "승인"
-    elif varified == 1:
-        varified = "반려"
+
+    if status_type == 2:
+        status_type = "승인"
+    elif status_type == 1:
+        status_type = "반려"
     else:
-        varified = "대기중"
+        status_type = "대기중"
     return (
         jsonify(
             {
                 "DB Total len": db_total_len,
-                f"{varified}": result,
+                f"{status_type}": result,
             }
         ),
         200,
@@ -894,10 +917,8 @@ def _getTexanomyData(db_session):
     species_all = db_session.query(SpeciesInfo).all()
     result = {}
     for species in species_all:
-        # Use joinedload to avoid N+1 problem
         categories = (
             db_session.query(CategoryInfo)
-            .options(joinedload(CategoryInfo.meats))
             .filter_by(speciesId=species.id)
             .all()
         )

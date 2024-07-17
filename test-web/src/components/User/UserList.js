@@ -58,7 +58,7 @@ function UserList() {
       const response = await fetch(
         `http://${apiIP}/user/delete?userId=${userId}`,
         {
-          method: 'POST',
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -150,18 +150,34 @@ function UserList() {
         //유저 리스트 fetch
         const usersListResponse = await fetch(`http://${apiIP}/user`);
         const usersData = await usersListResponse.json();
-        setUsersData(usersData);
 
-        //유저 상세정보
-        const usersWithAdditionalData = [];
-        for (const userType in usersData) {
-          const users = usersData[userType];
-          const userDataResponse = await fetch(
-            `http://${apiIP}/user/get?userId=${users.userId}`
-          );
-          const userData = await userDataResponse.json();
-          usersWithAdditionalData.push({ ...userData, id: users.userId });
-        }
+        const transformType = (type) => {
+          switch (type) {
+            case 0:
+              return 'Normal';
+            case 1:
+              return 'Researcher';
+            case 2:
+              return 'Manager';
+            default:
+              return type;
+          }
+        };
+
+        const usersWithTransformedType = usersData.map((user) => ({
+          ...user,
+          type: transformType(user.type),
+        }));
+
+        setUsersData(usersWithTransformedType);
+
+        const usersWithAdditionalData = usersWithTransformedType.map(
+          (user) => ({
+            ...user,
+            id: user.userId,
+          })
+        );
+
         setAllUsers(usersWithAdditionalData);
 
         setIsLoading(false); // Set isLoading to false after fetching data
@@ -205,7 +221,7 @@ function UserList() {
     try {
       // Send a POST request to update the user's information
       const response = await fetch(`http://${apiIP}/user/update`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -223,7 +239,6 @@ function UserList() {
           type: value, // The new value for the "type" field
         }),
       });
-      console.log(response);
       if (response.ok) {
         // If the update was successful, update the user's information in the state
         setAllUsers((prevUsers) =>

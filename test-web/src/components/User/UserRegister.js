@@ -68,10 +68,10 @@ function UserRegister({ handleClose }) {
         const toJson = {
           userId: userId,
           name: name,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          loginAt: loginAt,
-          password: password,
+          // createdAt: createdAt,
+          // updatedAt: updatedAt,
+          // loginAt: loginAt,
+          // password: password,
           company: company,
           jobTitle: jobTitle,
           homeAddr: homeAddr,
@@ -124,7 +124,8 @@ function UserRegister({ handleClose }) {
         `http://${apiIP}/user/duplicate-check?userId=${userId}`
       );
       console.log(response);
-      if (response.ok) {
+      const check = await response.json()
+      if (!check.isDuplicated) {
         setIsEmailAvailable(true);
         console.log('OK');
       } else {

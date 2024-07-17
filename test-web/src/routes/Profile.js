@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import { apiIP } from '../config';
+import { format } from 'date-fns';
 
 const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
@@ -70,7 +71,13 @@ export default function Profile() {
   const deleteself = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`
+        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
 
       if (response.ok) {
@@ -88,7 +95,7 @@ export default function Profile() {
     setIsUpdating(true);
     try {
       const response = await fetch(`http://${apiIP}/user/update`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -97,9 +104,10 @@ export default function Profile() {
           userId: UserInfo.userId,
           // password: UserInfo.password,
           name: name,
+          homeAddr: homeAddr,
           company: company,
           jobTitle: jobTitle,
-          homeAddr: homeAddr,
+
           // alarm: UserInfo.alarm,
           // type: UserInfo.type,
           // updatedAt: UserInfo.updatedAt,
@@ -107,7 +115,17 @@ export default function Profile() {
           // createdAt: UserInfo.createdAt,
         }),
       });
+      const date = await response.json();
       if (response.ok) {
+        const formattedCreatedAt = format(
+          new Date(date.createdAt),
+          'yyyy-MM-dd'
+        );
+        const formattedUpdatedAt = format(
+          new Date(date.updatedAt),
+          'yyyy-MM-dd'
+        );
+
         const updatedData = JSON.stringify({
           userId: UserInfo.userId,
           // password: UserInfo.password,
@@ -117,9 +135,9 @@ export default function Profile() {
           homeAddr: homeAddr,
           // alarm: UserInfo.alarm,
           type: UserInfo.type,
-          // updatedAt: UserInfo.updatedAt,
+          updatedAt: formattedUpdatedAt,
           // loginAt: UserInfo.loginAt,
-          // createdAt: UserInfo.createdAt,
+          createdAt: formattedCreatedAt,
         });
         setUpdatedUserInfo(updatedData);
         localStorage.setItem('UserInfo', updatedData);
