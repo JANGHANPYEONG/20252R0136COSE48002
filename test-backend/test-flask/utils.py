@@ -190,7 +190,7 @@ def convert2datetime(date_string, format):
         return date_string
     if format == 0:
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
-    if format == 1:
+    elif format == 1:
         tz = pytz.timezone("Asia/Seoul")
         return datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%S")
     elif format == 2:
@@ -244,7 +244,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
@@ -317,7 +317,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
