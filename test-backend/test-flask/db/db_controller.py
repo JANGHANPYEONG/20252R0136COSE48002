@@ -403,7 +403,7 @@ def create_specific_probexpt_data(db_session, data):
 
 # GET
 def get_meat(db_session, id):
-    # 1. 원육 데이터 가져오기
+    # 1. 원육 데이터 조회
     meat = db_session.query(Meat).filter_by(id = id).first()
 
     if meat is None:
@@ -417,7 +417,8 @@ def get_meat(db_session, id):
         .filter_by(id = result["statusType"])
         .first()
     )
-    # 참조관계 또는 날짜 데이터 형식 변환
+    
+    # 2. 참조관계 또는 날짜 데이터 형식 변환
     result["sexType"] = sexType.value
     (
         result["specieValue"],
@@ -432,13 +433,13 @@ def get_meat(db_session, id):
     result["butcheryYmd"] = convert2string(result["butcheryYmd"], 2)
     result["birthYmd"] = convert2string(result["birthYmd"], 2)
 
-    # user info
+    # 3. 유저 정보 추가
     user = get_user(db_session, meat.userId)
     result["userName"] = user.name
     result["userType"] = usrType[user.type]
     result["company"] = user.company
 
-    # 6. freshmeat , heatedmeat, probexpt
+    # 4. 딥에이징 정보 - 관능데이터, 실험실데이터
     number_of_deep_aging_data = (db_session.query(func.max(DeepAgingInfo.seqno))
                                  .filter_by(id = id)
                                  .scalar())
