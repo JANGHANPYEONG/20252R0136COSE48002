@@ -102,7 +102,7 @@ function Home() {
             fontSize: `36px`, // 상대적인 크기
             fontStyle: 'normal',
             fontWeight: 600,
-            lineHeight: `${(50.4 / 1080) * 100}vh`, // 상대적인 크기
+            // lineHeight: `${(50.4 / 1080) * 100}vh`, // 상대적인 크기
             marginBottom: `${(58 / 1080) * 100}vh`,
           }}
         >

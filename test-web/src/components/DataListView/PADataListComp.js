@@ -144,6 +144,7 @@ const style = {
     paddingRight: '0px',
     paddingBottom: '0',
     height: 'auto',
+    minWidth: '640px',
   },
   paginationBar: {
     marginTop: '40px',

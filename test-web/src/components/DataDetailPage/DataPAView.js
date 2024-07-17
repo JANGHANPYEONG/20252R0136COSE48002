@@ -224,7 +224,14 @@ function DataPAView({ dataProps }) {
           divStyle={style.qrWrapper}
         />
         {/* 3. 세부 데이터 정보*/}
-        <Card style={{ width: '24vw', margin: '0px 10px', boxShadow: 24 }}>
+        <Card
+          style={{
+            width: '24vw',
+            margin: '0px 10px',
+            boxShadow: 24,
+            minWidth: '360px',
+          }}
+        >
           <Tabs
             defaultActiveKey="0"
             id="uncontrolled-tab-example"
@@ -303,6 +310,7 @@ const style = {
     justifyContent: 'end',
     borderBottomLeftRadius: '10px',
     borderBottomRightRadius: '10px',
+    minWidth: '1140px',
   },
   dataFieldColumn: {
     backgroundColor: '#9e9e9e',
@@ -339,6 +347,7 @@ const style = {
     margin: '0px 10px',
     marginBottom: '20px',
     boxShadow: 24,
+    minWidth: '360px',
   },
   imgTextWrapper: {
     color: '#002984',
@@ -366,6 +375,7 @@ const style = {
     width: '23vw',
     margin: '0px 10px',
     boxShadow: 24,
+    minWidth: '360px',
   },
   xaiImageWrapper: {
     width: '100%',
@@ -377,6 +387,7 @@ const style = {
     width: '23vw',
     margin: '0px 10px',
     boxShadow: 24,
+    minWidth: '360px',
   },
 };
 const divStyle = {

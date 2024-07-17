@@ -13,7 +13,14 @@ function DataConfirm() {
   const startDate = new URLSearchParams(searchParams).get('startDate');
   const endDate = new URLSearchParams(searchParams).get('endDate');
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box
+      style={{
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        padding: '100px 80px',
+      }}
+    >
       <Box sx={style.fixed}>
         <div
           style={{ display: 'flex', alignItems: 'center', marginLeft: '10px' }}

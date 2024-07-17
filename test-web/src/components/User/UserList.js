@@ -100,7 +100,6 @@ function UserList() {
       신규 회원 등록
     </Tooltip>
   );
-  ////////////
 
   const columns = [
     { field: 'name', headerName: '이름', width: 100 },
@@ -262,152 +261,159 @@ function UserList() {
   return (
     <div
       style={{
-        alignContent: 'center',
+        // alignContent: 'center',
         overflow: 'auto',
         width: '100%', //
         marginTop: '100px',
         paddingBottom: '100px',
-        marginLeft: '100px', //
+        marginLeft: `${(720 / 1920) * 100}vw`, //
+        // marginright: `${(380 / 1920) * 100}vw`, //
       }}
     >
-      <div>
-        <Toolbar />
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography
-            component="h2"
-            variant="h4"
-            gutterBottom
+      <Toolbar />
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Typography
+          component="h2"
+          variant="h4"
+          gutterBottom
+          style={{
+            color: '#151D48',
+            fontFamily: 'Poppins',
+            fontSize: `30px`,
+            fontStyle: 'normal',
+            fontWeight: 600,
+            // lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
+          }}
+        >
+          User Management
+        </Typography>
+      </div>
+      <Modal
+        show={registerShow}
+        onHide={handleRegisterClose}
+        backdrop="true"
+        keyboard={false}
+        centered
+      >
+        <Modal.Body>
+          <Modal.Title
             style={{
               color: '#151D48',
               fontFamily: 'Poppins',
-              fontSize: `30px`,
-              fontStyle: 'normal',
+              fontSize: `24px`,
               fontWeight: 600,
-              // lineHeight: `${(36 / 1920) * 100 * 1.4}vw`,
             }}
           >
-            User Management
-          </Typography>
-        </div>
-        <Modal
-          show={registerShow}
-          onHide={handleRegisterClose}
-          backdrop="true"
-          keyboard={false}
-          centered
+            신규 회원 등록
+          </Modal.Title>
+          <UserRegister handleClose={handleRegisterClose} />
+        </Modal.Body>
+      </Modal>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          // maxWidth: `${(1470 / 1920) * 100}vw`,
+          maxWidth: '1040px',
+        }}
+      >
+        <Box
+          component="form"
+          sx={{
+            marginBottom: `${(16 / 1080) * 100}vh`,
+            paddingX: `8px`,
+            paddingY: `8px`,
+            width: '280px',
+            height: '50px',
+            // minHeight: '60px',
+            backgroundColor: '#FFF',
+          }}
         >
-          <Modal.Body>
-            <Modal.Title
-              style={{
-                color: '#151D48',
-                fontFamily: 'Poppins',
-                fontSize: `24px`,
-                fontWeight: 600,
-              }}
-            >
-              신규 회원 등록
-            </Modal.Title>
-            <UserRegister handleClose={handleRegisterClose} />
-          </Modal.Body>
-        </Modal>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Box
-            component="form"
+          <SearchIcon />
+          <InputBase
+            placeholder=" 사용자 검색"
+            onChange={(event) => handleSearch(event)}
             sx={{
-              marginBottom: `${(16 / 1080) * 100}vh`,
-              paddingX: `${(16 / 1920) * 100}vw`,
-              paddingY: `${(12 / 1080) * 100}vh`,
-              // width: `${(513 / 1920) * 100}vw`,
-              height: `${(60 / 1080) * 100}vh`,
-              backgroundColor: '#FFF',
-            }}
-          >
-            <SearchIcon />
-            <InputBase
-              placeholder=" 사용자 검색"
-              onChange={(event) => handleSearch(event)}
-              sx={{
-                color: '#737791',
-                fontFamily: 'Poppins',
-                fontSize: `20px`,
-                fontStyle: 'normal',
-                fontWeight: 500,
-                // lineHeight: `${(20 / 1080) * 100}vh`,
-              }}
-            />
-          </Box>
-
-          <div style={{ marginLeft: 'auto' }}>
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={renderTooltip}
-            >
-              <Button
-                className="mb-3"
-                onClick={handleRegisterShow}
-                style={{
-                  display: 'inline-flex',
-                  paddingX: `${(12 / 1920) * 100}vw`,
-                  paddingY: `${(16 / 1080) * 100}vh`,
-                  alignItems: 'center',
-                  gap: `${(8 / 1920) * 100}vw`,
-                  borderRadius: `${(10 / 1920) * 100}vw`,
-                  background: '#32CD32',
-                  borderColor: '#32CD32',
-                }}
-              >
-                <IoMdPersonAdd />
-              </Button>
-            </OverlayTrigger>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <CircularProgress />
-        ) : (
-          <DataGrid
-            rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
-            columns={columns.map((column) =>
-              column.field === 'type'
-                ? { ...column, editable: true } // Enable editing for the "type" field
-                : column
-            )}
-            pageSize={5}
-            pageSizeOptions={[5, 10, 20]}
-            pagination
-            autoHeight
-            onEditCellChange={handleCellEdit} // Attach the event handler for cell edits
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
-              },
-            }}
-            //pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-            sx={{
-              width: `${(1470 / 1920) * 100}vw`,
-              height: `${(560 / 1080) * 100}vh`,
-              flexShrink: 0,
-              borderRadius: `${(20 / 1920) * 100}vw`,
-              border: '1px solid #F8F9FA',
-              backgroundColor: '#FFF',
-              boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
-                (20 / 1920) * 100
-              }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,
-              minWidth: '700px',
+              color: '#737791',
+              fontFamily: 'Poppins',
+              fontSize: `18px`,
+              fontStyle: 'normal',
+              fontWeight: 500,
+              // lineHeight: `${(20 / 1080) * 100}vh`,
             }}
           />
-        )}
-        <CustomSnackbar
-          open={snackbarOpen}
-          message={snackbarMessage}
-          severity={snackbarSeverity}
-          onClose={closeSnackbar}
-        />
+        </Box>
+
+        <div style={{ marginLeft: 'auto' }}>
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={renderTooltip}
+          >
+            <Button
+              className="mb-3"
+              onClick={handleRegisterShow}
+              style={{
+                display: 'inline-flex',
+                paddingX: `${(12 / 1920) * 100}vw`,
+                paddingY: `${(16 / 1080) * 100}vh`,
+                alignItems: 'center',
+                gap: `${(8 / 1920) * 100}vw`,
+                borderRadius: `${(10 / 1920) * 100}vw`,
+                background: '#32CD32',
+                borderColor: '#32CD32',
+              }}
+            >
+              <IoMdPersonAdd />
+            </Button>
+          </OverlayTrigger>
+        </div>
       </div>
+
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <DataGrid
+          rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
+          columns={columns.map((column) =>
+            column.field === 'type'
+              ? { ...column, editable: true } // Enable editing for the "type" field
+              : column
+          )}
+          pageSize={5}
+          pageSizeOptions={[5, 10, 20]}
+          pagination
+          autoHeight
+          onEditCellChange={handleCellEdit} // Attach the event handler for cell edits
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+          }}
+          //pageSizeOptions={[5]}
+          disableRowSelectionOnClick
+          sx={{
+            width: `${(1470 / 1920) * 100}vw`,
+            height: `${(560 / 1080) * 100}vh`,
+            flexShrink: 0,
+            borderRadius: `${(20 / 1920) * 100}vw`,
+            border: '1px solid #F8F9FA',
+            backgroundColor: '#FFF',
+            boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${
+              (20 / 1920) * 100
+            }vw ${(0 / 1080) * 100}vh rgba(238, 238, 238, 0.50)`,
+            maxWidth: '1040px',
+          }}
+        />
+      )}
+      <CustomSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={closeSnackbar}
+      />
     </div>
   );
 }

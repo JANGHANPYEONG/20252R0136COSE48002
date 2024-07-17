@@ -179,7 +179,7 @@ function Dashboard() {
                 setValue(e.target.value);
               }}
             >
-              통계
+              현황
             </Button>
           )}
         </div>

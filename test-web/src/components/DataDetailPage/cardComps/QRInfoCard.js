@@ -15,10 +15,19 @@ const QRInfoCard = ({
       style={
         page === 'predict'
           ? divStyle
-          : { width: '27vw', height: '65vh', margin: '0px 10px', boxShadow: 24 }
+          : {
+              width: '27vw',
+              margin: '0px 10px',
+              boxShadow: 24,
+              minWidth: '360px',
+              height: '65vh',
+              minHeight: '500px',
+              display: 'flex',
+              flexDirection: 'column',
+            }
       }
     >
-      <Card.Body>
+      <Card.Body style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Card.Text>
           <div
             style={{ color: '#002984', fontSize: '18px', fontWeight: '800' }}

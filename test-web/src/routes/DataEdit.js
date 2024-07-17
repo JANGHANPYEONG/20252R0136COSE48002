@@ -18,7 +18,13 @@ function DataEdit() {
   const idParam = useParams();
 
   return (
-    <Box style={{ width: '100%', padding: '0px 80px' }}>
+    <Box
+      style={{
+        width: '100%',
+        height: '100%',
+        padding: '45px 80px',
+      }}
+    >
       <Box>
         {/**데이터 목록으로 돌아가기 위한 컴포넌트 */}
         <div style={style.fixed}>
