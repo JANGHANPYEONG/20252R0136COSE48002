@@ -317,7 +317,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
