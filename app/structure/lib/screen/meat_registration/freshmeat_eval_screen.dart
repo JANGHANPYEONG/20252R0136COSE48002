@@ -44,14 +44,15 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
 
   @override
   Widget build(BuildContext context) {
+    FreshMeatEvalViewModel freshMeatEvalViewModel =
+        context.watch<FreshMeatEvalViewModel>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: context.read<FreshMeatEvalViewModel>().title,
+        title: freshMeatEvalViewModel.title,
         backButton: true,
         closeButton: false,
-        backButtonOnPressed:
-            context.read<FreshMeatEvalViewModel>().backBtnPressed(context),
+        backButtonOnPressed: freshMeatEvalViewModel.backBtnPressed(context),
       ),
       body: Stack(
         children: [
@@ -67,14 +68,9 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                         width: 640.w,
                         height: 640.w,
                         // 관능평가를 위한 이미지 할당.
-                        child: context
-                                .read<FreshMeatEvalViewModel>()
-                                .meatImage
-                                .contains('http')
+                        child: freshMeatEvalViewModel.meatImage.contains('http')
                             ? Image.network(
-                                context
-                                    .read<FreshMeatEvalViewModel>()
-                                    .meatImage,
+                                freshMeatEvalViewModel.meatImage,
                                 loadingBuilder: (BuildContext context,
                                     Widget child,
                                     ImageChunkEvent? loadingProgress) {
@@ -102,9 +98,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                                 fit: BoxFit.cover,
                               )
                             : Image.file(
-                                File(context
-                                    .read<FreshMeatEvalViewModel>()
-                                    .meatImage),
+                                File(freshMeatEvalViewModel.meatImage),
                                 fit: BoxFit.cover,
                               ),
                       )),
@@ -125,33 +119,30 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                       const Spacer(),
                       Icon(
                         Icons.check,
-                        color: context.watch<FreshMeatEvalViewModel>().color > 0
+                        color: freshMeatEvalViewModel.color > 0
                             ? Palette.meatRegiBtnBg
                             : Colors.transparent,
                       ),
                       const Spacer(),
                       Icon(
                         Icons.check,
-                        color:
-                            context.watch<FreshMeatEvalViewModel>().texture > 0
-                                ? Palette.meatRegiBtnBg
-                                : Colors.transparent,
+                        color: freshMeatEvalViewModel.texture > 0
+                            ? Palette.meatRegiBtnBg
+                            : Colors.transparent,
                       ),
                       const Spacer(),
                       Icon(
                         Icons.check,
-                        color:
-                            context.watch<FreshMeatEvalViewModel>().surface > 0
-                                ? Palette.meatRegiBtnBg
-                                : Colors.transparent,
+                        color: freshMeatEvalViewModel.surface > 0
+                            ? Palette.meatRegiBtnBg
+                            : Colors.transparent,
                       ),
                       const Spacer(),
                       Icon(
                         Icons.check,
-                        color:
-                            context.watch<FreshMeatEvalViewModel>().overall > 0
-                                ? Palette.meatRegiBtnBg
-                                : Colors.transparent,
+                        color: freshMeatEvalViewModel.overall > 0
+                            ? Palette.meatRegiBtnBg
+                            : Colors.transparent,
                       ),
                       SizedBox(width: 70.w),
                     ],
@@ -252,16 +243,12 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                   Container(
                     margin: EdgeInsets.only(bottom: 20.h),
                     child: MainButton(
-                      onPressed:
-                          context.watch<FreshMeatEvalViewModel>().completed
-                              ? () async {
-                                  context
-                                      .read<FreshMeatEvalViewModel>()
-                                      .saveMeatData(context);
-                                }
-                              : null,
-                      text:
-                          context.read<FreshMeatEvalViewModel>().saveBtnText(),
+                      onPressed: freshMeatEvalViewModel.completed
+                          ? () async {
+                              freshMeatEvalViewModel.saveMeatData(context);
+                            }
+                          : null,
+                      text: freshMeatEvalViewModel.saveBtnText(),
                       width: 658.w,
                       height: 104.h,
                       mode: 1,
@@ -271,7 +258,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
               ),
             ),
           ),
-          context.read<FreshMeatEvalViewModel>().isLoading
+          freshMeatEvalViewModel.isLoading
               ? const Center(child: LoadingScreen())
               : Container()
         ],
