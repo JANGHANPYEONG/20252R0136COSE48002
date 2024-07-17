@@ -831,9 +831,10 @@ def _getMeatDataByStatusType(db_session, varified):
 def _getMeatDataByRangeStatusType(
     db_session, status_type, offset, count, specie_value, start=None, end=None
 ):
+    status_type = safe_int(status_type)
     offset = safe_int(offset)
     count = safe_int(count)
-    # Base query
+    # Specie_value별로 Base query를 다르게 설정 - 소, 돼지, 전체
     if specie_value == '소':
         query = (
             db_session.query(Meat)
@@ -841,28 +842,30 @@ def _getMeatDataByRangeStatusType(
                 Meat.statusType == status_type,
                 Meat.categoryId < 100
             )
-            .order_by(Meat.createdAt.desc())
         )
-    else:
+    elif specie_value == '돼지':
         query = (
             db_session.query(Meat)
             .filter(
                 Meat.statusType == status_type,
                 Meat.categoryId >= 100
             )
-            .order_by(Meat.createdAt.desc())
+        )
+    else:
+        query = (
+            db_session.query(Meat)
+            .filter(
+                Meat.statusType == status_type
+            )
         )
 
     # Date Filter
     if start and end:
         query = query.filter(
-            Meat.statusType == 1,
             Meat.createdAt.between(start, end)
-        )
-        db_total_len = db_session.query(Meat).filter(
-            Meat.statusType == status_type,
-            Meat.createdAt.between(start, end)
-        ).count()
+        ).order_by(Meat.createdAt.desc())
+        
+        db_total_len = query.count()
     query = query.offset(offset * count).limit(count)
 
     result = []

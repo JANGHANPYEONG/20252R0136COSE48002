@@ -279,7 +279,7 @@ def getMeatDataByUser():
 def getMeatDataByRangeStatusType():
     try:
         db_session = current_app.db_session
-        status_type = safe_int(request.args.get("statusType"))
+        status_type = request.args.get("statusType")
         offset = request.args.get("offset")
         count = request.args.get("count")
         start_str = request.args.get("start")
@@ -293,9 +293,9 @@ def getMeatDataByRangeStatusType():
                 db_session, status_type, offset, count, specie_value, start, end
             )
         else:
-            return jsonify("No statusType or specieValue in parameter"), 400
+            return jsonify("Invalid statusType or specieValue in parameter"), 400
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
