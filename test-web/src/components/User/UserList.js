@@ -58,7 +58,7 @@ function UserList() {
       const response = await fetch(
         `http://${apiIP}/user/delete?userId=${userId}`,
         {
-          method: 'POST',
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },

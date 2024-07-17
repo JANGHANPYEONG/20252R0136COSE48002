@@ -71,7 +71,13 @@ export default function Profile() {
   const deleteself = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`
+        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
 
       if (response.ok) {
