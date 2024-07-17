@@ -23,7 +23,7 @@ class DateContainer extends StatelessWidget {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Container(
-        width: 290.w,
+        width: 282.w,
         height: 64.h,
         decoration: BoxDecoration(
           color: dateStatus ? Palette.fieldEmptyBg : Palette.dataMngCardBg,
@@ -33,7 +33,7 @@ class DateContainer extends StatelessWidget {
               : null,
         ),
         alignment: Alignment.centerLeft,
-        padding: EdgeInsets.only(left: 10.w),
+        padding: EdgeInsets.only(left: 16.w),
         child: Text(
           dateString,
           style: dateStatus ? Palette.h5 : Palette.h5LightGrey,

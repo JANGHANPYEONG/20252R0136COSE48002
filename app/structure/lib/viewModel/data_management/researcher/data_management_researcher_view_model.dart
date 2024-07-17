@@ -46,13 +46,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> dataList = ['나의 데이터', '전체', '일반 데이터', '연구 데이터']; //
-  List<bool> dataStatus = [false, true, false, false];
-  int dataSelectedIdx = 1;
+  List<String> dataList = ['전체', '나의 데이터', '일반 데이터', '연구 데이터'];
+  List<bool> dataStatus = [true, false, false, false];
+  int dataSelectedIdx = 0;
 
-  List<String> speciesList = ['소', '돼지', '전체'];
-  List<bool> speciesStatus = [false, false, true];
-  int speciesSelectedIdx = 2;
+  List<String> speciesList = ['전체', '소', '돼지'];
+  List<bool> speciesStatus = [true, false, false];
+  int speciesSelectedIdx = 0;
 
   // 날짜 값이 담길 변수
   DateTime? toDay;
@@ -123,7 +123,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
-    print('SL : $selectedList');
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
@@ -134,12 +133,11 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       return dateB.compareTo(dateA);
     });
     selectedList = filteredList;
-    print('selectedList : $selectedList');
   }
 
-  // 데이터 종류에 따라 필터링 진행. (나의 데이터 / 전체 / 일반 데이터/ 연구 데이터)
+  // 데이터 종류에 따라 필터링 진행. (전체 / 나의 데이터 / 일반 데이터/ 연구 데이터)
   void setData() {
-    if (dataSelectedIdx == 0) {
+    if (dataSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data["userId"] == userModel.userId);
       }).toList();
@@ -152,11 +150,11 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   // 육종 별 필터링 진행. (소 / 돼지)
   void setSpecies() {
-    if (speciesSelectedIdx == 0) {
+    if (speciesSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '소');
       }).toList();
-    } else if (speciesSelectedIdx == 1) {
+    } else if (speciesSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '돼지');
       }).toList();
@@ -349,9 +347,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       // Confirm된 육류 데이터 호출
       Map<String, dynamic>? jsonData =
           await RemoteDataSource.getConfirmedMeatData();
-      print('jsonDAta : $jsonData');
       if (jsonData == null) {
-        print('데이터 없음');
         throw Error();
       } else {
         // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
@@ -365,9 +361,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
             String specieValue = item['specieValue'];
             String statusType = item['statusType'];
 
-            ///
-            // String userType = item['Type'];
-            // print('sts : $statusType');
             Map<String, String> idStatusPair = {
               // "Type": userType,
               "id": id,
@@ -378,12 +371,11 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
               "statusType": statusType,
             };
             numList.add(idStatusPair);
-            print('num : $numList');
           }
         });
       }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
   }
 
@@ -439,7 +431,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       meatModel.seqno = 0;
       if (context.mounted) context.go('/home/data-manage-researcher/add');
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
     isLoading = false;
     notifyListeners();
@@ -450,11 +442,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     String id = '';
 
     id = selectedList[idx]['id']!;
-    print("selectedList :::: $selectedList");
     try {
       isLoading = true;
       notifyListeners();
-      print('meatModel : 출력 : $meatModel');
       dynamic response = await RemoteDataSource.getMeatData(id);
       if (response == null) throw Error();
       meatModel.reset();
@@ -463,7 +453,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
       if (context.mounted) context.go('/home/data-manage-researcher/approve');
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
     isLoading = false;
     notifyListeners();
