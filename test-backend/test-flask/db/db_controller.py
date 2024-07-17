@@ -64,18 +64,19 @@ def decode_id(id, db_session):
 
 
 # CREATE
-def create_meat(meat_data: dict, db_session):
-    if meat_data is None:
-        raise Exception("Invalid Meat Data")
-    # 1. Get the ID of the record in the SexType table
+def create_meat(db_session, meat_data: dict):
+    # 1. SexType 테이블에서 성별 정보 ID 가져오기
     sex_type = db_session.query(SexInfo).filter_by(value=meat_data.get("sexType")).first()
-    # 2. Get the ID of the record in the GradeNum table
+
+    # 2. GradeNum 테이블에서 등급 정보 ID 가져오기
     grade_num = (
         db_session.query(GradeInfo).filter_by(value=meat_data.get("gradeNum")).first()
     )
-    # 3. meat_data에 없는 필드 추가
-
+    # 3. meat_data에 없는 not null 필드 추가
+    meat_data['createdAt'] = datetime.now().strftime('%Y-%m-%d')
+    
     # 4, meat_data에 있는 필드 수정
+    meat_data['id'] = meat_data.pop('meatId')
     for field in list(meat_data.keys()):
         if field == "sexType":
             try:
@@ -173,8 +174,6 @@ def create_HeatemeatSensoryEval(meat_data: dict, seqno: int, id: str):
     probexpt_seqno: 실험(전자혀) 관능 검사 seqno
     type: 0(신규 생성) or 1(기존 수정)
     """
-    if meat_data is None:
-        raise Exception("Invalid Heatedmeat Sensory Evaluate data")
     # 1. heatedmeat_data에 없는 필드 추가
     item_encoder(meat_data, "seqno", seqno)
     item_encoder(meat_data, "id", id)
@@ -225,33 +224,60 @@ def create_ProbexptData(meat_data: dict, seqno: int, id: str):
 
 
 # API MiddleWare
-def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data):
-    id = data.get("id")
-    meat = db_session.query(Meat).get(id)
-    if meat:
-        if meat.statusType == 2:
-            raise Exception("No Id in Request Data")
+def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, meat_id, is_post):
     try:
-        # 1. DB merge
-        new_meat = create_meat(meat_data=data, db_session=db_session)
-        new_meat.statusType = 0
-        db_session.merge(new_meat)
+        if is_post:
+            # 1. DB merge
+            new_meat = create_meat(db_session=db_session, meat_data=data)
+            new_meat.statusType = 0
+            
+            db_session.merge(new_meat)
+            db_session.commit()
+            
+            # 2. Firestore -> S3
+            transfer_folder_image(
+                s3_conn=s3_conn,
+                firestore_conn=firestore_conn,
+                db_session=db_session,
+                id=meat_id,
+                new_meat=new_meat,
+                folder="qr_codes",
+            )
 
-        # 2. Firestore -> S3
-        db_session.commit()
-        transfer_folder_image(
-            s3_conn=s3_conn,
-            firestore_conn=firestore_conn,
-            db_session=db_session,
-            id=id,
-            new_meat=new_meat,
-            folder="qr_codes",
-        )
-        
+        else: 
+            existing_meat = db_session.query(Meat).get(meat_id)
+            
+            new_category = db_session.query(CategoryInfo).filter(
+                CategoryInfo.primalValue == data.get("primalValue"),
+                CategoryInfo.secondaryValue == data.get("secondaryValue")
+            ).first()
+            existing_meat.categoryId = new_category.id
+            
+            db_session.add(existing_meat)
+            db_session.commit()
+
     except Exception as e:
         db_session.rollback()
         raise e
-    return jsonify(id)
+
+    return meat_id
+
+
+def create_raw_meat_deep_aging_info(db_session, meat_id):
+    new_meat = db_session.query(Meat).get(meat_id)
+    new_deep_aging = {
+        "id": meat_id,
+        "seqno": 0,
+        "date": new_meat.createdAt,
+        "minute": 0
+    }
+    try:
+        deep_aging_data = DeepAgingInfo(**new_deep_aging)
+        db_session.add(deep_aging_data)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise e
 
 
 def create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, data):
@@ -363,22 +389,22 @@ def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
 
 def create_specific_heatedmeat_seonsory_data(db_session, data):
     # 2. 기본 데이터 받아두기
-    id = safe_str(data.get("id"))
+    meat_id = safe_str(data.get("meatId"))
     seqno = safe_int(data.get("seqno"))
-    meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
+    meat = db_session.query(Meat).get(meat_id)  # DB에 있는 육류 정보
     if meat:  # 승인 정보 확인
         if meat.statusType != 2:
             raise Exception("Not confirmed meat data")
-    if id == None:  # 1. 애초에 id가 없는 request
+    if meat_id == None:  # 1. 애초에 id가 없는 request
         raise Exception("No ID data sent for update")
     try:
-        new_HeatedmeatSensoryEval = create_HeatemeatSensoryEval(data, seqno, id)
+        new_HeatedmeatSensoryEval = create_HeatemeatSensoryEval(data, seqno, meat_id)
         db_session.merge(new_HeatedmeatSensoryEval)
         db_session.commit()
     except Exception as e:
         db_session.rollback()
         raise e
-    return jsonify(id)
+    return jsonify(meat_id)
 
 
 def create_specific_probexpt_data(db_session, data):
