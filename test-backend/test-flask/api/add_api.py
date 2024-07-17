@@ -5,6 +5,7 @@ from flask import (
     current_app,
 )
 from db.db_controller import (
+    create_raw_meat_deep_aging_info,
     create_specific_std_meat_data,
     create_specific_sensoryEval,
     create_specific_probexpt_data,
@@ -19,28 +20,22 @@ add_api = Blueprint("add_api", __name__)
 
 
 # 특정 육류의 기본 정보 생성 및 수정
-@add_api.route("/", methods=["GET", "POST"])
+@add_api.route("/", methods=["POST", "PATCH"])
 def add_specific_meat_data():
     db_session = current_app.db_session
     s3_conn = current_app.s3_conn
     firestore_conn = current_app.firestore_conn
     try:
-        if request.method == "POST":
-            # 1. Data Get
-            data = request.get_json()
+        data = request.get_json()
+        if data:
             try:
-                return (
-                    create_specific_std_meat_data(
-                        db_session, s3_conn, firestore_conn, data
-                    ),
-                    200,
-                )
+                new_meat_id = create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data)
+                if new_meat_id:
+                    create_raw_meat_deep_aging_info(db_session, new_meat_id)
+                    return jsonify({"msg": "Success to store Raw Meat and Initial DeepAging Information"}), 200
             except Exception as e:
-                return jsonify({"msg": "Image Path Not Found", "details": str(e)}), 400
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+                return jsonify({"msg": "Fail to store Raw Meat", "details": str(e)}), 400
     except Exception as e:
-        db_session.rollback()
         logger.exception(str(e))
         return (
             jsonify(
@@ -110,14 +105,17 @@ def add_specific_sensory_eval():
         )
 
 
+# POST일 때는 app - imagePath, createdAt, period 새로 추가
+# PATCH일 때는 app, web - 현재 코드 그대로
 # 특정 육류의 가열육 관능 검사 결과 생성 및 수정
-@add_api.route("/heatedmeat-eval", methods=["GET", "POST"])
+@add_api.route("/heatedmeat-eval", methods=["POST", "PATCH"])
 def add_specific_heatedmeat_sensory_data():
     try:
         if request.method == "POST":
             db_session = current_app.db_session
             data = request.get_json()
-            return create_specific_heatedmeat_seonsory_data(db_session, data), 200
+            if data:
+                return create_specific_heatedmeat_seonsory_data(db_session, data), 200
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
