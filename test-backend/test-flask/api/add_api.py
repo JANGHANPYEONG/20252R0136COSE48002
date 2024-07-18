@@ -76,9 +76,9 @@ def add_specific_deepAging_data():
         if deep_aging_id:
             return jsonify({"msg": f"Success to Create Deep Aging Data {deep_aging_id}"}), 200
         elif deep_aging_id is None:
-            return jsonify({"msg": f"Meat {data["meatId"]} Does NOT Exists"}), 404
+            return jsonify({"msg": f"Meat {data['meatId']} Does NOT Exists"}), 404
         else:
-            return jsonify({"msg": f"Seqno {data["seqno"]} Deep Aging Info. Already Exists"}), 400
+            return jsonify({"msg": f"Seqno {data['seqno']} Deep Aging Info. Already Exists"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -142,25 +142,32 @@ def add_specific_heatedmeat_sensory_data():
 
 
 # 특정 육류의 실험실 데이터 생성 및 수정
-@add_api.route("/probexpt-data", methods=["GET", "POST"])
+@add_api.route("/probexpt-data", methods=["POST", "PATCH"])
 def add_specific_probexpt_data():
     try:
+        db_session = current_app.db_session
+        data = request.get_json()
         if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            if data:
-                return create_specific_probexpt_data(db_session, data), 200
-            else:
-                return jsonify({"msg": "No data in Request."}), 401
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            is_post = True
+            for key in ("meatId", "seqno", "isHeated", "userId", "probexptData"):
+                if key not in data.keys() or data[key] is None:
+                    return jsonify({"msg": "Failed to Create Probexpt Data"}), 400
+
+        elif request.method == "PATCH":
+            is_post = False
+            for key in ("meatId", "seqno", "isHeated", "probexptData"):
+                if key not in data.keys() or data[key] is None:
+                    return jsonify({"msg": "Failed to Create Probexpt Data"}), 400
+
+        probexpt_data = create_specific_probexpt_data(db_session, data, is_post)
+        return jsonify({"msg": probexpt_data["msg"]}), probexpt_data["code"]
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

@@ -62,6 +62,13 @@ def decode_id(id, db_session):
     result["secondary_value"] = category.secondaryValue
     return result["specie_value"], result["primal_value"], result["secondary_value"]
 
+def calculate_period(db_session, id):
+    butchery = db_session.query(Meat).get(id).butcheryYmd
+    current = datetime.now()
+    
+    diff = current - butchery
+    return diff.days
+
 
 # CREATE
 def create_meat(db_session, meat_data: dict):
@@ -193,34 +200,28 @@ def create_HeatemeatSensoryEval(meat_data: dict, seqno: int, id: str):
     return new_heatedmeat
 
 
-def create_ProbexptData(meat_data: dict, seqno: int, id: str):
+def create_ProbexptData(probexpt_data: dict, id: str, seqno: int, is_heated: bool):
     """
     db: SQLAlchemy db
-    heatedmeat_data: 모든 필드의 데이터가 문자열로 들어왔다고 가정!!
-    seqno: 신선육 관능검사 seqno
-    heatedMeatId: 가열육 관능검사 seqno
-    probexpt_seqno: 실험(전자혀) 관능 검사 seqno
-    type: 0(신규 생성) or 1(기존 수정)
+    probexpt_data: 실험실 데이터
+    id: 원육 id
+    seqno: 처리육의 seqno
+    is_heated: 가열/비가열 여부
     """
-    if meat_data is None:
-        raise Exception("Invalid Heatedmeat Sensory Evaluate data")
-    # 1. heatedmeat_data에 없는 필드 추가
-    item_encoder(meat_data, "seqno", seqno)
-    item_encoder(meat_data, "id", id)
-    # 2. heatedmeat_data에 있는 필드 수정
-    for field in meat_data.keys():
-        if field == "seqno":
-            pass
-        elif field == "id":
-            pass
-        else:
-            item_encoder(meat_data, field)
-    # Create a new Meat object
+    probexpt_data["id"] = id
+    probexpt_data["seqno"] = seqno
+    probexpt_data["isHeated"] = is_heated
+
+    # 2. probexpt_data에 있는 필드 수정
+    for field in probexpt_data.keys():
+        item_encoder(probexpt_data, field)
+
+    # Create a new Probexpt object
     try:
-        new_probexptdata = ProbexptData(**meat_data)
+        new_probexpt_data = ProbexptData(**probexpt_data)
+        return new_probexpt_data
     except Exception as e:
-        raise Exception("Wrong heatedmeat sensory eval DB field items" + str(e))
-    return new_probexptdata
+        raise Exception("Wrong probexpt data DB field items" + str(e))
 
 
 # API MiddleWare
@@ -382,25 +383,48 @@ def create_specific_heatedmeat_seonsory_data(db_session, data):
     return jsonify(meat_id)
 
 
-def create_specific_probexpt_data(db_session, data):
+def create_specific_probexpt_data(db_session, data, is_post):
     # 2. 기본 데이터 받아두기
-    id = safe_str(data.get("id"))
-    seqno = safe_int(data.get("seqno"))
+    id = data["meatId"]
+    seqno = data["seqno"]
+    is_heated = data["isHeated"]
+
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if meat:  # 승인 정보 확인
-        if meat.statusType != 2:
-            raise Exception("Not confirmed meat data")
-    if id == None:  # 1. 애초에 id가 없는 request
-        raise Exception("No ID data sent for update")
+    deep_aging_info = db_session.query(DeepAgingInfo).filter_by(id=id, seqno=seqno).first()
+    if not meat or not deep_aging_info:
+        return ({"msg": "Meat or Deep Aging Data Does NOT Exists", "code": 400})
+    
     try:
-        new_ProbexptData = create_ProbexptData(data, seqno, id)
-        db_session.merge(new_ProbexptData)
-        db_session.commit()
+        probexpt_data = data["probexptData"]
+        probexpt_data["updatedAt"] = convert2string(datetime.now(), 1)
+        existed_probexpt_data = get_ProbexptData(db_session, id, seqno, is_heated)
+
+        if existed_probexpt_data: # 수정
+            if is_post: # 수정이지만 POST 메서드
+                return ({"msg": "Probexpt Data Already Exists", "code": 400})
+            
+            if seqno == 0 and meat.statusType == 2:
+                return ({"msg": "Already Confirmed Data", "code": 400})
+            elif seqno == 0 and meat.statusType != 2:
+                meat.statusType = 0
+                db_session.merge(meat)
+            probexpt_data["userId"] = existed_probexpt_data["userId"]
+            new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
+            db_session.merge(new_probexpt_data)
+            db_session.commit()
+            return ({"msg": f"Success to PATCH Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}", "code": 200})
+        else: # 생성
+            if not is_post: # 생성이지만 PATCH 메서드
+                return ({"msg": "Probexpt Data Does NOT Exists", "code": 400})
+            probexpt_data["userId"] = data["userId"]
+            probexpt_data["period"] = calculate_period(db_session, id)
+            new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
+            db_session.add(new_probexpt_data)
+            db_session.commit()
+            return ({"msg": f"Success to POST Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}", "code": 200})
     except Exception as e:
         db_session.rollback()
         raise e
-    return jsonify(id)
-
 
 # GET
 def get_meat(db_session, id):
