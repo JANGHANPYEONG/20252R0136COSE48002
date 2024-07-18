@@ -14,7 +14,7 @@ import 'package:structure/model/user_model.dart';
 class DeleteUserViewModel with ChangeNotifier {
   UserModel userModel;
   DeleteUserViewModel({required this.userModel});
-
+  bool isActivateButton = false;
   bool isLoading = false;
 
   final formKey = GlobalKey<FormState>();
@@ -25,6 +25,9 @@ class DeleteUserViewModel with ChangeNotifier {
 
   /// 기존 비밀번호 유효성 검사
   String? pwValidate(String? value) {
+    isActivateButton = true;
+    notifyListeners();
+    print('isActive: $isActivateButton');
     if (value!.isEmpty) {
       _isValidPw = false;
       return '비밀번호를 입력하세요.';

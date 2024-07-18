@@ -60,6 +60,10 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
                     // 회원 탈퇴 버튼
                     MainButton(
                       onPressed: context.watch<DeleteUserViewModel>().isValid()
+                          // &&
+                          // context
+                          //     .watch<DeleteUserViewModel>()
+                          //     .isActivateButton
                           ? () async => context
                               .read<DeleteUserViewModel>()
                               .deleteUser(context)
