@@ -147,7 +147,6 @@ function ExcelController({startDate, endDate, specieValue}) {
 
   // excel export할 목록 데이터 fetch
   useEffect(() => {
-    console.log('1st:', endDate);
     getDataListJSON({ startDate, endDate, specieValue }).then((data) => {
       setExcelData(data);
     });
