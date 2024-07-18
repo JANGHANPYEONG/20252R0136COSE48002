@@ -9,7 +9,6 @@ const DataSingle = ({ startDate, endDate, data }) => {
   // 한 페이지당 보여줄 개수
   const [count, setCount] = useState(5);
   let meatData = [data];
-  console.log("abc",meatData)
 
   return (
     <div>

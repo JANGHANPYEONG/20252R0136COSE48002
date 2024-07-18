@@ -1,30 +1,44 @@
 // 축산물 이력 데이터를 json 객체로 변환하는 함수
 function convertToApiData(
-  birthYmd, // 출생년월일
-  butcheryYmd, // 도축일자
-  farmAddr, // 사육지
-  farmerNm, // 소유주
-  gradeNm, // 육질등급
-  primalValue, // 대분류
-  secondaryValue, // 소분류
-  sexType, // 성별
-  species, // 종
-  statusType, // 데이터승인 상태
-  traceNum // traceNum
+  birthYmd,
+  butcheryYmd,
+  company,
+  createdAt,
+  farmAddr,
+  farmerName,
+  gradeNum,
+  imagePath,
+  meatId,
+  primalValue,
+  secondaryValue,
+  sexType,
+  specieValue,
+  statusType,
+  traceNum,
+  userId,
+  userNamem,
+  userType
 ) {
   // JSON 객체
   const apiData = {
     birthYmd: birthYmd,
     butcheryYmd: butcheryYmd,
+    company: company,
+    createdAt: createdAt,
     farmAddr: farmAddr,
-    farmerNm: farmerNm,
-    gradeNm: gradeNm,
+    farmerNm: farmerName,
+    gradeNm: gradeNum,
+    imagePath: imagePath,
+    meatId: meatId,
     primalValue: primalValue,
     secondaryValue: secondaryValue,
     sexType: sexType,
-    species: species,
+    species: specieValue,
     statusType: statusType,
     traceNum: traceNum,
+    userId: userId,
+    userNamem: userNamem,
+    userType: userType,
   };
   return apiData;
 }
@@ -35,21 +49,28 @@ export default function dataProcessing(items) {
   const apiData = convertToApiData(
     items.birthYmd,
     items.butcheryYmd,
+    items.company,
+    items.createdAt,
     items.farmAddr,
-    items.farmerNm,
+    items.farmerName,
     items.gradeNum,
+    items.imagePath,
+    items.meatId,
     items.primalValue,
     items.secondaryValue,
     items.sexType,
     items.specieValue,
     items.statusType,
-    items.traceNum
+    items.traceNum,
+    items.userId,
+    items.userNamem,
+    items.userType
   );
 
   // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육으로
   let processedData = [];
-  let heatedData = [items.rawmeat?.heatedmeat_sensory_eval || {}];
-  let labData = [items.rawmeat?.probexpt_data || {}];
+  let heatedData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_sensory_eval || {} : {}];
+  let labData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_probexpt_data || {} : {}];
   let processedMinute = [];
 
   // 데이터 처리 횟수 parsing ex) 1회, 2회 ,...
@@ -58,35 +79,40 @@ export default function dataProcessing(items) {
   let processedDataImgPath = [];
 
   // n회차 처리육에 대한 회차별 정보
-  for (let i in items.processedmeat) {
-    processedDataSeq = [...processedDataSeq, i];
-    processedData = [
-      ...processedData,
-      items.processedmeat[i].sensory_eval || {},
-    ];
-    heatedData = [
-      ...heatedData,
-      items.processedmeat[i].heatedmeat_sensory_eval || {},
-    ];
-    labData = [...labData, items.processedmeat[i].probexpt_data || {}];
-    processedMinute = [
-      ...processedMinute,
-      items.processedmeat[i].sensory_eval?.deepaging_data?.minute || 0,
-    ];
-    processedDataImgPath = [
-      ...processedDataImgPath,
-      items.processedmeat[i].sensory_eval?.imagePath || 'null',
-    ];
+  for (let i = 1; i < items.deepAgingInfo.length; i++) {
+    if (items.deepAgingInfo[i] && items.deepAgingInfo[i][i]) {
+      processedDataSeq = [...processedDataSeq, `${i}회`];
+      processedData = [
+        ...processedData,
+        items.deepAgingInfo[i][i].sensory_eval || {},
+      ];
+      heatedData = [
+        ...heatedData,
+        items.deepAgingInfo[i][i].heatedmeat_sensory_eval || {},
+      ];
+      labData = [
+        ...labData,
+        items.deepAgingInfo[i][i].heatedmeat_probexpt_data || {},
+      ];
+      processedMinute = [
+        ...processedMinute,
+        items.deepAgingInfo[i].minute || 0,
+      ];
+      processedDataImgPath = [
+        ...processedDataImgPath,
+        items.deepAgingInfo[i][i].imagePath || 'null',
+      ];
+    }
   }
 
   // 3-3. 데이터를 json 객체로 만들기
   const data = {
-    id: items.id,
+    id: items.meatId,
     userId: items.userId,
     createdAt: items.createdAt ? items.createdAt.replace('T', ' ') : '', // 수정 부분: 기본 값 설정
     qrImagePath: items.imagePath,
-    raw_data: items.rawmeat?.sensory_eval || {},
-    raw_img_path: items.rawmeat?.sensory_eval?.imagePath || 'null',
+    raw_data: items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].sensory_eval || {} : {},
+    raw_img_path: items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].sensory_eval?.imagePath || {} : {},
     processed_data: processedData,
     heated_data: heatedData,
     lab_data: labData,
@@ -97,94 +123,3 @@ export default function dataProcessing(items) {
   };
   return data;
 }
-
-/*
-// 축산물 이력 데이터를 json 객체로 변환하는 함수
-function convertToApiData ( 
-    birthYmd, // 출생년월일
-    butcheryYmd, // 도축일자
-    farmAddr, // 사육지
-    farmerNm, // 소유주
-    gradeNm, // 육질등급
-    primalValue, // 대분류
-    secondaryValue, // 소분류
-    sexType, // 성별
-    species, // 종
-    statusType, // 데이터승인 상태
-    traceNum //traceNum
-    ){
-    //JSON 객체    
-    const apiData = {
-      birthYmd: birthYmd,
-      butcheryYmd: butcheryYmd,
-      farmAddr: farmAddr,
-      farmerNm: farmerNm,
-      gradeNm: gradeNm,
-      primalValue: primalValue,
-      secondaryValue: secondaryValue,
-      sexType: sexType,
-      species: species,
-      statusType: statusType,
-      traceNum: traceNum,
-    };
-    return apiData;
-};
-
-// 데이터 전처리 
-export default function dataProcessing (items) {
-     
-    // 3-1. 축산물 이력 데이터 json 객체로 만들기 
-    const apiData = convertToApiData(
-        items.birthYmd,
-        items.butcheryYmd,
-        items.farmAddr,
-        items.farmerNm,
-        items.gradeNum,
-        items.primalValue,
-        items.secondaryValue,
-        items.sexType,
-        items.specieValue,
-        items.statusType,
-        items.traceNum,
-    );
-    // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육 으로 
-    let processedData = [];
-    let heatedData = [items.rawmeat.heatedmeat_sensory_eval,];
-    let labData = [items.rawmeat.probexpt_data];
-    let processedMinute = [];
-
-    //데이터 처리 횟수 parsing ex) 1회, 2회 ,...
-    let processedDataSeq = ['원육',];
-    // 처리육 이미지 
-    let processedDataImgPath = [];
-
-    // n회차 처리육에 대한 회차별 정보 
-    for (let i in items.processedmeat){
-    //processedDataSeq.push(i);
-    processedDataSeq = [...processedDataSeq, i];
-    processedData = [...processedData, items.processedmeat[i].sensory_eval];
-    heatedData = [...heatedData, items.processedmeat[i].heatedmeat_sensory_eval];
-    labData = [...labData, items.processedmeat[i].probexpt_data];
-    processedMinute = [...processedMinute, items.processedmeat[i].sensory_eval.deepaging_data.minute];
-    processedDataImgPath = [...processedDataImgPath, items.processedmeat[i].sensory_eval.imagePath];
-    }
-    // 처리육 데이터가 {} 인 경우 processedData, processedMinute, processedDataImgPath(ok) 은 [] 값이 됨.
-    // 3-3. 데이터를 json 객체로 만들기 
-    const data = {
-        id: items.id,
-        userId: items.userId,
-        createdAt: items.createdAt.replace('T', ' '),
-        qrImagePath: items.imagePath,
-        raw_data: items.rawmeat.sensory_eval,
-        raw_img_path : items.rawmeat.sensory_eval? items.rawmeat.sensory_eval.imagePath : "null",
-        processed_data: processedData,
-        heated_data : heatedData,
-        lab_data: labData,
-        api_data: apiData,
-        processed_data_seq : processedDataSeq,
-        processed_minute : processedMinute,
-        processed_img_path : processedDataImgPath,
-    };
-    return data;
-}
-*/
