@@ -151,25 +151,20 @@ def create_SensoryEval(db_session, meat_data: dict, sensory_data, seqno, id, use
     """
     # 1. freshmeat_data에 없는 필드 추가
     item_encoder(meat_data, "seqno", seqno)
-    item_encoder(meat_data, "userId", userId)
     
     meat_data['id'] = id
     meat_data.pop('meatId')
     meat_data['createdAt'] = datetime.now().strftime('%Y-%m-%d')
     meat_data['period'] = calculate_period(db_session, id)
     meat_data.pop('sensoryData')
+    meat_data['userId'] = userId
     
     for field, val in sensory_data.items():
         meat_data[field] = val
 
     # 2. freshmeat_data에 있는 필드 수정
     for field in meat_data.keys():
-        if field == "seqno":
-            pass
-        elif field == "period":
-            pass
-        else:
-            item_encoder(meat_data, field)
+        item_encoder(meat_data, field)
     # Create a new Meat object
     try:
         new_sensory_eval = SensoryEval(**meat_data)
@@ -327,7 +322,6 @@ def create_specific_deep_aging_data(db_session, data):
 def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post):
     # 기본 데이터 받아오기
     meat_id = safe_str(data.get("meatId"))
-    user_id = safe_str(data.get("userId"))
     seqno = safe_int(data.get("seqno"))
     need_img = safe_bool(data.get("imgAdded"))
     data.pop('imgAdded')
@@ -346,53 +340,68 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
     if not deep_aging:
         return {"msg": "Deep Aging Info Does Not Exist", "code": 400}
     
+    existing_sensory = db_session.query(SensoryEval).filter_by(id=meat_id, seqno=seqno).first()
     # POST 요청
-    if is_post:
-        # sensory_eval 생성
-        if any(value is not None for value in sensory_data.values()):
-            new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
-            db_session.add(new_sensory_eval)
-            db_session.commit()
+    try:
+        if is_post:
+            # 기존 관능 평가 데이터가 존재할 때 에러 처리
+            if existing_sensory:
+                return {"msg": f"Sensory Evaluation Already Exists {meat_id}-{seqno}", "code": 400}
             
-            if need_img:
-                transfer_folder_image(
-                    s3_conn,
-                    firestore_conn,
-                    db_session,
-                    f"{meat_id}-{seqno}",
-                    new_sensory_eval,
-                    "sensory_evals",
-                )
-            return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            user_id = safe_str(data.get("userId"))
+            # sensory_eval 생성
+            if any(value is not None for value in sensory_data.values()):
+                new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
+                db_session.add(new_sensory_eval)
+                db_session.commit()
+                
+                if need_img:
+                    transfer_folder_image(
+                        s3_conn,
+                        firestore_conn,
+                        db_session,
+                        f"{meat_id}-{seqno}",
+                        new_sensory_eval,
+                        "sensory_evals",
+                    )
+                return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            else:
+                return {"msg": f"No Sensory Data to Create Sensory Evaluation", "code": 400}
+        # PATCH 요청
         else:
-            return {"msg": f"No Sensory Data to Create Sensory Evaluation", "code": 400}
-    # PATCH 요청
-    else:
-        if seqno == 0:
-            if meat.statusType == 2:
-                return {"msg": "Already Confirmed Meat", "code": 400}
-            meat.statusType == 0
-            db_session.merge(meat)
-            db_session.commit()
+            # 기존 관능 평가 데이터가 존재하지 않을 때 에러 처리
+            if not existing_sensory:
+                return {"msg": f"Sensory Evaluation Does Not Exist {meat_id}-{seqno}", "code": 400}
             
-        # sensory_eval 생성
-        if any(value is not None for value in sensory_data.values()):
-            new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
-            db_session.merge(new_sensory_eval)
-            db_session.commit()
-            
-            if need_img:
-                transfer_folder_image(
-                    s3_conn,
-                    firestore_conn,
-                    db_session,
-                    f"{meat_id}-{seqno}",
-                    new_sensory_eval,
-                    "sensory_evals",
-                )
-            return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
-        else:
-            return {"msg": f"No Sensory Data to Update Sensory Evaluation", "code": 400}
+            existing_user = existing_sensory.userId
+            if seqno == 0:
+                if meat.statusType == 2:
+                    return {"msg": "Already Confirmed Meat", "code": 400}
+                meat.statusType == 0
+                db_session.merge(meat)
+                db_session.commit()
+                
+            # sensory_eval 생성
+            if any(value is not None for value in sensory_data.values()):
+                new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, existing_user)
+                db_session.merge(new_sensory_eval)
+                db_session.commit()
+                
+                if need_img:
+                    transfer_folder_image(
+                        s3_conn,
+                        firestore_conn,
+                        db_session,
+                        f"{meat_id}-{seqno}",
+                        new_sensory_eval,
+                        "sensory_evals",
+                    )
+                return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            else:
+                return {"msg": f"No Sensory Data to Update Sensory Evaluation", "code": 400}
+    except Exception as e:
+        db_session.rollback()
+        raise e
 
 # def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
 #     # 2. 기본 데이터 받아두기
