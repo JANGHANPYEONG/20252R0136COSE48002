@@ -247,7 +247,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
         else: 
             existing_meat = db_session.query(Meat).get(meat_id)
             if existing_meat.statusType == 2:
-                raise Exception("Already Confirmed Meat Data")
+                return None
                 
             new_category = db_session.query(CategoryInfo).filter(
                 CategoryInfo.primalValue == data.get("primalValue"),

@@ -51,6 +51,8 @@ def add_specific_meat_data():
             )
             if updated_meat_id:
                 return jsonify({"msg": f"Success to update Raw Meat {updated_meat_id} Information"}), 200
+            else:
+                return jsonify({"msg": f"Already Confirmed Meat Data"}), 400
 
     except Exception as e:
         # logger.exception(str(e))
