@@ -145,7 +145,7 @@ class UserDetailScreen extends StatelessWidget {
                             : false,
                         onChanged: (value) => context
                             .read<UserDetailViewModel>()
-                            .clicked1stCheckBox(value),
+                            .clicked1stCheckBox(value!),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
