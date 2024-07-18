@@ -11,7 +11,7 @@ import RejectedDataListComp from '../components/DataListView/RejectedDataListCom
 import ExcelController from '../components/DataListView/excelContr';
 import StatsExport from '../components/DataListView/statsExport';
 // mui
-import { Box, Button } from '@mui/material';
+import { Box, Button, Select, MenuItem } from '@mui/material';
 // import timezone
 import { TIME_ZONE } from '../config';
 // import icon
@@ -19,6 +19,7 @@ import { FaBoxOpen } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import SearchById from '../components/DataListView/SearchById';
 import DataSingle from '../components/DataListView/DataSingle';
+
 
 const navy = '#0F3659';
 
@@ -33,6 +34,11 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(
     new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5)
   );
+  const [specieValue, setSpecieValue] = useState('전체');
+
+  const handleSpeciesChange = (event) => {
+    setSpecieValue(event.target.value);
+  };
 
   // 쿼리스트링 추출
   const location = useLocation();
@@ -198,6 +204,17 @@ function Dashboard() {
             onDataFetch={handleDataFetch}
             onValueChange={handleValueChange}
           />
+          <Select
+            labelId="species"
+            id="species"
+            value={specieValue}
+            onChange={handleSpeciesChange}
+            label="종류"
+          >
+            <MenuItem value="전체">전체</MenuItem>
+            <MenuItem value="소">소</MenuItem>
+            <MenuItem value="돼지">돼지</MenuItem>
+          </Select>
         </Box>
         <div
           style={{
@@ -207,7 +224,7 @@ function Dashboard() {
             paddingRight: '85px',
           }}
         >
-          {(value === 'list' || value === 'single') && <ExcelController />}
+          {(value === 'list' || value === 'single') && <ExcelController startDate = {startDate} endDate = {endDate} specieValue = {specieValue} />}
           {value === 'stat' && <StatsExport />}
         </div>
       </Box>
@@ -219,6 +236,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
+          specieValue = {specieValue}
         />
       )}
       {value === 'stat' && (
@@ -233,6 +251,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
+          specieValue = {specieValue}
         />
       )}
     </div>

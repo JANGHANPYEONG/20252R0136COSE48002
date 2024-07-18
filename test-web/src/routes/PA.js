@@ -3,7 +3,7 @@ import SearchFilterBar from '../components/Search/SearchFilterBar';
 // 데이터 목록
 import PADataListComp from '../components/DataListView/PADataListComp';
 // mui
-import { Box, Button } from '@mui/material';
+import { Box, Button, Select, MenuItem } from '@mui/material';
 // import timezone
 import { TIME_ZONE } from '../config';
 import { useLocation } from 'react-router-dom';
@@ -46,6 +46,11 @@ function PA() {
   const now = new Date();
   let start = new Date(now);
   let end = new Date(now);
+  const [specieValue, setSpecieValue] = useState('전체');
+
+  const handleSpeciesChange = (event) => {
+    setSpecieValue(event.target.value);
+  };
 
   useEffect(() => {
     if (queryDuration) {
@@ -147,6 +152,17 @@ function PA() {
             onDataFetch={handleDataFetch}
             onValueChange={handleValueChange}
           />
+           <Select
+            labelId="species"
+            id="species"
+            value={specieValue}
+            onChange={handleSpeciesChange}
+            label="종류"
+          >
+            <MenuItem value="전체">전체</MenuItem>
+            <MenuItem value="소">소</MenuItem>
+            <MenuItem value="돼지">돼지</MenuItem>
+          </Select>
         </Box>
       </Box>
       {/**데이터 목록 */}
@@ -156,6 +172,7 @@ function PA() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
+          specieValue={specieValue}
         />
       )}
     </div>

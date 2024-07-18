@@ -9,7 +9,7 @@ import ExcelImportAlertModal from '../DataDetailPage/excelImportAlertModal';
 
 const navy = '#0F3659';
 
-function ExcelController() {
+function ExcelController({startDate, endDate, specieValue}) {
   //엑셀 업로드 성공 여부
   const [isImportSuccessed, setIsImportSuccessed] = useState(true);
   //엑셀 업로드 완료
@@ -147,11 +147,11 @@ function ExcelController() {
 
   // excel export할 목록 데이터 fetch
   useEffect(() => {
-    // API로 부터 fetch 후 'excelData' 상태 변경
-    getDataListJSON().then((data) => {
+    console.log('1st:', endDate);
+    getDataListJSON({ startDate, endDate, specieValue }).then((data) => {
       setExcelData(data);
     });
-  }, []);
+  }, [startDate, endDate, specieValue]);
 
   return (
     <Box>
