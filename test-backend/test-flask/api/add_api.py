@@ -124,20 +124,21 @@ def add_specific_sensory_eval():
 @add_api.route("/heatedmeat-eval", methods=["POST", "PATCH"])
 def add_specific_heatedmeat_sensory_data():
     try:
+        db_session = current_app.db_session
+        data = request.get_json()
         if request.method == "POST":
-            db_session = current_app.db_session
-            data = request.get_json()
-            if data:
-                return create_specific_heatedmeat_seonsory_data(db_session, data), 200
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Failed to POST Heatedmeat Sensory Data"}), 400
+        elif request.method == "PATCH":
+            return jsonify({"msg": "Failed to PATCH Heatedmeat Sensory Data"}), 400
+        
+        return create_specific_heatedmeat_seonsory_data(db_session, data), 200
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
