@@ -268,24 +268,24 @@ def getMeatDataByRangeStatusType():
         )
 
 
-# 육류 승인 여부별 전체 육류 데이터 출력
-@get_api.route("/by-status-total", methods=["GET", "POST"])
-def getMeatDataByTotalStatusType():
-    try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            return _getMeatDataByTotalStatusType(db_session)
+# # 육류 승인 여부별 전체 육류 데이터 출력
+# @get_api.route("/by-status-total", methods=["GET", "POST"])
+# def getMeatDataByTotalStatusType():
+#     try:
+#         if request.method == "GET":
+#             db_session = current_app.db_session
+#             return _getMeatDataByTotalStatusType(db_session)
 
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
-        )
+#         else:
+#             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+#     except Exception as e:
+#         logger.exception(str(e))
+#         return (
+#             jsonify(
+#                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+#             ),
+#             505,
+#         )
 
 
 # Texanomy 하드코딩 기본 데이터 출력
