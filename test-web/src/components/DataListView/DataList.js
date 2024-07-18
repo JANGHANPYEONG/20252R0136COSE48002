@@ -204,7 +204,6 @@ function DataList({
 
           <TableBody>
             {meatList.map((content, index) => {
-              console.log("content:",content.name, "index:",index)
               const isItemSelected = isSelected(content);
               const labelId = `enhanced-table-checkbox-${index}`;
               return (
@@ -217,7 +216,6 @@ function DataList({
                   key={index}
                   selected={isItemSelected}
                 >
-                  
                   {
                     //반려함이나 예측 페이지인 경우 삭제 체크박스 추가
                     pageProp === 'reject' && (
@@ -273,7 +271,9 @@ function DataList({
                   <TableCell style={style.tableCell}>
                     {content.farmAddr ? content.farmAddr : '-'}
                   </TableCell>
-                  <TableCell style={style.tableCell}>{content.userName}</TableCell>
+                  <TableCell style={style.tableCell}>
+                    {content.userName}
+                  </TableCell>
                   <TableCell style={style.tableCell}>
                     {' '}
                     {content.userType}{' '}

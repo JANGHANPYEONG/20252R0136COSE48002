@@ -23,11 +23,12 @@ export const usePredictedMeatListFetch = (
   offset,
   count,
   startDate,
-  endDate
+  endDate,
+  specieValue
 ) => {
   const { data, error } = useSWR(
     //query parameter : offset, count, startDate, endDate
-    `http://${apiIP}/meat/get?offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&createdAt=true`,
+    `http://${apiIP}/meat/get?offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&specieValue=${specieValue}`,
     fetcher
   );
 

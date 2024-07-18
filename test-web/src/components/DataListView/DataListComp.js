@@ -10,6 +10,7 @@ const DataListComp = ({
   startDate, // 조회 시작 날짜
   endDate, // 조회 종료 날짜
   pageOffset, // 현재 페이지 offset
+  specieValue,
 }) => {
   // 고기 데이터 목록
   const [meatList, setMeatList] = useState([]);
@@ -19,11 +20,7 @@ const DataListComp = ({
   const [currentPage, setCurrentPage] = useState(1);
   // 한 페이지당 보여줄 개수
   const [count, setCount] = useState(5);
-  const [specieValue, setSpecieValue] = useState('전체');
 
-  const handleSpeciesChange = (event) => {
-    setSpecieValue(event.target.value);
-  };
 
   // API fetch 데이터 전처리
   const processMeatDatas = (data) => {
@@ -44,7 +41,6 @@ const DataListComp = ({
     });
 
     setMeatList(meatData);
-    console.log(meatData);
   };
 
   // API fetch
@@ -101,17 +97,6 @@ const DataListComp = ({
   // 정상 데이터 로드 된 경우
   return (
     <div>
-      <Select
-        labelId="species"
-        id="species"
-        value={specieValue}
-        onChange={handleSpeciesChange}
-        label="종류"
-      >
-        <MenuItem value="전체">전체</MenuItem>
-        <MenuItem value="소">소</MenuItem>
-        <MenuItem value="돼지">돼지</MenuItem>
-      </Select>
       <div style={style.listContainer}>
         {meatList !== undefined && (
           <DataList
