@@ -62,7 +62,7 @@ def add_specific_meat_data():
         )
 
 
-# 특정 육류의 딥 에이징 이력 생성 및 수정
+# 특정 육류의 딥 에이징 이력 생성
 @add_api.route("/deep-aging-data", methods=["POST"])
 def add_specific_deepAging_data():
     try:
