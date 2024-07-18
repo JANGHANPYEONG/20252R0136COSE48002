@@ -330,25 +330,26 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
     user_id = safe_str(data.get("userId"))
     seqno = safe_int(data.get("seqno"))
     need_img = safe_bool(data.get("imgAdded"))
+    data.pop('imgAdded')
     sensory_data = data.get("sensoryData")
 
-    # meat_id가 넘어오지 않았을 때 / 없는 meat_id일 때 / 원육인 경우 이미 승인된 meat_id일 때
+    # meat_id가 넘어오지 않았을 때 / 없는 meat_id일 때
     if not meat_id:
         return {"msg": "No Meat ID data sent", "code": 400}
     
     meat = db_session.query(Meat).get(meat_id)
     if not meat:
         return {"msg": "Meat Data Does Not Exist", "code": 400}
-
+    
+    # 해당 회차의 deepAging_info 레코드가 존재하는지 확인
+    deep_aging = db_session.query(DeepAgingInfo).filter_by(id=meat_id, seqno=seqno).first()
+    if not deep_aging:
+        return {"msg": "Deep Aging Info Does Not Exist", "code": 400}
+    
     # POST 요청
     if is_post:
-        # 해당 회차의 deepAging_info 레코드가 존재하는지 확인
-        deep_aging = db_session.query(DeepAgingInfo).filter_by(id=meat_id, seqno=seqno).one()
-        if not deep_aging:
-            return {"msg": "Deep Aging Info Does Not Exist", "code": 400}
-        
         # sensory_eval 생성
-        if sensory_data:
+        if any(value is not None for value in sensory_data.values()):
             new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
             db_session.add(new_sensory_eval)
             db_session.commit()
@@ -373,9 +374,9 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             meat.statusType == 0
             db_session.merge(meat)
             db_session.commit()
-        
+            
         # sensory_eval 생성
-        if sensory_data:
+        if any(value is not None for value in sensory_data.values()):
             new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
             db_session.merge(new_sensory_eval)
             db_session.commit()
