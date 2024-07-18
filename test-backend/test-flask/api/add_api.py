@@ -95,15 +95,14 @@ def add_specific_sensory_eval():
     try:
         db_session = current_app.db_session
         data = request.get_json()
+        s3_conn = current_app.s3_conn
+        firestore_conn = current_app.firestore_conn
         
         if request.method == "POST":
-            s3_conn = current_app.s3_conn
-            firestore_conn = current_app.firestore_conn
             sensory_data = create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post=1)
-            return {"msg": sensory_data["msg"], "code": sensory_data["code"]}
         else:
             sensory_data = create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post=0)
-            return {"msg": sensory_data["msg"], "code": sensory_data["code"]}
+        return {"msg": sensory_data["msg"], "code": sensory_data["code"]}
     except Exception as e:
         logger.exception(str(e))
         return (
