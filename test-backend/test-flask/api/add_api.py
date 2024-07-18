@@ -8,10 +8,9 @@ from db.db_controller import (
     create_raw_meat_deep_aging_info,
     create_specific_sensory_eval,
     create_specific_std_meat_data,
-    # create_specific_sensoryEval,
     create_specific_probexpt_data,
     create_specific_deep_aging_data,
-    create_specific_heatedmeat_seonsory_data,
+    create_specific_heatedmeat_seonsory_eval,
     _addSpecificPredictData,
     get_meat,
 )
@@ -102,7 +101,7 @@ def add_specific_sensory_eval():
             sensory_data = create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post=1)
         else:
             sensory_data = create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post=0)
-        return {"msg": sensory_data["msg"], "code": sensory_data["code"]}
+        return jsonify({"msg": sensory_data["msg"]}), sensory_data["code"]
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -117,16 +116,25 @@ def add_specific_sensory_eval():
 # PATCH일 때는 app, web - 현재 코드 그대로
 # 특정 육류의 가열육 관능 검사 결과 생성 및 수정
 @add_api.route("/heatedmeat-eval", methods=["POST", "PATCH"])
-def add_specific_heatedmeat_sensory_data():
+def add_specific_heatedmeat_sensory_eval():
     try:
         db_session = current_app.db_session
+        firestore_conn = current_app.firestore_conn
+        s3_conn = current_app.s3_conn
         data = request.get_json()
         if request.method == "POST":
-            return jsonify({"msg": "Failed to POST Heatedmeat Sensory Data"}), 400
+            is_post = True
+            for key in ("meatId", "seqno", "userId", "imgAdded","heatedmeatSensoryData"):
+                if key not in data.keys() or data[key] is None:
+                    return jsonify({"msg": "Failed to POST Heatedmeat Sensory Data"}), 400
         elif request.method == "PATCH":
-            return jsonify({"msg": "Failed to PATCH Heatedmeat Sensory Data"}), 400
-        
-        return create_specific_heatedmeat_seonsory_data(db_session, data), 200
+            is_post = False
+            for key in ("meatId", "seqno", "imgAdded", "heatedmeatSensoryData"):
+                if key not in data.keys() or data[key] is None:
+                    return jsonify({"msg": "Failed to PATCH Heatedmeat Sensory Data"}), 400
+                
+        heatedmeat_sensory_data = create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn, data, is_post)
+        return jsonify({"msg": heatedmeat_sensory_data["msg"]}), heatedmeat_sensory_data["code"]
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -147,13 +155,13 @@ def add_specific_probexpt_data():
             is_post = True
             for key in ("meatId", "seqno", "isHeated", "userId", "probexptData"):
                 if key not in data.keys() or data[key] is None:
-                    return jsonify({"msg": "Failed to Create Probexpt Data"}), 400
+                    return jsonify({"msg": "Failed to POST Probexpt Data"}), 400
 
         elif request.method == "PATCH":
             is_post = False
             for key in ("meatId", "seqno", "isHeated", "probexptData"):
                 if key not in data.keys() or data[key] is None:
-                    return jsonify({"msg": "Failed to Create Probexpt Data"}), 400
+                    return jsonify({"msg": "Failed to PATCH Probexpt Data"}), 400
 
         probexpt_data = create_specific_probexpt_data(db_session, data, is_post)
         return jsonify({"msg": probexpt_data["msg"]}), probexpt_data["code"]
