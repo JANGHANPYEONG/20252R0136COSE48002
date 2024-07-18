@@ -109,7 +109,7 @@ def add_specific_sensory_eval():
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
