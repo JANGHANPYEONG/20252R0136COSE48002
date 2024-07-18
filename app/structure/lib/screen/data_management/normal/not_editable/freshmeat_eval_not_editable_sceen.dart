@@ -10,7 +10,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/image_card.dart';
-import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/freshmeat_eval_not_editable_view_model.dart';
@@ -60,9 +59,8 @@ class _FreshMeatEvalNotEditableScreenState
             children: [
               ImageCard(
                   imagePath: context
-                          .read<FreshMeatEvalNotEditableViewModel>()
-                          .meatImage ??
-                      '없음'),
+                      .read<FreshMeatEvalNotEditableViewModel>()
+                      .meatImage),
               SizedBox(height: 60.h),
 
               // 관능평가 데이터
