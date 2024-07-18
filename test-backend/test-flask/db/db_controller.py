@@ -412,7 +412,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.merge(new_probexpt_data)
             db_session.commit()
-            return ({"msg": f"Success to PATCH Probexpt Data {id}-{seqno}-{"heated" if is_heated else "unheated"}", "code": 200})
+            return ({"msg": f"Success to PATCH Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}", "code": 200})
         else: # 생성
             if not is_post: # 생성이지만 PATCH 메서드
                 return ({"msg": "Probexpt Data Does NOT Exists", "code": 400})
@@ -421,7 +421,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.add(new_probexpt_data)
             db_session.commit()
-            return ({"msg": f"Success to POST Probexpt Data {id}-{seqno}-{"heated" if is_heated else "unheated"}", "code": 200})
+            return ({"msg": f"Success to POST Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}", "code": 200})
     except Exception as e:
         db_session.rollback()
         raise e
