@@ -23,86 +23,50 @@ get_api = Blueprint("get_api", __name__)
 
 
 # 전체 육류 데이터 출력
-@get_api.route("/", methods=["GET", "POST"])
+@get_api.route("/", methods=["GET"])
 def getMeatData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            offset = request.args.get("offset")
-            count = request.args.get("count")
-            start = request.args.get("start")
-            end = request.args.get("end")
-            return get_range_meat_data(db_session, offset, count, start, end).get_json()
-
+        db_session = current_app.db_session
+        offset = request.args.get("offset")
+        count = request.args.get("count")
+        start = request.args.get("start")
+        end = request.args.get("end")
+        specie = request.args.get("specieValue")
+        if specie == '전체':
+            specie_value = 2
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            specie_value = species.index(specie)
+        return jsonify(get_range_meat_data(db_session, offset, count, start, end, specie_value)), 200
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
 # 특정 ID에 해당하는 육류 데이터 출력
-@get_api.route("/by-id", methods=["GET", "POST"])
+@get_api.route("/by-meat-id", methods=["GET"])
 def getMeatDataById():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = request.args.get("id")
-            if id is None:
-                raise Exception("Invalid Meat ID")
-            result = get_meat(db_session, id)
-            if result:
-                for k, v in result["rawmeat"].items():
-                    try:
-                        result["rawmeat_data_complete"] = (
-                            all(
-                                v is not None
-                                for v in result["rawmeat"][
-                                    "heatedmeat_sensory_eval"
-                                ].values()
-                            )
-                            and all(
-                                v is not None
-                                for v in result["rawmeat"]["probexpt_data"].values()
-                            )
-                            and all(
-                                (k == "deepAgingId" or v is not None)
-                                for k, v in result["rawmeat"]["sensory_eval"].items()
-                            )
-                        )
-                    except:
-                        result["rawmeat_data_complete"] = False
-
-                result["processedmeat_data_complete"] = {}
-
-                for k, v in result["processedmeat"].items():
-                    try:
-                        result["processedmeat_data_complete"][k] = all(
-                            all(vv is not None for vv in inner_v.values())
-                            for inner_v in v.values()
-                        )
-                    except:
-                        result["processedmeat_data_complete"][k] = False
-                if not result["processedmeat_data_complete"]:
-                    result["processedmeat_data_complete"] = False
-
-                return jsonify(result)
-            else:
-                raise Exception(f"No Meat data found for {id}")
+        db_session = current_app.db_session
+        meat_id = request.args.get("meatId")
+        if meat_id is None:
+            return jsonify({"msg": "Invalid Meat ID"}), 400
+        result = get_meat(db_session, meat_id)
+        if result:
+            return jsonify(result), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": f"No Meat data found for {meat_id}"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
@@ -251,98 +215,92 @@ def getMeatDataByUser():
         )
 
 
-# 육류 승인 여부별 육류 데이터 출력
-@get_api.route("/by-status", methods=["GET", "POST"])
-def getMeatDataByStatusType():
-    try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            statusType_value = safe_int(request.args.get("statusType"))
-            if statusType_value:
-                return _getMeatDataByStatusType(db_session, statusType_value)
-            else:
-                return jsonify("No statusType in parameter"), 401
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
-        )
+# # 육류 승인 여부별 육류 데이터 출력
+# @get_api.route("/by-status", methods=["GET", "POST"])
+# def getMeatDataByStatusType():
+#     try:
+#         if request.method == "GET":
+#             db_session = current_app.db_session
+#             statusType_value = safe_int(request.args.get("statusType"))
+#             if statusType_value:
+#                 return _getMeatDataByStatusType(db_session, statusType_value)
+#             else:
+#                 return jsonify("No statusType in parameter"), 401
+#         else:
+#             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+#     except Exception as e:
+#         logger.exception(str(e))
+#         return (
+#             jsonify(
+#                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+#             ),
+#             505,
+#         )
 
 
 # 육류 승인 여부별 범위 육류 데이터 출력
-@get_api.route("/by-status-range", methods=["GET", "POST"])
+@get_api.route("/by-status", methods=["GET"])
 def getMeatDataByRangeStatusType():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            statusType_value = safe_int(request.args.get("statusType"))
-            offset = request.args.get("offset")
-            count = request.args.get("count")
-            start_str = request.args.get("start")
-            end_str = request.args.get("end")
+        db_session = current_app.db_session
+        status_type = request.args.get("statusType")
+        offset = request.args.get("offset")
+        count = request.args.get("count")
+        start_str = request.args.get("start")
+        end_str = request.args.get("end")
+        specie_value = request.args.get("specieValue")
 
-            start = convert2datetime(start_str, 0)
-            end = convert2datetime(end_str, 0)
-            if statusType_value:
-                return _getMeatDataByRangeStatusType(
-                    db_session, statusType_value, offset, count, start, end
-                )
-            else:
-                return jsonify("No statusType in parameter"), 401
+        start = convert2datetime(start_str, 0)
+        end = convert2datetime(end_str, 0)
+        if status_type and specie_value:
+            return _getMeatDataByRangeStatusType(
+                db_session, status_type, offset, count, specie_value, start, end
+            )
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify("Invalid statusType or specieValue in parameter"), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
-# 육류 승인 여부별 전체 육류 데이터 출력
-@get_api.route("/by-status-total", methods=["GET", "POST"])
-def getMeatDataByTotalStatusType():
-    try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            return _getMeatDataByTotalStatusType(db_session)
+# # 육류 승인 여부별 전체 육류 데이터 출력
+# @get_api.route("/by-status-total", methods=["GET", "POST"])
+# def getMeatDataByTotalStatusType():
+#     try:
+#         if request.method == "GET":
+#             db_session = current_app.db_session
+#             return _getMeatDataByTotalStatusType(db_session)
 
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
-    except Exception as e:
-        logger.exception(str(e))
-        return (
-            jsonify(
-                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
-            ),
-            505,
-        )
+#         else:
+#             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+#     except Exception as e:
+#         logger.exception(str(e))
+#         return (
+#             jsonify(
+#                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+#             ),
+#             505,
+#         )
 
 
 # Texanomy 하드코딩 기본 데이터 출력
-@get_api.route("/default-data", methods=["GET", "POST"])
+@get_api.route("/default-data", methods=["GET"])
 def getTexanomyData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            return _getTexanomyData(db_session)
-
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        db_session = current_app.db_session
+        return _getTexanomyData(db_session)
     except Exception as e:
-        logger.exception(str(e))
+        # logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

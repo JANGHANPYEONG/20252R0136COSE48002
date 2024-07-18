@@ -109,7 +109,7 @@ class UserRouter {
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) =>
                     PasswordResetViewModel(userModel: userModel),
-                builder: (context, child) => const PasswordResetScreen(),
+                child: const PasswordResetScreen(),
               ),
             ),
             // 비밀번호 변경 완료
@@ -128,8 +128,9 @@ class UserRouter {
         GoRoute(
           path: '/home',
           builder: (context, state) => ChangeNotifierProvider(
-              create: (context) => HomeViewModel(userModel: userModel),
-              child: const HomeScreen()),
+            create: (context) => HomeViewModel(userModel: userModel),
+            child: const HomeScreen(),
+          ),
           routes: [
             // 육류 등록 페이지
             GoRoute(
@@ -161,23 +162,23 @@ class UserRouter {
                 ),
                 // 육류 이미지
                 GoRoute(
-                    path: 'image',
-                    builder: (context, state) => ChangeNotifierProvider(
-                          create: (context) => RegistrationMeatImageViewModel(
-                              meatModel, userModel),
-                          child: const RegistrationMeatImageScreen(),
-                        ),
-                    routes: [
-                      // 사진 촬영 카메라
-                      GoRoute(
-                        path: 'camera',
-                        builder: (context, state) => ChangeNotifierProvider(
-                          create: (context) => CameraViewModel(),
-                          child: const CameraScreen(),
-                        ),
+                  path: 'image',
+                  builder: (context, state) => ChangeNotifierProvider(
+                    create: (context) =>
+                        RegistrationMeatImageViewModel(meatModel, userModel),
+                    child: const RegistrationMeatImageScreen(),
+                  ),
+                  routes: [
+                    // 사진 촬영 카메라
+                    GoRoute(
+                      path: 'camera',
+                      builder: (context, state) => ChangeNotifierProvider(
+                        create: (context) => CameraViewModel(),
+                        child: const CameraScreen(),
                       ),
-                    ]),
-
+                    ),
+                  ],
+                ),
                 // 신선육 관능평가
                 GoRoute(
                   path: 'freshmeat',
@@ -202,7 +203,7 @@ class UserRouter {
               path: 'my-page',
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) => UserInfoViewModel(userModel),
-                builder: (context, child) => const UserInfoScreen(),
+                child: const UserInfoScreen(),
               ),
               routes: [
                 // 유저 상세 정보
@@ -210,7 +211,7 @@ class UserRouter {
                   path: 'user-detail',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) => UserDetailViewModel(userModel),
-                    builder: (context, child) => const UserDetailScreen(),
+                    child: const UserDetailScreen(),
                   ),
                 ),
                 // 비밀번호 변경
@@ -219,7 +220,7 @@ class UserRouter {
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
                         ChangePasswordViewModel(userModel: userModel),
-                    builder: (context, child) => const ChangePasswordScreen(),
+                    child: const ChangePasswordScreen(),
                   ),
                 ),
                 // 회원 탈퇴
@@ -228,7 +229,7 @@ class UserRouter {
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
                         DeleteUserViewModel(userModel: userModel),
-                    builder: (context, child) => const DeleteUserScreen(),
+                    child: const DeleteUserScreen(),
                   ),
                 )
               ],
@@ -309,32 +310,30 @@ class UserRouter {
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) =>
                     DataManagementHomeResearcherViewModel(meatModel, userModel),
-                child:
-                    // const DataManagementHomeResearcherScreen(),
-                    const DataManagementHomeTabScreen(),
+                child: const DataManagementHomeTabScreen(),
               ),
               routes: [
                 GoRoute(
                   path: 'add',
                   builder: (context, state) => ChangeNotifierProvider(
-                      create: (context) => DataAddHomeViewModel(meatModel),
-                      child: const DataAddHome()),
+                    create: (context) => DataAddHomeViewModel(meatModel),
+                    child: const DataAddHome(),
+                  ),
                   routes: [
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) => AddRawMeatViewModel(),
-                        child: StepFreshMeat(
-                          meatModel: meatModel,
-                        ),
+                        child: StepFreshMeat(meatModel: meatModel),
                       ),
                       routes: [
                         GoRoute(
                           path: 'heated-meat',
                           builder: (context, state) => ChangeNotifierProvider(
-                              create: (context) =>
-                                  HeatedMeatEvalViewModel(meatModel),
-                              child: const HeatedMeatEvaluation()),
+                            create: (context) =>
+                                HeatedMeatEvalViewModel(meatModel),
+                            child: const HeatedMeatEvaluation(),
+                          ),
                         ),
                         GoRoute(
                           path: 'tongue',
@@ -393,9 +392,9 @@ class UserRouter {
                     GoRoute(
                       path: 'processed-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                          create: (context) => AddProcessedMeatViewModel(),
-                          child:
-                              AddProcessedMeatMainScreen(meatModel: meatModel)),
+                        create: (context) => AddProcessedMeatViewModel(),
+                        child: AddProcessedMeatMainScreen(meatModel: meatModel),
+                      ),
                       routes: [
                         GoRoute(
                           path: 'image',

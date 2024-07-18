@@ -13,16 +13,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp();
-  await checkAutoLogin();
   await initializeDateFormatting();
+
+  await checkAutoLogin();
   runApp(const DeepPlantApp());
 }
 
-/// auto.json에 자동 로그인이 설정됐으면 자동으로 로그이
+/// auto.json에 자동 로그인이 설정됐으면 자동으로 로그인
 Future<void> checkAutoLogin() async {
   dynamic response = await LocalDataSource.getLocalData('auto.json');
+
   if (response != null) {
     Map<String, dynamic> data = response;
+
     if (data['auto'] != null) {
       // 로그인 진행
       if (await saveUserInfo(data['auto'])) {
@@ -32,23 +35,22 @@ Future<void> checkAutoLogin() async {
   }
 }
 
-// 유저 정보 저장
+/// 유저 정보 저장
 Future<bool> saveUserInfo(String userId) async {
   // 로그인 API 호출
   try {
     // 유저 정보 가져오기 시도
     dynamic userInfo = await RemoteDataSource.login(userId)
         .timeout(const Duration(seconds: 10));
-    if (userInfo == null) {
-      // 가져오기 실패
-      return false;
-    } else {
-      // 가져오기 성공
+    if (userInfo is Map<String, dynamic>) {
+      // 200 OK
       // 데이터 fetch
       userModel.fromJson(userInfo);
       // 육류 정보 생성자 id 저장
       meatModel.userId = userModel.userId;
       return true;
+    } else {
+      return false;
     }
   } catch (e) {
     return false;

@@ -132,6 +132,8 @@ gradeNum = {0: "1++", 1: "1+", 2: "1", 3: "2", 4: "3", 5: None}
 statusType = {0: "대기중", 1: "반려", 2: "승인"}
 CATTLE = 0
 PIG = 1
+default_user_id = 'deeplant@example.com'
+default_user_type = 2
 
 
 def safe_float(val):
@@ -188,7 +190,7 @@ def convert2datetime(date_string, format):
         return date_string
     if format == 0:
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
-    if format == 1:
+    elif format == 1:
         tz = pytz.timezone("Asia/Seoul")
         return datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%S")
     elif format == 2:
@@ -222,7 +224,7 @@ def item_encoder(data_dict, item, input_data=None):
         "userId",
         "traceNum",
         "farmAddr",
-        "farmerNm",
+        "farmerName",
         "name",
         "company",
         "jobTitle",
@@ -242,7 +244,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
@@ -295,7 +297,7 @@ def item_encoder(data_dict, item, input_data=None):
         "userId",
         "traceNum",
         "farmAddr",
-        "farmerNm",
+        "farmerName",
         "name",
         "company",
         "jobTitle",
@@ -315,7 +317,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
