@@ -63,6 +63,14 @@ def decode_id(id, db_session):
     return result["specie_value"], result["primal_value"], result["secondary_value"]
 
 
+def calculate_period(db_session, id):
+    butchery_date = db_session.query(Meat).get(id).butcheryYmd
+    current_date = datetime.now()
+    
+    diff = current_date - butchery_date
+    return diff.days
+
+
 # CREATE
 def create_meat(db_session, meat_data: dict):
     # 1. SexType 테이블에서 성별 정보 ID 가져오기
@@ -132,7 +140,7 @@ def create_DeepAging(meat_data: dict):
     return new_deepAging
 
 
-def create_SensoryEval(meat_data: dict, seqno: int, id: str, deepAgingId: int):
+def create_SensoryEval(db_session, meat_data: dict, sensory_data, seqno, id, userId):
     """
     db: SQLAlchemy db
     freshmeat_data: 모든 필드의 데이터가 문자열로 들어왔다고 가정!!
@@ -141,28 +149,35 @@ def create_SensoryEval(meat_data: dict, seqno: int, id: str, deepAgingId: int):
     probexpt_seqno: 실험(전자혀) 관능 검사 seqno
     type: 0(신규 생성) or 1(기존 수정)
     """
-    if meat_data is None:
-        raise Exception("Invalid Sensory_Evaluate data")
     # 1. freshmeat_data에 없는 필드 추가
     item_encoder(meat_data, "seqno", seqno)
-    item_encoder(meat_data, "id", id)
-    item_encoder(meat_data, "deepAgingId", deepAgingId)
+    item_encoder(meat_data, "userId", userId)
+    
+    meat_data['id'] = id
+    meat_data.pop('meatId')
+    meat_data['createdAt'] = datetime.now().strftime('%Y-%m-%d')
+    meat_data['period'] = calculate_period(db_session, id)
+    meat_data.pop('sensoryData')
+    
+    for field, val in sensory_data.items():
+        meat_data[field] = val
+
     # 2. freshmeat_data에 있는 필드 수정
     for field in meat_data.keys():
-        if field == "seqno":  # 여기 있어도 걍 입력된걸 써라~
+        if field == "seqno":
             pass
-        elif field == "freshmeatId":  # 여기 있어도 걍 입력된걸 써라~
-            pass
-        elif field == "deepAgingId":
+        elif field == "period":
             pass
         else:
             item_encoder(meat_data, field)
     # Create a new Meat object
     try:
-        new_SensoryEval = SensoryEval(**meat_data)
+        new_sensory_eval = SensoryEval(**meat_data)
+        db_session.add(new_sensory_eval)
+        db_session.commit()
     except Exception as e:
         raise Exception("Wrong sensory eval DB field items" + str(e))
-    return new_SensoryEval
+    return new_sensory_eval
 
 
 def create_HeatemeatSensoryEval(meat_data: dict, seqno: int, id: str):
@@ -265,11 +280,11 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
     return meat_id
 
 
-def create_raw_meat_deep_aging_info(db_session, meat_id):
+def create_raw_meat_deep_aging_info(db_session, meat_id, seqno):
     new_meat = db_session.query(Meat).get(meat_id)
     new_deep_aging = {
         "id": meat_id,
-        "seqno": 0,
+        "seqno": seqno,
         "date": new_meat.createdAt,
         "minute": 0
     }
@@ -277,6 +292,7 @@ def create_raw_meat_deep_aging_info(db_session, meat_id):
         deep_aging_data = DeepAgingInfo(**new_deep_aging)
         db_session.add(deep_aging_data)
         db_session.commit()
+        return f"{meat_id}-{seqno}"
     except Exception as e:
         db_session.rollback()
         raise e
@@ -310,56 +326,89 @@ def create_specific_deep_aging_data(db_session, data):
         raise e
 
 
-def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
-    # 2. 기본 데이터 받아두기
-    id = safe_str(data.get("id"))
+def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_post):
+    # 1. 기본 데이터 받아오기
+    meat_id = safe_str(data.get("meatId"))
     seqno = safe_int(data.get("seqno"))
-    deepAging_data = data.get("deepAging")
-    data.pop("deepAging", None)
-    meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if id == None:  # 1. 애초에 id가 없는 request
-        raise Exception("No ID data sent for update")
+    sensory_data = data.get("sensoryData")
 
-    sensory_eval = (
-        db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).first()
-    )  # DB에 있는 육류 정보
-    try:
-        if seqno != 0:  # 가공육 관능검사
-            if sensory_eval:  # 기존 Deep Aging을 수정하는 경우
-                deepAgingId = sensory_eval.deepAgingId
-                new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-                db_session.merge(new_SensoryEval)
-            else:  # 새로운 Deep aging을 추가하는 경우
-                new_DeepAging = create_DeepAging(deepAging_data)
-                deepAgingId = new_DeepAging.deepAgingId
-                db_session.add(new_DeepAging)
-                db_session.commit()
-                new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-                db_session.merge(new_SensoryEval)
-        else:  # 신선육 관능검사
-            if meat:  # 수정하는 경우
-                if meat.statusType == 2:
-                    raise Exception("Already confirmed meat data")
-                meat.statusType = 0
-                db_session.merge(meat)
-            deepAgingId = None
-            new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-            db_session.merge(new_SensoryEval)
+    # meat_id가 넘어오지 않았을 때 / 없는 meat_id일 때 / 원육인 경우 이미 승인된 meat_id일 때
+    if not meat_id:
+        return {"msg": "No Meat ID data sent", "code": 400}
+    
+    meat = db_session.query(Meat).get(meat_id)
+    if not meat:
+        return {"msg": "Meat Data Does Not Exist", "code": 400}
+
+    if seqno == 0:
+        if meat.statusType == 2:
+            return {"msg": "Already Confirmed Meat", "code": 400}
+
+    # POST 요청
+    if is_post:
+        user_id = safe_str(data.get("userId"))
+        
+        # deepAging_info 레코드 생성
+        deep_aging_id = create_raw_meat_deep_aging_info(db_session, meat_id, seqno)
+        
+        # sensory_data가 존재할 때 sensory_eval에도 레코드 생성
+        if sensory_data:
+            new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
+            return {"msg": f"Success to create Deep Aging Info {deep_aging_id}", "code": 200}
+        
+    # PATCH 요청
+
+
+# def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
+#     # 2. 기본 데이터 받아두기
+#     id = safe_str(data.get("id"))
+#     seqno = safe_int(data.get("seqno"))
+#     deepAging_data = data.get("deepAging")
+#     data.pop("deepAging", None)
+#     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
+#     if id == None:  # 1. 애초에 id가 없는 request
+#         raise Exception("No ID data sent for update")
+
+#     sensory_eval = (
+#         db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).first()
+#     )  # DB에 있는 육류 정보
+#     try:
+#         if seqno != 0:  # 가공육 관능검사
+#             if sensory_eval:  # 기존 Deep Aging을 수정하는 경우
+#                 deepAgingId = sensory_eval.deepAgingId
+#                 new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
+#                 db_session.merge(new_SensoryEval)
+#             else:  # 새로운 Deep aging을 추가하는 경우
+#                 new_DeepAging = create_DeepAging(deepAging_data)
+#                 deepAgingId = new_DeepAging.deepAgingId
+#                 db_session.add(new_DeepAging)
+#                 db_session.commit()
+#                 new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
+#                 db_session.merge(new_SensoryEval)
+#         else:  # 신선육 관능검사
+#             if meat:  # 수정하는 경우
+#                 if meat.statusType == 2:
+#                     raise Exception("Already confirmed meat data")
+#                 meat.statusType = 0
+#                 db_session.merge(meat)
+#             deepAgingId = None
+#             new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
+#             db_session.merge(new_SensoryEval)
             
-        db_session.commit()
-        transfer_folder_image(
-            s3_conn,
-            firestore_conn,
-            db_session,
-            f"{id}-{seqno}",
-            new_SensoryEval,
-            "sensory_evals",
-        )
-    except Exception as e:
-        db_session.rollback()
-        logger.exception(str(e))
-        raise e
-    return jsonify(id)
+#         db_session.commit()
+#         transfer_folder_image(
+#             s3_conn,
+#             firestore_conn,
+#             db_session,
+#             f"{id}-{seqno}",
+#             new_SensoryEval,
+#             "sensory_evals",
+#         )
+#         return jsonify(id)
+#     except Exception as e:
+#         db_session.rollback()
+#         logger.exception(str(e))
+#         raise e
 
 
 def create_specific_heatedmeat_seonsory_data(db_session, data):
