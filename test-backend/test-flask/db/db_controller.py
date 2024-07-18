@@ -551,7 +551,7 @@ def get_range_meat_data(
     statusType=None,
     company=None,
 ):
-    if count and offset:
+    if (count is not None) and (offset is not None):
         count = safe_int(count)
         offset = safe_int(offset)
         offset = offset*count
@@ -604,7 +604,7 @@ def get_range_meat_data(
             Meat.createdAt.between(start, end)
         ).count()
     query = query.order_by(Meat.createdAt.desc())
-    if offset and count:
+    if (count is not None) and (offset is not None):
         query = query.offset(offset).limit(count)
 
     # 탐색
