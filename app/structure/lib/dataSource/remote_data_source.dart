@@ -16,7 +16,8 @@ class RemoteDataSource {
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
   /// 입력한 정보들 토대로 사용자 정보 DB에 생성하는 함수
-  /// 전송 데이터 : userId, name, company, jobTitle, homeAddr alarm, type
+  /// 전송 데이터 : userId, name, homeAddr, company, jobTitle, type, alarm
+  /// Status code : 200, 400
   static Future<dynamic> signUp(String jsonData) async {
     dynamic response = await _postApi('user/register', jsonData);
     return response;
@@ -24,7 +25,8 @@ class RemoteDataSource {
 
   /// 유저 중복검사 (GET)
   /// 회원가입하려는 userId가 중복되는지 확인하는 함수
-  /// null이 아니면 중복되지 않은 이메일
+  /// isDuplicate로 중복 여부 확인
+  /// Status code : 200
   static Future<dynamic> dupliCheck(String userId) async {
     dynamic response = await _getApi('user/duplicate-check?userId=$userId');
     return response;
@@ -32,6 +34,8 @@ class RemoteDataSource {
 
   /// 유저 로그인 (GET)
   /// 로그인시 입력한 userId를 토대로 사용자 정보를 불러오는 함수
+  /// 받아오는 데이터 : userId, name, homeAddr, company, jobTitle, type, alarm, createdAt
+  /// Status code : 200, 400, 404
   static Future<dynamic> login(String userId) async {
     dynamic response = await _getApi('user/login?userId=$userId');
     return response;
@@ -40,17 +44,17 @@ class RemoteDataSource {
   /// 유저 업데이트 (POST)
   /// 유저 정보 수정 후 DB에 반영하는 함수
   /// 전송 데이터 : userId, name, homeAddr, company, jobTitle, alarm, type
-  // TODO : patch로 변경
+  /// Status code : 200, 400
   static Future<dynamic> updateUser(String jsonData) async {
-    dynamic response = await _postApi('user/update', jsonData);
+    dynamic response = await _patchApi('user/update', jsonData);
     return response;
   }
 
   /// 유저 회원 탈퇴 (GET)
   /// 로그인된 사용자를 DB에서 삭제하는 함수
-  // TODO : delete로 변경
+  /// Status code : 200, 401
   static Future<dynamic> deleteUser(String userId) async {
-    dynamic response = await _getApi('user/delete?userId=$userId');
+    dynamic response = await _deleteApi('user/delete?userId=$userId');
     return response;
   }
 
@@ -180,19 +184,20 @@ class RemoteDataSource {
   static Future<dynamic> _postApi(String endPoint, String jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    String requestBody = jsonData;
+    // String requestBody = jsonData;
+    debugPrint('POST 요청: $endPoint');
 
     try {
-      final response = await http.post(Uri.parse(apiUrl),
-          headers: headers, body: requestBody);
+      final response =
+          await http.post(Uri.parse(apiUrl), headers: headers, body: jsonData);
       if (response.statusCode == 200) {
-        debugPrint('POST 요청 성공: $endPoint');
-        return response.body;
+        debugPrint('POST 요청 성공');
       } else {
-        debugPrint(
-            'POST 요청 실패: $endPoint (${response.statusCode})${response.body}');
-        return response.statusCode;
+        debugPrint('POST 요청 실패: (${response.statusCode})${response.body}');
       }
+
+      // 예외 처리를 위한 status code 반환
+      return response.statusCode;
     } catch (e) {
       debugPrint('POST 요청 중 예외 발생: $e');
       return;
@@ -204,19 +209,19 @@ class RemoteDataSource {
   static Future<dynamic> _patchApi(String endPoint, String jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    String requestBody = jsonData;
+    // String requestBody = jsonData;
+    debugPrint('PATCH 요청: $endPoint');
 
     try {
-      final response = await http.patch(Uri.parse(apiUrl),
-          headers: headers, body: requestBody);
+      final response =
+          await http.patch(Uri.parse(apiUrl), headers: headers, body: jsonData);
       if (response.statusCode == 200) {
-        debugPrint('PATCH 요청 성공: $endPoint');
-        return response.body;
+        debugPrint('PATCH 요청 성공');
       } else {
-        debugPrint(
-            'PATCH 요청 실패: $endPoint (${response.statusCode})${response.body}');
-        return response.statusCode;
+        debugPrint('PATCH 요청 실패: (${response.statusCode})${response.body}');
       }
+
+      return response.statusCode;
     } catch (e) {
       debugPrint('PATCH 요청 중 예외 발생: $e');
       return;
@@ -227,16 +232,17 @@ class RemoteDataSource {
   /// 데이터 받아올 때 사용
   static Future<dynamic> _getApi(String endPoint) async {
     String apiUrl = '$baseUrl/$endPoint';
+    debugPrint('GET 요청: $endPoint');
+
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
-        debugPrint('GET 요청 성공: $endPoint');
+        debugPrint('GET 요청 성공');
         return jsonDecode(response.body);
       } else {
-        debugPrint(
-            'GET 요청 실패: $endPoint (${response.statusCode})${response.body}');
-        return;
+        debugPrint('GET 요청 실패: (${response.statusCode})${response.body}');
+        return response;
       }
     } catch (e) {
       debugPrint('GET 요청 중 예외 발생: $e');
@@ -248,19 +254,20 @@ class RemoteDataSource {
   /// 데이터 삭제시 사용
   static Future<dynamic> _deleteApi(String endPoint) async {
     String apiUrl = '$baseUrl/$endPoint';
+    debugPrint('DELETE 요청: $endPoint');
+
     try {
       final response = await http.delete(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
-        debugPrint('Delete 요청 성공: $endPoint');
+        debugPrint('DELETE 요청 성공');
         return jsonDecode(response.body);
       } else {
-        debugPrint(
-            'Delete 요청 실패: $endPoint (${response.statusCode})${response.body}');
+        debugPrint('DELETE 요청 실패: (${response.statusCode})${response.body}');
         return;
       }
     } catch (e) {
-      debugPrint('Delete 요청 중 예외 발생: $e');
+      debugPrint('DELETE 요청 중 예외 발생: $e');
       return;
     }
   }

@@ -1,6 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/main.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
@@ -115,22 +116,30 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     emailCheckLoading = true;
     notifyListeners();
 
-    dynamic isDuplicated = await RemoteDataSource.dupliCheck(email.text);
+    // 중복 확인
+    dynamic response = await RemoteDataSource.dupliCheck(email.text);
 
-    if (isDuplicated != null) {
-      isUnique = true;
+    // response 값 확인
+    if (response is Map<String, dynamic>) {
+      // 200 OK
+      isUnique = !response['isDuplicated'];
       emailCheckLoading = false;
       notifyListeners();
+
+      if (!isUnique) {
+        // 중복 popup 창 띄우기
+        _context = context;
+        if (context.mounted) {
+          showDuplicateIdSigninDialog(context, context.pop, moveSignIn);
+        }
+      }
     } else {
+      // 오류
       isUnique = false;
       emailCheckLoading = false;
       notifyListeners();
 
-      // popup 창 띄우기
-      _context = context;
-      if (context.mounted) {
-        showDuplicateIdSigninDialog(context, context.pop, moveSignIn);
-      }
+      if (context.mounted) showErrorPopup(context);
     }
   }
 
@@ -196,9 +205,10 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   void saveUserInfo() {
     userModel.userId = email.text;
-    userModel.password = password.text;
     userModel.name = name.text;
+    userModel.type = 'Normal';
     userModel.alarm = isChecked4;
+    userModel.password = password.text;
   }
 
   void clickedNextButton(BuildContext context) {

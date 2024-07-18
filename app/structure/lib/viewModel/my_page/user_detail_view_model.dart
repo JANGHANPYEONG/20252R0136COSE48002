@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:structure/components/custom_app_bar.dart';
@@ -12,13 +10,12 @@ class UserDetailViewModel with ChangeNotifier {
   UserDetailViewModel(this.userModel) {
     _initialize();
   }
+  bool isLoading = false;
+
   String userId = '';
   bool isEditting = false;
-  bool isLoading = false;
   bool isActivateButton = false;
-
-  //약관 동의 여부
-  bool isChecked = false;
+  bool isChecked = false; // 약관 동의 여부
 
   final TextEditingController mainAddress = TextEditingController();
   final TextEditingController subAddress = TextEditingController();
@@ -46,7 +43,7 @@ class UserDetailViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 주소 검색 버튼 클릭시
+  /// 주소 검색 버튼 클릭
   Future<void> clickedSearchButton(BuildContext context) async {
     isActivateButton = true;
     await Navigator.push(
@@ -66,6 +63,7 @@ class UserDetailViewModel with ChangeNotifier {
     );
   }
 
+  // TODO
   void clicked1stCheckBox(bool? value) {
     // isChecked = ;
   }
@@ -86,13 +84,15 @@ class UserDetailViewModel with ChangeNotifier {
 
     try {
       // 데이터 전송
-      final response =
-          await RemoteDataSource.updateUser(_convertUserUpdateToJson());
-      if (response == null) throw Error();
-      if (context.mounted) showSuccessChangeUserInfo(context);
+      final response = await RemoteDataSource.updateUser(userModel.toJson());
+      if (response == 200) {
+        if (context.mounted) showSuccessChangeUserInfo(context);
+      } else {
+        throw Error();
+      }
     } catch (e) {
-      print('$e');
-      // 에러 페이지
+      debugPrint('$e');
+      if (context.mounted) showErrorPopup(context);
     }
 
     isLoading = false;
@@ -129,20 +129,5 @@ class UserDetailViewModel with ChangeNotifier {
         jobTitle.text = userModel.jobTitle!.substring(index + 1);
       }
     }
-  }
-
-  // 유저 정보 업데이트 시 json 변환
-  String _convertUserUpdateToJson() {
-    Map<String, dynamic> jsonData = {
-      "userId": userModel.userId,
-      "name": userModel.name,
-      "homeAddr": userModel.homeAdress,
-      "company": userModel.company,
-      "jobTitle": userModel.jobTitle,
-      "alarm": userModel.alarm,
-      "type": userModel.type,
-    };
-
-    return jsonEncode(jsonData);
   }
 }

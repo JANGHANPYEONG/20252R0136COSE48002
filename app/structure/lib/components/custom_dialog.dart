@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:structure/components/image_card.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

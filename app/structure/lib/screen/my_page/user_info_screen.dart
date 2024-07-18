@@ -7,29 +7,24 @@ import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/my_page/user_info_view_model.dart';
 
 class UserInfoScreen extends StatefulWidget {
-  const UserInfoScreen({
-    super.key,
-  });
+  const UserInfoScreen({super.key});
 
   @override
   State<UserInfoScreen> createState() => _UserInfoScreenState();
 }
 
 class _UserInfoScreenState extends State<UserInfoScreen> {
-  late UserInfoViewModel _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _viewModel = context.read<UserInfoViewModel>();
-  }
-
   @override
   Widget build(BuildContext context) {
+    UserInfoViewModel userInfoViewModel = context.watch<UserInfoViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
-          title: '마이페이지', backButton: true, closeButton: false),
+        title: '마이페이지',
+        backButton: true,
+        closeButton: false,
+      ),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,7 +64,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         child: Row(
                           children: [
                             Text(
-                              context.read<UserInfoViewModel>().userName,
+                              userInfoViewModel.userName,
                               style: Palette.userInfoContent,
                             ),
                             SizedBox(width: 8.w),
@@ -82,7 +77,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                                   borderRadius: BorderRadius.all(
                                       Radius.circular(28.5.sp))),
                               child: Text(
-                                context.read<UserInfoViewModel>().userType,
+                                userInfoViewModel.userType,
                                 style: Palette.userLevelText,
                               ),
                             ),
@@ -102,7 +97,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                             ),
                           ),
                           Text(
-                            context.read<UserInfoViewModel>().createdAt,
+                            userInfoViewModel.createdAt,
                             style: Palette.userInfoContent,
                           ),
                         ],
@@ -126,7 +121,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                           style: Palette.userInfoTitle,
                         )),
                     Text(
-                      context.read<UserInfoViewModel>().userId,
+                      userInfoViewModel.userId,
                       style: Palette.userInfoContent,
                     ),
                   ],
@@ -143,8 +138,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: InkWell(
-                onTap: () =>
-                    context.read<UserInfoViewModel>().clickedEdit(context),
+                onTap: () => userInfoViewModel.clickedEdit(context),
                 borderRadius: BorderRadius.circular(20.r),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -169,28 +163,23 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             ),
             SizedBox(
               width: 600.w,
-              child: Container(
-                // padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Row(
-                  children: [
-                    SizedBox(
-                        width: 82.w,
-                        child: Text(
-                          '주소',
-                          style: Palette.userInfoTitle,
-                        )),
-                    SizedBox(
-                      width: 447.w,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Text(
-                          _viewModel.homeAdress,
-                          style: Palette.userInfoContent,
-                        ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 82.w,
+                    child: Text('주소', style: Palette.userInfoTitle),
+                  ),
+                  SizedBox(
+                    width: 447.w,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        userInfoViewModel.homeAdress,
+                        style: Palette.userInfoContent,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 20.h),
@@ -207,7 +196,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                           style: Palette.userInfoTitle,
                         )),
                     Text(
-                      _viewModel.company,
+                      userInfoViewModel.company,
                       style: Palette.userInfoContent,
                     ),
                   ],
@@ -231,7 +220,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                     SizedBox(
                       width: 247.w,
                       child: Text(
-                        _viewModel.department,
+                        userInfoViewModel.department,
                         style: Palette.userInfoContent,
                       ),
                     ),
@@ -262,8 +251,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: InkWell(
-                onTap: () =>
-                    context.read<UserInfoViewModel>().clickedChangePW(context),
+                onTap: () => userInfoViewModel.clickedChangePW(context),
                 borderRadius: BorderRadius.circular(20.r),
                 child: SizedBox(
                   width: 640.w,
@@ -299,9 +287,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: InkWell(
-                onTap: () => context
-                    .read<UserInfoViewModel>()
-                    .clickedDeleteUser(context),
+                onTap: () => userInfoViewModel.clickedDeleteUser(context),
                 borderRadius: BorderRadius.circular(20.r),
                 child: SizedBox(
                   width: 640.w,
@@ -326,12 +312,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 ),
               ),
             ),
-            // Container(
-            //   margin: EdgeInsets.symmetric(horizontal: 40.w),
-            //   child: const Divider(
-            //     height: 1,
-            //   ),
-            // ),
             const Spacer(),
 
             // 로그아웃 버튼
@@ -343,7 +323,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 width: 640.w,
                 height: 96.h,
                 onPressed: () async =>
-                    context.read<UserInfoViewModel>().clickedSignOut(context),
+                    userInfoViewModel.clickedSignOut(context),
               ),
             ),
           ],
