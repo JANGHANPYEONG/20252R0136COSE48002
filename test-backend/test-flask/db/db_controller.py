@@ -354,7 +354,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                 new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
                 db_session.add(new_sensory_eval)
                 db_session.commit()
-                
+
                 if need_img:
                     transfer_folder_image(
                         s3_conn,
@@ -364,6 +364,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                         new_sensory_eval,
                         "sensory_evals",
                     )
+                db_session.commit()
                 return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
             else:
                 return {"msg": f"No Sensory Data to Create Sensory Evaluation", "code": 400}
@@ -385,8 +386,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             if any(value is not None for value in sensory_data.values()):
                 new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, existing_user)
                 db_session.merge(new_sensory_eval)
-                db_session.commit()
-                
+
                 if need_img:
                     transfer_folder_image(
                         s3_conn,
@@ -396,6 +396,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                         new_sensory_eval,
                         "sensory_evals",
                     )
+                db_session.commit()
                 return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
             else:
                 return {"msg": f"No Sensory Data to Update Sensory Evaluation", "code": 400}
