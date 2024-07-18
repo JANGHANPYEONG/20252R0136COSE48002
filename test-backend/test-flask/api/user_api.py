@@ -257,6 +257,10 @@ def delete_user_data():
                 ),
                 401,
             )
+        # Firebase에서 유저 삭제
+        user_record = firebase_auth.get_user_by_email(id)
+        firebase_auth.delete_user(user_record.uid)
+        
         delete_user(db_session, user)
         return (
             jsonify(
