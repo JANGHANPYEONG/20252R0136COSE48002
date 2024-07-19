@@ -434,7 +434,7 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
             
         else: # 생성
             if not is_post: # 생성인데 PATCH 메서드
-                return ({"msg": "Probexpt Data Does NOT Exists", "code": 400})
+                return ({"msg": "Heatedmeat Sensory Data Does NOT Exists", "code": 400})
             sensory_data["userId"] = data["userId"]
             sensory_data["period"] = calculate_period(db_session, id)
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
@@ -450,7 +450,7 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
                 "heatedmeat_sensory_evals",
             )
         db_session.commit()
-        return ({"msg": f"Success to {'POST' if is_post else 'PATCH'} Probexpt Data {id}-{seqno}", "code": 200})
+        return ({"msg": f"Success to {'POST' if is_post else 'PATCH'} Heatedmeat Sensory Data {id}-{seqno}", "code": 200})
     except Exception as e:
         db_session.rollback()
         raise e
