@@ -1,6 +1,6 @@
 //
 //
-// 데이터 관리 페이지(ViewModel) : Researcher
+// 추가정보 입력 페이지(ViewModel) : Researcher
 //
 //
 
@@ -18,7 +18,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   DataManagementHomeResearcherViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
-  late BuildContext _context;
 
   // 초기 리스트
   List<Map<String, String>> numList = [];
@@ -47,13 +46,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> dataList = ['나의 데이터', '전체'];
-  List<bool> dataStatus = [false, true];
-  int dataSelectedIdx = 1;
+  List<String> dataList = ['전체', '나의 데이터', '일반 데이터', '연구 데이터'];
+  List<bool> dataStatus = [true, false, false, false];
+  int dataSelectedIdx = 0;
 
-  List<String> speciesList = ['소', '돼지', '전체'];
-  List<bool> speciesStatus = [false, false, true];
-  int speciesSelectedIdx = 2;
+  List<String> speciesList = ['전체', '소', '돼지'];
+  List<bool> speciesStatus = [true, false, false];
+  int speciesSelectedIdx = 0;
 
   // 날짜 값이 담길 변수
   DateTime? toDay;
@@ -75,13 +74,16 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     await _fetchData();
     filterlize();
-    print('filteredList = $filteredList');
+
     isLoading = false;
     notifyListeners();
   }
 
   // 필터가 활성화 되면 호출.
-  void clickedFilter() {
+  void clickedFilter(BuildContext context) {
+    // 키보드 내리기
+    FocusScope.of(context).unfocus();
+
     // 이전의 필터 값을 받아 필터 초기화.
     dateStatus = List.filled(dateStatus.length, false);
     dateStatus[dateSelectedIdx] = true;
@@ -121,7 +123,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
-    print('SL : $selectedList');
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
@@ -132,25 +133,28 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       return dateB.compareTo(dateA);
     });
     selectedList = filteredList;
-    print('selectedList : $selectedList');
   }
 
-  // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터)
+  // 데이터 종류에 따라 필터링 진행. (전체 / 나의 데이터 / 일반 데이터/ 연구 데이터)
   void setData() {
-    if (dataSelectedIdx == 0) {
+    if (dataSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data["userId"] == userModel.userId);
+      }).toList();
+    } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data["userType"] == userModel.type);
       }).toList();
     } else {}
   }
 
   // 육종 별 필터링 진행. (소 / 돼지)
   void setSpecies() {
-    if (speciesSelectedIdx == 0) {
+    if (speciesSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '소');
       }).toList();
-    } else if (speciesSelectedIdx == 1) {
+    } else if (speciesSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '돼지');
       }).toList();
@@ -194,14 +198,21 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     }
   }
 
-  // 날짜 fomatting
+  /// 날짜 직접입력 fomatting
   void formatting() {
+    // 초기화
+    isOpenTable = true;
+    indexDay = 0;
+    firstDayText = '';
+    lastDayText = '';
+
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
     }
     if (lastDay != null) {
       lastDayText = DateFormat('yyyy.MM.dd').format(lastDay!);
     }
+    notifyListeners();
   }
 
   // 직접 설정 과정에서 범위를 재 지정함. (범위의 앞 보다 뒤가 더 빠른 날짜 일 때, 둘을 뒤 바꿈.)
@@ -221,14 +232,14 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   // 날짜 필터를 이용할 때 호출된다.
   void onTapDate(int index) {
-    dateStatus = List.filled(dateStatus.length, false);
-    dateStatus[index] = true;
-    // 직접 설정이면 TableCalendar 호출
+    dateStatus = List.filled(dateStatus.length, false); // 전체 false로 초기화
+    dateStatus[index] = true; // 현재 선택된 필터만 true로 변경
     if (index != 3) {
       isOpenTable = false;
       firstDayText = '';
       lastDayText = '';
     } else {
+      // 직접 입력
       formatting();
     }
 
@@ -261,8 +272,10 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (firstDay == null || lastDay == null) {
       focused = DateTime.now();
     }
-    isOpenTable = !isOpenTable;
+
+    isOpenTable = true;
     indexDay = index;
+
     // 날짜 지정 이후 선택할 시 이전 날짜 호출
     if (index == 0 && temp1 != null) {
       focused = temp1!;
@@ -280,6 +293,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (indexDay == 0) {
       temp1 = selectedDay;
       firstDayText = DateFormat('yyyy.MM.dd').format(temp1!);
+      indexDay = 1;
     } else {
       temp2 = selectedDay;
       lastDayText = DateFormat('yyyy.MM.dd').format(temp2!);
@@ -302,25 +316,21 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   void setDay() {
     filteredList = numList;
     if (dateSelectedIdx == 0) {
-      print('3일');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
-      print('1개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
-      print('3개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
-      print('직접설정');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data["createdAt"]!);
         return dateTime.isAfter(DateTime(
@@ -337,9 +347,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       // Confirm된 육류 데이터 호출
       Map<String, dynamic>? jsonData =
           await RemoteDataSource.getConfirmedMeatData();
-      print('jsonDAta : $jsonData');
       if (jsonData == null) {
-        print('데이터 없음');
         throw Error();
       } else {
         // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
@@ -352,8 +360,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
                 DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
             String specieValue = item['specieValue'];
             String statusType = item['statusType'];
-            print('sts : $statusType');
+
             Map<String, String> idStatusPair = {
+              // "Type": userType,
               "id": id,
               "createdAt": createdAt,
               "userId": userId,
@@ -362,12 +371,11 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
               "statusType": statusType,
             };
             numList.add(idStatusPair);
-            print('num : $numList');
           }
         });
       }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
   }
 
@@ -421,11 +429,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       meatModel.reset();
       meatModel.fromJson(response);
       meatModel.seqno = 0;
-      print(meatModel);
-      _context = context;
-      _movePage();
+      if (context.mounted) context.go('/home/data-manage-researcher/add');
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
     isLoading = false;
     notifyListeners();
@@ -436,21 +442,18 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     String id = '';
 
     id = selectedList[idx]['id']!;
-
     try {
       isLoading = true;
       notifyListeners();
-      print('meatModel : 출력 : $meatModel');
       dynamic response = await RemoteDataSource.getMeatData(id);
       if (response == null) throw Error();
       meatModel.reset();
       meatModel.fromJson(response);
       meatModel.seqno = 0;
 
-      _context = context;
-      _movePageApprove();
+      if (context.mounted) context.go('/home/data-manage-researcher/approve');
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("에러발생: $e");
     }
     isLoading = false;
     notifyListeners();
@@ -469,13 +472,5 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
         return id.contains(insertedText);
       }).toList();
     }
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-researcher/add');
-  }
-
-  void _movePageApprove() {
-    _context.go('/home/data-manage-researcher/approve');
   }
 }

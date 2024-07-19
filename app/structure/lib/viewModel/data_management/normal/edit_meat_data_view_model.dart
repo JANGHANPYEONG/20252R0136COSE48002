@@ -72,7 +72,7 @@ class EditMeatDataViewModel with ChangeNotifier {
   /// 육류 데이터 승이
   Future<void> acceptMeatData(BuildContext context) async {
     try {
-      await RemoteDataSource.confirmMeatData(meatModel.id!);
+      await RemoteDataSource.confirmMeatData(meatModel.meatId!);
       if (context.mounted) context.pop();
     } catch (e) {
       // 승인 오류
@@ -83,7 +83,7 @@ class EditMeatDataViewModel with ChangeNotifier {
   /// 육류 데이터 승이
   Future<void> rejectMeatData(BuildContext context) async {
     try {
-      await RemoteDataSource.rejectMeatData(meatModel.id!);
+      await RemoteDataSource.rejectMeatData(meatModel.meatId!);
       if (context.mounted) context.pop();
     } catch (e) {
       // 승인 오류

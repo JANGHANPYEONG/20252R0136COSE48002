@@ -86,8 +86,8 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
 
     int seqno = meatModel.deepAgingData!.length + 1;
     String jsonData = jsonEncode({
-      "id": meatModel.id,
-      "userId": meatModel.createUser,
+      "meatId": meatModel.meatId,
+      "userId": meatModel.userName,
       "createdAt": Usefuls.getCurrentDate(),
       "period": 0,
       "seqno": seqno,
@@ -96,12 +96,10 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
         "minute": int.parse(selectedMinute!),
       }
     });
-    print(jsonData);
 
     try {
       dynamic response =
-          await RemoteDataSource.sendMeatData('deep-aging-data', jsonData);
-      print('response : $response');
+          await RemoteDataSource.createMeatData('deep-aging-data', jsonData);
       if (response == null) {
         throw Error();
       } else if (response == 400) {

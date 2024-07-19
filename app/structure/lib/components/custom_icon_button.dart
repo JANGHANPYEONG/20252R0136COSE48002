@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 
 class CustomIconButton extends StatelessWidget {
@@ -19,8 +20,9 @@ class CustomIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(180.r),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        margin: EdgeInsets.all(8.w),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.transparent,

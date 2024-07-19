@@ -78,6 +78,7 @@ def add_specific_deepAging_data():
             return jsonify({"msg": f"Meat {data['meatId']} Does NOT Exists"}), 404
         else:
             return jsonify({"msg": f"Seqno {data['seqno']} Deep Aging Info. Already Exists"}), 400
+
     except Exception as e:
         logger.exception(str(e))
         return (

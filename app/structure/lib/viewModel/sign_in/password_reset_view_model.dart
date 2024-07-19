@@ -10,13 +10,16 @@ class PasswordResetViewModel with ChangeNotifier {
 
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
-
+  bool isActivateButton = false;
   bool _isValidEmail = false;
 
   TextEditingController email = TextEditingController();
 
   // 이메일이 입력됐는지 확인
   String? emailValidate(String? value) {
+    bool isActivateButton = true;
+    notifyListeners();
+    print('비밀번호 : $isActivateButton');
     if (value!.isEmpty) {
       _isValidEmail = false;
       return '이메일을 입력하세요';

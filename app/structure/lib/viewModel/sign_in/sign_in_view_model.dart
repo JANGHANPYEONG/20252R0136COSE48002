@@ -57,6 +57,7 @@ class SignInViewModel with ChangeNotifier {
       );
 
       // 이메일 validation
+      // 이메일 인증을 위해서 필요
       final bool isValidEmail = await validateEmail();
       if (!isValidEmail) {
         // 이메일 invalid
@@ -64,7 +65,7 @@ class SignInViewModel with ChangeNotifier {
         throw InvalidEmailException('이메일 인증을 완료하세요.');
       } else {
         // 이메일 valid
-        // 유저 정보 저장
+        // DB에서 로그인하는 사용자 정보 불러와서 로컬 스토리지에 저장
         if (await saveUserInfo()) {
           // 자동 로그인 설정
           if (isAutoLogin) {
@@ -91,7 +92,6 @@ class SignInViewModel with ChangeNotifier {
       String errorMessage;
       if (e is FirebaseException) {
         // 로그인 실패
-        print(e.code);
         if (e.code == 'user-not-found') {
           errorMessage = '존재하지 않는 아이디입니다.';
         } else {
@@ -123,7 +123,7 @@ class SignInViewModel with ChangeNotifier {
     }
   }
 
-  // 유저의 이메일 valid 검사
+  /// firebase에서 유저 이메일 유효한지 검사
   Future<bool> validateEmail() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -132,30 +132,28 @@ class SignInViewModel with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      print('인증 실패');
+      debugPrint('인증 실패');
       return false;
     }
     return false;
   }
 
-  // 유저 정보 저장
+  /// 유저 정보 저장
   Future<bool> saveUserInfo() async {
     // 로그인 API 호출
     try {
       // 유저 정보 가져오기 시도
-      dynamic userInfo = await RemoteDataSource.signIn(userId)
+      dynamic userInfo = await RemoteDataSource.login(userId)
           .timeout(const Duration(seconds: 10));
-      if (userInfo == null) {
-        // 가져오기 실패
-        return false;
-      } else {
-        // 가져오기 성공
+      if (userInfo is Map<String, dynamic>) {
+        // 200 OK
         // 데이터 fetch
         userModel.fromJson(userInfo);
-        print(userModel);
         // 육류 정보 생성자 id 저장
         meatModel.userId = userModel.userId;
         return true;
+      } else {
+        return false;
       }
     } catch (e) {
       return false;
@@ -170,7 +168,6 @@ class SignInViewModel with ChangeNotifier {
 // 이메일 인증 예외 처리
 class InvalidEmailException implements Exception {
   final String message;
-
   InvalidEmailException(this.message);
 
   @override

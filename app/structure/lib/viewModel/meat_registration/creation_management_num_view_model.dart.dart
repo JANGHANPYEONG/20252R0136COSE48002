@@ -22,8 +22,17 @@ class CreationManagementNumViewModel with ChangeNotifier {
     _initialize();
     _listenToPrinterStatus();
   }
+  bool isLoading = true;
+  late BuildContext _context;
+
+  String managementNum = '-';
+  bool isFetchLoading = false;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> _initialize() async {
+    isLoading = true;
+    notifyListeners();
+
     // 관리번호 생성
     await _createManagementNum();
 
@@ -42,12 +51,8 @@ class CreationManagementNumViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  String managementNum = '-';
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool isLoading = true;
-  bool isFetchLoading = false;
-
-  // 관리번호 생성
+  /// 1. 관리번호 생성
+  /// traceNum, speciesValue, primalValue, secondayValue를 토대로 관리 번호를 생성함
   Future<void> _createManagementNum() async {
     if (meatModel.traceNum != null &&
         meatModel.speciesValue != null &&
@@ -58,15 +63,18 @@ class CreationManagementNumViewModel with ChangeNotifier {
       String originalString =
           '${meatModel.traceNum!}-$createdAt-${meatModel.speciesValue!}-${meatModel.primalValue!}-${meatModel.secondaryValue!}';
 
-      // 해시함수로 관리번호 생성 및 데이터 저장
+      // 해시함수로 meatId 생성
       managementNum = _hashStringTo12Digits(originalString);
-      meatModel.id = managementNum;
+      // 생성한 meatId 저장
+      meatModel.meatId = managementNum;
+      meatModel.sensoryEval!['meatId'] = managementNum;
     } else {
-      print('에러');
+      // 데이터 입력이 제대로 되지 않았을 때 에러 반환
+      debugPrint('Error creating managementNum');
     }
   }
 
-  // 관리번호 해시 함수
+  /// 관리번호 해시 함수
   String _hashStringTo12Digits(String input) {
     // 입력 문자열을 UTF-8로 인코딩
     List<int> bytes = utf8.encode(input);
@@ -83,7 +91,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
     return twelveDigits;
   }
 
-  // 이미지를 파이어베이스에 저장
+  /// 2. 이미지를 파이어베이스에 저장
   Future<void> _sendImageToFirebase() async {
     try {
       // fire storage에 육류 이미지 저장
@@ -92,54 +100,52 @@ class CreationManagementNumViewModel with ChangeNotifier {
           .child('sensory_evals/$managementNum-0.png');
 
       await refMeatImage.putFile(
-        File(meatModel.imagePath!),
+        File(meatModel.sensoryEval!['imagePath']),
         SettableMetadata(contentType: 'image/jpeg'),
       );
 
       // QR 생성 후 firestore에 업로드
-      await uploadQRCodeImageToStorage(managementNum);
+      await uploadQRCodeImageToStorage();
     } catch (e) {
-      print(e);
-      // 에러 페이지
+      debugPrint('Error uploading image to firebase: $e');
+      // TODO : 에러 페이지
     }
   }
 
-  // QR생성 및 전송
-  Future<void> uploadQRCodeImageToStorage(String data) async {
-    // QR코드 생성
+  /// 2.1 QR 생성 및 전송
+  Future<void> uploadQRCodeImageToStorage() async {
+    // QR 코드 생성
     final qrPainter = QrPainter(
-      data: data,
+      data: managementNum,
       version: QrVersions.auto,
       gapless: true,
     );
-    // image 파일로 변환
+
+    // 이미지 파일로 변환
     final image = await qrPainter.toImage(200);
     final byteData = await image.toByteData(format: ImageByteFormat.png);
     final bytes = byteData!.buffer.asUint8List();
 
-    // fire storage에 저장
+    // firebase storage에 저장
     final storageRef =
-        FirebaseStorage.instance.ref().child('qr_codes/$data.png');
+        FirebaseStorage.instance.ref().child('qr_codes/$managementNum.png');
     await storageRef.putData(bytes);
   }
 
-  // 육류 정보를 서버로 전송
+  /// 3. 육류 정보를 서버로 전송
   Future<void> _sendMeatData() async {
-    meatModel.createUser = meatModel.userId;
-    meatModel.createdAt = Usefuls.getCurrentDate();
-    meatModel.seqno = 0;
-
+    // 육류 기본 정보 입력
     final response1 =
-        await RemoteDataSource.sendMeatData(null, meatModel.toJsonBasic());
-    final response2 = await RemoteDataSource.sendMeatData(
-        'sensory-eval', meatModel.toJsonFresh());
+        await RemoteDataSource.createMeatData(null, meatModel.toJsonBasic());
+    // 원육 관능평가 데이터 입력
+    final response2 = await RemoteDataSource.createMeatData(
+        'sensory-eval', meatModel.toJsonSensory());
 
     if (response1 == null || response2 == null) {
       // 에러 페이지
       print('error');
     } else {
       // 로딩상태 비활성화
-
       isLoading = false;
       notifyListeners();
     }
@@ -163,7 +169,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
         }
       },
       onError: (dynamic error) {
-        print('Received error: ${error.message}');
+        debugPrint('Received error: ${error.message}');
       },
     );
   }
@@ -173,7 +179,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       // 프린터 연결
       await platform.invokeMethod('connect');
     } on PlatformException catch (e) {
-      print("Failed to connect to the printer: '${e.message}'.");
+      debugPrint("Failed to connect to the printer: '${e.message}'.");
     }
   }
 
@@ -181,7 +187,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
     context.go('/home');
   }
 
-  late BuildContext _context;
   Future<void> clickedAddData(BuildContext context) async {
     String id = managementNum;
 

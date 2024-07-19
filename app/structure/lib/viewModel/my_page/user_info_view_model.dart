@@ -3,42 +3,31 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/model/user_model.dart';
-import 'package:intl/intl.dart';
 
 class UserInfoViewModel with ChangeNotifier {
-  String userName = '';
-  String userId = '';
-  String userType = '';
-  String createdAt = '';
-  String homeAdress = '-';
-  String company = '-';
-  String department = '-';
-  String jobTitle = '-';
   UserModel userModel;
   UserInfoViewModel(this.userModel) {
     _initialize();
   }
 
+  String userId = ''; // 사용자 id
+  String userName = ''; // 사용자 이름
+  String homeAdress = '-'; // 주소
+  String company = '-'; // 회사명
+  String department = '-'; // 부서명
+  String jobTitle = '-'; // 직위
+  String userType = ''; // 권한 type (Normal, Researcher, Manager)
+  String createdAt = ''; // 가입 날짜
+
   void _initialize() {
-    userName = userModel.name ?? 'None';
-    // Type 텍스트 변환
-    if (userModel.type != null) {
-      if (userModel.type == 'Normal') {
-        userType = '일반데이터 수집자';
-      } else if (userModel.type == 'Researcher') {
-        userType = '연구데이터 수집자';
-      } else if (userModel.type == 'Manager') {
-        userType = '관리자';
-      } else {
-        userType = 'None';
-      }
-    } else {
-      userName = 'None';
-    }
-    userId = userModel.userId ?? 'None';
-    createdAt = _formatDate(userModel.createdAt) ?? 'None';
+    userId = userModel.userId ?? '-';
+    userName = userModel.name ?? '-';
+    userType = userModel.type ?? '-';
+    createdAt = Usefuls.parseDate(userModel.createdAt);
+
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');
       if (index != -1 && userModel.homeAdress!.substring(0, index).isNotEmpty) {
@@ -61,15 +50,6 @@ class UserInfoViewModel with ChangeNotifier {
         jobTitle = userModel.jobTitle!.substring(index + 1);
       }
     }
-  }
-
-  String? _formatDate(String? dateString) {
-    if (dateString == null) return null;
-    DateFormat format = DateFormat("E, dd MMM yyyy HH:mm:ss 'GMT'");
-    DateTime dateTime = format.parse(dateString);
-
-    String formattedDate = DateFormat("yyyy/MM/dd").format(dateTime);
-    return formattedDate;
   }
 
   /// 로그아웃 버튼 클릭

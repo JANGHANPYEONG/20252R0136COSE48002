@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_icon_button.dart';
+import 'package:structure/components/home_card.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/home_view_model.dart';
 
@@ -20,19 +21,27 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 95.h,
-            ),
+            SizedBox(height: 95.h),
+
+            // 상단 타이틀 area
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 왼쪽 로고
                 SvgPicture.asset(
                   'assets/images/deepaging_logo.svg',
                   width: 220.w,
                 ),
                 const Spacer(),
+
+                // 오른쪽 마이페이지 아이콘
                 CustomIconButton(
-                  image: 'assets/images/person.svg',
+                  image: (context.read<HomeViewModel>().userType == 'Normal')
+                      ? 'assets/images/normalperson.svg'
+                      // 'assets/images/researcherperson.svg'
+                      : (context.read<HomeViewModel>().userType == 'Researcher')
+                          ? 'assets/images/managerperson.svg'
+                          : 'assets/images/researcherperson.svg',
                   onTap: () =>
                       context.read<HomeViewModel>().clickedMyPage(context),
                   width: 80.w,
@@ -40,9 +49,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(
-              height: 160.h,
-            ),
+            SizedBox(height: 160.h),
+
+            // 환영 텍스트
             Row(
               children: [
                 Column(
@@ -54,144 +63,44 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(
-              height: 120.h,
-            ),
+            SizedBox(height: 120.h),
+
+            // 육류 등록/관리 버튼
             Row(
               children: [
                 // 육류 등록 버튼
-                InkWell(
+                HomeCard(
+                  mainText: '육류등록',
+                  subText: '\n데이터를 전송합니다',
+                  imageUrl: 'assets/images/pig.png',
+                  mainColor: Palette.meatRegiCardBg,
+                  btnColor: Palette.meatRegiBtnBg,
+                  subTextStyle: Palette.h5White,
+                  imageWidth: 180.w,
+                  imageHeight: 158.h,
                   onTap: () =>
                       context.read<HomeViewModel>().clickedMeatRegist(context),
-                  child: HomeCard(
-                    mainText: '육류등록',
-                    subText: '\n데이터를 전송합니다',
-                    imageUrl: 'assets/images/pig.png',
-                    mainColor: Palette.meatRegiCardBg,
-                    btnColor: Palette.meatRegiBtnBg,
-                    subTextStyle: Palette.h5White,
-                    imageWidth: 179.w,
-                    imageHeight: 158.h,
-                  ),
                 ),
                 const Spacer(),
-                InkWell(
+
+                // 데이터 관리 버튼
+                HomeCard(
+                  mainText: '데이터 관리',
+                  subText: '등록된 데이터를\n열람/수정합니다',
+                  imageUrl: 'assets/images/chart.png',
+                  mainColor: Palette.dataMngCardBg,
+                  btnColor: Palette.dataMngBtndBg,
+                  subTextStyle: Palette.h5Grey,
+                  imageWidth: 200.w,
+                  imageHeight: 200.h,
                   onTap: () =>
                       context.read<HomeViewModel>().clickedDataManage(context),
-                  child: HomeCard(
-                    mainText: '데이터 관리',
-                    subText: '등록된 데이터를\n열람/수정합니다',
-                    imageUrl: 'assets/images/chart.png',
-                    mainColor: Palette.dataMngCardBg,
-                    btnColor: Palette.dataMngBtndBg,
-                    subTextStyle: Palette.h5Grey,
-                    imageWidth: 200.w,
-                    imageHeight: 200.h,
-                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class HomeCard extends StatelessWidget {
-  const HomeCard({
-    super.key,
-    required this.mainText,
-    required this.subText,
-    required this.imageUrl,
-    required this.mainColor,
-    required this.btnColor,
-    required this.subTextStyle,
-    required this.imageWidth,
-    required this.imageHeight,
-  });
-  final String mainText;
-  final String subText;
-  final String imageUrl;
-  final Color mainColor;
-  final Color btnColor;
-  final TextStyle subTextStyle;
-  final double imageWidth;
-  final double imageHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          width: 300.w,
-          height: 538.h,
-          decoration: BoxDecoration(
-              color: mainColor,
-              borderRadius: BorderRadius.all(Radius.circular(150.sp))),
-          child: Column(children: [
-            SizedBox(
-              height: 31.h,
-            ),
-            Container(
-              width: 238.w,
-              height: 238.h,
-              decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7), shape: BoxShape.circle),
-              child: Center(
-                child: Image.asset(
-                  imageUrl,
-                  width: imageWidth,
-                  height: imageHeight,
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 31.h,
-            ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 31.w,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mainText,
-                      style: Palette.h3,
-                    ),
-                    SizedBox(
-                      height: 10.h,
-                    ),
-                    Text(
-                      subText,
-                      style: subTextStyle,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ]),
-        ),
-        Transform.translate(
-          offset: Offset(148.w, 425.h),
-          child: Container(
-            width: 164.w,
-            height: 80.h,
-            padding: EdgeInsets.only(right: 20.w),
-            alignment: Alignment.centerRight,
-            decoration: BoxDecoration(
-                color: btnColor,
-                borderRadius: BorderRadius.all(Radius.circular(50.sp))),
-            child: Icon(
-              Icons.arrow_forward,
-              size: 50.w,
-              color: Colors.white,
-            ),
-          ),
-        )
-      ],
     );
   }
 }

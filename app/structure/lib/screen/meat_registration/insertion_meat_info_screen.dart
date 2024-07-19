@@ -1,6 +1,6 @@
 //
 //
-// 육류 분류 페이지(View)
+// 육류 기본정보 부위 추가(View)
 //
 //
 
@@ -24,14 +24,10 @@ class InsertionMeatInfoScreen extends StatefulWidget {
 
 class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
   @override
-  void initState() {
-    super.initState();
-
-    context.read<InsertionMeatInfoViewModel>().initialize();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    InsertionMeatInfoViewModel insertionMeatInfoViewModel =
+        context.watch<InsertionMeatInfoViewModel>();
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -41,9 +37,8 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
             title: '육류 기본정보',
             backButton: true,
             closeButton: false,
-            backButtonOnPressed: context
-                .read<InsertionMeatInfoViewModel>()
-                .backBtnPressed(context)),
+            backButtonOnPressed:
+                insertionMeatInfoViewModel.backBtnPressed(context)),
         body: Column(
           children: [
             Container(
@@ -61,9 +56,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         width: 116.w,
                         height: 72.h,
                         decoration: BoxDecoration(
-                          color: context
-                                  .watch<InsertionMeatInfoViewModel>()
-                                  .speciesCheckFunc()
+                          color: insertionMeatInfoViewModel.speciesCheckFunc()
                               ? Palette.basicSpeciesColor
                               : Palette.checkSpeciesColor,
                           borderRadius: BorderRadius.all(Radius.circular(50.r)),
@@ -75,11 +68,10 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                             style: TextStyle(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.w700,
-                              color: context
-                                      .watch<InsertionMeatInfoViewModel>()
-                                      .speciesCheckFunc()
-                                  ? Palette.basicSpeciesTextColor
-                                  : Palette.checkSpeciesTextColor,
+                              color:
+                                  insertionMeatInfoViewModel.speciesCheckFunc()
+                                      ? Palette.basicSpeciesTextColor
+                                      : Palette.checkSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -91,14 +83,10 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         width: 116.w,
                         height: 72.h,
                         decoration: BoxDecoration(
-                          color: context
-                                  .watch<InsertionMeatInfoViewModel>()
-                                  .speciesCheckFunc()
+                          color: insertionMeatInfoViewModel.speciesCheckFunc()
                               ? Palette.checkSpeciesColor
                               : Palette.basicSpeciesColor,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(35.0),
-                          ),
+                          borderRadius: BorderRadius.circular(35.r),
                         ),
                         child: Center(
                           child: Text(
@@ -107,11 +95,10 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                             style: TextStyle(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.w700,
-                              color: context
-                                      .watch<InsertionMeatInfoViewModel>()
-                                      .speciesCheckFunc()
-                                  ? Palette.checkSpeciesTextColor
-                                  : Palette.basicSpeciesTextColor,
+                              color:
+                                  insertionMeatInfoViewModel.speciesCheckFunc()
+                                      ? Palette.checkSpeciesTextColor
+                                      : Palette.basicSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -126,20 +113,13 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                   // 대분류
                   CustomDropdown(
                     hintText: Text('대분할', style: Palette.dropDownTitleStyle),
-                    value:
-                        context.watch<InsertionMeatInfoViewModel>().primalValue,
-                    itemList:
-                        context.read<InsertionMeatInfoViewModel>().largeDiv,
-                    onChanged: context
-                            .watch<InsertionMeatInfoViewModel>()
-                            .isSelectedSpecies
+                    value: insertionMeatInfoViewModel.primalValue,
+                    itemList: insertionMeatInfoViewModel.largeDiv,
+                    onChanged: insertionMeatInfoViewModel.isSelectedSpecies
                         ? (value) {
-                            context
-                                .read<InsertionMeatInfoViewModel>()
-                                .primalValue = value as String;
-                            context
-                                .read<InsertionMeatInfoViewModel>()
-                                .setPrimal();
+                            insertionMeatInfoViewModel.primalValue =
+                                value as String;
+                            insertionMeatInfoViewModel.setPrimal();
                           }
                         : null,
                   ),
@@ -149,21 +129,13 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                   // 소분류
                   CustomDropdown(
                     hintText: Text('소분할', style: Palette.dropDownTitleStyle),
-                    value: context
-                        .watch<InsertionMeatInfoViewModel>()
-                        .secondaryValue,
-                    itemList:
-                        context.watch<InsertionMeatInfoViewModel>().litteDiv,
-                    onChanged: context
-                            .watch<InsertionMeatInfoViewModel>()
-                            .isSelectedPrimal
+                    value: insertionMeatInfoViewModel.secondaryValue,
+                    itemList: insertionMeatInfoViewModel.litteDiv,
+                    onChanged: insertionMeatInfoViewModel.isSelectedPrimal
                         ? (value) {
-                            context
-                                .read<InsertionMeatInfoViewModel>()
-                                .secondaryValue = value as String;
-                            context
-                                .read<InsertionMeatInfoViewModel>()
-                                .setSecondary();
+                            insertionMeatInfoViewModel.secondaryValue =
+                                value as String;
+                            insertionMeatInfoViewModel.setSecondary();
                           }
                         : null,
                   ),
@@ -175,15 +147,12 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
             Container(
               margin: EdgeInsets.only(bottom: 28.h),
               child: MainButton(
-                onPressed: context.watch<InsertionMeatInfoViewModel>().completed
+                onPressed: insertionMeatInfoViewModel.completed
                     ? () {
-                        context
-                            .read<InsertionMeatInfoViewModel>()
-                            .clickedNextButton(context);
+                        insertionMeatInfoViewModel.clickedNextButton(context);
                       }
                     : null,
-                text: context.read<InsertionMeatInfoViewModel>().meatModel.id ==
-                        null
+                text: insertionMeatInfoViewModel.meatModel.meatId == null
                     ? '완료'
                     : '수정사항 저장',
                 width: 658.w,

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_dialog.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/labels.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/dataSource/local_data_source.dart';
@@ -13,18 +14,20 @@ import 'package:structure/model/user_model.dart';
 class DeleteUserViewModel with ChangeNotifier {
   UserModel userModel;
   DeleteUserViewModel({required this.userModel});
-
-  final formKey = GlobalKey<FormState>();
+  bool isActivateButton = false;
   bool isLoading = false;
 
+  final formKey = GlobalKey<FormState>();
   TextEditingController password = TextEditingController();
-
   bool _isValidPw = false;
 
   late BuildContext _context;
 
   /// 기존 비밀번호 유효성 검사
   String? pwValidate(String? value) {
+    isActivateButton = true;
+    notifyListeners();
+    print('isActive: $isActivateButton');
     if (value!.isEmpty) {
       _isValidPw = false;
       return '비밀번호를 입력하세요.';
@@ -68,7 +71,7 @@ class DeleteUserViewModel with ChangeNotifier {
         jsonEncode({'auto': null}), 'auto.json');
     userModel.reset();
     if (_context.mounted) _context.go('/sign-in');
-    _showAlert('회원 탈퇴가 성공적으로 처리되었습니다.');
+    _showSnackBar('회원 탈퇴가 성공적으로 처리되었습니다.');
   }
 
   /// 회원 탈퇴 함수
@@ -96,22 +99,26 @@ class DeleteUserViewModel with ChangeNotifier {
           showDeleteIdDialog(_context, popDialogCancel, popDialogConfirm);
         }
       } else {
-        print('User does not exist.');
+        throw Error();
       }
     } on FirebaseException catch (e) {
-      print('error: ${e.code}');
+      debugPrint('error: ${e.code}');
       if (e.code == 'wrong-password') {
-        _showAlert(Labels.pwdNotSame); // 기존 비밀번호가 틀리면 alert 생성
+        _showSnackBar(Labels.pwdNotSame); // 기존 비밀번호가 틀리면 alert 생성
       } else {
-        _showAlert('오류가 발생했습니다.');
+        _showSnackBar('오류가 발생했습니다.');
       }
+    } catch (e) {
+      debugPrint('error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
+
     isLoading = false;
     notifyListeners();
   }
 
   /// 오류 snackbar
-  void _showAlert(String message) {
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(_context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 1),

@@ -43,13 +43,13 @@ void showDataRegisterDialog(
   );
 }
 
-void showDatanotCompleteDialog(
+void showDataNotCompleteDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
-    '아직 입력되지 않은 정보가 있습니다. \n 저장하시겠습니까?',
-    '',
+    '아직 입력되지 않은 정보가 있습니다.',
+    '저장하시겠습니까?',
     '취소',
     '확인',
     null,
@@ -252,7 +252,7 @@ void showSaveImageDialog(BuildContext context, String imgPath,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
         child: SizedBox(
-          height: 790.h,
+          height: 850.h,
           width: 650.w,
           child: Center(
             child: Column(
@@ -270,8 +270,9 @@ void showSaveImageDialog(BuildContext context, String imgPath,
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20.r),
                   child: Image.file(File(imgPath),
-                      width: 570.w, height: 410.h, fit: BoxFit.fitWidth),
+                      width: 570.w, height: 570.w, fit: BoxFit.fitWidth),
                 ),
+                // ImageCard(imagePath: Image.file(File(imgPath))),
                 SizedBox(height: 55.h),
 
                 // 버튼

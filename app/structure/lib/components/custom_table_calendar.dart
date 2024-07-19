@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:structure/config/pallete.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CustomTableCalendar extends StatelessWidget {
@@ -31,38 +32,43 @@ class CustomTableCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     return TableCalendar(
       // 달력의 범위를 결정한다.
-      firstDay: DateTime.utc(2023, 1, 1),
+      firstDay: DateTime.utc(1970, 1, 1),
       lastDay: DateTime.utc(2032, 12, 31),
       focusedDay: focusedDay,
-      rowHeight: 40.0,
+      rowHeight: 40,
       onHeaderTapped: onHeaderTapped,
       onDaySelected: onDaySelected,
+      locale: 'ko-KR',
+
       // 날짜 변경을 위해 사용되는 고유 함수. (수정이 권장되지 않음.)
       selectedDayPredicate: (day) => isSameDay(selectedDay, day),
       headerStyle: HeaderStyle(
         formatButtonVisible: false,
         titleCentered: true,
         titleTextStyle: TextStyle(
-          fontSize: 25.sp,
+          fontSize: 24.sp,
           fontWeight: FontWeight.bold,
         ),
-        headerMargin: const EdgeInsets.only(bottom: 25.0),
+        headerMargin: EdgeInsets.only(bottom: 36.h),
       ),
-      calendarStyle: const CalendarStyle(
+      calendarStyle: CalendarStyle(
         isTodayHighlighted: false,
         outsideDaysVisible: false,
+        selectedDecoration: const BoxDecoration(
+          color: Palette.checkSpeciesColor,
+          shape: BoxShape.circle,
+        ),
         selectedTextStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 20.0,
-          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          fontSize: 26.sp,
         ),
         defaultTextStyle: TextStyle(
           color: Colors.black,
-          fontSize: 16.0,
+          fontSize: 26.sp,
         ),
         todayTextStyle: TextStyle(
           color: Colors.black,
-          fontSize: 16.0,
+          fontSize: 26.sp,
         ),
       ),
     );

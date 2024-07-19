@@ -46,7 +46,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   Future<void> saveData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
-
+    // print(meatModel);
+    // print(sourness);
     // 인스턴스 데이터 업데이트
     meatModel.probexptData ??= {};
     meatModel.probexptData!['updatedAt'] = Usefuls.getCurrentDate();
@@ -59,11 +60,12 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         umami.text.isNotEmpty ? double.parse(umami.text) : null;
     meatModel.probexptData!['richness'] =
         richness.text.isNotEmpty ? double.parse(richness.text) : null;
+    print('신맛 : ${sourness.text}');
     // 완료 검사
     meatModel.checkCompleted();
 
     try {
-      dynamic response = await RemoteDataSource.sendMeatData(
+      dynamic response = await RemoteDataSource.createMeatData(
           'probexpt-data', meatModel.toJsonProbexpt());
       if (response == null) {
         throw Error();

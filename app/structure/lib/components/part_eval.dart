@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 
 class PartEval extends StatelessWidget {
   PartEval({
@@ -31,7 +32,7 @@ class PartEval extends StatelessWidget {
         // SizedBox(height: 30.w),
         // 기준 이미지
         Container(
-          margin: EdgeInsets.only(top: 20.h),
+          // margin: EdgeInsets.only(top: 20.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -60,23 +61,37 @@ class PartEval extends StatelessWidget {
 
         // 슬라이더
         Container(
-          width: 650.w,
+          width: 770.w,
           height: 12.h,
-          margin: EdgeInsets.only(top: 50.h),
-          child: SfSlider(
-            min: 0.0,
-            max: 9.0,
-            value: value,
-            interval: 1,
-            // showTicks: true,
-            showLabels: false,
-            activeColor: Palette.meatRegiBtnBg,
-            inactiveColor: Palette.notEditableBg,
-            enableTooltip: true,
-            // minorTicksPerInterval: 1,
-            onChanged: onChanged,
+          margin: EdgeInsets.symmetric(vertical: 50.h, horizontal: 16.w),
+          child: SfSliderTheme(
+            data: const SfSliderThemeData(
+              tooltipBackgroundColor: Palette.meatRegiBtnBg,
+              // activeTrackHeight: 8,
+              // inactiveTrackHeight: 8,
+            ),
+            child: SfSlider(
+              min: 1.0,
+              max: 10.0,
+              value: value,
+              interval: 1,
+              showTicks: true,
+              showLabels: false,
+              activeColor: Palette.meatRegiBtnBg,
+              inactiveColor: Palette.notEditableBg,
+
+              enableTooltip: true,
+              // minorTicksPerInterval: 1,
+              onChanged: onChanged,
+              tooltipTextFormatterCallback:
+                  (dynamic actualValue, String formattedText) {
+                final double newValue = actualValue;
+                return newValue.toStringAsFixed(1);
+              },
+            ),
           ),
-        ),
+        ),    
+        const SizedBox(height: 10),
       ],
     );
   }

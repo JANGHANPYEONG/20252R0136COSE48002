@@ -27,7 +27,7 @@ class _DataAddHomeState extends State<DataAddHome> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: context.read<DataAddHomeViewModel>().meatModel.id!,
+        title: context.read<DataAddHomeViewModel>().meatModel.meatId!,
         backButton: true,
         closeButton: false,
       ),
@@ -35,26 +35,23 @@ class _DataAddHomeState extends State<DataAddHome> {
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 50.w),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 25.h,
-              ),
+              SizedBox(height: 25.h),
+              // 원육
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '원육',
-                    style: Palette.h3,
-                  ),
+                  Text('원육', style: Palette.h3),
                   Text(
                     context.read<DataAddHomeViewModel>().userName,
                     style: Palette.h5,
                   ),
                 ],
               ),
-              SizedBox(
-                height: 15.w,
-              ),
+              SizedBox(height: 15.h),
+
+              // 원육 추가데이터
               SizedBox(
                 height: 133.h,
                 // 원육에 대한 추가데이터.
@@ -64,8 +61,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                       .clickedRawMeat(context),
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          15), // Makes the border rectangular
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     side: const BorderSide(
                       color: Color(0xFFEAEAEA),
@@ -81,14 +77,15 @@ class _DataAddHomeState extends State<DataAddHome> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // 도축 날짜
                               Text(
                                   context
                                       .read<DataAddHomeViewModel>()
                                       .butcheryDate,
                                   style: Palette.h5Grey),
-                              SizedBox(
-                                height: 15.h,
-                              ),
+                              SizedBox(height: 15.h),
+
+                              // 종 > 부위
                               Text(
                                 "${context.read<DataAddHomeViewModel>().species} > ${context.read<DataAddHomeViewModel>().secondary}",
                                 style: TextStyle(
@@ -99,10 +96,9 @@ class _DataAddHomeState extends State<DataAddHome> {
                             ],
                           ),
                         ),
-                        VerticalDivider(
-                          thickness: 1,
-                          color: Colors.grey[300],
-                        ),
+                        VerticalDivider(thickness: 1, color: Colors.grey[300]),
+
+                        // 추가정보 입력
                         SizedBox(
                           width: 150.w,
                           child: Column(
@@ -110,9 +106,8 @@ class _DataAddHomeState extends State<DataAddHome> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('추가정보 입력', style: Palette.h5LightGrey),
-                              SizedBox(
-                                height: 15.h,
-                              ),
+                              SizedBox(height: 15.h),
+
                               // 원육 데이터의 모든 데이터 입력 확인.
                               Text(
                                 context
@@ -140,34 +135,22 @@ class _DataAddHomeState extends State<DataAddHome> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 40.h,
-              ),
+              SizedBox(height: 40.h),
+
               const Divider(
                 height: 0,
                 thickness: 10,
                 color: Color.fromARGB(255, 250, 250, 250),
               ),
-              SizedBox(
-                height: 20.h,
-              ),
-              Row(
-                children: [
-                  Text('처리육', style: Palette.h3),
-                ],
-              ),
-              SizedBox(
-                height: 15.h,
-              ),
-              Row(
-                children: [
-                  Text('딥에이징 데이터', style: Palette.h4),
-                  const Spacer(),
-                ],
-              ),
-              SizedBox(
-                height: 20.h,
-              ),
+              SizedBox(height: 20.h),
+
+              // 처리육, 딥에이징 데이터 텍스트
+              Text('처리육', style: Palette.h3),
+              SizedBox(height: 15.h),
+              Text('딥에이징 데이터', style: Palette.h4),
+              SizedBox(height: 20.h),
+
+              // 딥에이징 리스트
               SizedBox(
                 height: 450.h,
                 // 딥에이징 추가 데이터 입력 (DeepAgingCard 컴포넌트 사용) - 클릭 | 삭제 시 대응되는 함수 호출
@@ -199,21 +182,12 @@ class _DataAddHomeState extends State<DataAddHome> {
                                   .read<DataAddHomeViewModel>()
                                   .meatModel
                                   .deepAgingData![index]["complete"],
-                              isLast: index ==
-                                      context
-                                              .read<DataAddHomeViewModel>()
-                                              .meatModel
-                                              .deepAgingData!
-                                              .length -
-                                          1
-                                  ? true
-                                  : false,
                               onTap: () async => context
                                   .read<DataAddHomeViewModel>()
                                   .clickedProcessedMeat(index, context),
                               delete: () async => context
                                   .read<DataAddHomeViewModel>()
-                                  .deleteList(index + 1),
+                                  .deleteList(index),
                             ),
                           );
                         },

@@ -1,6 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/main.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
@@ -9,8 +10,10 @@ import 'package:structure/components/custom_dialog.dart';
 
 class InsertionUserInfoViewModel with ChangeNotifier {
   InsertionUserInfoViewModel(UserModel userModel) {
-    initialize();
+    userModel.reset();
   }
+
+  bool isDupActivateButton = false; //중복확인 버튼 활성화
 
   // form
   final formKey = GlobalKey<FormState>();
@@ -20,16 +23,13 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   TextEditingController password = TextEditingController();
   TextEditingController cPassword = TextEditingController();
 
-  void initialize() {
-    userModel.reset();
-  }
-
   bool isUnique = false;
 
   // 버튼 활성화 확인을 위한 변수
   bool isValidId = false;
   bool isValidPw = false;
   bool isValidCPw = false;
+  bool isName = false;
 
   // 약관 동의 확인을 위한 변수
   bool isChecked1 = false;
@@ -43,9 +43,23 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   late BuildContext _context;
 
+  ///이름 입력 여부 검사
+  // void nameCheck() {
+  //   print('이름 입력');
+  //   // if (name.text.isNotEmpty) {
+  //   isName = true;
+  //   // }
+  // }
+  void nameCheck(String? value) {
+    print('이름 입력');
+    isName = true;
+    notifyListeners();
+  }
+
   /// 아이디 유효성 검사
+  /// 비어있지 않고 이메일 형식에 맞지 않을 때, 빨간 예외 메시지를 띄움
   String? idValidate(String? value) {
-    // 비어있지 않고 이메일 형식에 맞지 않을 때, 빨간 예외 메시지
+    print('idValidate함수 호출');
     final bool isValid = EmailValidator.validate(value!);
     if (value.isNotEmpty && !isValid) {
       isValidId = false;
@@ -59,9 +73,24 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     }
   }
 
-  // 비밀번호 유효성 검사
+  void onChangeEmail(String? value) {
+    print('change 함수 호출');
+    isUnique = false; //이메일 입력된 값이 바뀌면 isUnique는 다시 false로 세팅
+    notifyListeners();
+    print('idValidate함수 호출');
+    final bool isValid = EmailValidator.validate(value!);
+    if (value.isNotEmpty && !isValid) {
+      isValidId = false;
+    } else if (value.isEmpty) {
+      isValidId = false;
+    } else {
+      isValidId = true;
+    }
+  }
+
+  /// 비밀번호 유효성 검사
+  /// 비어있지 않고 비밀번호 형식에 맞지 않을 때, 빨간 에러 메시지를 띄움
   String? pwValidate(String? value) {
-    // 비어있지 않고 비밀번호 형식에 맞지 않을 때, 빨간 에러 메시지
     final bool isValid = validatePassword(value!);
     if (value.isNotEmpty && !isValid) {
       isValidPw = false;
@@ -75,9 +104,9 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     }
   }
 
-  // 비밀번호 재입력 유효성 검사
+  /// 비밀번호 재입력 유효성 검사
+  /// 비어있지 않고 비밀번호와 같지 않을 때, 빨간 에러 메시지를 띄움
   String? cPwValidate(String? value) {
-    // 비어있지 않고 비밀번호와 같지 않을 때, 빨간 에러 메시지
     if (value!.isNotEmpty && value != password.text) {
       isValidCPw = false;
       return Labels.pwdNotSame;
@@ -90,12 +119,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     }
   }
 
-  void onChangeEmail(String? v) {
-    isUnique = false;
-    notifyListeners();
-  }
-
-  // 유효성 검사 함수
+  /// 유효성 검사 함수
   void tryValidation() {
     final isValid = formKey.currentState!.validate();
     if (isValid) {
@@ -104,38 +128,46 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 비밀번호 유효성 검사 (정규식)
+  /// 비밀번호 유효성 검사 (정규식)
+  /// 조건: 영문 대/소문자, 숫자, 특수문자 10자 이상
   bool validatePassword(String password) {
-    // 조건: 영문 대/소문자, 숫자, 특수문자 10자~15자
     const pattern = Labels.pwdPattern;
     final regex = RegExp(pattern);
 
     return regex.hasMatch(password);
   }
 
-  // 이메일 중복 검사
+  /// 이메일 중복 검사
   Future<void> dupliCheck(BuildContext context) async {
     //이메일 중복 검사 로딩중인 상태
     emailCheckLoading = true;
     notifyListeners();
 
-    _context = context;
+    // 중복 확인
+    dynamic response = await RemoteDataSource.dupliCheck(email.text);
 
-    dynamic isDuplicated = await RemoteDataSource.dupliCheck(email.text);
-
-    if (isDuplicated != null) {
-      isUnique = true;
+    // response 값 확인
+    if (response is Map<String, dynamic>) {
+      // 200 OK
+      isUnique = !response['isDuplicated'];
       emailCheckLoading = false;
       notifyListeners();
+
+      //이메일 중복인 경우
+      if (!isUnique) {
+        // 중복 popup 창 띄우기
+        _context = context;
+        if (context.mounted) {
+          showDuplicateIdSigninDialog(context, context.pop, moveSignIn);
+        }
+      }
     } else {
+      // 오류
       isUnique = false;
       emailCheckLoading = false;
       notifyListeners();
 
-      // popup 창 띄우기
-      if (context.mounted) {
-        showDuplicateIdSigninDialog(_context, _context.pop, moveSignIn);
-      }
+      if (context.mounted) showErrorPopup(context);
     }
   }
 
@@ -201,9 +233,10 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   void saveUserInfo() {
     userModel.userId = email.text;
-    userModel.password = password.text;
     userModel.name = name.text;
+    userModel.type = 'Normal';
     userModel.alarm = isChecked4;
+    userModel.password = password.text;
   }
 
   void clickedNextButton(BuildContext context) {
