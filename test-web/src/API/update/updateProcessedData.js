@@ -13,29 +13,41 @@ export default async function updateProcessedData(
   elapsedHour //경과 시간
 ) {
   const [yy, mm, dd] = computeCurrentDate();
+  console.log("CHECK",processedInput)
+  const dataSet = {"marbling" :processedInput.marbling,
+  "color" :processedInput.color,
+  "texture" :processedInput.texture,
+  "surfaceMoisture" :processedInput.surfaceMoisture,
+  "overall" :processedInput.overall}
 
   //request body에 보낼 데이터 전처리
   let req = processedInput;
   req = {
-    ...req,
-    ["id"]: id,
-    ["createdAt"]: createdDate,
-    ["userId"]: userId,
-    ["seqno"]: i + 1,
-    ["period"]: Math.round(elapsedHour),
-    ["deepAging"]: {
-      ["date"]: processed_data
-        ? processed_data["deepaging_data"]["date"]
-        : yy + mm + dd,
-      ["minute"]: Number(processedMinute ? processedMinute : 0),
-    },
+    ["meatId"] : id,
+    ["seqno"] : i,
+    ["imgAdded"] : false,
+    ["flimedAt"] : "2024-07-08 12:12:12",
+    ["sensoryData"] : dataSet,
+
+    // ...req,
+    // ["id"]: id,
+    // ["createdAt"]: createdDate,
+    // ["userId"]: userId,
+    // ["seqno"]: i + 1,
+    // ["period"]: Math.round(elapsedHour),
+    // ["deepAging"]: {
+    //   ["date"]: processed_data
+    //     ? processed_data["deepaging_data"]["date"]
+    //     : yy + mm + dd,
+    //   ["minute"]: Number(processedMinute ? processedMinute : 0),
+    // },
   };
   req && delete req["deepaging_data"];
 
   ///meat/add/deep-aging-data로 처리육 수정 데이터 API 전송
   try {
-    const response = await fetch(`http://${apiIP}/meat/add/deep-aging-data`, {
-      method: "POST",
+    const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },

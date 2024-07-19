@@ -24,7 +24,7 @@ export default async function updateRawData(
   // /meat/add/sensory-eval로 원육 수정 데이터 API 전송
   try {
     const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
-      method: "POST",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
