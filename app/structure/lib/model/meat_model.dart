@@ -218,7 +218,7 @@ class MeatModel with ChangeNotifier {
       'meatId': sensoryEval!['meatId'],
       'userId': sensoryEval!['userId'],
       'seqno': sensoryEval!['seqno'],
-      'imgAdded': sensoryEval!['imgAdded'],
+      'imgAdded': imgAdded,
       // 'filmedAt': sensoryEval!['filmedAt'],
       'sensoryData': {
         'marbling': sensoryEval!['marbling'],

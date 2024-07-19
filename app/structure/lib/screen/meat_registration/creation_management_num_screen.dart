@@ -93,7 +93,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                           ClipOval(
                             child: Image.file(
                               File(creationManagementNumViewModel
-                                  .meatModel.imagePath!),
+                                  .meatModel.sensoryEval!['imagePath']),
                               width: 44.w,
                               height: 44.h,
                               fit: BoxFit.fill,
@@ -125,8 +125,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                           Text('날짜', style: Palette.h5Grey),
                           const Spacer(),
                           Text(
-                            Usefuls.parseDate(creationManagementNumViewModel
-                                .meatModel.createdAt),
+                            Usefuls.parseDate(Usefuls.getCurrentDate()),
                             style: Palette.h5,
                           )
                         ],

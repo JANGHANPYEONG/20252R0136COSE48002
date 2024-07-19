@@ -67,6 +67,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       managementNum = _hashStringTo12Digits(originalString);
       // 생성한 meatId 저장
       meatModel.meatId = managementNum;
+      meatModel.sensoryEval!['meatId'] = managementNum;
     } else {
       // 데이터 입력이 제대로 되지 않았을 때 에러 반환
       debugPrint('Error creating managementNum');
@@ -99,7 +100,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
           .child('sensory_evals/$managementNum-0.png');
 
       await refMeatImage.putFile(
-        File(meatModel.imagePath!),
+        File(meatModel.sensoryEval!['imagePath']),
         SettableMetadata(contentType: 'image/jpeg'),
       );
 
@@ -133,10 +134,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   /// 3. 육류 정보를 서버로 전송
   Future<void> _sendMeatData() async {
-    // meatModel.userName = meatModel.userId;
-    // meatModel.createdAt = Usefuls.getCurrentDate();
-    // meatModel.seqno = 0;
-
     // 육류 기본 정보 입력
     final response1 =
         await RemoteDataSource.createMeatData(null, meatModel.toJsonBasic());
@@ -149,7 +146,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
       print('error');
     } else {
       // 로딩상태 비활성화
-
       isLoading = false;
       notifyListeners();
     }
