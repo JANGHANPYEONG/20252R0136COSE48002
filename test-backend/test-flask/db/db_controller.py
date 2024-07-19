@@ -159,7 +159,6 @@ def create_SensoryEval(db_session, meat_data: dict, sensory_data, seqno, id, use
     """
     # 1. freshmeat_data에 없는 필드 추가
     item_encoder(meat_data, "seqno", seqno)
-    
     meat_data['id'] = id
     meat_data.pop('meatId')
     meat_data['createdAt'] = datetime.now().strftime('%Y-%m-%d')
@@ -417,6 +416,7 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
     
     try:
         sensory_data = data["heatedmeatSensoryData"]
+        sensory_data["filmedAt"] = data["filmedAt"]
         sensory_data["createdAt"] = convert2string(datetime.now(), 1)
         existed_sensory_data = get_HeatedmeatSensoryEval(db_session, id, seqno)
 
@@ -575,6 +575,7 @@ def get_SensoryEval(db_session, id, seqno):
     if sensory_eval_data:
         sensory_eval = to_dict(sensory_eval_data)
         sensory_eval["meatId"] = sensory_eval.pop("id")
+        sensory_eval["filmedAt"] = convert2string(sensory_eval["filmedAt"], 1)
         sensory_eval["createdAt"] = convert2string(sensory_eval["createdAt"], 1)
         sensory_eval["userName"] = get_user(db_session, sensory_eval["userId"]).name
         return sensory_eval
@@ -606,6 +607,7 @@ def get_HeatedmeatSensoryEval(db_session, id, seqno):
     if heated_meat_data:
         heated_meat = to_dict(heated_meat_data)
         heated_meat["meatId"] = heated_meat.pop("id")
+        heated_meat["filmedAt"] = convert2string(heated_meat["filmedAt"], 1)
         heated_meat["createdAt"] = convert2string(heated_meat["createdAt"], 1)
         heated_meat["userName"] = get_user(db_session, heated_meat["userId"]).name
         # del heated_meat["imagePath"]
