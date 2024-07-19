@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import StateChangedModal from './stateChangedModal';
@@ -8,6 +9,9 @@ const navy = '#0F3659';
 
 // 승인 여부 확인 모달
 export default function AcceptModal({ id, setConfirmVal, confirmVal }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   //화면 창 닫기
   const [open, setOpen] = useState(true);
   const handleClose = () => {
@@ -21,6 +25,13 @@ export default function AcceptModal({ id, setConfirmVal, confirmVal }) {
   };
   // 최종 변경 완료 팝업
   const [stateChanged, setStateChanged] = useState(false);
+
+  useEffect(() => {
+    if (stateChanged) {
+      const searchParams = new URLSearchParams(location.search); // 현재 쿼리 파라미터를 복사
+      navigate(`/DataManage?${searchParams.toString()}`); // 목록 페이지 경로로 이동, 쿼리 파라미터 포함
+    }
+  }, [stateChanged, location.search, navigate]);
 
   return (
     <div>

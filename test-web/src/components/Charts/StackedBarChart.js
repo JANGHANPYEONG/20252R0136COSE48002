@@ -8,33 +8,59 @@ import { useStackedBarFetch } from '../../API/listCharts/getStackedBarSWR';
 const StackedBarChart = ({ startDate, endDate }) => {
   const theme = useTheme();
   const line = theme.palette.divider;
-  //누적 바 차트 부위 별 색
+  // 누적 바 차트 부위 별 색
   const stackColors = [
+    // 빨강, 주황, 노랑, 초록, 파랑
+    theme.palette.error.main,
+    theme.palette.warning.main,
+    theme.palette.warning.light,
     theme.palette.success.light,
     theme.palette.primary.main,
-    theme.palette.warning.main,
-    '#BB86FC',
-    theme.palette.error.main,
-    '#FF0266',
-    theme.palette.info.light,
-    theme.palette.warning.light,
-    theme.palette.secondary.main,
-    theme.palette.success.dark,
-    '#03DAC5',
-    theme.palette.error.light,
+
+    '#0322AB', // 짙은 남색
+    '#6A1B9A', // 짙은 보라색
+    '#C2185B', // 짙은 분홍색
+    '#FF4081', // 진홍색
+
+    '#DBC0AF', // 옅은 남색
+    '#CE93D8', // 옅은 보라색
+    '#F48FB1', // 옅은 분홍색
   ];
 
-  //API fetch 데이터 저장
+  // API fetch 데이터 저장
   const [series, setSeries] = useState([]);
+
+  // 결합된 카테고리
+  const combinedCategories = ['안심', '등심', '목심', '앞다리', '갈비'];
+  const cattleCategories = ['채끝', '우둔', '설도', '양지', '사태'];
+  const porkCategories = ['삼겹살', '뒷다리'];
+
+  // 누적 바 데이터 API fetch
+  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
+  console.log('stacked bar chart fetch 결과:', data);
 
   // fetch한 JSON 데이터에서 필요한 값 parsing 및 전처리하여 series에 저장
   const processStackedBarData = (data) => {
+    if (
+      !data['beef_counts_by_primal_value'] ||
+      !data['pork_counts_by_primal_value']
+    ) {
+      console.error('올바르지 않은 데이터 형식:', data);
+      return;
+    }
     // parsing
     const cattleData = data['beef_counts_by_primal_value'];
     const porkData = data['pork_counts_by_primal_value'];
+
     // [{name:'부위 별 이름', data : '부위 별 개수'}, ... ] 형태로 데이터 전처리
     let seriesArr = [];
-    categories.map((c) => {
+
+    const allCategories = [
+      ...combinedCategories,
+      ...cattleCategories,
+      ...porkCategories,
+    ];
+    allCategories.map((c) => {
       seriesArr = [
         ...seriesArr,
         {
@@ -46,13 +72,10 @@ const StackedBarChart = ({ startDate, endDate }) => {
         },
       ];
     });
+
     // series에 저장
     setSeries(seriesArr);
   };
-
-  // 누적 바 데이터 API fetch
-  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
-  console.log('stacked bar chart fetch 결과:', data);
 
   // fetch한 데이터 parsing 함수 호출
   useEffect(() => {
@@ -68,6 +91,7 @@ const StackedBarChart = ({ startDate, endDate }) => {
       ...prevState,
       colors: stackColors,
       xaxis: {
+        categories: ['소', '돼지'],
         labels: {
           style: {
             colors: stackColors,
@@ -91,7 +115,15 @@ const StackedBarChart = ({ startDate, endDate }) => {
   }, []);
 
   return (
-    <div id="chart" style={{ backgroundColor: 'white', borderRadius: '5px' }}>
+    <div
+      id="chart"
+      style={{
+        backgroundColor: '#f4f6f8',
+        borderRadius: '10px',
+        padding: '10px',
+        boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+      }}
+    >
       <ReactApexChart
         type="bar"
         options={options}
@@ -132,7 +164,7 @@ const columnChartOptions = {
   plotOptions: {
     bar: {
       horizontal: false,
-      borderRadius: 10,
+      borderRadius: 0,
       dataLabels: {
         total: {
           enabled: true,
@@ -149,7 +181,7 @@ const columnChartOptions = {
   },
   stroke: {
     show: true,
-    width: 8,
+    width: 0,
     colors: ['transparent'],
   },
   xaxis: {
@@ -159,10 +191,6 @@ const columnChartOptions = {
     title: {
       text: '개',
     },
-  },
-  legend: {
-    position: 'right',
-    offsetY: 40,
   },
   fill: {
     opacity: 1,
@@ -195,18 +223,3 @@ const columnChartOptions = {
     },
   },
 };
-
-const categories = [
-  '안심',
-  '등심',
-  '목심',
-  '앞다리',
-  '갈비',
-  '채끝',
-  '우둔',
-  '설도',
-  '양지',
-  '사태',
-  '삼겹살',
-  '뒷다리',
-];

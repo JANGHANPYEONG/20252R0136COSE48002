@@ -10,6 +10,7 @@ const DataListComp = ({
   startDate, // 조회 시작 날짜
   endDate, // 조회 종료 날짜
   pageOffset, // 현재 페이지 offset
+  specieValue,
 }) => {
   // 고기 데이터 목록
   const [meatList, setMeatList] = useState([]);
@@ -19,6 +20,7 @@ const DataListComp = ({
   const [currentPage, setCurrentPage] = useState(1);
   // 한 페이지당 보여줄 개수
   const [count, setCount] = useState(5);
+
 
   // API fetch 데이터 전처리
   const processMeatDatas = (data) => {
@@ -46,7 +48,8 @@ const DataListComp = ({
     currentPage - 1,
     count,
     startDate,
-    endDate
+    endDate,
+    specieValue
   );
 
   // fetch한 데이터 전처리
@@ -142,6 +145,7 @@ const style = {
     paddingRight: '0px',
     paddingBottom: '0',
     height: 'auto',
+    minWidth: '640px',
   },
   paginationBar: {
     marginTop: '40px',
@@ -152,6 +156,7 @@ const style = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minWidth: '640px',
   },
   formControl: {
     minWidth: 120,

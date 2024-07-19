@@ -6,7 +6,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { usePredictedMeatListFetch } from '../../API/getPredictedMeatListSWR';
 
 // 데이터 예측 페이지 목록 컴포넌트
-const PADataListComp = ({ startDate, endDate, pageOffset }) => {
+const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
   // 고기 데이터 목록
   const [meatList, setMeatList] = useState([]);
   // 데이터 전체 개수
@@ -15,6 +15,7 @@ const PADataListComp = ({ startDate, endDate, pageOffset }) => {
   const [currentPage, setCurrentPage] = useState(1);
   // 한페이지당 보여줄 개수
   const [count, setCount] = useState(5);
+  
 
   // API fetch 데이터 전처리
   const processPAMeatDatas = (data) => {
@@ -47,7 +48,8 @@ const PADataListComp = ({ startDate, endDate, pageOffset }) => {
     currentPage - 1,
     count,
     startDate,
-    endDate
+    endDate,
+    specieValue
   );
   console.log('육류 예측 목록 fetch 결과:', data);
 
@@ -144,17 +146,18 @@ const style = {
     paddingRight: '0px',
     paddingBottom: '0',
     height: 'auto',
+    minWidth: '640px',
   },
   paginationBar: {
     marginTop: '40px',
     width: '100%',
-    display: 'flex',
-    justifyContent: 'right',
+    justifyContent: 'center',
   },
   paginationContainer: {
     display: 'flex',
     justifyContent: 'right',
     alignItems: 'center',
+    minWidth: '640px',
   },
   formControl: {
     minWidth: 120,

@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import { apiIP } from '../config';
+import { format } from 'date-fns';
 
 const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
@@ -70,7 +71,13 @@ export default function Profile() {
   const deleteself = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`
+        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
 
       if (response.ok) {
@@ -88,7 +95,7 @@ export default function Profile() {
     setIsUpdating(true);
     try {
       const response = await fetch(`http://${apiIP}/user/update`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -97,9 +104,10 @@ export default function Profile() {
           userId: UserInfo.userId,
           // password: UserInfo.password,
           name: name,
+          homeAddr: homeAddr,
           company: company,
           jobTitle: jobTitle,
-          homeAddr: homeAddr,
+
           // alarm: UserInfo.alarm,
           // type: UserInfo.type,
           // updatedAt: UserInfo.updatedAt,
@@ -107,7 +115,17 @@ export default function Profile() {
           // createdAt: UserInfo.createdAt,
         }),
       });
+      const date = await response.json();
       if (response.ok) {
+        const formattedCreatedAt = format(
+          new Date(date.createdAt),
+          'yyyy-MM-dd'
+        );
+        const formattedUpdatedAt = format(
+          new Date(date.updatedAt),
+          'yyyy-MM-dd'
+        );
+
         const updatedData = JSON.stringify({
           userId: UserInfo.userId,
           // password: UserInfo.password,
@@ -117,9 +135,9 @@ export default function Profile() {
           homeAddr: homeAddr,
           // alarm: UserInfo.alarm,
           type: UserInfo.type,
-          // updatedAt: UserInfo.updatedAt,
+          updatedAt: formattedUpdatedAt,
           // loginAt: UserInfo.loginAt,
-          // createdAt: UserInfo.createdAt,
+          createdAt: formattedCreatedAt,
         });
         setUpdatedUserInfo(updatedData);
         localStorage.setItem('UserInfo', updatedData);
@@ -165,170 +183,177 @@ export default function Profile() {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="회원가입일"
-          name="createdAt"
-          value={updatedUserInfo.createdAt}
-          disabled
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="업데이트일"
-          name="updatedAt"
-          value={updatedUserInfo.updatedAt}
-          disabled
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="권한"
-          name="type"
-          value={updatedUserInfo.type}
-          disabled
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="이름"
-          name="name"
-          value={name}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="직장"
-          name="company"
-          value={company}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="직책"
-          name="jobTitle"
-          value={jobTitle}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <TextField
-          label="주소"
-          name="homeAddr"
-          value={homeAddr}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          style={{ margin: '0.5rem' }}
-          variant="contained"
-          onClick={updateUserInfo}
-          disabled={isUpdating}
-        >
-          {isUpdating ? <CircularProgress size={24} /> : '정보 수정'}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleOpenPasswordModal}
-          style={{ backgroundColor: 'red', color: 'white', margin: '0.5rem' }}
-        >
-          회원 탈퇴
-        </Button>
-      </div>
-
-      <Modal
-        open={isPasswordModalOpen}
-        onClose={handleClosePasswordModal}
-        aria-labelledby="password-modal"
-        aria-describedby="password-modal-description"
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 300,
-            backgroundColor: 'white',
-            borderRadius: 8,
-            boxShadow: 5,
-            p: 2,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h6" id="password-modal-title" component="div">
-            비밀번호 확인
-          </Typography>
+    <div
+      style={{
+        paddingTop: '100px',
+        minHeight: '0px',
+      }}
+    >
+      <Paper sx={{ p: 2 }}>
+        <div style={{ marginBottom: '1rem' }}>
           <TextField
-            label="비밀번호"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            sx={{ mt: 2, mb: 2 }}
-            fullWidth
+            label="회원가입일"
+            name="createdAt"
+            value={updatedUserInfo.createdAt}
+            disabled
           />
-          <Button variant="contained" onClick={reauthenticate}>
-            확인
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="업데이트일"
+            name="updatedAt"
+            value={updatedUserInfo.updatedAt}
+            disabled
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="권한"
+            name="type"
+            value={updatedUserInfo.type}
+            disabled
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="이름"
+            name="name"
+            value={name}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="직장"
+            name="company"
+            value={company}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="직책"
+            name="jobTitle"
+            value={jobTitle}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <TextField
+            label="주소"
+            name="homeAddr"
+            value={homeAddr}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            style={{ margin: '0.5rem' }}
+            variant="contained"
+            onClick={updateUserInfo}
+            disabled={isUpdating}
+          >
+            {isUpdating ? <CircularProgress size={24} /> : '정보 수정'}
           </Button>
           <Button
             variant="contained"
-            onClick={handleClosePasswordModal}
-            style={{ marginLeft: '1rem' }}
+            onClick={handleOpenPasswordModal}
+            style={{ backgroundColor: 'red', color: 'white', margin: '0.5rem' }}
           >
-            취소
+            회원 탈퇴
           </Button>
-        </Box>
-      </Modal>
+        </div>
 
-      <Modal
-        open={isConfirmModalOpen}
-        onClose={handleCloseConfirmModal}
-        aria-labelledby="confirm-delete-modal"
-        aria-describedby="confirm-delete-description"
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 300,
-            backgroundColor: 'white',
-            borderRadius: 8, // 더 둥글게
-            boxShadow: 5, // 그림자 추가
-            p: 2,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            textAlign: 'center',
-          }}
+        <Modal
+          open={isPasswordModalOpen}
+          onClose={handleClosePasswordModal}
+          aria-labelledby="password-modal"
+          aria-describedby="password-modal-description"
         >
-          <Typography variant="h6" id="modal-modal-title" component="div">
-            회원 탈퇴 확인
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            정말로 회원 탈퇴하시겠습니까? <br />이 작업은 취소할 수 없습니다.
-          </Typography>
-          <Button variant="contained" onClick={deleteself}>
-            확인
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleCloseConfirmModal}
-            style={{ marginLeft: '1rem' }}
+          <Box
+            sx={{
+              position: 'absolute',
+              width: 300,
+              backgroundColor: 'white',
+              borderRadius: 8,
+              boxShadow: 5,
+              p: 2,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+            }}
           >
-            취소
-          </Button>
-        </Box>
-      </Modal>
+            <Typography variant="h6" id="password-modal-title" component="div">
+              비밀번호 확인
+            </Typography>
+            <TextField
+              label="비밀번호"
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              sx={{ mt: 2, mb: 2 }}
+              fullWidth
+            />
+            <Button variant="contained" onClick={reauthenticate}>
+              확인
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleClosePasswordModal}
+              style={{ marginLeft: '1rem' }}
+            >
+              취소
+            </Button>
+          </Box>
+        </Modal>
 
-      <CustomSnackbar
-        open={snackbarOpen}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={closeSnackbar}
-      />
-    </Paper>
+        <Modal
+          open={isConfirmModalOpen}
+          onClose={handleCloseConfirmModal}
+          aria-labelledby="confirm-delete-modal"
+          aria-describedby="confirm-delete-description"
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              width: 300,
+              backgroundColor: 'white',
+              borderRadius: 8, // 더 둥글게
+              boxShadow: 5, // 그림자 추가
+              p: 2,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h6" id="modal-modal-title" component="div">
+              회원 탈퇴 확인
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              정말로 회원 탈퇴하시겠습니까? <br />이 작업은 취소할 수 없습니다.
+            </Typography>
+            <Button variant="contained" onClick={deleteself}>
+              확인
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleCloseConfirmModal}
+              style={{ marginLeft: '1rem' }}
+            >
+              취소
+            </Button>
+          </Box>
+        </Modal>
+
+        <CustomSnackbar
+          open={snackbarOpen}
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+          onClose={closeSnackbar}
+        />
+      </Paper>
+    </div>
   );
 }

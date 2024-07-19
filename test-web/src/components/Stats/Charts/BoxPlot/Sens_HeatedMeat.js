@@ -72,9 +72,9 @@ export default function Sens_HeatedMeat({
                   ),
                 },
                 {
-                  x: 'palability',
+                  x: 'palatability',
                   y: calculateBoxPlotStatistics(
-                    chartData.palability.unique_values
+                    chartData.palatability.unique_values
                   ),
                 },
                 {

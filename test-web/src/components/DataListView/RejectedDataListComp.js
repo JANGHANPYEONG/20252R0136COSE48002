@@ -12,6 +12,7 @@ const RejectedDataListComp = ({
   startDate, // 조회 시작 날짜
   endDate, // 조회 종료 날짜
   pageOffset, // 조회 페이지 offset
+  specieValue,
 }) => {
   // 고기 데이터 목록
   const [meatList, setMeatList] = useState([]);
@@ -36,7 +37,8 @@ const RejectedDataListComp = ({
     currentPage - 1,
     count,
     startDate,
-    endDate
+    endDate,
+    specieValue
   );
   console.log('반려 육류 데이터 fetch 결과:', data, isLoading, isError);
 

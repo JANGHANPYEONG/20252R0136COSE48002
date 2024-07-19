@@ -19,11 +19,11 @@ const fetcher = (...args) =>
   });
 
 //custom Hook인 useMeatListFetch를 export
-export const useMeatListFetch = (offset, count, startDate, endDate) => {
+export const useMeatListFetch = (offset, count, startDate, endDate, specieValue) => {
   //육류 데이터 리스트를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : offset, count, startDate, endDate
-    `http://${apiIP}/meat/get?offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&createdAt=true`,
+    `http://${apiIP}/meat/get?offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&specieValue=${specieValue}`,
     //fetcher 함수 사용
     fetcher
   );

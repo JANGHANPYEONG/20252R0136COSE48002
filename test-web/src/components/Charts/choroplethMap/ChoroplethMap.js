@@ -40,8 +40,20 @@ const ChoroplethMap = ({ mapData, startDate, endDate }) => {
     setGeoJSONData(updatedGeoJSON);
   };
 
+  // 지역 별 개수 데이터 API fetch
+  const { data, isLoading, isError } = useMapFetch(startDate, endDate);
+  console.log('map fetch 결과:', data);
+
   // fetch한 JSON 데이터 전처리
   const processMapData = (data) => {
+    if (
+      !data['cattle_counts_by_region'] ||
+      !data['pig_counts_by_region'] ||
+      !data['total_counts_by_region']
+    ) {
+      console.error('올바르지 않은 데이터 형식:', data);
+      return;
+    }
     // fetch한 JSON 데이터 parsing
     const cattleCnt = data['cattle_counts_by_region'];
     const porkCnt = data['pig_counts_by_region'];
@@ -50,10 +62,6 @@ const ChoroplethMap = ({ mapData, startDate, endDate }) => {
     addProperties(cattleCnt, porkCnt, totalCnt);
     setKeyIdx((prev) => prev + 1);
   };
-
-  // 지역 별 개수 데이터 API fetch
-  const { data, isLoading, isError } = useMapFetch(startDate, endDate);
-  console.log('map fetch 결과:', data);
 
   // fetch한 JSON 데이터 전처리 함수 call
   useEffect(() => {
@@ -147,7 +155,7 @@ const ChoroplethMap = ({ mapData, startDate, endDate }) => {
       center={[35.8754, 128.5823]} //center: 지도의 initial center를 설정 center={['위도', '경도']}.
       style={{ height: '350px' }} //style: map container의 높이를 설정
       zoom={6} //zoom: initial zoom level을 설정
-      scrollWheelZoom={false} //scrollWheelZoom: 스크롤 wheel로 zooming 하는 것을 막기
+      scrollWheelZoom={true} //scrollWheelZoom: 스크롤 wheel로 zooming 하는 것을 막지 않기
     >
       {/*Add a TileLayer component to display the map tiles. */}
       <TileLayer

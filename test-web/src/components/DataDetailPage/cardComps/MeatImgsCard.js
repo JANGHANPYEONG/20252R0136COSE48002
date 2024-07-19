@@ -102,6 +102,7 @@ const MeatImgsCard = ({
             createdDate,
             elapsedHour
           );
+          
           response.then((response) => {
             if (response.statusText === 'NOT FOUND') {
               setIsLimitedToChangeImage(true); //실패시
@@ -152,9 +153,20 @@ const MeatImgsCard = ({
   };
 
   return (
-    <Card style={{ width: '27vw', margin: '0px 10px', boxShadow: 24 }}>
+    <Card
+      style={{
+        width: '27vw',
+        margin: '0px 10px',
+        boxShadow: 24,
+        minWidth: '360px',
+        height: '65vh',
+        minHeight: '500px',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {/* 1.1. 이미지 */}
-      <Card.Body>
+      <Card.Body style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/**이미지 제목 */}
         <Card.Text style={style.imgTitleContainer}>
           {
@@ -303,10 +315,13 @@ const style = {
     height: '350px',
     width: '100%',
     borderRadius: '10px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   imgWrapper: {
-    height: '350px',
-    width: '400px',
+    maxHeight: '350px',
+    maxWidth: '100%',
     objectFit: 'contain',
   },
   imgNotExistWrapper: {
@@ -331,6 +346,8 @@ const style = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '5px',
   },
   paginationLeftBtn: {
     height: '35px',
@@ -338,24 +355,30 @@ const style = {
     borderRadius: '10px',
     padding: '0',
     border: '1px solid black',
+    marginBottom: '5px',
   },
   paginationNavBtnWrapper: {
     display: 'flex',
     justifyContent: 'center',
-    margin: '0px 5px',
+    flexWrap: 'wrap',
+    gap: '5px',
   },
   paginationNavCurrDiv: {
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '10px',
+    height: '35px',
+    width: '35px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: '5px',
     color: navy,
   },
   paginationNavNotCurrDiv: {
-    height: '100%',
-    width: 'fit-content',
+    height: '35px',
+    width: '35px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: '5px',
-    padding: '10px',
     color: '#b0bec5',
   },
   paginationRightBtn: {
@@ -364,5 +387,6 @@ const style = {
     borderRadius: '10px',
     padding: '0',
     border: '1px solid black',
+    marginBottom: '5px',
   },
 };

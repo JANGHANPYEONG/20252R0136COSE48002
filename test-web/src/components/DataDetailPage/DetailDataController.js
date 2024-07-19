@@ -7,7 +7,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { useDetailMeatDataFetch } from '../../API/getDetailMeatDataSWR';
 
 //하나의 관리번호에 대한 육류 상세 데이터를 API로 부터 fetch
-const DataLoad = ({ id, page }) => {
+const DataLoad = ({ id, page }) => { 
   // 전처리된 상세 데이터 저장
   const [detailData, setDetailData] = useState();
 
@@ -30,6 +30,7 @@ const DataLoad = ({ id, page }) => {
       </div>
     );
   if (isError) return null; //경고 컴포넌트
+  console.log("detail",detailData)
 
   return (
     <>

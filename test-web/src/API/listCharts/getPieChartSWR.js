@@ -31,6 +31,6 @@ export const usePieChartFetch = (startDate, endDate) => {
   return {
     data,
     isLoading: !error && !data,
-    error,
+    isError: error,
   };
 };

@@ -35,8 +35,8 @@ function DataView({ dataProps }) {
 
   //dataProps로 부터 properties destruct
   const {
-    id, // 이력번호
-    userId, // 로그인한 사용자 id
+    meatId, // 이력번호
+    userId, // 로그인한 사용자 meatI    
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -108,6 +108,7 @@ function DataView({ dataProps }) {
   };
 
   const len = processed_data_seq.length;
+  console.log("pds",processed_data_seq)
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
@@ -124,7 +125,8 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      updateHeatedData(heatInput[i], i, id, createdDate, userId, elapsedHour)
+      console.log("여기 ㅡmid?",meatId)
+      updateHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
         .then((response) => {
           console.log('가열육 수정 POST요청 성공:', response);
         })
@@ -136,7 +138,7 @@ function DataView({ dataProps }) {
 
     // 2. 실험실 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      updateProbexptData(labInput[i], i, id, createdDate, userId, elapsedHour)
+      updateProbexptData(labInput[i], i, meatId, createdDate, userId, elapsedHour)
         .then((response) => {
           console.log('실험실 수정 POST요청 성공:', response);
         })
@@ -154,7 +156,7 @@ function DataView({ dataProps }) {
         processed_data[i],
         processedMinute[i],
         i,
-        id,
+        meatId,
         userId,
         createdDate,
         elapsedHour
@@ -217,7 +219,7 @@ function DataView({ dataProps }) {
 
   // 이미지 파일 변경 완료 여부
   const [isUploadingDone, setIsUploadingDone] = useState(true);
-
+  console.log("here",raw_data)
   return (
     <div style={{ width: '100%', marginTop: '40px' }}>
       {!isUploadingDone && (
@@ -242,7 +244,7 @@ function DataView({ dataProps }) {
           raw_img_path={raw_img_path}
           processed_img_path={processed_img_path}
           setIsUploadingDone={setIsUploadingDone}
-          id={id}
+          id={meatId}
           raw_data={raw_data}
           setIsLimitedToChangeImage={setIsLimitedToChangeImage}
           butcheryYmd={api_data['butcheryYmd']}
@@ -253,18 +255,21 @@ function DataView({ dataProps }) {
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard
           qrImagePath={qrImagePath}
-          id={id}
+          id={meatId}
           userId={userId}
           createdAt={createdAt}
         />
-
         {/* 3. 세부 데이터 정보*/}
         <Card
           style={{
             width: '27vw',
             margin: '0px 10px',
             boxShadow: 24,
+            minWidth: '360px',
             height: '65vh',
+            minHeight: '500px',
+            // display: 'flex',
+            // flexDirection: 'column',
           }}
         >
           <Tabs
@@ -427,7 +432,7 @@ const heatedField = [
   'juiciness',
   'tenderness',
   'umami',
-  'palability',
+  'palatability',
 ];
 const labField = [
   'L',
@@ -466,13 +471,13 @@ const style = {
     justifyContent: 'space-between',
   },
   editBtnWrapper: {
-    paddingTop: '0px',
+    padding: '0px',
+    margin: '10px 0px 0px',
+    paddingRight: '10px',
     width: '100%',
     display: 'flex',
     justifyContent: 'end',
-    marginTop: 'auto',
-    borderBottomLeftRadius: '10px',
-    borderBottomRightRadius: '10px',
+    minWidth: '1140px',
   },
   dataFieldColumn: {
     backgroundColor: '#9e9e9e',
@@ -499,7 +504,7 @@ const style = {
   dataContainer: {
     height: '33px',
     borderBottom: '0.8px solid #e0e0e0',
-    width: '',
+    width: '60px',
     borderRight: '0.8px solid #e0e0e0',
     padding: '4px 5px',
   },

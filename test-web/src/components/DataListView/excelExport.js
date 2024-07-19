@@ -2,9 +2,12 @@ import * as XLSX from 'xlsx';
 import { apiIP } from '../../config';
 
 // export 할 육류 데이터 목록 fetch
-const getDataListJSON = async () => {
+const getDataListJSON = async ({ startDate, endDate, specieValue }) => {
+  
   try {
-    const response = await fetch(`http://${apiIP}/meat/get`);
+    const response = await fetch(
+      `http://${apiIP}/meat/get?start=${startDate}&end=${endDate}&specieValue=${specieValue}`
+    );
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
