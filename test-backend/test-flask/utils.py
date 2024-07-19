@@ -190,7 +190,7 @@ def convert2datetime(date_string, format):
         return date_string
     if format == 0:
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
-    if format == 1:
+    elif format == 1:
         tz = pytz.timezone("Asia/Seoul")
         return datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%S")
     elif format == 2:
@@ -217,6 +217,7 @@ def convert2string(date_object, format):
 
 
 def item_encoder(data_dict, item, input_data=None):
+    datetime0_cvr = ["filmedAt"]
     datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
@@ -224,7 +225,7 @@ def item_encoder(data_dict, item, input_data=None):
         "userId",
         "traceNum",
         "farmAddr",
-        "farmerNm",
+        "farmerName",
         "name",
         "company",
         "jobTitle",
@@ -244,7 +245,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
@@ -260,8 +261,10 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
-    bool_cvr = ["alarm"]
-    if item in datetime1_cvr:
+    bool_cvr = ["alarm", "isHeated"]
+    if item in datetime0_cvr:
+        data_dict[item] = convert2datetime(data_dict.get(item), 0)
+    elif item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 2)
@@ -290,6 +293,7 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
+    datetime0_cvr = ["filmedAt"]
     datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
@@ -297,7 +301,7 @@ def item_encoder(data_dict, item, input_data=None):
         "userId",
         "traceNum",
         "farmAddr",
-        "farmerNm",
+        "farmerName",
         "name",
         "company",
         "jobTitle",
@@ -317,7 +321,7 @@ def item_encoder(data_dict, item, input_data=None):
         "juiciness",
         "tenderness",
         "umami",
-        "palability",
+        "palatability",
         "L",
         "a",
         "b",
@@ -333,8 +337,10 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
-    bool_cvr = ["alarm"]
-    if item in datetime1_cvr:
+    bool_cvr = ["alarm", "isHeated"]
+    if item in datetime0_cvr:
+        data_dict[item] = convert2datetime(data_dict.get(item), 0)
+    elif item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 2)

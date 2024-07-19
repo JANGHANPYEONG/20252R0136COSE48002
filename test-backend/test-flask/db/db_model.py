@@ -154,8 +154,6 @@ class CategoryInfo(Base):
             onupdate="CASCADE"
         ),
     )
-    
-    speciesInfos = relationship("SpeciesInfo", backref="speciesInfoCategories")
 
 
 class GradeInfo(Base):
@@ -233,7 +231,6 @@ class User(Base):
             onupdate="CASCADE"
         ),
     )
-    userTypeInfos = relationship("UserTypeInfo", backref="userTypeInfos")
 
 
 class Meat(Base):
@@ -254,7 +251,7 @@ class Meat(Base):
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
     traceNum = Column(String(255), nullable=False)  # 이력번호(혹은 묶은 번호)
     farmAddr = Column(String(255))  # 농장 주소
-    farmerNm = Column(String(255))  # 농장주 이름
+    farmerName = Column(String(255))  # 농장주 이름
     butcheryYmd = Column(DateTime, nullable=False)  # 도축 일자
     birthYmd = Column(DateTime)  # 출생일자
 
@@ -284,11 +281,6 @@ class Meat(Base):
             onupdate="CASCADE"
         ),
     )
-    users = relationship("User", backref="userMeats")
-    categoryInfos = relationship("CategoryInfo", backref="categoryInfoMeats")
-    gradeInfos = relationship("GradeInfo", backref="gradeInfoMeats")
-    sexInfos = relationship("SexInfo", backref="sexInfoMeats")
-    statusInfos = relationship("StatusInfo", backref="statusInfoMeats")
 
 
 class DeepAgingInfo(Base):
@@ -312,10 +304,8 @@ class DeepAgingInfo(Base):
     # 2. 딥에이징 데이터
     date = Column(DateTime, nullable=False)  # 딥에이징 실시 날짜
     minute = Column(Integer, nullable=False)  # 딥에이징 진행 시간 (분)
-    
-    meats = relationship("Meat", backref="MeatdeepAgingInfos")
 
-    
+
 class SensoryEval(Base):
     __tablename__ = "sensory_eval"
 
@@ -334,6 +324,7 @@ class SensoryEval(Base):
         server_default=default_user_id
     )  # 관능검사 생성한 유저 ID
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
+    filmedAt = Column(DateTime) # 이미지 등록 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
@@ -362,11 +353,8 @@ class SensoryEval(Base):
         CheckConstraint('"surfaceMoisture" >= 1 AND "surfaceMoisture" <= 10', name="check_surfaceMoisture_range"),
         CheckConstraint("overall >= 1 AND overall <= 10", name="check_overall_range"),
     )
-    
-    users = relationship("User", backref="userSensoryEvals")
-    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingInfoSensoryEvals")
-    
-    
+
+
 class AI_SensoryEval(Base):
     __tablename__ = "ai_sensory_eval"
     # 1. 복합키 설정
@@ -403,10 +391,7 @@ class AI_SensoryEval(Base):
         CheckConstraint('"surfaceMoisture" >= 1 AND "surfaceMoisture" <= 10', name="check_surfaceMoisture_range"),
         CheckConstraint("overall >= 1 AND overall <= 10", name="check_overall_range"),
     )
-    
-    SensoryEvals = relationship("SensoryEval", backref="aiSensoryEvals")
-    gradeInfos = relationship("GradeInfo", backref="gradeInfoAiSensoryEvals")
-    
+
 
 class HeatedmeatSensoryEval(Base):
     __tablename__ = "heatedmeat_sensory_eval"
@@ -422,6 +407,7 @@ class HeatedmeatSensoryEval(Base):
         server_default=default_user_id
     )
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
+    filmedAt = Column(DateTime) # 이미지 등록 시간
     imagePath = Column(String(255))  # 가열육 관능검사 이미지 경로
 
     # 3. 관능검사 측정 데이터
@@ -452,9 +438,6 @@ class HeatedmeatSensoryEval(Base):
         CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
         CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
     )
-    
-    users = relationship("User", backref="userHeatedmeatSensoryEvals")
-    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingHeatedmeatSensoryEvals")
 
 
 class AI_HeatedmeatSeonsoryEval(Base):
@@ -488,8 +471,6 @@ class AI_HeatedmeatSeonsoryEval(Base):
         CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
         CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
     )
-    
-    heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", backref="aiHeatedmeatSensoryEvals")
 
 
 class ProbexptData(Base):
@@ -550,6 +531,131 @@ class ProbexptData(Base):
         CheckConstraint('"CL" >= 0 AND "CL" <= 100', name="check_CL_percentage"),
         CheckConstraint('"RW" >= 0 AND "RW" <= 100', name="check_RW_percentage"),
     )
-    
-    users = relationship("User", backref="userProbexptDatas")
-    deepAgingInfos = relationship("DeepAgingInfo", backref="deepAgingProexptDatas")
+
+
+## {parent}-{child} 테이블 간 관계 정의
+# categoryInfo - meat
+CategoryInfo.meats = relationship(
+    "Meat",
+    back_populates="categoryInfos"
+)
+Meat.categoryInfos = relationship("CategoryInfo", back_populates="meats")
+
+# speciesInfo - categoryInfo
+SpeciesInfo.categoryInfos = relationship(
+    "CategoryInfo",
+    back_populates="speciesInfos"
+)
+CategoryInfo.speciesInfos = relationship("SpeciesInfo", back_populates="categoryInfos")
+
+# gradeInfo - meat
+GradeInfo.meats = relationship(
+    "Meat",
+    back_populates="gradeInfos"
+)
+Meat.gradeInfos = relationship("GradeInfo", back_populates="meats")
+
+# gradeInfo - aiSensoryEval
+GradeInfo.aiSensoryEvals = relationship(
+    "AI_SensoryEval",
+    back_populates="gradeInfos"
+)
+AI_SensoryEval.gradeInfos = relationship("GradeInfo", back_populates="aiSensoryEvals")
+
+# sexInfo - meat
+SexInfo.meats = relationship(
+    "Meat",
+    back_populates="sexInfos"
+)
+Meat.sexInfos = relationship("SexInfo", back_populates="meats")
+
+# statusInfo - meat
+StatusInfo.meats = relationship(
+    "Meat",
+    back_populates="statusInfos"
+)
+Meat.statusInfos = relationship("StatusInfo", back_populates="meats")
+
+# userType - user
+UserTypeInfo.users = relationship(
+    "User", 
+    back_populates="userTypeInfos",
+    cascade="all, delete-orphan"
+)
+User.userTypeInfos = relationship("UserTypeInfo", back_populates="users")
+
+# user - meat
+User.meats = relationship(
+    "Meat",
+    back_populates="users"
+)
+Meat.users = relationship("User", back_populates="meats")
+
+# user - sensoryEval
+User.sensoryEvals = relationship(
+    "SensoryEval",
+    back_populates="users"
+)
+SensoryEval.users = relationship("User", back_populates="sensoryEvals")
+
+# user - heatedMeatSensoryEval
+User.heatedMeatSensoryEvals = relationship(
+    "HeatedmeatSensoryEval",
+    back_populates="users"
+)
+HeatedmeatSensoryEval.users = relationship("User", back_populates="heatedMeatSensoryEvals")
+
+# user - probexptData
+User.probexptDatas = relationship(
+    "ProbexptData",
+    back_populates="users"
+)
+ProbexptData.users = relationship("User", back_populates="probexptDatas")
+
+# meat - deepAgingInfo
+Meat.deepAgingInfos = relationship(
+    "DeepAgingInfo", 
+    back_populates="meats",
+    cascade="all, delete-orphan"
+)
+DeepAgingInfo.meats = relationship("Meat", back_populates="deepAgingInfos")
+
+# deepAgingInfo - SensoryEval
+DeepAgingInfo.sensoryEvals = relationship(
+    "SensoryEval",
+    back_populates="deepAgingInfos",
+    cascade="all, delete-orphan"
+)
+SensoryEval.deepAgingInfos = relationship("DeepAgingInfo", back_populates="sensoryEvals")
+
+# deepAgingInfo - heatedmeatSensoryEval
+DeepAgingInfo.heatedmeatSensoryEvals = relationship(
+    "HeatedmeatSensoryEval",
+    back_populates="deepAgingInfos",
+    cascade="all, delete-orphan"
+)
+HeatedmeatSensoryEval.deepAgingInfos = relationship("DeepAgingInfo", back_populates="heatedmeatSensoryEvals")
+
+# deepAgingInfo - probexptData
+DeepAgingInfo.probexptDatas = relationship(
+    "ProbexptData",
+    back_populates="deepAgingInfos",
+    cascade="all, delete-orphan"
+)
+ProbexptData.deepAgingInfos = relationship("DeepAgingInfo", back_populates="probexptDatas")
+
+# sensoryEval - aiSensoryEval
+SensoryEval.aiSensoryEvals = relationship(
+    "AI_SensoryEval",
+    back_populates="sensoryEvals",
+    cascade="all, delete-orphan"
+)
+AI_SensoryEval.sensoryEvals = relationship("SensoryEval", back_populates="aiSensoryEvals")
+
+# heatedmeatSensoryEval - aiHeatedmeatSensoryEval
+HeatedmeatSensoryEval.aiHeatedmeatSensoryEvals = relationship(
+    "AI_HeatedmeatSeonsoryEval",
+    back_populates="heatedmeatSensoryEvals",
+    cascade="all, delete-orphan"
+)
+AI_HeatedmeatSeonsoryEval.heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", back_populates="aiHeatedmeatSensoryEvals")
