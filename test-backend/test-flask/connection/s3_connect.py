@@ -1,3 +1,4 @@
+import fnmatch
 import boto3  # S3 Server connection
 import os
 from datetime import datetime  # 시간 출력용
@@ -89,9 +90,51 @@ class S3_:
         return success
 
     def delete_image(self, folder, id):
-        old_filename = f"{folder}/{id}.png"
+        if folder == 'qr_codes':
+            old_filename = f"{folder}/{id}"
+        else:
+            old_filename = f"{id}"
         try:
             self.s3.delete_object(Bucket=self.bucket, Key=old_filename)
             print(f"Delete Image {old_filename} successfully")
         except Exception as e:
             print(f"Delete Image {old_filename} failed")
+
+    def get_files_with_id(self, folder, id):
+        """
+        주어진 폴더에서 id로 시작하는 파일 리스트를 반환합니다.
+        
+        :param folder: 폴더 경로
+        :param id: 파일 이름의 id 부분 (왼쪽의 id)
+        :return: 일치하는 파일 목록
+        """
+        matching_files = []
+        continuation_token = None
+        
+        while True:
+            # list_objects_v2 호출 (계속되는 요청을 위한 continuation_token 처리)
+            list_args = {
+                'Bucket': self.bucket,
+                'Prefix': f'{folder}/',  # 폴더 경로 지정
+                'Delimiter': '/'
+            }
+            if continuation_token:
+                list_args['ContinuationToken'] = continuation_token
+
+            response = self.s3.list_objects_v2(**list_args)
+            
+            if 'Contents' in response:
+                # 파일 리스트에서 id로 시작하는 파일 필터링
+                for item in response['Contents']:
+                    file_key = item['Key']
+                    # id 부분이 왼쪽에 있는지 확인
+                    if file_key.startswith(f'{folder}/{id}-'):
+                        matching_files.append(file_key)
+            
+            # 다음 페이지가 있는지 확인
+            if response.get('IsTruncated'):
+                continuation_token = response.get('NextContinuationToken')
+            else:
+                break
+        
+        return matching_files

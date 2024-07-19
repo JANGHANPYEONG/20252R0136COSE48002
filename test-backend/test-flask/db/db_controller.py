@@ -1,3 +1,4 @@
+import glob
 import pprint
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -1162,42 +1163,46 @@ def create_AI_SensoryEval(db_session, meat_data: dict, seqno: int, id: str):
 
 def _deleteSpecificMeatData(db_session, s3_conn, id):
     # 1. 육류 DB 체크
-    meat = db_session.query(Meat).filter_by(id=id).one()
+    meat = db_session.query(Meat).get(id)
     if meat is None:
-        return jsonify({"msg": f"No meat data found with the given ID: {id}"}), 404
+        return {"msg": f"Meat Data {id} Does Not Exist", "code": 400}
     try:
-        sensory_evals = db_session.query(SensoryEval).filter_by(id=id).all()
-        heatedmeat_evals = (
-            db_session.query(HeatedmeatSensoryEval).filter_by(id=id).all()
-        )
-        probexpt_datas = db_session.query(ProbexptData).filter_by(id=id).all()
-        # 가열육 데이터 삭제
-        for heatedmeat_eval in heatedmeat_evals:
-            seqno = heatedmeat_eval.seqno
-            db_session.delete(heatedmeat_eval)
-            s3_conn.delete_image("heatedmeat_sensory_evals", f"{id}-{seqno}")
-
-        # 실험 데이터 삭제
-        for probexpt_data in probexpt_datas:
-            db_session.delete(probexpt_data)
-
-        # 관능 데이터 삭제 및 관능 이미지 삭제
-        for sensory_eval in sensory_evals:
-            seqno = sensory_eval.seqno
-            db_session.delete(sensory_eval)
-            s3_conn.delete_image("sensory_evals", f"{id}-{seqno}")
-
+        sensory_eval_image_list = s3_conn.get_files_with_id("sensory_evals", id)
+        heatedmeat_sensory_eval = s3_conn.get_files_with_id("heatedmeat_sensory_evals", id)
+        
         # 육류 데이터 삭제
         db_session.delete(meat)
         db_session.commit()
+        
+        # 원육 QR 이미지 삭제
+        s3_conn.delete_image("qr_codes", f"{id}.png")
+            
+        # 처리육 관능 이미지 삭제
+        for sensory_image in sensory_eval_image_list:
+            s3_conn.delete_image("sensory_evals", sensory_image)
 
-        # 큐알 삭제
-        s3_conn.delete_image("qr_codes", f"{id}")
-        db_session.commit()
-        return jsonify({"delete Id": id}), 200
+        # 가열육 관능 이미지 삭제
+        for heatedmeat_image in heatedmeat_sensory_eval:
+            s3_conn.delete_image("heatedmeat_sensory_evals", heatedmeat_image)
+            
+        return {"msg": f"Success to Delete Meat {id}", "code": 200}
     except Exception as e:
         db_session.rollback()
-        raise e
+        return {"msg": f"Fail to Delete Meat: {str(e)}", "code": 400}
+
+
+def deleteMeatByIDList(db_session, s3_conn, id_list: list):
+    success_list = []
+    fail_list = []
+
+    for meat_id in id_list:
+        result = _deleteSpecificMeatData(db_session, s3_conn, meat_id)
+        if result["code"] == 200:
+            success_list.append(meat_id)
+        else:
+            fail_list.append(meat_id)
+
+    return success_list, fail_list
 
 
 def _deleteSpecificDeepAgingData(db_session, s3_conn, id, seqno):
