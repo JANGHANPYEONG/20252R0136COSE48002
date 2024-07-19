@@ -1,6 +1,6 @@
 //
 //
-// 신선육 관능평가 페이지(View)
+// 관능평가 페이지(View)
 //
 //
 
@@ -14,16 +14,16 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/viewModel/meat_registration/freshmeat_eval_view_model.dart';
+import 'package:structure/viewModel/meat_registration/sensory_eval_view_model.dart';
 
-class FreshMeatEvalScreen extends StatefulWidget {
-  const FreshMeatEvalScreen({super.key});
+class SensoryEvalScreen extends StatefulWidget {
+  const SensoryEvalScreen({super.key});
 
   @override
-  State<FreshMeatEvalScreen> createState() => _FreshMeatEvalScreenState();
+  State<SensoryEvalScreen> createState() => _SensoryEvalScreenState();
 }
 
-class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
+class _SensoryEvalScreenState extends State<SensoryEvalScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -44,8 +44,8 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
 
   @override
   Widget build(BuildContext context) {
-    FreshMeatEvalViewModel freshMeatEvalViewModel =
-        context.watch<FreshMeatEvalViewModel>();
+    SensoryEvalViewModel freshMeatEvalViewModel =
+        context.watch<SensoryEvalViewModel>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -112,7 +112,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                       Icon(
                         Icons.check,
                         color:
-                            context.watch<FreshMeatEvalViewModel>().marbling > 0
+                            context.watch<SensoryEvalViewModel>().marbling > 0
                                 ? Palette.meatRegiBtnBg
                                 : Colors.transparent,
                       ),
@@ -133,7 +133,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                       const Spacer(),
                       Icon(
                         Icons.check,
-                        color: freshMeatEvalViewModel.surface > 0
+                        color: freshMeatEvalViewModel.surfaceMoisture > 0
                             ? Palette.meatRegiBtnBg
                             : Colors.transparent,
                       ),
@@ -176,7 +176,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                   Container(
                     margin: EdgeInsets.only(top: 10.h),
                     height: 250.h,
-                    child: Consumer<FreshMeatEvalViewModel>(
+                    child: Consumer<SensoryEvalViewModel>(
                       // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
                       builder: (context, viewModel, child) => TabBarView(
                         controller: _tabController,
@@ -219,7 +219,7 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                             child: PartEval(
                               idx: 3,
                               selectedText: text[3],
-                              value: viewModel.surface,
+                              value: viewModel.surfaceMoisture,
                               onChanged: (value) =>
                                   viewModel.onChangedSurface(value),
                             ),
@@ -244,11 +244,8 @@ class _FreshMeatEvalScreenState extends State<FreshMeatEvalScreen>
                   Container(
                     margin: EdgeInsets.only(bottom: 10.h),
                     child: MainButton(
-                      onPressed: freshMeatEvalViewModel.completed
-                          ? () async {
-                              freshMeatEvalViewModel.saveMeatData(context);
-                            }
-                          : null,
+                      onPressed: () async =>
+                          freshMeatEvalViewModel.saveMeatData(context),
                       text: freshMeatEvalViewModel.saveBtnText(),
                       width: 658.w,
                       height: 104.h,

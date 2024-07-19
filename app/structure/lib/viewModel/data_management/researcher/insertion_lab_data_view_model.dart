@@ -103,7 +103,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
     // 완료 검사
     meatModel.checkCompleted();
     try {
-      dynamic response = await RemoteDataSource.sendMeatData(
+      dynamic response = await RemoteDataSource.createMeatData(
           'probexpt-data', meatModel.toJsonProbexpt());
       if (response == null) {
         throw Error();

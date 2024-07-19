@@ -32,8 +32,8 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   // 초기 값 할당 (육류 정보 데이터)
   void _initialize() async {
-    if (meatModel.createUser != null) {
-      dynamic user = await RemoteDataSource.getUserInfo(meatModel.createUser!);
+    if (meatModel.userName != null) {
+      dynamic user = await RemoteDataSource.getUserInfo(meatModel.userName!);
       userName = user['name'];
     } else {
       userName = '-';
@@ -55,7 +55,7 @@ class DataAddHomeViewModel with ChangeNotifier {
       int deepAgeIdx = int.parse(
           meatModel.deepAgingData![idx]["deepAgingNum"].split('회')[0]);
       dynamic response =
-          await RemoteDataSource.deleteDeepAging(meatModel.id!, deepAgeIdx);
+          await RemoteDataSource.deleteDeepAging(meatModel.meatId!, deepAgeIdx);
       if (response == null) {
         throw Error();
       } else {
@@ -85,7 +85,7 @@ class DataAddHomeViewModel with ChangeNotifier {
           ),
         )).then((value) async {
       _setTotal();
-      dynamic response = await RemoteDataSource.getMeatData(meatModel.id!);
+      dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
       if (response == null) throw Error();
       meatModel.reset();
       meatModel.fromJson(response);
@@ -110,7 +110,7 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   // 원육 필드를 누를 때 작동 : 데이터 할당
   Future<void> clickedRawMeat(BuildContext context) async {
-    dynamic response = await RemoteDataSource.getMeatData(meatModel.id!);
+    dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
     if (response == null) throw Error();
     meatModel.reset();
     meatModel.fromJson(response);
@@ -125,7 +125,7 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   // 처리육 필드를 누를 때 작동 : 데이터 할당
   Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
-    dynamic response = await RemoteDataSource.getMeatData(meatModel.id!);
+    dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
     print('meat response : $response');
     // Map<String, dynamic> data = jsonDecode(response);
     // deepaging_data 추출

@@ -20,7 +20,7 @@ class EditMeatDataScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-          title: '${context.read<EditMeatDataViewModel>().meatModel.id}',
+          title: '${context.read<EditMeatDataViewModel>().meatModel.meatId}',
           backButton: true,
           closeButton: false),
       body: Center(

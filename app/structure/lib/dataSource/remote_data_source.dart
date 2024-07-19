@@ -15,8 +15,11 @@ class RemoteDataSource {
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
+  ///
   /// 입력한 정보들 토대로 사용자 정보 DB에 생성하는 함수
+  ///
   /// 전송 데이터 : userId, name, homeAddr, company, jobTitle, type, alarm
+  ///
   /// Status code : 200, 400
   static Future<dynamic> signUp(String jsonData) async {
     dynamic response = await _postApi('user/register', jsonData);
@@ -24,8 +27,11 @@ class RemoteDataSource {
   }
 
   /// 유저 중복검사 (GET)
+  ///
   /// 회원가입하려는 userId가 중복되는지 확인하는 함수
+  ///
   /// isDuplicate로 중복 여부 확인
+  ///
   /// Status code : 200
   static Future<dynamic> dupliCheck(String userId) async {
     dynamic response = await _getApi('user/duplicate-check?userId=$userId');
@@ -33,8 +39,11 @@ class RemoteDataSource {
   }
 
   /// 유저 로그인 (GET)
+  ///
   /// 로그인시 입력한 userId를 토대로 사용자 정보를 불러오는 함수
+  ///
   /// 받아오는 데이터 : userId, name, homeAddr, company, jobTitle, type, alarm, createdAt
+  ///
   /// Status code : 200, 400, 404
   static Future<dynamic> login(String userId) async {
     dynamic response = await _getApi('user/login?userId=$userId');
@@ -42,8 +51,11 @@ class RemoteDataSource {
   }
 
   /// 유저 업데이트 (POST)
+  ///
   /// 유저 정보 수정 후 DB에 반영하는 함수
+  ///
   /// 전송 데이터 : userId, name, homeAddr, company, jobTitle, alarm, type
+  ///
   /// Status code : 200, 400
   static Future<dynamic> updateUser(String jsonData) async {
     dynamic response = await _patchApi('user/update', jsonData);
@@ -51,7 +63,9 @@ class RemoteDataSource {
   }
 
   /// 유저 회원 탈퇴 (GET)
+  ///
   /// 로그인된 사용자를 DB에서 삭제하는 함수
+  ///
   /// Status code : 200, 401
   static Future<dynamic> deleteUser(String userId) async {
     dynamic response = await _deleteApi('user/delete?userId=$userId');
@@ -60,7 +74,9 @@ class RemoteDataSource {
 
   /* 육류 관련 API */
   /// 모든 고기의 데이터 조회 (GET)
+  ///
   /// 일반데이터승인 - 전체 조회
+  ///
   /// 전송 데이터 : offset, count, start, end, specieValue(전체, 소, 돼지)
   static Future<dynamic> getALLMeatData(int offset, int count, String start,
       String end, String specieValue) async {
@@ -89,13 +105,13 @@ class RemoteDataSource {
   }
 
   /// 육류 정보 생성 (POST)
+  ///
   /// null - 기본 육류 정보 생성
-  /// sensory-eval - 관능평가 데이터 생성
-  /// heatedmeat-eval - 가열육 관능평가 데이터 생성
-  /// deep-aging-data - 딥에이징 데이터 생성
-  /// probexpt-data - 실험실 데이터 생성
-  // TODO : createMeatData로 이름 변경
-  static Future<dynamic> sendMeatData(String? dest, String jsonData) async {
+  /// <br /> sensory-eval - 관능평가 데이터 생성
+  /// <br /> heatedmeat-eval - 가열육 관능평가 데이터 생성
+  /// <br /> deep-aging-data - 딥에이징 데이터 생성
+  /// <br /> probexpt-data - 실험실 데이터 생성
+  static Future<dynamic> createMeatData(String? dest, String jsonData) async {
     String endPoint = 'meat/add/';
     if (dest != null) {
       endPoint = 'meat/add/$dest';
@@ -180,6 +196,7 @@ class RemoteDataSource {
   /* GET, POST, DELETE */
 
   /// API POST
+  ///
   /// 데이터 생성시 사용
   static Future<dynamic> _postApi(String endPoint, String jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
@@ -205,6 +222,7 @@ class RemoteDataSource {
   }
 
   /// API PATCH
+  ///
   /// 데이터 일부 수정시 사용
   static Future<dynamic> _patchApi(String endPoint, String jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
@@ -229,6 +247,7 @@ class RemoteDataSource {
   }
 
   /// API GET
+  ///
   /// 데이터 받아올 때 사용
   static Future<dynamic> _getApi(String endPoint) async {
     String apiUrl = '$baseUrl/$endPoint';
@@ -251,6 +270,7 @@ class RemoteDataSource {
   }
 
   /// API DELETE
+  ///
   /// 데이터 삭제시 사용
   static Future<dynamic> _deleteApi(String endPoint) async {
     String apiUrl = '$baseUrl/$endPoint';
@@ -273,6 +293,7 @@ class RemoteDataSource {
   }
 
   /// 육류 이력관리 정보 (GET)
+  ///
   /// dotenv TRACEAPI
   static Future<dynamic> getMeatTraceData(String url) async {
     try {

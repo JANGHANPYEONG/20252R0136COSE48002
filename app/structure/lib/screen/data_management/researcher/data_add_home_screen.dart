@@ -27,7 +27,7 @@ class _DataAddHomeState extends State<DataAddHome> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: context.read<DataAddHomeViewModel>().meatModel.id!,
+        title: context.read<DataAddHomeViewModel>().meatModel.meatId!,
         backButton: true,
         closeButton: false,
       ),

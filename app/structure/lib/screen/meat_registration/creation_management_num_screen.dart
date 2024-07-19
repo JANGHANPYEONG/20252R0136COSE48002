@@ -1,3 +1,9 @@
+//
+//
+// 관리번호 생성페이지 (view)
+//
+//
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,10 +22,13 @@ class CreationManagementNumScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    CreationManagementNumViewModel creationManagementNumViewModel =
+        context.watch<CreationManagementNumViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
-        child: context.watch<CreationManagementNumViewModel>().isLoading
+        child: creationManagementNumViewModel.isLoading
             ? const CreationManagementNumLoadingScreen()
             : Column(
                 children: [
@@ -58,9 +67,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Text(
-                      context
-                          .read<CreationManagementNumViewModel>()
-                          .managementNum,
+                      creationManagementNumViewModel.managementNum,
                       textAlign: TextAlign.center,
                       style: Palette.h1,
                     ),
@@ -85,10 +92,8 @@ class CreationManagementNumScreen extends StatelessWidget {
                           const Spacer(),
                           ClipOval(
                             child: Image.file(
-                              File(context
-                                  .read<CreationManagementNumViewModel>()
-                                  .meatModel
-                                  .imagePath!),
+                              File(creationManagementNumViewModel
+                                  .meatModel.imagePath!),
                               width: 44.w,
                               height: 44.h,
                               fit: BoxFit.fill,
@@ -96,7 +101,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                           ),
                           SizedBox(width: 25.w),
                           Text(
-                            '${context.read<CreationManagementNumViewModel>().meatModel.speciesValue}•${context.read<CreationManagementNumViewModel>().meatModel.primalValue}•${context.read<CreationManagementNumViewModel>().meatModel.secondaryValue}',
+                            '${creationManagementNumViewModel.meatModel.speciesValue}•${creationManagementNumViewModel.meatModel.primalValue}•${creationManagementNumViewModel.meatModel.secondaryValue}',
                             style: Palette.h5,
                           )
                         ],
@@ -108,7 +113,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                         Text('이력번호', style: Palette.h5Grey),
                         const Spacer(),
                         Text(
-                          "${context.read<CreationManagementNumViewModel>().meatModel.traceNum}",
+                          "${creationManagementNumViewModel.meatModel.traceNum}",
                           style: Palette.h5,
                         )
                       ]),
@@ -120,10 +125,8 @@ class CreationManagementNumScreen extends StatelessWidget {
                           Text('날짜', style: Palette.h5Grey),
                           const Spacer(),
                           Text(
-                            Usefuls.parseDate(context
-                                .read<CreationManagementNumViewModel>()
-                                .meatModel
-                                .createdAt),
+                            Usefuls.parseDate(creationManagementNumViewModel
+                                .meatModel.createdAt),
                             style: Palette.h5,
                           )
                         ],
@@ -136,9 +139,8 @@ class CreationManagementNumScreen extends StatelessWidget {
                   Container(
                     margin: EdgeInsets.only(bottom: 20.h),
                     child: MainButton(
-                      onPressed: () async => await context
-                          .read<CreationManagementNumViewModel>()
-                          .printQr(),
+                      onPressed: () async =>
+                          await creationManagementNumViewModel.printQr(),
                       text: 'QR코드 출력하기',
                       width: 640.w,
                       height: 96.h,
@@ -151,8 +153,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                     margin: EdgeInsets.only(bottom: 32.h),
                     child: CustomTextButton(
                       title: '홈으로 이동하기',
-                      onPressed: () => context
-                          .read<CreationManagementNumViewModel>()
+                      onPressed: () => creationManagementNumViewModel
                           .clickedHomeButton(context),
                     ),
                   ),
