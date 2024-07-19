@@ -102,6 +102,7 @@ const MeatImgsCard = ({
             createdDate,
             elapsedHour
           );
+          
           response.then((response) => {
             if (response.statusText === 'NOT FOUND') {
               setIsLimitedToChangeImage(true); //실패시

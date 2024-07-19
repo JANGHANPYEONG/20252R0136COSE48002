@@ -254,7 +254,7 @@ function DataList({
                               pathname: `/dataPA/${content.meatId}`,
                               search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                             }
-                          : content.statusType === '승인'
+                          : content.statusType === '반려'||'대기중'
                             ? {
                                 pathname: `/dataView/${content.meatId}`,
                                 search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,

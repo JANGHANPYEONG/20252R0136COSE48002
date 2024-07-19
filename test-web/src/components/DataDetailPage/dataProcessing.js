@@ -107,7 +107,7 @@ export default function dataProcessing(items) {
 
   // 3-3. 데이터를 json 객체로 만들기
   const data = {
-    id: items.meatId,
+    meatId: items.meatId,
     userId: items.userId,
     createdAt: items.createdAt ? items.createdAt.replace('T', ' ') : '', // 수정 부분: 기본 값 설정
     qrImagePath: items.imagePath,

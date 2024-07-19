@@ -31,7 +31,6 @@ const downloadExcel = (data) => {
 // json 데이터 가공
 const DataListJSON2Excel = (rawData) => {
   let newData = [];
-  console.log(rawData);
 
   // id_list에 있는 ID들을 사용하여 meat_dict에서 데이터를 가져옴
   rawData.id_list.forEach((id) => {
