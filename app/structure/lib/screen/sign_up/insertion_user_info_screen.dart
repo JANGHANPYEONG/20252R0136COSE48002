@@ -73,6 +73,9 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                           width: 640.w,
                           controller:
                               context.read<InsertionUserInfoViewModel>().name,
+                          onChangeFunc: (value) => context
+                              .read<InsertionUserInfoViewModel>()
+                              .nameCheck(value),
                         ),
                         SizedBox(height: 30.h),
                         Container(
