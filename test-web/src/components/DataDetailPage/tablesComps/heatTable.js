@@ -109,12 +109,12 @@ const heatedField = [
   'juiciness',
   'tenderness',
   'umami',
-  'palability',
+  'palatability',
 ];
 const heatedDBFieldToSemanticWord = {
   flavor: '풍미',
   juiciness: '육즙',
   tenderness: '연도',
   umami: '감칠맛',
-  palability: '기호도',
+  palatability: '기호도',
 };

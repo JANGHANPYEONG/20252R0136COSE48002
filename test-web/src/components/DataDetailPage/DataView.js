@@ -125,6 +125,7 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
+      console.log("여기 ㅡmid?",meatId)
       updateHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
         .then((response) => {
           console.log('가열육 수정 POST요청 성공:', response);
@@ -431,7 +432,7 @@ const heatedField = [
   'juiciness',
   'tenderness',
   'umami',
-  'palability',
+  'palatability',
 ];
 const labField = [
   'L',

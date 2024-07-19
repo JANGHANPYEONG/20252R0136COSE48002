@@ -13,7 +13,7 @@ export default async function updateProcessedData(
   elapsedHour //경과 시간
 ) {
   const [yy, mm, dd] = computeCurrentDate();
-  console.log("CHECK",processedInput)
+  //console.log("CHECK",processedInput)
   const dataSet = {"marbling" :processedInput.marbling,
   "color" :processedInput.color,
   "texture" :processedInput.texture,
@@ -26,7 +26,7 @@ export default async function updateProcessedData(
     ["meatId"] : id,
     ["seqno"] : i,
     ["imgAdded"] : false,
-    ["flimedAt"] : "2024-07-08 12:12:12",
+    //["flimedAt"] : "2024-07-08 12:12:12",
     ["sensoryData"] : dataSet,
 
     // ...req,
