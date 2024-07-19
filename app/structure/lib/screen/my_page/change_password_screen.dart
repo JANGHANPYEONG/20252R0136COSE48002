@@ -96,12 +96,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                     // 저장 버튼
                     MainButton(
-                      onPressed:
-                          context.watch<ChangePasswordViewModel>().isAllValid()
-                              ? () async => context
-                                  .read<ChangePasswordViewModel>()
-                                  .changePassword(context)
-                              : null,
+                      onPressed: context
+                                  .watch<ChangePasswordViewModel>()
+                                  .isAllValid() &&
+                              context
+                                  .watch<ChangePasswordViewModel>()
+                                  .isActivateButton
+                          ? () async => context
+                              .read<ChangePasswordViewModel>()
+                              .changePassword(context)
+                          : null,
                       text: '변경',
                       width: 658.w,
                       height: 96.h,
