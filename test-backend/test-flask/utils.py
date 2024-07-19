@@ -217,6 +217,7 @@ def convert2string(date_object, format):
 
 
 def item_encoder(data_dict, item, input_data=None):
+    datetime0_cvr = ["filmedAt"]
     datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
@@ -261,7 +262,9 @@ def item_encoder(data_dict, item, input_data=None):
         "richness",
     ]
     bool_cvr = ["alarm", "isHeated"]
-    if item in datetime1_cvr:
+    if item in datetime0_cvr:
+        data_dict[item] = convert2datetime(data_dict.get(item), 0)
+    elif item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 2)
@@ -290,6 +293,7 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
+    datetime0_cvr = ["filmedAt"]
     datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
@@ -334,7 +338,9 @@ def item_encoder(data_dict, item, input_data=None):
         "richness",
     ]
     bool_cvr = ["alarm", "isHeated"]
-    if item in datetime1_cvr:
+    if item in datetime0_cvr:
+        data_dict[item] = convert2datetime(data_dict.get(item), 0)
+    elif item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 2)
