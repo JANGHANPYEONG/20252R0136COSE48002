@@ -63,9 +63,13 @@ class UserDetailViewModel with ChangeNotifier {
     );
   }
 
-  // TODO
-  void clicked1stCheckBox(bool? value) {
-    // isChecked = ;
+  ///checkbox 클릭
+  void clicked1stCheckBox(bool value) {
+    isActivateButton = true;
+    print('체크박스 클릭됨');
+    isChecked = value;
+    notifyListeners();
+    print('value : $value');
   }
 
   Future<void> clickedSaveButton(BuildContext context) async {
@@ -81,6 +85,7 @@ class UserDetailViewModel with ChangeNotifier {
     if (department.text.isNotEmpty || jobTitle.text.isNotEmpty) {
       userModel.jobTitle = '${department.text}/${jobTitle.text}';
     }
+    userModel.alarm = isChecked;
 
     try {
       // 데이터 전송
@@ -103,7 +108,6 @@ class UserDetailViewModel with ChangeNotifier {
     userId = userModel.userId ?? 'None';
     if (userModel.alarm != null) {
       isChecked = userModel.alarm!;
-      print('');
     }
     // isChecked =
     print('체크 : $isChecked');

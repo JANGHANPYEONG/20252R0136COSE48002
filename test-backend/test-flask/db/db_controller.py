@@ -246,7 +246,9 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
 
         else: 
             existing_meat = db_session.query(Meat).get(meat_id)
-            
+            if existing_meat.statusType == 2:
+                return None
+                
             new_category = db_session.query(CategoryInfo).filter(
                 CategoryInfo.primalValue == data.get("primalValue"),
                 CategoryInfo.secondaryValue == data.get("secondaryValue")
@@ -280,59 +282,32 @@ def create_raw_meat_deep_aging_info(db_session, meat_id):
         raise e
 
 
-def create_specific_deep_aging_meat_data(db_session, s3_conn, firestore_conn, data):
+def create_specific_deep_aging_data(db_session, data):
     # 2. 기본 데이터 받아두기
-    id = data.get("id")
-    seqno = data.get("seqno")
-    deepAging_data = data.get("deepAging")
-    data.pop("deepAging", None)
-    meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if id == None:  # 1. 애초에 id가 없는 request
-        raise Exception("No Id in Request Data")
-    sensory_eval = (
-        db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).first()
-    )  # DB에 있는 육류 정보
-    try:
-        if deepAging_data is not None:
-            if meat:  # 승인 정보 확인
-                if meat.statusType != 2:
-                    raise Exception("Not Confirmed Meat Data")
-            if sensory_eval:  # 기존 Deep Aging을 수정하는 경우
-                deepAgingId = sensory_eval.deepAgingId
-                existing_DeepAging = db_session.query(DeepAgingInfo).get(deepAgingId)
-                if existing_DeepAging:
-                    for key, value in deepAging_data.items():
-                        setattr(existing_DeepAging, key, value)
-                    # for key, value in data.items():
-                    #     setattr(sensory_eval, key, value)
-                    new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-                    db_session.merge(new_SensoryEval)
-                else:
-                    raise Exception("No Deep Aging Data found for update")
-            else:  # 새로운 Deep aging을 추가하는 경우
-                new_DeepAging = create_DeepAging(deepAging_data)
-                deepAgingId = new_DeepAging.deepAgingId
-                db_session.add(new_DeepAging)
-                db_session.commit()
-                new_SensoryEval = create_SensoryEval(data, seqno, id, deepAgingId)
-                db_session.merge(new_SensoryEval)
+    id = data["meatId"]
+    seqno = data["seqno"]
 
-            db_session.commit()
-            transfer_folder_image(
-                s3_conn,
-                firestore_conn,
-                db_session,
-                f"{id}-{seqno}",
-                new_SensoryEval,
-                "sensory_evals",
-            )
-            
-        else:
-            raise Exception("No deepaging data in request")
+    meat = db_session.query(Meat).get(id) # DB에 있는 육류 정보
+    deep_aging = db_session.query(DeepAgingInfo).filter_by(id=id, seqno=seqno).first() # DB에 있는 딥에이징 정보
+    if not meat:
+        return None
+    if deep_aging:
+        return False
+    
+    new_deep_aging = {
+        "id": id,
+        "seqno": seqno,
+        "date": data["deepAging"]["date"],
+        "minute": data["deepAging"]["minute"]
+    }
+    try:
+        deep_aging_data = DeepAgingInfo(**new_deep_aging)
+        db_session.add(deep_aging_data)
+        db_session.commit()
+        return f"{id}-{seqno}"
     except Exception as e:
         db_session.rollback()
         raise e
-    return jsonify(id)
 
 
 def create_specific_sensoryEval(db_session, s3_conn, firestore_conn, data):
@@ -576,7 +551,7 @@ def get_range_meat_data(
     statusType=None,
     company=None,
 ):
-    if count and offset:
+    if (count is not None) and (offset is not None):
         count = safe_int(count)
         offset = safe_int(offset)
         offset = offset*count
@@ -629,7 +604,7 @@ def get_range_meat_data(
             Meat.createdAt.between(start, end)
         ).count()
     query = query.order_by(Meat.createdAt.desc())
-    if offset and count:
+    if (count is not None) and (offset is not None):
         query = query.offset(offset).limit(count)
 
     # 탐색
@@ -977,24 +952,24 @@ def get_AI_SensoryEval(db_session, id, seqno):
 
 def _updateConfirmData(db_session, id):
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if meat:
+    if meat and meat.statusType != 2:
         meat.statusType = 2
         db_session.merge(meat)
         db_session.commit()
-        return jsonify(id), 200
+        return jsonify({"msg": "Success to update StatusType"}), 200
     else:
-        return jsonify({"msg": "No Data In Meat DB"}), 404
+        return jsonify({"msg": "No Data In Meat DB or Already Confirmed"}), 404
 
 
 def _updateRejectData(db_session, id):
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
-    if meat:
+    if meat and meat.statusType != 1:
         meat.statusType = 1
         db_session.merge(meat)
         db_session.commit()
-        return jsonify(id), 200
+        return jsonify({"msg": "Success to update StatusType"}), 200
     else:
-        return jsonify({"msg": "No Data In Meat DB"}), 404
+        return jsonify({"msg": "No Data In Meat DB or Already Rejected"}), 404
 
 
 def _addSpecificPredictData(db_session, data):

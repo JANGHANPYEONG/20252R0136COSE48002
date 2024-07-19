@@ -90,7 +90,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 82.w,
+                            width: 100.w,
                             child: Text(
                               "가입날짜",
                               style: Palette.userInfoTitle,
@@ -218,16 +218,17 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 247.w,
+                      width: 255.w,
                       child: Text(
                         userInfoViewModel.department,
                         style: Palette.userInfoContent,
                       ),
                     ),
                     SizedBox(
-                      width: 102.w,
+                      width: 96.w,
                       child: Text(
                         "직위",
+                        textAlign: TextAlign.center,
                         style: Palette.userInfoTitle,
                       ),
                     ),

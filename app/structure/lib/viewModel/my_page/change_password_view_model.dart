@@ -11,6 +11,7 @@ class ChangePasswordViewModel with ChangeNotifier {
 
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  bool isActivateButton = false;
 
   TextEditingController originPW = TextEditingController();
   TextEditingController newPW = TextEditingController();
@@ -68,7 +69,8 @@ class ChangePasswordViewModel with ChangeNotifier {
     // 비밀번호 유효성을 검사하는 정규식
     const pattern = Labels.pwdPattern;
     final regex = RegExp(pattern);
-
+    isActivateButton = true; //버튼 활성화
+    notifyListeners();
     return regex.hasMatch(password);
   }
 

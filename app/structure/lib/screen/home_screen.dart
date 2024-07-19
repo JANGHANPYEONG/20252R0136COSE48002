@@ -36,9 +36,10 @@ class HomeScreen extends StatelessWidget {
 
                 // 오른쪽 마이페이지 아이콘
                 CustomIconButton(
-                  image: (context.read<HomeViewModel>().userType == 'normal')
+                  image: (context.read<HomeViewModel>().userType == 'Normal')
                       ? 'assets/images/normalperson.svg'
-                      : (context.read<HomeViewModel>().userType == 'researcher')
+                      // 'assets/images/researcherperson.svg'
+                      : (context.read<HomeViewModel>().userType == 'Researcher')
                           ? 'assets/images/managerperson.svg'
                           : 'assets/images/researcherperson.svg',
                   onTap: () =>

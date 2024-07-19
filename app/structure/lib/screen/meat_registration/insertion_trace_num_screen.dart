@@ -74,6 +74,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
 
                   // MainTextField 컴포넌트를 이용하여, textfield를 구현.
                   child: MainTextField(
+                    isNum: 1,
                     controller: context
                         .watch<InsertionTraceNumViewModel>()
                         .textEditingController,
