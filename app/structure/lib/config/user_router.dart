@@ -33,7 +33,7 @@ import 'package:structure/screen/my_page/user_info_screen.dart';
 import 'package:structure/screen/sign_in/password_reset_screen.dart';
 import 'package:structure/screen/sign_in/complete_reset_screen.dart';
 import 'package:structure/screen/sign_up/complete_sign_up_screen.dart';
-import 'package:structure/screen/meat_registration/freshmeat_eval_screen.dart';
+import 'package:structure/screen/meat_registration/sensory_eval_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_detail_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_info_screen.dart';
 import 'package:structure/screen/meat_registration/meat_registration_screen.dart';
@@ -53,7 +53,7 @@ import 'package:structure/viewModel/data_management/researcher/insertion_tongue_
 import 'package:structure/viewModel/home_view_model.dart';
 import 'package:structure/viewModel/meat_registration/camera_view_model.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
-import 'package:structure/viewModel/meat_registration/freshmeat_eval_view_model.dart';
+import 'package:structure/viewModel/meat_registration/sensory_eval_view_model.dart';
 import 'package:structure/viewModel/meat_registration/insertion_meat_info_view_model.dart';
 import 'package:structure/viewModel/meat_registration/insertion_trace_num_view_model.dart';
 import 'package:structure/viewModel/meat_registration/registration_meat_image_view_model.dart';
@@ -183,8 +183,8 @@ class UserRouter {
                 GoRoute(
                   path: 'freshmeat',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => FreshMeatEvalViewModel(meatModel),
-                    child: const FreshMeatEvalScreen(),
+                    create: (context) => SensoryEvalViewModel(meatModel),
+                    child: const SensoryEvalScreen(),
                   ),
                 ),
               ],
@@ -296,8 +296,8 @@ class UserRouter {
                     GoRoute(
                       path: 'freshmeat-editable',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) => FreshMeatEvalViewModel(meatModel),
-                        child: const FreshMeatEvalScreen(),
+                        create: (context) => SensoryEvalViewModel(meatModel),
+                        child: const SensoryEvalScreen(),
                       ),
                     ),
                   ],
@@ -408,8 +408,8 @@ class UserRouter {
                           path: 'eval',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) =>
-                                FreshMeatEvalViewModel(meatModel),
-                            child: const FreshMeatEvalScreen(),
+                                SensoryEvalViewModel(meatModel),
+                            child: const SensoryEvalScreen(),
                           ),
                         ),
                         GoRoute(

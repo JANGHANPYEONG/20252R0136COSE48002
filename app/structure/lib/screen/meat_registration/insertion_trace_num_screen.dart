@@ -26,11 +26,8 @@ class InsertionTraceNumScreen extends StatefulWidget {
 }
 
 class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
-  // 바코드 이벤트 채널
-  EventChannel? _eventChannel;
-
-  // 바코드 스트림 구독
-  StreamSubscription<dynamic>? _eventSubscription;
+  EventChannel? _eventChannel; // 바코드 이벤트 채널
+  StreamSubscription<dynamic>? _eventSubscription; // 바코드 스트림 구독
 
   @override
   void initState() {
@@ -52,6 +49,9 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final InsertionTraceNumViewModel insertionTraceNumViewModel =
+        context.watch<InsertionTraceNumViewModel>();
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -69,15 +69,15 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(width: 40.h),
+
+                // 육류번호 입력 form
                 Form(
-                  key: context.read<InsertionTraceNumViewModel>().formKey,
+                  key: insertionTraceNumViewModel.formKey,
 
                   // MainTextField 컴포넌트를 이용하여, textfield를 구현.
                   child: MainTextField(
-                    isNum: 1,
-                    controller: context
-                        .watch<InsertionTraceNumViewModel>()
-                        .textEditingController,
+                    controller:
+                        insertionTraceNumViewModel.textEditingController,
                     action: TextInputAction.search,
                     formatter: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9L]'))
@@ -94,38 +94,23 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
 
                     // 입력된 텍스트 값(value)을 저장할 때 사용.
                     onSaveFunc: (value) {
-                      context.read<InsertionTraceNumViewModel>().traceNum =
-                          value!;
+                      insertionTraceNumViewModel.traceNum = value!;
                     },
 
                     // 입력된 텍스트 값(value)이 변경될 때 사용.
                     onChangeFunc: (value) {
-                      context.read<InsertionTraceNumViewModel>().traceNum =
-                          value;
+                      insertionTraceNumViewModel.traceNum = value;
                     },
 
                     // field에서 완료 버튼을 누를 때 호출.
                     onFieldFunc: (value) {
-                      context.read<InsertionTraceNumViewModel>().traceNum =
-                          value;
-                      context.read<InsertionTraceNumViewModel>().start(context);
+                      insertionTraceNumViewModel.traceNum = value;
+                      insertionTraceNumViewModel.start(context);
                     },
+
                     mainText: '이력번호 입력',
                     prefixIcon: GestureDetector(
-                      onTap: () {
-                        String currentText = context
-                            .read<InsertionTraceNumViewModel>()
-                            .textEditingController
-                            .text;
-                        if (currentText.isNotEmpty &&
-                            currentText.length >= 12) {
-                          context.read<InsertionTraceNumViewModel>().traceNum =
-                              currentText;
-                          context
-                              .read<InsertionTraceNumViewModel>()
-                              .start(context);
-                        }
-                      },
+                      onTap: () => insertionTraceNumViewModel.start(context),
                       child: Icon(Icons.search, size: 36.sp),
                     ),
                     canAlert: true,
@@ -140,17 +125,12 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                   width: 50,
                   child: TextButton(
                     onPressed: () {
-                      context
-                          .read<InsertionTraceNumViewModel>()
-                          .clearText(context);
+                      insertionTraceNumViewModel.clearText();
                       FocusScope.of(context).unfocus();
                     },
                     child: const Text(
                       '취소',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.black, fontSize: 14),
                     ),
                   ),
                 ),
@@ -159,41 +139,34 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
             SizedBox(height: 48.h),
 
             // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
-            if (context.watch<InsertionTraceNumViewModel>().isAllInserted == 1)
+            if (insertionTraceNumViewModel.isAllInserted == 1)
               Expanded(
-                  child: Container(
-                width: 642.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
+                child: Container(
+                  width: 642.w,
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(50.r)),
+                  child: ListTable(
+                      tableData: insertionTraceNumViewModel.tableData),
                 ),
-                child: ListTable(
-                    tableData:
-                        context.read<InsertionTraceNumViewModel>().tableData),
-              ))
+              )
             // 검색 결과가 존재하지 않음을 출력. (이력 번호가 잘못된 상황)
-            else if (context.read<InsertionTraceNumViewModel>().isAllInserted ==
-                2)
+            else if (insertionTraceNumViewModel.isAllInserted == 2)
               const Expanded(
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: 45.0,
-                    ),
+                    padding: EdgeInsets.only(bottom: 45.0),
                     child: Text(
                       '검색결과가 없습니다',
-                      style: TextStyle(
-                        fontSize: 17.0,
-                      ),
+                      style: TextStyle(fontSize: 17.0),
                     ),
                   ),
                 ),
               )
             // 빈 화면을 표현. (이력 번호 입력이 되지 않은 초기 상태)
-            else if (context.read<InsertionTraceNumViewModel>().isAllInserted ==
-                0)
-              const Spacer(
-                flex: 2,
-              ),
+            else if (insertionTraceNumViewModel.isAllInserted == 0)
+              const Spacer(flex: 2),
+
+            // 다음 버튼
             Container(
               margin: EdgeInsets.only(bottom: 28.h),
               child: MainButton(
@@ -202,13 +175,10 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                 width: 640.w,
                 height: 96.h,
                 // 모든 데이터가 입력된 상황에서 '다음' 버튼을 활성화.
-                onPressed:
-                    (context.read<InsertionTraceNumViewModel>().isAllInserted ==
-                            1)
-                        ? () => context
-                            .read<InsertionTraceNumViewModel>()
-                            .clickedNextbutton(context)
-                        : null,
+                onPressed: (insertionTraceNumViewModel.isAllInserted == 1)
+                    ? () =>
+                        insertionTraceNumViewModel.clickedNextbutton(context)
+                    : null,
               ),
             ),
           ],

@@ -20,15 +20,17 @@ class RegistrationMeatImageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    RegistrationMeatImageViewModel registrationMeatImageViewModel =
+        context.watch<RegistrationMeatImageViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: '육류 단면 촬영',
         backButton: true,
         closeButton: false,
-        backButtonOnPressed: context
-            .read<RegistrationMeatImageViewModel>()
-            .backBtnPressed(context),
+        backButtonOnPressed:
+            registrationMeatImageViewModel.backBtnPressed(context),
       ),
       body: Stack(
         children: [
@@ -56,9 +58,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(left: 20.w),
                           child: Text(
-                            context
-                                .watch<RegistrationMeatImageViewModel>()
-                                .date,
+                            registrationMeatImageViewModel.date,
                             style: Palette.h4,
                           ),
                         ),
@@ -84,9 +84,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(left: 20.w),
                           child: Text(
-                            context
-                                .watch<RegistrationMeatImageViewModel>()
-                                .userName,
+                            registrationMeatImageViewModel.userName,
                             style: Palette.h4,
                           ),
                         ),
@@ -104,17 +102,15 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                   Text('단면 촬영 사진', style: Palette.h4),
                   SizedBox(height: 20.h),
                   // 촬영 사진
-                  context.watch<RegistrationMeatImageViewModel>().imagePath !=
-                          null
+                  registrationMeatImageViewModel.imgPath != null
                       // 등록된 이미지가 있음
                       ? Stack(
                           // 삭제 버튼을 이미지 위에 띄우기 위한 'stack' 위젯 사용
                           children: [
                             ImageCard(
-                              imagePath: context
-                                      .read<RegistrationMeatImageViewModel>()
-                                      .imagePath ??
-                                  '없음',
+                              imagePath:
+                                  registrationMeatImageViewModel.imgPath ??
+                                      '없음',
                             ),
                             // 삭제 버튼
                             Positioned(
@@ -126,9 +122,9 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                                 child: IconButton(
-                                    onPressed: () => context
-                                        .read<RegistrationMeatImageViewModel>()
-                                        .deleteImage(context),
+                                    onPressed: () =>
+                                        registrationMeatImageViewModel
+                                            .deleteImage(context),
                                     iconSize: 55.h,
                                     icon: const Icon(
                                       Icons.delete_outline_outlined,
@@ -142,9 +138,8 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       // 등록된 이미지가 없음 (사진 촬영)
                       // 이미지 삽입 버튼
                       : InkWell(
-                          onTap: () => context
-                              .read<RegistrationMeatImageViewModel>()
-                              .pickImage(context),
+                          onTap: () =>
+                              registrationMeatImageViewModel.pickImage(context),
                           child: DottedBorder(
                             radius: Radius.circular(20.sp),
                             borderType: BorderType.RRect,
@@ -170,21 +165,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
               Container(
                 margin: EdgeInsets.only(bottom: 40.h),
                 child: MainButton(
-                  onPressed: context
-                              .watch<RegistrationMeatImageViewModel>()
-                              .imagePath !=
-                          null
+                  onPressed: registrationMeatImageViewModel.imgPath != null
                       ? () async {
-                          await context
-                              .read<RegistrationMeatImageViewModel>()
+                          await registrationMeatImageViewModel
                               .saveMeatData(context);
                         }
                       : null,
-                  text: context
-                              .read<RegistrationMeatImageViewModel>()
-                              .meatModel
-                              .id ==
-                          null
+                  text: registrationMeatImageViewModel.meatModel.meatId == null
                       ? '완료'
                       : "수정사항 저장",
                   width: 640.w,
@@ -204,55 +191,3 @@ class RegistrationMeatImageScreen extends StatelessWidget {
     );
   }
 }
-
-// class ImageCard extends StatelessWidget {
-//   const ImageCard({
-//     super.key,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return ClipRRect(
-//       borderRadius: BorderRadius.circular(20.r),
-//       child: SizedBox(
-//         width: 640.w,
-//         height: 640.w,
-
-//         // 이미지 할당
-//         child: context.watch<RegistrationMeatImageViewModel>().imagePath !=
-//                     null &&
-//                 context
-//                     .watch<RegistrationMeatImageViewModel>()
-//                     .imagePath!
-//                     .contains('http')
-//             // s3에 업로드 된 이미지 (수정)
-//             ? Image.network(
-//                 context.read<RegistrationMeatImageViewModel>().imagePath!,
-//                 loadingBuilder: (BuildContext context, Widget child,
-//                     ImageChunkEvent? loadingProgress) {
-//                   if (loadingProgress == null) {
-//                     return child;
-//                   } else {
-//                     return LoadingScreen(
-//                       value: loadingProgress.expectedTotalBytes != null
-//                           ? loadingProgress.cumulativeBytesLoaded /
-//                               (loadingProgress.expectedTotalBytes ?? 1)
-//                           : null,
-//                     );
-//                   }
-//                 },
-//                 errorBuilder: (BuildContext context, Object error,
-//                     StackTrace? stackTrace) {
-//                   return const Icon(Icons.error);
-//                 },
-//                 fit: BoxFit.cover,
-//               )
-//             // 이미지 촬영 중 임시저장 된 사진
-//             : Image.file(
-//                 File(context.read<RegistrationMeatImageViewModel>().imagePath!),
-//                 fit: BoxFit.cover,
-//               ),
-//       ),
-//     );
-//   }
-// }
