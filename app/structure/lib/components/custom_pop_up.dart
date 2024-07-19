@@ -141,6 +141,9 @@ void showPopup(BuildContext context, String contentText, String btnText,
                               () {
                                 context.pop();
                                 context.pop();
+                                // Navigator.pop(context, true);
+                                // context.pop();
+                                // Navigator.pop(context);
                               },
                           child: Text(btnText, style: Palette.popupBtn)),
                     ],

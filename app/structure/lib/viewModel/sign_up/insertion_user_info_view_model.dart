@@ -13,6 +13,8 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     userModel.reset();
   }
 
+  bool isDupActivateButton = false; //중복확인 버튼 활성화
+
   // form
   final formKey = GlobalKey<FormState>();
 
@@ -27,6 +29,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   bool isValidId = false;
   bool isValidPw = false;
   bool isValidCPw = false;
+  bool isName = false;
 
   // 약관 동의 확인을 위한 변수
   bool isChecked1 = false;
@@ -40,9 +43,23 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   late BuildContext _context;
 
+  ///이름 입력 여부 검사
+  // void nameCheck() {
+  //   print('이름 입력');
+  //   // if (name.text.isNotEmpty) {
+  //   isName = true;
+  //   // }
+  // }
+  void nameCheck(String? value) {
+    print('이름 입력');
+    isName = true;
+    notifyListeners();
+  }
+
   /// 아이디 유효성 검사
   /// 비어있지 않고 이메일 형식에 맞지 않을 때, 빨간 예외 메시지를 띄움
   String? idValidate(String? value) {
+    print('idValidate함수 호출');
     final bool isValid = EmailValidator.validate(value!);
     if (value.isNotEmpty && !isValid) {
       isValidId = false;
@@ -53,6 +70,21 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     } else {
       isValidId = true;
       return null;
+    }
+  }
+
+  void onChangeEmail(String? value) {
+    print('change 함수 호출');
+    isUnique = false; //이메일 입력된 값이 바뀌면 isUnique는 다시 false로 세팅
+    notifyListeners();
+    print('idValidate함수 호출');
+    final bool isValid = EmailValidator.validate(value!);
+    if (value.isNotEmpty && !isValid) {
+      isValidId = false;
+    } else if (value.isEmpty) {
+      isValidId = false;
+    } else {
+      isValidId = true;
     }
   }
 
@@ -85,11 +117,6 @@ class InsertionUserInfoViewModel with ChangeNotifier {
       isValidCPw = true;
       return null;
     }
-  }
-
-  void onChangeEmail(String? v) {
-    isUnique = false;
-    notifyListeners();
   }
 
   /// 유효성 검사 함수
@@ -126,6 +153,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
       emailCheckLoading = false;
       notifyListeners();
 
+      //이메일 중복인 경우
       if (!isUnique) {
         // 중복 popup 창 띄우기
         _context = context;
