@@ -1208,33 +1208,18 @@ def deleteMeatByIDList(db_session, s3_conn, id_list: list):
 def _deleteSpecificDeepAgingData(db_session, s3_conn, id, seqno):
     # 1. 육류 DB 체크
     meat = db_session.query(Meat).get(id)
+    deep_aging_info = get_DeepAging(db_session, id, seqno)
 
-    if meat is None:
-        return jsonify({"msg": f"No meat data found with the given ID: {id}"}), 404
+    if not (meat and deep_aging_info):
+        return ({"msg": f"No Meat or Deep Aging data found with the given ID and Seqno: {id}, {seqno}", "code": 400})
     try:
-        sensory_evals = (
-            db_session.query(SensoryEval).filter_by(id=id, seqno=seqno).all()
-        )
-        heatedmeat_evals = (
-            db_session.query(HeatedmeatSensoryEval).filter_by(id=id, seqno=seqno).all()
-        )
-        probexpt_datas = (
-            db_session.query(ProbexptData).filter_by(id=id, seqno=seqno).all()
-        )
+        s3_conn.delete_image("heatedmeat_sensory_evals", f"{id}-{seqno}.png")
+        s3_conn.delete_image("sensory_evals", f"{id}-{seqno}.png")
 
-        for heatedmeat_eval in heatedmeat_evals:
-            db_session.delete(heatedmeat_eval)
-            s3_conn.delete_image("heatedmeat_sensory_evals", f"{id}-{seqno}")
-
-        for probexpt_data in probexpt_datas:
-            db_session.delete(probexpt_data)
-
-        for sensory_eval in sensory_evals:
-            db_session.delete(sensory_eval)
-            s3_conn.delete_image("sensory_evals", f"{id}-{seqno}")
+        db_session.delete(deep_aging_info)
 
         db_session.commit()
-        return jsonify({"delete Id": id, "delete Seqno": seqno}), 200
+        return ({"msg": f"{id}-{seqno} Deep Aging Data Has Been Deleted", "code": 200})
     except Exception as e:
         db_session.rollback()
         return e
