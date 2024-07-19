@@ -882,11 +882,11 @@ def _getMeatDataByUserType(db_session, userType):
         result = []
         for meat in meats:
             temp = get_meat(db_session, meat.id)
-            userTemp = get_user(db_session, temp.get("userId"))
-            if userTemp:
-                temp["name"] = userTemp.get("name")
+            user_temp = get_user(db_session, temp.get("userId"))
+            if user_temp:
+                temp["name"] = user_temp.get("name")
             else:
-                temp["name"] = userTemp
+                temp["name"] = user_temp
             del temp["processedmeat"]
             del temp["rawmeat"]
             result.append(temp)

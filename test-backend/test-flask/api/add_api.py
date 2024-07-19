@@ -112,8 +112,6 @@ def add_specific_sensory_eval():
         )
 
 
-# POST일 때는 app - imagePath, createdAt, period 새로 추가
-# PATCH일 때는 app, web - 현재 코드 그대로
 # 특정 육류의 가열육 관능 검사 결과 생성 및 수정
 @add_api.route("/heatedmeat-eval", methods=["POST", "PATCH"])
 def add_specific_heatedmeat_sensory_eval():
