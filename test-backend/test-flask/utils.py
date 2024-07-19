@@ -260,7 +260,7 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
-    bool_cvr = ["alarm"]
+    bool_cvr = ["alarm", "isHeated"]
     if item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
@@ -333,7 +333,7 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
-    bool_cvr = ["alarm"]
+    bool_cvr = ["alarm", "isHeated"]
     if item in datetime1_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 1)
     elif item in datetime2_cvr:
