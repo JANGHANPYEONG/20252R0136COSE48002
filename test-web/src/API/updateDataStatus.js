@@ -3,13 +3,16 @@ import { apiIP } from '../config';
 // 데이터 상태 변경 함수 updateDataStatus를 export
 export default async function updateDataStatus(
   confirmVal,
-  id,
+  meatId,
   setStateChanged
 ) {
   try {
     const response = await fetch(
       //query parameter : confirmVal, id
-      `http://${apiIP}/meat/update/${confirmVal}?id=${id}`
+      `http://${apiIP}/meat/update/${confirmVal}?meatId=${meatId}`,
+      {
+        method: 'PATCH',
+      }
     );
     setStateChanged(true);
 
