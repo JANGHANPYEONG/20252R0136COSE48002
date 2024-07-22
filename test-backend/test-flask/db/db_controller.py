@@ -552,12 +552,11 @@ def get_meat(db_session, id):
         result["deepAgingInfo"].append({
             "date": convert2string(deep_aging_data.date, 2) if sequence != 0 and deep_aging_data else None,
             "minute": deep_aging_data.minute if sequence != 0 and deep_aging_data else None,
-            f"{sequence}":{
-                "sensory_eval": get_SensoryEval(db_session, id, sequence),
-                "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
-                "probexpt_data": get_ProbexptData(db_session, id, sequence, False),
-                "heatedmeat_probexpt_data": get_ProbexptData(db_session, id, sequence, True),
-            }
+            "seqno": f"{sequence}",
+            "sensory_eval": get_SensoryEval(db_session, id, sequence),
+            "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
+            "probexpt_data": get_ProbexptData(db_session, id, sequence, False),
+            "heatedmeat_probexpt_data": get_ProbexptData(db_session, id, sequence, True),
         })
 
     return result
@@ -803,7 +802,7 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            user.createdAt = convert2string(user.createdAt, 0)
+            user.createdAt = convert2string(user.createdAt, 1)
         return users
     except Exception as e:
         raise Exception(str(e))
@@ -812,7 +811,7 @@ def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
-            user_data.createdAt = convert2string(user_data.createdAt, 0)
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
         return user_data
     except Exception as e:
         raise Exception(str(e))
@@ -850,18 +849,33 @@ def _get_users_by_type(db_session):
         raise Exception(str(e))
 
 
-def _getMeatDataByUserId(db_session, userId):
-    meats = db_session.query(Meat).filter_by(userId=userId).all()
-    if meats:
+def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
+    try:
+        start = convert2datetime(start, 0)
+        end = convert2datetime(end, 0)
+        meats = (
+            db_session.query(Meat)
+            .filter(
+                Meat.userId == userId,
+                Meat.createdAt.between(start, end)
+            )
+            .order_by(Meat.createdAt.desc())
+            .offset(offset).limit(count)
+            .all()
+        )
+
         result = []
-        for meat in meats:
-            temp = get_meat(db_session, meat.id)
-            del temp["processedmeat"]
-            del temp["rawmeat"]
-            result.append(temp)
-        return jsonify(result), 200
-    else:
-        return jsonify({"message": "No meats found for the given userId."}), 404
+        if meats:
+            for meat in meats:
+                result.append({
+                    "meatId": meat.id,
+                    "createdAt": convert2string(meat.createdAt, 1),
+                    "statusType": statusType[meat.statusType]
+                })
+            
+        return {"meat_dict": result}
+    except Exception as e:
+        raise Exception(str(e))
 
 
 def _getMeatDataByUserType(db_session, userType):
