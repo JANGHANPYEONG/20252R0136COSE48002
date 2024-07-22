@@ -802,7 +802,7 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            user.createdAt = convert2string(user.createdAt, 0)
+            user.createdAt = convert2string(user.createdAt, 1)
         return users
     except Exception as e:
         raise Exception(str(e))
@@ -811,7 +811,7 @@ def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
-            user_data.createdAt = convert2string(user_data.createdAt, 0)
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
         return user_data
     except Exception as e:
         raise Exception(str(e))
