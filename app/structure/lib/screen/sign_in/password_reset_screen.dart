@@ -16,27 +16,11 @@ class PasswordResetScreen extends StatefulWidget {
 }
 
 class _PasswordResetScreenState extends State<PasswordResetScreen> {
-  late PasswordResetViewModel _viewModel;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _viewModel = context.read<PasswordResetViewModel>();
-  //   _viewModel.email.addListener(_validateInput);
-  // }
-
-  // @override
-  // void dispose() {
-  //   _viewModel.email.removeListener(_validateInput);
-  //   super.dispose();
-  // }
-
-  // void _validateInput() {
-  //   setState(() {});
-  // }
-
   @override
   Widget build(BuildContext context) {
+    PasswordResetViewModel passwordResetViewModel =
+        context.watch<PasswordResetViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
@@ -47,37 +31,36 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
               child: Form(
-                key: context.read<PasswordResetViewModel>().formKey,
+                key: passwordResetViewModel.formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Row(),
                     SizedBox(height: 72.h),
+
                     // 이메일
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
                         child: Text('이메일', style: Palette.fieldTitle)),
                     SizedBox(height: 8.h),
+
                     // 이메일 입력 input field
                     MainInputField(
                       mode: 1,
                       width: 640.w,
-                      formKey: context.read<PasswordResetViewModel>().formKey,
-                      controller: context.read<PasswordResetViewModel>().email,
-                      validateFunc: (value) => context
-                          .read<PasswordResetViewModel>()
-                          .emailValidate(value),
+                      formKey: passwordResetViewModel.formKey,
+                      controller: passwordResetViewModel.email,
+                      validateFunc: (value) =>
+                          passwordResetViewModel.emailValidate(value),
                     ),
                     SizedBox(height: 820.h),
+
                     // 재설정 버튼
                     MainButton(
-                      onPressed:
-                          context.read<PasswordResetViewModel>().isValid()
-                              ? () async => context
-                                  .read<PasswordResetViewModel>()
-                                  .sendResetPassword(context)
-                              : null,
+                      onPressed: passwordResetViewModel.isValid()
+                          ? () async =>
+                              passwordResetViewModel.sendResetPassword(context)
+                          : null,
                       text: '비밀번호 재설정',
                       width: 658.w,
                       height: 96.h,
@@ -88,10 +71,8 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
               ),
             ),
           ),
-          context.watch<PasswordResetViewModel>().isLoading
-              ? const Center(
-                  child: LoadingScreen(),
-                )
+          passwordResetViewModel.isLoading
+              ? const Center(child: LoadingScreen())
               : Container(),
         ],
       ),

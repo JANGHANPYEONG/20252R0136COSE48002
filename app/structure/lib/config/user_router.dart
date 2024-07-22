@@ -46,7 +46,7 @@ import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_m
 import 'package:structure/viewModel/data_management/normal/not_editable/freshmeat_eval_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_info_not_editable_view_model.dart';
-import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/heatedmeat_eval_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
@@ -309,7 +309,7 @@ class UserRouter {
               path: 'data-manage-researcher',
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) =>
-                    DataManagementHomeResearcherViewModel(meatModel, userModel),
+                    DataManagementHomeTabViewModel(meatModel, userModel),
                 child: const DataManagementHomeTabScreen(),
               ),
               routes: [

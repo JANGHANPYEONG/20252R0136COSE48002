@@ -13,14 +13,14 @@ class Usefuls {
   /// yyyy-MM-dd hh:mm:ss
   static String getCurrentDate() {
     DateTime now = DateTime.now();
-    return DateFormat('yyyy-MM-dd hh:mm:ss').format(now);
+    return DateFormat('yyyy-MM-ddThh:mm:ss').format(now);
   }
 
   /// 백엔드에서 전송하는 날짜 string을 DateTime 형식으로 변환하는 함수
   ///
   /// yyyy-MM-dd hh:mm:ss 형식으로 입력
   static DateTime dateStringToDateTime(String dateString) {
-    DateFormat format = DateFormat("yyyy-MM-dd hh:mm:ss");
+    DateFormat format = DateFormat("yyyy-MM-ddThh:mm:ss");
     return format.parse(dateString);
   }
 

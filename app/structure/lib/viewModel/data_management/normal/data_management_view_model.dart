@@ -58,12 +58,45 @@ class DataManagementHomeViewModel with ChangeNotifier {
   String lastDayText = '';
   int indexDay = 0;
 
-  // 초기화 함수.
+  /// 초기화 함수
   Future<void> _initialize() async {
     await _fetchData();
     filterlize();
     isLoading = false;
     notifyListeners();
+  }
+
+  /// 필터 값에 해당하는 육류 정보를 가져오는 함수
+  Future<void> _fetchData() async {
+    try {
+      List<dynamic>? jsonData =
+          await RemoteDataSource.getUserMeatData(userModel.userId!);
+
+      if (jsonData == null) {
+        print('데이터 없음');
+        throw Error();
+      } else {
+        print("getbyuserid사용");
+        // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
+        for (var item in jsonData) {
+          String id = item["id"];
+          String statusType = item["statusType"];
+          String createdAt = item["createdAt"];
+          String dayTime =
+              DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
+          Map<String, String> idStatusPair = {
+            "id": id,
+            "statusType": statusType,
+            "createdAt": createdAt,
+            "dayTime": dayTime,
+          };
+
+          numList.add(idStatusPair);
+        }
+      }
+    } catch (e) {
+      print("에러발생: $e");
+    }
   }
 
   // 필터링 시 호출될 함수
@@ -298,39 +331,6 @@ class DataManagementHomeViewModel with ChangeNotifier {
       insertedText = response;
       _filterStrings(true);
       notifyListeners();
-    }
-  }
-
-  // 데이터 호출
-  Future<void> _fetchData() async {
-    try {
-      List<dynamic>? jsonData =
-          await RemoteDataSource.getUserMeatData(userModel.userId!);
-
-      if (jsonData == null) {
-        print('데이터 없음');
-        throw Error();
-      } else {
-        print("getbyuserid사용");
-        // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
-        for (var item in jsonData) {
-          String id = item["id"];
-          String statusType = item["statusType"];
-          String createdAt = item["createdAt"];
-          String dayTime =
-              DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
-          Map<String, String> idStatusPair = {
-            "id": id,
-            "statusType": statusType,
-            "createdAt": createdAt,
-            "dayTime": dayTime,
-          };
-
-          numList.add(idStatusPair);
-        }
-      }
-    } catch (e) {
-      print("에러발생: $e");
     }
   }
 
