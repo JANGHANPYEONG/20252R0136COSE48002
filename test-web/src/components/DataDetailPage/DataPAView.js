@@ -19,7 +19,7 @@ import { apiIP } from '../../config';
 function DataPAView({ dataProps }) {
   //데이터 받아오기
   const {
-    meatId, // 이력번호
+    id, // 이력번호
     userId, // 로그인한 사용자 id
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
