@@ -29,7 +29,7 @@ function DataConfirmView({ dataProps }) {
 
   //1.dataProps로 부터 properties destruct
   const {
-    id, // 이력번호
+    meatId, // 이력번호
     userId, //로그인한 사용자 id
     createdAt, // 생성 시간
     qrImagePath, // qr 이미지 경로
@@ -65,7 +65,7 @@ function DataConfirmView({ dataProps }) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
+  console.log('propsconfirm', dataProps.meatId);
   //3. 반려/승인 버튼 클릭에 따른 모달 창 컴포넌트 결정
   const [confirmVal, setConfirmVal] = useState(null);
 
@@ -92,7 +92,7 @@ function DataConfirmView({ dataProps }) {
         // 승인 팝업 페이지
         confirmVal === 'confirm' && (
           <AcceptModal
-            id={id}
+            id={meatId}
             confirmVal={confirmVal}
             setConfirmVal={setConfirmVal}
           />
@@ -102,7 +102,7 @@ function DataConfirmView({ dataProps }) {
         // 반려 팝업 페이지
         confirmVal === 'reject' && (
           <RejectModal
-            id={id}
+            id={meatId}
             confirmVal={confirmVal}
             setConfirmVal={setConfirmVal}
           />
@@ -116,7 +116,7 @@ function DataConfirmView({ dataProps }) {
           page={'검토'}
           raw_img_path={raw_img_path}
           processed_img_path={processed_img_path}
-          id={id}
+          id={meatId}
           raw_data={raw_data}
           butcheryYmd={api_data['butcheryYmd']}
           processed_data={processed_data}
@@ -125,7 +125,7 @@ function DataConfirmView({ dataProps }) {
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard
           qrImagePath={qrImagePath}
-          id={id}
+          id={meatId}
           userId={userId}
           createdAt={createdAt}
         />

@@ -9,7 +9,14 @@ export default async function updateDataStatus(
   try {
     const response = await fetch(
       //query parameter : confirmVal, id
-      `http://${apiIP}/meat/update/${confirmVal}?id=${id}`
+      `http://${apiIP}/meat/update/${confirmVal}?meatId=${id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(id),
+      }
     );
     setStateChanged(true);
 

@@ -11,13 +11,13 @@ const navy = '#0F3659';
 export default function AcceptModal({ id, setConfirmVal, confirmVal }) {
   const navigate = useNavigate();
   const location = useLocation();
-
   //화면 창 닫기
   const [open, setOpen] = useState(true);
   const handleClose = () => {
     setOpen(false);
     setConfirmVal(null);
   };
+  console.log('as', id, confirmVal);
 
   // 승인 Api 호출
   const changeConfirmState = () => {
