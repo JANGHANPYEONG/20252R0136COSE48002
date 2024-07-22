@@ -849,18 +849,33 @@ def _get_users_by_type(db_session):
         raise Exception(str(e))
 
 
-def _getMeatDataByUserId(db_session, userId):
-    meats = db_session.query(Meat).filter_by(userId=userId).all()
-    if meats:
+def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
+    try:
+        start = convert2datetime(start, 0)
+        end = convert2datetime(end, 0)
+        meats = (
+            db_session.query(Meat)
+            .filter(
+                Meat.userId == userId,
+                Meat.createdAt.between(start, end)
+            )
+            .order_by(Meat.createdAt.desc())
+            .offset(offset).limit(count)
+            .all()
+        )
+
         result = []
-        for meat in meats:
-            temp = get_meat(db_session, meat.id)
-            del temp["processedmeat"]
-            del temp["rawmeat"]
-            result.append(temp)
-        return jsonify(result), 200
-    else:
-        return jsonify({"message": "No meats found for the given userId."}), 404
+        if meats:
+            for meat in meats:
+                result.append({
+                    "meatId": meat.id,
+                    "createdAt": convert2string(meat.createdAt, 1),
+                    "statusType": statusType[meat.statusType]
+                })
+            
+        return {"meat_dict": result}
+    except Exception as e:
+        raise Exception(str(e))
 
 
 def _getMeatDataByUserType(db_session, userType):
