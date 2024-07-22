@@ -23,20 +23,17 @@ statistic_api = Blueprint("statistic_api", __name__)
 
 
 # 1. 신선육, 숙성육 비율(소, 돼지 전체)
-@statistic_api.route("/ratio/fresh-and-processed", methods=["GET", "POST"])
+@statistic_api.route("/ratio/fresh-and-processed", methods=["GET"])
 def getRatioFreshAndProcessed():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            if start and end:
-                return get_num_of_processed_raw(db_session, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        if start and end:
+            ratio_data = get_num_of_processed_raw(db_session, start, end)
+            return jsonify(ratio_data), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (

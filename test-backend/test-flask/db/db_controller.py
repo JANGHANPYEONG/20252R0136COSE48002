@@ -1231,43 +1231,43 @@ def get_num_of_processed_raw(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
+    # if start is None or end is None:
+    #     return {"msg": "Wrong start or end data", "code": 400}
 
-    # Subquery to find meats which have processed data
     processed_meats_subquery = (
-        db_session.query(Meat.id)
-        .join(SensoryEval)
-        .filter(SensoryEval.seqno > 0)
+        db_session.query(DeepAgingInfo.id)
+        .filter(DeepAgingInfo.seqno > 0)
+        .group_by(DeepAgingInfo.id)
         .subquery()
     )
     processed_meats_select = processed_meats_subquery.select()
 
-    # 1. Category.specieId가 0이면서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
+    # 1. Category.specieId가 0이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
     fresh_cattle_count = (
-        Meat.query.join(CategoryInfo)
+        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 0,
             ~Meat.id.in_(processed_meats_select),
             Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+            Meat.statusType == 2
         )
         .count()
     )
+
     processed_cattle_count = (
-        Meat.query.join(CategoryInfo)
+        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 0,
             Meat.id.in_(processed_meats_select),
             Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+            Meat.statusType == 2
         )
         .count()
     )
 
-    # 2. Category.specieId가 1이면서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
+    # 2. Category.specieId가 1이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
     fresh_pig_count = (
-        Meat.query.join(CategoryInfo)
+        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 1,
             ~Meat.id.in_(processed_meats_select),
@@ -1276,8 +1276,9 @@ def get_num_of_processed_raw(db_session, start, end):
         )
         .count()
     )
+    
     processed_pig_count = (
-        Meat.query.join(CategoryInfo)
+        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 1,
             Meat.id.in_(processed_meats_select),
@@ -1287,39 +1288,42 @@ def get_num_of_processed_raw(db_session, start, end):
         .count()
     )
 
-    # 3. 전체 데이터에서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
-    fresh_meat_count = Meat.query.filter(
-        ~Meat.id.in_(processed_meats_select),
-        Meat.createdAt.between(start, end),
-        Meat.statusType == 2,
-    ).count()
+    # 3. 전체 데이터에서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인인 데이터
+    fresh_meat_count = (
+        db_session.query(Meat)
+        .filter(
+            ~Meat.id.in_(processed_meats_select),
+            Meat.createdAt.between(start, end),
+            Meat.statusType == 2,
+        )
+        .count()
+    )
 
-    processed_meat_count = Meat.query.filter(
-        Meat.id.in_(processed_meats_select),
-        Meat.createdAt.between(start, end),
-        Meat.statusType == 2,
-    ).count()
+    processed_meat_count = (
+        db_session.query(Meat)
+        .filter(
+            Meat.id.in_(processed_meats_select),
+            Meat.createdAt.between(start, end),
+            Meat.statusType == 2,
+        )
+        .count()
+    )
 
     # Returning the counts in JSON format
-    return (
-        jsonify(
-            {
-                "cattle_counts": {
-                    "raw": fresh_cattle_count,
-                    "processed": processed_cattle_count,
-                },
-                "pig_counts": {
-                    "raw": fresh_pig_count,
-                    "processed": processed_pig_count,
-                },
-                "total_counts": {
-                    "raw": fresh_meat_count,
-                    "processed": processed_meat_count,
-                },
-            }
-        ),
-        200,
-    )
+    return ({
+        "cattle_counts": {
+            "raw": fresh_cattle_count,
+            "processed": processed_cattle_count,
+        },
+        "pig_counts": {
+            "raw": fresh_pig_count,
+            "processed": processed_pig_count,
+        },
+        "total_counts": {
+            "raw": fresh_meat_count,
+            "processed": processed_meat_count,
+        }
+    })
 
 
 def get_num_of_cattle_pig(db_session, start, end):
