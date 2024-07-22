@@ -13,7 +13,7 @@ class Usefuls {
   /// yyyy-MM-dd hh:mm:ss
   static String getCurrentDate() {
     DateTime now = DateTime.now();
-    return DateFormat('yyyy-MM-dd hh:mm:ss').format(now);
+    return DateFormat('yyyy-MM-ddThh:mm:ss').format(now);
   }
 
   /// 백엔드에서 전송하는 날짜 string을 DateTime 형식으로 변환하는 함수

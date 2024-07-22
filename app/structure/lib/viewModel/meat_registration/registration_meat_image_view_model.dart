@@ -182,7 +182,7 @@ class RegistrationMeatImageViewModel with ChangeNotifier {
         meatModel.sensoryEval!['userId'] = userModel.userId;
         meatModel.sensoryEval!['userName'] = userModel.name;
         meatModel.sensoryEval!['imagePath'] = imgPath;
-        // meatModel.sensoryEval!['filmedAt'] = Usefuls.getCurrentDate(); TODO
+        meatModel.sensoryEval!['filmedAt'] = Usefuls.getCurrentDate();
         meatModel.sensoryEval!['seqno'] = 0;
       }
 

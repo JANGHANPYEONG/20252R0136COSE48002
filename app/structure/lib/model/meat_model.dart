@@ -221,7 +221,7 @@ class MeatModel with ChangeNotifier {
       'userId': sensoryEval!['userId'],
       'seqno': sensoryEval!['seqno'],
       'imgAdded': imgAdded,
-      // 'filmedAt': sensoryEval!['filmedAt'],
+      'filmedAt': sensoryEval!['filmedAt'],
       'sensoryData': {
         'marbling': sensoryEval!['marbling'],
         'color': sensoryEval!['color'],
@@ -458,8 +458,8 @@ class MeatModel with ChangeNotifier {
     /* 육류 기본 정보 */
     meatId = null;
     createdAt = null;
-    userId = null;
-    userName = null;
+    // userId = null;
+    // userName = null;
     statusType = null;
     imagePath = null;
     primalValue = null;
