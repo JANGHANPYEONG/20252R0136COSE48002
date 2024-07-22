@@ -70,7 +70,7 @@ export default function dataProcessing(items) {
   // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육으로
   let processedData = [];
   let heatedData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_sensory_eval || {} : {}];
-  let labData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_probexpt_data || {} : {}];
+  let labData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].probexpt_data || {} : {}];
   let processedMinute = [];
 
   // 데이터 처리 횟수 parsing ex) 1회, 2회 ,...
@@ -92,7 +92,7 @@ export default function dataProcessing(items) {
       ];
       labData = [
         ...labData,
-        items.deepAgingInfo[i][i].heatedmeat_probexpt_data || {},
+        items.deepAgingInfo[i][i].probexpt_data || {},
       ];
       processedMinute = [
         ...processedMinute,
@@ -121,5 +121,6 @@ export default function dataProcessing(items) {
     processed_minute: processedMinute,
     processed_img_path: processedDataImgPath,
   };
+  
   return data;
 }

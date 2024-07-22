@@ -5,9 +5,6 @@ export default async function updateHeatedData(
   data, // 가열육 데이터
   i, // 가열육 seqno
   meatId, // 이력번호
-  createdDate, // 생성 날짜
-  userId, // 로그인한 사용자 id
-  elapsedHour // 경과 시간
 ) {
   const dataset = {
     ['flavor']: parseFloat(data.flavor),
@@ -28,10 +25,9 @@ export default async function updateHeatedData(
     //["userId"]: userId,
     ['seqno']: i,
     //["period"]: Math.round(elapsedHour),
-    //['filmedAt']: '2024-07-07 12:12:12',
+    ['filmedAt']: '2024-07-07T12:12:12',
     ['imgAdded']: false,
   };
-  console.log('req:', req, 'meatId:',meatId);
 
   //meat/add/heatedmeat-eval로 수정 API 전송
   try {
