@@ -552,12 +552,11 @@ def get_meat(db_session, id):
         result["deepAgingInfo"].append({
             "date": convert2string(deep_aging_data.date, 2) if sequence != 0 and deep_aging_data else None,
             "minute": deep_aging_data.minute if sequence != 0 and deep_aging_data else None,
-            f"{sequence}":{
-                "sensory_eval": get_SensoryEval(db_session, id, sequence),
-                "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
-                "probexpt_data": get_ProbexptData(db_session, id, sequence, False),
-                "heatedmeat_probexpt_data": get_ProbexptData(db_session, id, sequence, True),
-            }
+            "seqno": f"{sequence}",
+            "sensory_eval": get_SensoryEval(db_session, id, sequence),
+            "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
+            "probexpt_data": get_ProbexptData(db_session, id, sequence, False),
+            "heatedmeat_probexpt_data": get_ProbexptData(db_session, id, sequence, True),
         })
 
     return result
