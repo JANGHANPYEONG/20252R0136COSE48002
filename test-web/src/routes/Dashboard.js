@@ -20,7 +20,6 @@ import { useLocation } from 'react-router-dom';
 import SearchById from '../components/DataListView/SearchById';
 import DataSingle from '../components/DataListView/DataSingle';
 
-
 const navy = '#0F3659';
 
 function Dashboard() {
@@ -87,6 +86,7 @@ function Dashboard() {
     const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
+
     const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
@@ -224,7 +224,13 @@ function Dashboard() {
             paddingRight: '85px',
           }}
         >
-          {(value === 'list' || value === 'single') && <ExcelController startDate = {startDate} endDate = {endDate} specieValue = {specieValue} />}
+          {(value === 'list' || value === 'single') && (
+            <ExcelController
+              startDate={startDate}
+              endDate={endDate}
+              specieValue={specieValue}
+            />
+          )}
           {value === 'stat' && <StatsExport />}
         </div>
       </Box>
@@ -236,7 +242,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
-          specieValue = {specieValue}
+          specieValue={specieValue}
         />
       )}
       {value === 'stat' && (
@@ -251,7 +257,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
-          specieValue = {specieValue}
+          specieValue={specieValue}
         />
       )}
     </div>

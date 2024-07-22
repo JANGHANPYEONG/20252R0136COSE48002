@@ -75,7 +75,6 @@ function DataList({
       setCheckItems([]);
     }
   };
-
   // 테이블 헤더
   function OrderTableHead({ order, orderBy }) {
     return (
