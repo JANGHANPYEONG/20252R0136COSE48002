@@ -30,7 +30,7 @@ const DataLoad = ({ id, page }) => {
       </div>
     );
   if (isError) return null; //경고 컴포넌트
-  console.log("detail",detailData)
+
 
   return (
     <>
