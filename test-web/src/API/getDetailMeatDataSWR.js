@@ -27,7 +27,6 @@ export const useDetailMeatDataFetch = (id) => {
     //fetcher 함수 사용
     fetcher
   );
-  console.log(data);
   //fetched data, loading state, error를 포함한 object 반환
   return {
     data,

@@ -81,6 +81,7 @@ const labField = [
   'bitterness',
   'umami',
   'richness',
+  'Collagen',
 ];
 const labDBFieldToSemanticWord = {
   L: '명도',
@@ -97,4 +98,5 @@ const labDBFieldToSemanticWord = {
   bitterness: '진한맛',
   umami: '감칠맛',
   richness: '후미',
+  collagen: '콜라겐',
 };

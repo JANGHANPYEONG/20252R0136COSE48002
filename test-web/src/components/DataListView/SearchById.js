@@ -20,7 +20,7 @@ function SearchById({ onDataFetch, onValueChange }) {
       const data = await response.json();
       onDataFetch(data);
       onValueChange('single');
-      console.log(data)
+
     } catch (error) {
       console.error('Error fetching data:', error);
       onDataFetch(null); // 에러 발생 시 데이터 초기화
