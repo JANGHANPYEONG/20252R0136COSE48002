@@ -39,7 +39,7 @@ class MeatModel with ChangeNotifier {
   /// seqno가 0일 경우 원육, 1 이상일 경우 처리육
   ///
   /// sensory_eval, heated_meat_sensory_eval, probexpt_data, heated_probexpt_data로 구성
-  List<Map<String, dynamic>>? deepAgingInfo;
+  List<dynamic>? deepAgingInfo;
 
   /// 관능평가 데이터
   ///
@@ -75,6 +75,11 @@ class MeatModel with ChangeNotifier {
   /// imagePath, imgAdded
   bool rawImageCompleted = false;
 
+  /// 원육 관능평가 등록 완료 여부
+  ///
+  /// marbling, color, texture, surfaceMoisture, overall
+  bool rawSensoryCompleted = false;
+
   // 미완료
   // 육류 이미지 경로
   String? deepAgedImage;
@@ -95,11 +100,9 @@ class MeatModel with ChangeNotifier {
   Map<String, dynamic>? rawmeat;
 
   // 외부 데이터 입력 완료 체크
-  bool? rawmeatDataComplete;
+  bool rawmeatDataComplete = false;
   Map<String, dynamic>? processedmeatDataComplete;
-
   bool deepAgedImageCompleted = false;
-  bool rawSensoryCompleted = false;
   bool deepAgedFreshCompleted = false;
   bool heatedCompleted = false;
   bool tongueCompleted = false;
@@ -140,7 +143,6 @@ class MeatModel with ChangeNotifier {
     this.rawmeat,
 
     // // 데이터 입력 완료시 저장
-    this.rawmeatDataComplete,
     this.processedmeatDataComplete,
   });
 
@@ -234,55 +236,65 @@ class MeatModel with ChangeNotifier {
 
   // Data fetch
   void fromJson(Map<String, dynamic> jsonData) {
+    reset(); // 데이터 받아올 때는 항상 초기화 먼저
+
     meatId = jsonData['meatId'];
-    userName = jsonData['userId'];
     createdAt = jsonData['createdAt'];
-    traceNum = jsonData['traceNum'];
-    farmAddr = jsonData['farmAddr'];
-    farmerName = jsonData['farmerNm'];
-    butcheryYmd = jsonData['butcheryYmd'];
-    birthYmd = jsonData['birthYmd'];
-    sexType = jsonData['sexType'];
-    gradeNum = jsonData['gradeNum'];
-    speciesValue = jsonData['specieValue'];
+    userId = jsonData['userId'];
+    userName = jsonData['userName'];
+    statusType = jsonData['statusType'];
+    imagePath = jsonData['imagePath'];
     primalValue = jsonData['primalValue'];
     secondaryValue = jsonData['secondaryValue'];
-    imagePath = jsonData['rawmeat']['sensory_eval']['imagePath'];
-    // deepAgedImage = jsonData['deepAgedImage'];
+    traceNum = jsonData['traceNum'];
+    farmerName = jsonData['farmerName'];
+    farmAddr = jsonData['farmAddr'];
+    butcheryYmd = jsonData['butcheryYmd'];
+    speciesValue = jsonData['specieValue'];
+    sexType = jsonData['sexType'];
+    gradeNum = jsonData['gradeNum'];
+    birthYmd = jsonData['birthYmd'];
 
-    freshmeat = jsonData['rawmeat']['sensory_eval'];
-    // deepAgedFreshmeat = jsonData['deepAgedFreshmeat'];
-    statusType = jsonData['statusType'];
+    deepAgingInfo = jsonData['deepAgingInfo'];
 
-    // 딥에이징 데이터 입력시 저장
-    // heatedmeat = jsonData['heatedmeat'];
-    // tongueData = jsonData['tongueData'];
-    // labData = jsonData['labData'];
+    // 아마 이 이후는 지워도 될듯?
 
-    // 데이터 fetch 시 저장
-    processedmeat = jsonData['processedmeat'];
-    rawmeat = jsonData['rawmeat'];
+    // // sensoryEval = jsonData['deepAgingInfo'];
 
-    // 데이터 입력 완료시 저장
-    rawmeatDataComplete = jsonData['rawmeat_data_complete'];
-    // rawmeatDataComplete = jsonData['rawmeat_data_complete'] ? true : false;
-    processedmeatDataComplete = jsonData['processedmeat_data_complete'] == false
-        ? {}
-        : jsonData['processedmeat_data_complete'];
+    // // deepAgedImage = jsonData['deepAgedImage'];
 
-    // 딥에이징 데이터
-    deepAgingData = [];
+    // freshmeat = jsonData['rawmeat']['sensory_eval'];
+    // // deepAgedFreshmeat = jsonData['deepAgedFreshmeat'];
 
-    if (processedmeat != null && processedmeat!.isNotEmpty) {
-      processedmeat!.forEach((key, value) {
-        deepAgingData!.add({
-          'deepAgingNum': key,
-          'date': value['sensory_eval']['deepaging_data']['date'],
-          'minute': value['sensory_eval']['deepaging_data']['minute'],
-          'complete': processedmeatDataComplete![key]
-        });
-      });
-    }
+    // // 딥에이징 데이터 입력시 저장
+    // // heatedmeat = jsonData['heatedmeat'];
+    // // tongueData = jsonData['tongueData'];
+    // // labData = jsonData['labData'];
+
+    // // 데이터 fetch 시 저장
+    // processedmeat = jsonData['processedmeat'];
+    // rawmeat = jsonData['rawmeat'];
+
+    // // 데이터 입력 완료시 저장
+    // rawmeatDataComplete = jsonData['rawmeat_data_complete'];
+    // // rawmeatDataComplete = jsonData['rawmeat_data_complete'] ? true : false;
+    // processedmeatDataComplete = jsonData['processedmeat_data_complete'] == false
+    //     ? {}
+    //     : jsonData['processedmeat_data_complete'];
+
+    // // 딥에이징 데이터
+    // deepAgingData = [];
+
+    // if (processedmeat != null && processedmeat!.isNotEmpty) {
+    //   processedmeat!.forEach((key, value) {
+    //     deepAgingData!.add({
+    //       'deepAgingNum': key,
+    //       'date': value['sensory_eval']['deepaging_data']['date'],
+    //       'minute': value['sensory_eval']['deepaging_data']['minute'],
+    //       'complete': processedmeatDataComplete![key]
+    //     });
+    //   });
+    // }
 
     // 완료 체크
     if (traceNum != null && speciesValue != null && secondaryValue != null) {
@@ -446,6 +458,8 @@ class MeatModel with ChangeNotifier {
     /* 육류 기본 정보 */
     meatId = null;
     createdAt = null;
+    userId = null;
+    userName = null;
     statusType = null;
     imagePath = null;
     primalValue = null;
@@ -470,6 +484,7 @@ class MeatModel with ChangeNotifier {
     /* 데이터 입력 완료 확인 */
     basicCompleted = false;
     rawImageCompleted = false;
+    rawSensoryCompleted = false;
 
     //
 
@@ -488,12 +503,12 @@ class MeatModel with ChangeNotifier {
     rawmeat = null;
 
     // // 데이터 입력 완료시 저장
-    rawmeatDataComplete = null;
+    rawmeatDataComplete = false;
     processedmeatDataComplete = null;
 
     // 내부 데이터 입력 완료 체크
     deepAgedImageCompleted = false;
-    rawSensoryCompleted = false;
+
     deepAgedFreshCompleted = false;
     heatedCompleted = false;
     tongueCompleted = false;

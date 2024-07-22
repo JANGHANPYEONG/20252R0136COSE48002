@@ -20,7 +20,7 @@ class Usefuls {
   ///
   /// yyyy-MM-dd hh:mm:ss 형식으로 입력
   static DateTime dateStringToDateTime(String dateString) {
-    DateFormat format = DateFormat("yyyy-MM-dd hh:mm:ss");
+    DateFormat format = DateFormat("yyyy-MM-ddThh:mm:ss");
     return format.parse(dateString);
   }
 

@@ -25,23 +25,18 @@ class DataAddHomeViewModel with ChangeNotifier {
   // 필드 값 표현 변수
   String userName = '-';
   String butcheryDate = '-';
-  String species = '-';
+  String speciesValue = '-';
   String secondary = '-';
 
   String total = '-';
 
   // 초기 값 할당 (육류 정보 데이터)
   void _initialize() async {
-    if (meatModel.userName != null) {
-      dynamic user = await RemoteDataSource.getUserInfo(meatModel.userName!);
-      userName = user['name'];
-    } else {
-      userName = '-';
-    }
-
+    userName = meatModel.userName ?? '-';
     butcheryDate = meatModel.butcheryYmd ?? '-';
-    species = meatModel.speciesValue ?? '-';
+    speciesValue = meatModel.speciesValue ?? '-';
     secondary = meatModel.secondaryValue ?? '-';
+
     _setTotal();
 
     notifyListeners();
@@ -101,11 +96,12 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   // 처리육 총 결산
   void _setTotal() {
-    int totalMinutes = meatModel.deepAgingData!
-        .map((item) => item['minute'] as int)
-        .fold(0, (sum, minute) => sum + minute);
+    int totalMinutes = meatModel.deepAgingInfo!
+        .map((item) => item['minute'] as int?)
+        .where((minute) => minute != null)
+        .fold(0, (sum, minute) => sum + (minute ?? 0));
 
-    total = '${meatModel.deepAgingData!.length}회 / $totalMinutes분';
+    total = '${meatModel.deepAgingInfo!.length}회 / $totalMinutes분';
   }
 
   // 원육 필드를 누를 때 작동 : 데이터 할당

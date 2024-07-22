@@ -24,10 +24,13 @@ class DataAddHome extends StatefulWidget {
 class _DataAddHomeState extends State<DataAddHome> {
   @override
   Widget build(BuildContext context) {
+    DataAddHomeViewModel dataAddHomeViewModel =
+        context.watch<DataAddHomeViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: context.read<DataAddHomeViewModel>().meatModel.meatId!,
+        title: dataAddHomeViewModel.meatModel.meatId!,
         backButton: true,
         closeButton: false,
       ),
@@ -44,7 +47,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                 children: [
                   Text('원육', style: Palette.h3),
                   Text(
-                    context.read<DataAddHomeViewModel>().userName,
+                    dataAddHomeViewModel.userName,
                     style: Palette.h5,
                   ),
                 ],
@@ -56,16 +59,12 @@ class _DataAddHomeState extends State<DataAddHome> {
                 height: 133.h,
                 // 원육에 대한 추가데이터.
                 child: OutlinedButton(
-                  onPressed: () => context
-                      .read<DataAddHomeViewModel>()
-                      .clickedRawMeat(context),
+                  onPressed: () => dataAddHomeViewModel.clickedRawMeat(context),
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(15.r),
                     ),
-                    side: const BorderSide(
-                      color: Color(0xFFEAEAEA),
-                    ),
+                    side: const BorderSide(color: Color(0xFFEAEAEA)),
                   ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -79,19 +78,19 @@ class _DataAddHomeState extends State<DataAddHome> {
                             children: [
                               // 도축 날짜
                               Text(
-                                  context
-                                      .read<DataAddHomeViewModel>()
-                                      .butcheryDate,
-                                  style: Palette.h5Grey),
+                                dataAddHomeViewModel.butcheryDate,
+                                style: Palette.h5Grey,
+                              ),
                               SizedBox(height: 15.h),
 
                               // 종 > 부위
                               Text(
-                                "${context.read<DataAddHomeViewModel>().species} > ${context.read<DataAddHomeViewModel>().secondary}",
+                                '${dataAddHomeViewModel.speciesValue} > ${dataAddHomeViewModel.secondary}',
                                 style: TextStyle(
-                                    fontSize: 36.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black),
+                                  fontSize: 36.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black,
+                                ),
                               ),
                             ],
                           ),
@@ -110,19 +109,15 @@ class _DataAddHomeState extends State<DataAddHome> {
 
                               // 원육 데이터의 모든 데이터 입력 확인.
                               Text(
-                                context
-                                        .read<DataAddHomeViewModel>()
-                                        .meatModel
-                                        .rawmeatDataComplete!
+                                dataAddHomeViewModel
+                                        .meatModel.rawmeatDataComplete
                                     ? '완료'
                                     : '미완료',
                                 style: TextStyle(
                                   fontSize: 28.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: context
-                                          .read<DataAddHomeViewModel>()
-                                          .meatModel
-                                          .rawmeatDataComplete!
+                                  color: dataAddHomeViewModel
+                                          .meatModel.rawmeatDataComplete
                                       ? const Color.fromARGB(255, 56, 197, 95)
                                       : const Color.fromARGB(255, 255, 73, 73),
                                 ),
@@ -154,48 +149,39 @@ class _DataAddHomeState extends State<DataAddHome> {
               SizedBox(
                 height: 450.h,
                 // 딥에이징 추가 데이터 입력 (DeepAgingCard 컴포넌트 사용) - 클릭 | 삭제 시 대응되는 함수 호출
-                child: context.watch<DataAddHomeViewModel>().isLoading
+                child: dataAddHomeViewModel.isLoading
                     ? const Center(child: LoadingScreen())
                     : ListView.builder(
-                        itemCount: context
-                            .read<DataAddHomeViewModel>()
-                            .meatModel
-                            .deepAgingData!
-                            .length,
+                        itemCount: dataAddHomeViewModel
+                            .meatModel.deepAgingInfo!.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: DeepAgingCard(
-                              deepAgingNum: context
-                                  .read<DataAddHomeViewModel>()
-                                  .meatModel
-                                  .deepAgingData![index]["deepAgingNum"],
-                              minute: context
-                                  .read<DataAddHomeViewModel>()
-                                  .meatModel
-                                  .deepAgingData![index]["minute"],
-                              butcheryDate: context
-                                  .read<DataAddHomeViewModel>()
-                                  .meatModel
-                                  .deepAgingData![index]["date"],
-                              completed: context
-                                  .read<DataAddHomeViewModel>()
-                                  .meatModel
-                                  .deepAgingData![index]["complete"],
-                              onTap: () async => context
-                                  .read<DataAddHomeViewModel>()
+                              // TODO : API 수정 후 수정
+                              deepAgingNum: '1',
+                              // dataAddHomeViewModel
+                              //     .meatModel.deepAgingInfo![index],
+                              minute: 1,
+                              // dataAddHomeViewModel
+                              //     .meatModel.deepAgingInfo![index]['minute'],
+                              butcheryDate: '',
+                              // dataAddHomeViewModel
+                              //     .meatModel.deepAgingInfo![index]['date'],
+                              completed: false,
+                              // dataAddHomeViewModel
+                              //     .meatModel.deepAgingInfo![index]['complete'],
+                              onTap: () async => dataAddHomeViewModel
                                   .clickedProcessedMeat(index, context),
-                              delete: () async => context
-                                  .read<DataAddHomeViewModel>()
-                                  .deleteList(index),
+                              delete: () async =>
+                                  dataAddHomeViewModel.deleteList(index),
                             ),
                           );
                         },
                       ),
               ),
-              SizedBox(
-                height: 50.h,
-              ),
+              SizedBox(height: 50.h),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -204,11 +190,10 @@ class _DataAddHomeState extends State<DataAddHome> {
                     width: 588.w,
                     child: InkWell(
                       // 딥에이징 추가 데이터 추가
-                      onTap: () => context
-                          .read<DataAddHomeViewModel>()
-                          .addDeepAgingData(context),
+                      onTap: () =>
+                          dataAddHomeViewModel.addDeepAgingData(context),
                       child: DottedBorder(
-                        radius: Radius.circular(20.sp),
+                        radius: Radius.circular(20.r),
                         borderType: BorderType.RRect,
                         color: Palette.notEditableBg,
                         strokeWidth: 2.sp,
@@ -227,17 +212,13 @@ class _DataAddHomeState extends State<DataAddHome> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 30.h,
-              ),
+              SizedBox(height: 30.h),
               const Divider(
                 height: 0,
                 thickness: 0.8,
                 color: Color(0xFFEAEAEA),
               ),
-              SizedBox(
-                height: 5.h,
-              ),
+              SizedBox(height: 5.h),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -249,7 +230,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                         style: Palette.h4,
                       ),
                       Text(
-                        context.watch<DataAddHomeViewModel>().total,
+                        dataAddHomeViewModel.total,
                         textAlign: TextAlign.center,
                         style: Palette.h3Green,
                       ),
