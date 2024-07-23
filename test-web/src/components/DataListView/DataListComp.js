@@ -21,10 +21,9 @@ const DataListComp = ({
   // 한 페이지당 보여줄 개수
   const [count, setCount] = useState(5);
 
-
   // API fetch 데이터 전처리
   const processMeatDatas = (data) => {
-    if (!data || !data['DB Total len'] || !data.id_list || !data.meat_dict) {
+    if (!data || !data.id_list || !data.meat_dict) {
       console.error('올바르지 않은 데이터 형식:', data);
       return;
     }
