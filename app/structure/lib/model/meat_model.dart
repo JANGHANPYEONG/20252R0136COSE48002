@@ -297,24 +297,7 @@ class MeatModel with ChangeNotifier {
     // }
 
     // 완료 체크
-    if (traceNum != null && speciesValue != null && secondaryValue != null) {
-      basicCompleted = true;
-    }
-    if (imagePath != null) {
-      rawImageCompleted = true;
-    }
-    if (freshmeat?['marbling'] != null &&
-        freshmeat?['marbling'] != 0 &&
-        freshmeat?['color'] != null &&
-        freshmeat?['color'] != 0 &&
-        freshmeat?['texture'] != null &&
-        freshmeat?['texture'] != 0 &&
-        freshmeat?['surfaceMoisture'] != null &&
-        freshmeat?['surfaceMoisture'] != 0 &&
-        freshmeat?['overall'] != null &&
-        freshmeat?['overall'] != 0) {
-      rawSensoryCompleted = true;
-    }
+    checkCompleted();
   }
 
   // 추가 데이터 할당
