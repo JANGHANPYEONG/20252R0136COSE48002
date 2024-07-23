@@ -1715,129 +1715,129 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
     return stats
 
 
-def get_sensory_of_processedmeat(db_session, seqno, start, end):
-    # 기간 설정
-    start = convert2datetime(start, 0)  # Start Time
-    end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
+# def get_sensory_of_processedmeat(db_session, seqno, start, end):
+#     # 기간 설정
+#     start = convert2datetime(start, 0)  # Start Time
+#     end = convert2datetime(end, 0)  # End Time
+#     if start is None or end is None:
+#         return jsonify({"msg": "Wrong start or end data"}), 404
 
-    stats = {}
-    seqno = safe_int(seqno)
-    if seqno:
-        # 각 필드의 평균값, 최대값, 최소값 계산
-        for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
-            avg = (
-                db_session.query(func.avg(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno == seqno,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
-            max_value = (
-                db_session.query(func.max(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno == seqno,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
-            min_value = (
-                db_session.query(func.min(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno == seqno,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
+#     stats = {}
+#     seqno = safe_int(seqno)
+#     if seqno:
+#         # 각 필드의 평균값, 최대값, 최소값 계산
+#         for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
+#             avg = (
+#                 db_session.query(func.avg(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno == seqno,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
+#             max_value = (
+#                 db_session.query(func.max(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno == seqno,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
+#             min_value = (
+#                 db_session.query(func.min(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno == seqno,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
 
-            # 실제로 존재하는 값들 찾기
-            unique_values_query = (
-                db_session.query(getattr(SensoryEval, field))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno == seqno,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .distinct()
-            )
-            unique_values = [
-                value[0] for value in unique_values_query.all() if value[0] is not None
-            ]
+#             # 실제로 존재하는 값들 찾기
+#             unique_values_query = (
+#                 db_session.query(getattr(SensoryEval, field))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno == seqno,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .distinct()
+#             )
+#             unique_values = [
+#                 value[0] for value in unique_values_query.all() if value[0] is not None
+#             ]
 
-            stats[field] = {
-                "avg": avg,
-                "max": max_value,
-                "min": min_value,
-                "unique_values": (
-                    sorted(unique_values) if unique_values else unique_values
-                ),
-            }
-    else:
-        # 각 필드의 평균값, 최대값, 최소값 계산
-        for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
-            avg = (
-                db_session.query(func.avg(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno != 0,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
-            max_value = (
-                db_session.query(func.max(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno != 0,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
-            min_value = (
-                db_session.query(func.min(getattr(SensoryEval, field)))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno != 0,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .scalar()
-            )
+#             stats[field] = {
+#                 "avg": avg,
+#                 "max": max_value,
+#                 "min": min_value,
+#                 "unique_values": (
+#                     sorted(unique_values) if unique_values else unique_values
+#                 ),
+#             }
+#     else:
+#         # 각 필드의 평균값, 최대값, 최소값 계산
+#         for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
+#             avg = (
+#                 db_session.query(func.avg(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno != 0,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
+#             max_value = (
+#                 db_session.query(func.max(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno != 0,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
+#             min_value = (
+#                 db_session.query(func.min(getattr(SensoryEval, field)))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno != 0,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .scalar()
+#             )
 
-            # 실제로 존재하는 값들 찾기
-            unique_values_query = (
-                db_session.query(getattr(SensoryEval, field))
-                .join(Meat, Meat.id == SensoryEval.id)
-                .filter(
-                    SensoryEval.seqno != 0,
-                    Meat.createdAt.between(start, end),
-                    Meat.statusType == 2,
-                )
-                .distinct()
-            )
-            unique_values = [
-                value[0] for value in unique_values_query.all() if value[0] is not None
-            ]
+#             # 실제로 존재하는 값들 찾기
+#             unique_values_query = (
+#                 db_session.query(getattr(SensoryEval, field))
+#                 .join(Meat, Meat.id == SensoryEval.id)
+#                 .filter(
+#                     SensoryEval.seqno != 0,
+#                     Meat.createdAt.between(start, end),
+#                     Meat.statusType == 2,
+#                 )
+#                 .distinct()
+#             )
+#             unique_values = [
+#                 value[0] for value in unique_values_query.all() if value[0] is not None
+#             ]
 
-            stats[field] = {
-                "avg": avg,
-                "max": max_value,
-                "min": min_value,
-                "unique_values": sorted(unique_values),
-            }
+#             stats[field] = {
+#                 "avg": avg,
+#                 "max": max_value,
+#                 "min": min_value,
+#                 "unique_values": sorted(unique_values),
+#             }
 
-    return jsonify(stats)
+#     return jsonify(stats)
 
 
 def get_sensory_of_raw_heatedmeat(db_session, start, end):
