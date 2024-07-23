@@ -31,6 +31,13 @@ class Usefuls {
     return DateFormat("yyyy-MM-ddThh:mm:ss").format(dateTime);
   }
 
+  /// yyyy-MM-dd 형식의 날짜를 yyyy.MM.ddThh:mm:ss로 변환
+  static String dateShortToDateLong(String dateString) {
+    DateFormat format = DateFormat("yyyy.MM.dd");
+    final temp = format.parse(dateString);
+    return dateTimeToDateString(temp);
+  }
+
   /// yyyy-MM-ddThh:mm:ss 형식의 날짜를 yyyy.MM.dd 형식으로 파싱
   static String parseDate(String? inputDate) {
     if (inputDate == null) return '-';
@@ -63,7 +70,7 @@ class Usefuls {
   static int calculateDateDifference(String targetDate) {
     // 현재 로컬 시간 구하기
     DateTime now = DateTime.now();
-    // createdAt 시간 구하기
+    // 계산 할 시간 구하기
     DateTime targetDateTime = dateStringToDateTime(targetDate);
 
     // 두 날짜의 차이 계산

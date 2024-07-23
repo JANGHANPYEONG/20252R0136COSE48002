@@ -246,9 +246,10 @@ class UserRouter {
                 GoRoute(
                   path: 'edit',
                   builder: (context, state) => ChangeNotifierProvider(
-                      create: (context) =>
-                          EditMeatDataViewModel(meatModel, userModel),
-                      child: const EditMeatDataScreen()),
+                    create: (context) =>
+                        EditMeatDataViewModel(meatModel, userModel),
+                    child: const EditMeatDataScreen(),
+                  ),
                   routes: [
                     // 수정불가
                     GoRoute(

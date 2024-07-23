@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:structure/components/get_qr.dart';
+import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/main.dart';
 import 'package:structure/model/user_model.dart';
@@ -12,7 +13,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
     _initialize();
   }
   // 초기 리스트
-  List<Map<String, String>> numList = [];
+  List<Map<String, String>> entireList = [];
 
   // 필터링된 리스트
   List<Map<String, String>> filteredList = [];
@@ -69,33 +70,34 @@ class DataManagementHomeViewModel with ChangeNotifier {
   /// 필터 값에 해당하는 육류 정보를 가져오는 함수
   Future<void> _fetchData() async {
     try {
-      List<dynamic>? jsonData =
+      // userId에 해당하는 육류 데이터 호출
+      final response =
           await RemoteDataSource.getUserMeatData(userModel.userId!);
 
-      if (jsonData == null) {
-        print('데이터 없음');
-        throw Error();
-      } else {
-        print("getbyuserid사용");
-        // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
-        for (var item in jsonData) {
-          String id = item["id"];
-          String statusType = item["statusType"];
-          String createdAt = item["createdAt"];
-          String dayTime =
-              DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
-          Map<String, String> idStatusPair = {
-            "id": id,
-            "statusType": statusType,
-            "createdAt": createdAt,
-            "dayTime": dayTime,
-          };
+      if (response is Map<String, dynamic>) {
+        List<dynamic> jsonData = response['meat_dict'];
 
-          numList.add(idStatusPair);
+        if (jsonData.isEmpty) {
+          throw ErrorDescription('Empty list');
+        } else {
+          // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
+          for (Map<String, dynamic> item in jsonData) {
+            String meatId = item['meatId'];
+            String statusType = item['statusType'];
+            String createdAt = Usefuls.parseDate(item['createdAt']);
+
+            Map<String, String> idStatusPair = {
+              'meatId': meatId,
+              'statusType': statusType,
+              'createdAt': createdAt,
+            };
+
+            entireList.add(idStatusPair);
+          }
         }
       }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint('Error: $e');
     }
   }
 
@@ -274,8 +276,8 @@ class DataManagementHomeViewModel with ChangeNotifier {
   // 정렬 방식 입력에 따라 필터링
   void sortUserData() {
     filteredList.sort((a, b) {
-      DateTime dateA = DateTime.parse(a["createdAt"]!);
-      DateTime dateB = DateTime.parse(b["createdAt"]!);
+      DateTime dateA = DateFormat('yyyy.MM.dd').parse(a['createdAt']!);
+      DateTime dateB = DateFormat('yyyy.MM.dd').parse(b['createdAt']!);
       if (sortSelectedIdx == 1) {
         return dateA.compareTo(dateB);
       } else {
@@ -287,29 +289,25 @@ class DataManagementHomeViewModel with ChangeNotifier {
 
   // 날짜 필터 입력에 따라 필터링
   void setDay() {
-    filteredList = numList;
+    filteredList = entireList;
     if (dateSelectedIdx == 0) {
-      print('3일');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
         return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
-      print('1개월');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
         return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
-      print('3개월');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
         return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
-      print('직접설정');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
         return dateTime.isAfter(DateTime(
                 firstDay!.year, firstDay!.month, firstDay!.day, 0, 0, 0, 0)) &&
             dateTime.isBefore(DateTime(
@@ -355,22 +353,26 @@ class DataManagementHomeViewModel with ChangeNotifier {
 
   // 데이터 필드를 클릭 시에 호출된다.
   Future<void> onTap(int idx, BuildContext context) async {
-    String id = '';
-
-    id = selectedList[idx]["id"]!;
+    String meatId = '';
+    isLoading = true;
+    notifyListeners();
 
     try {
-      isLoading = true;
-      notifyListeners();
-      dynamic response = await RemoteDataSource.getMeatData(id);
-      if (response == null) throw Error();
-      meatModel.reset(); // meat model 초기화
-      meatModel.fromJson(response); // by-id 불러온 정보 저장
-      meatModel.seqno = 0;
-      if (context.mounted) context.go('/home/data-manage-normal/edit');
+      meatId = selectedList[idx]['meatId']!;
+
+      final response = await RemoteDataSource.getMeatData(meatId);
+      if (response is Map<String, dynamic>) {
+        meatModel.fromJson(response); // 불러온 정보 저장
+        meatModel.fromJsonDeepAged(0);
+
+        if (context.mounted) context.go('/home/data-manage-normal/edit');
+      } else {
+        throw Error();
+      }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint('Error: $e');
     }
+
     isLoading = false;
     notifyListeners();
   }
@@ -379,12 +381,12 @@ class DataManagementHomeViewModel with ChangeNotifier {
   void _filterStrings(bool isQr) {
     if (isQr = false) {
       selectedList = filteredList.where((map) {
-        String id = map["id"] ?? "";
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     } else {
-      selectedList = numList.where((map) {
-        String id = map["id"] ?? "";
+      selectedList = entireList.where((map) {
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     }

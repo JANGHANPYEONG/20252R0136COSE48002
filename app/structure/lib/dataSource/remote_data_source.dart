@@ -124,7 +124,8 @@ class RemoteDataSource {
 
   /// 유저가 등록한 관리번호 조회 (GET)
   static Future<dynamic> getUserMeatData(String userId) async {
-    String endPoint = 'meat/get/by-user-id?userId=$userId';
+    String endPoint =
+        'meat/get/by-user-id?userId=$userId&specieValue=전체&start=1970-01-01T00:00:00&end=${DateTime.now().toIso8601String().substring(0, 19)}&offset=0&count=100';
     dynamic response = await _getApi(endPoint);
     return response;
   }
