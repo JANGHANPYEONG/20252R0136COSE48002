@@ -46,12 +46,10 @@ class ImageCard extends StatelessWidget {
                 },
                 fit: BoxFit.cover,
               )
+
             // 이미지 촬영 중 임시저장 된 사진
             : imagePath != '없음'
-                ? Image.file(
-                    File(imagePath),
-                    fit: BoxFit.cover,
-                  )
+                ? Image.file(File(imagePath), fit: BoxFit.cover)
                 : InkWell(
                     child: DottedBorder(
                       radius: Radius.circular(20.sp),

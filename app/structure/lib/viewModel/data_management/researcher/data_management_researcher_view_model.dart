@@ -427,7 +427,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       final response = await RemoteDataSource.getMeatData(meatId);
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response);
-        meatModel.seqno = 0;
         if (context.mounted) context.go('/home/data-manage-researcher/add');
       } else {
         throw Error();
@@ -444,12 +443,12 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   void _filterStrings(bool isQr) {
     if (isQr = false) {
       selectedList = filteredList.where((map) {
-        String id = map['id'] ?? '';
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     } else {
       selectedList = entireList.where((map) {
-        String id = map['id'] ?? '';
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     }

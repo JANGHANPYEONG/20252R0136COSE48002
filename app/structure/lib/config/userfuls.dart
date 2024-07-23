@@ -10,7 +10,7 @@ import 'package:structure/model/meat_model.dart';
 class Usefuls {
   /// 현재 날짜를 불러오는 함수
   ///
-  /// yyyy-MM-dd hh:mm:ss
+  /// yyyy-MM-ddThh:mm:ss
   static String getCurrentDate() {
     DateTime now = DateTime.now();
     return DateFormat('yyyy-MM-ddThh:mm:ss').format(now);
@@ -18,13 +18,27 @@ class Usefuls {
 
   /// 백엔드에서 전송하는 날짜 string을 DateTime 형식으로 변환하는 함수
   ///
-  /// yyyy-MM-dd hh:mm:ss 형식으로 입력
+  /// yyyy-MM-ddThh:mm:ss 형식으로 입력
   static DateTime dateStringToDateTime(String dateString) {
     DateFormat format = DateFormat("yyyy-MM-ddThh:mm:ss");
     return format.parse(dateString);
   }
 
-  /// yyyy-MM-dd hh:mm:ss 형식의 날짜를 yyyy.MM.dd 형식으로 파싱
+  /// 입력 받은 DateTime 변수를 형식에 맞춰 String으로 변환하는 함수
+  ///
+  /// yyyy-MM-ddThh:mm:ss
+  static String dateTimeToDateString(DateTime dateTime) {
+    return DateFormat("yyyy-MM-ddThh:mm:ss").format(dateTime);
+  }
+
+  /// yyyy-MM-dd 형식의 날짜를 yyyy.MM.ddThh:mm:ss로 변환
+  static String dateShortToDateLong(String dateString) {
+    DateFormat format = DateFormat("yyyy.MM.dd");
+    final temp = format.parse(dateString);
+    return dateTimeToDateString(temp);
+  }
+
+  /// yyyy-MM-ddThh:mm:ss 형식의 날짜를 yyyy.MM.dd 형식으로 파싱
   static String parseDate(String? inputDate) {
     if (inputDate == null) return '-';
     DateTime dateTime = dateStringToDateTime(inputDate);
@@ -56,7 +70,7 @@ class Usefuls {
   static int calculateDateDifference(String targetDate) {
     // 현재 로컬 시간 구하기
     DateTime now = DateTime.now();
-    // createdAt 시간 구하기
+    // 계산 할 시간 구하기
     DateTime targetDateTime = dateStringToDateTime(targetDate);
 
     // 두 날짜의 차이 계산

@@ -38,7 +38,13 @@ class MeatModel with ChangeNotifier {
   ///
   /// seqno가 0일 경우 원육, 1 이상일 경우 처리육
   ///
-  /// sensory_eval, heated_meat_sensory_eval, probexpt_data, heated_probexpt_data로 구성
+  /// int seqno
+  /// <br /> String date
+  /// <br /> int minute
+  /// <br /> Map<String, dynamic> sensory_eval
+  /// <br /> Map<String, dynamic> heated_meat_sensory_eval
+  /// <br /> Map<String, dynamic> probexpt_data
+  /// <br /> Map<String, dynamic> heated_probexpt_data
   List<dynamic>? deepAgingInfo;
 
   /// 관능평가 데이터
@@ -46,11 +52,11 @@ class MeatModel with ChangeNotifier {
   /// String meatId
   /// <br /> String userId
   /// <br /> String userName
-  /// <br /> String imagePath,
-  /// <br /> String filmedAt, (yyyy-MM-dd hh:mm:ss)
+  /// <br /> String imagePath
+  /// <br /> String filmedAt (yyyy-MM-ddThh:mm:ss)
   /// <br /> int seqno
   /// <br /> int period
-  /// <br /> Sring createdAt (yyyy-MM-dd hh:mm:ss)
+  /// <br /> Sring createdAt (yyyy-MM-ddThh:mm:ss)
   /// <br /> double marbling
   /// <br /> double color
   /// <br /> double texture
@@ -60,8 +66,71 @@ class MeatModel with ChangeNotifier {
   // 이미지 새로 추가 여부
   bool? imgAdded;
 
+  /// 가열육 관능평가 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> String imagePath
+  /// <br /> String filmedAt (yyyy-MM-ddThh:mm:ss)
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String createdAt (yyyy-MM-ddThh:mm:ss)
+  /// <br /> double flavor
+  /// <br /> double juiciness
+  /// <br /> double palatability
+  /// <br /> double tenderness
+  /// <br /> double umami
   Map<String, dynamic>? heatedSensoryEval;
+
+  /// 전자혀 + 실험실 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String updatedAt
+  /// <br /> double CL
+  /// <br /> double Collagen
+  /// <br /> double DL
+  /// <br /> double L
+  /// <br /> double MFI
+  /// <br /> double RW
+  /// <br /> double WBSF
+  /// <br /> double a
+  /// <br /> double b
+  /// <br /> double bitterness
+  /// <br /> double cardepsin_activity
+  /// <br /> double ph
+  /// <br /> double richness
+  /// <br /> double sourness
+  /// <br /> double umami
   Map<String, dynamic>? probExpt;
+
+  /// 가열육 전자혀 + 실험실 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String updatedAt
+  /// <br /> double CL
+  /// <br /> double Collagen
+  /// <br /> double DL
+  /// <br /> double L
+  /// <br /> double MFI
+  /// <br /> double RW
+  /// <br /> double WBSF
+  /// <br /> double a
+  /// <br /> double b
+  /// <br /> double bitterness
+  /// <br /> double cardepsin_activity
+  /// <br /> double ph
+  /// <br /> double richness
+  /// <br /> double sourness
+  /// <br /> double umami
   Map<String, dynamic>? heatedProbExpt;
 
   /* 데이터 입력 완료 확인 */
@@ -79,6 +148,9 @@ class MeatModel with ChangeNotifier {
   ///
   /// marbling, color, texture, surfaceMoisture, overall
   bool rawSensoryCompleted = false;
+
+  bool rawTongueCompleted = false;
+  bool rawExptCompleted = false;
 
   // 미완료
   // 육류 이미지 경로
@@ -234,10 +306,11 @@ class MeatModel with ChangeNotifier {
 
   // 미완료
 
-  // Data fetch
+  /// 육류 전체 데이터 저장
   void fromJson(Map<String, dynamic> jsonData) {
     reset(); // 데이터 받아올 때는 항상 초기화 먼저
 
+    // 기본 데이터
     meatId = jsonData['meatId'];
     createdAt = jsonData['createdAt'];
     userId = jsonData['userId'];
@@ -255,6 +328,7 @@ class MeatModel with ChangeNotifier {
     gradeNum = jsonData['gradeNum'];
     birthYmd = jsonData['birthYmd'];
 
+    // 딥에이징 데이터
     deepAgingInfo = jsonData['deepAgingInfo'];
 
     // 아마 이 이후는 지워도 될듯?
@@ -295,26 +369,16 @@ class MeatModel with ChangeNotifier {
     //     });
     //   });
     // }
-
     // 완료 체크
-    if (traceNum != null && speciesValue != null && secondaryValue != null) {
-      basicCompleted = true;
-    }
-    if (imagePath != null) {
-      rawImageCompleted = true;
-    }
-    if (freshmeat?['marbling'] != null &&
-        freshmeat?['marbling'] != 0 &&
-        freshmeat?['color'] != null &&
-        freshmeat?['color'] != 0 &&
-        freshmeat?['texture'] != null &&
-        freshmeat?['texture'] != 0 &&
-        freshmeat?['surfaceMoisture'] != null &&
-        freshmeat?['surfaceMoisture'] != 0 &&
-        freshmeat?['overall'] != null &&
-        freshmeat?['overall'] != 0) {
-      rawSensoryCompleted = true;
-    }
+    checkCompleted();
+  }
+
+  /// 선택된 index의 처리육 데이터
+  void fromJsonDeepAged(int idx) {
+    sensoryEval = deepAgingInfo![idx]['sensory_eval'];
+    heatedSensoryEval = deepAgingInfo![idx]['heatedmeat_sensory_eval'];
+    probExpt = deepAgingInfo![idx]['probexpt_data'];
+    heatedProbExpt = deepAgingInfo![idx]['heated_probexpt_data'];
   }
 
   // 추가 데이터 할당
@@ -545,52 +609,52 @@ class MeatModel with ChangeNotifier {
         sensoryEval!['surfaceMoisture'] != null &&
         sensoryEval!['overall'] != null);
 
-    if (deepAgedImage != null) {
-      deepAgedImageCompleted = true;
-    }
-    if (deepAgedFreshmeat?['marbling'] != null &&
-        deepAgedFreshmeat?['marbling'] != 0 &&
-        deepAgedFreshmeat?['color'] != null &&
-        deepAgedFreshmeat?['color'] != 0 &&
-        deepAgedFreshmeat?['texture'] != null &&
-        deepAgedFreshmeat?['texture'] != 0 &&
-        deepAgedFreshmeat?['surfaceMoisture'] != null &&
-        deepAgedFreshmeat?['surfaceMoisture'] != 0 &&
-        deepAgedFreshmeat?['overall'] != null &&
-        deepAgedFreshmeat?['overall'] != 0) {
-      deepAgedFreshCompleted = true;
-    }
-    if (heatedmeat?['flavor'] != null &&
-        heatedmeat?['flavor'] != 0 &&
-        heatedmeat?['juiciness'] != null &&
-        heatedmeat?['juiciness'] != 0 &&
-        heatedmeat?['tenderness'] != null &&
-        heatedmeat?['tenderness'] != 0 &&
-        heatedmeat?['umami'] != null &&
-        heatedmeat?['umami'] != 0 &&
-        heatedmeat?['palability'] != null &&
-        heatedmeat?['palability'] != 0) {
-      heatedCompleted = true;
-    }
-    if (probexptData?['sourness'] != null &&
-        probexptData?['bitterness'] != null &&
-        probexptData?['umami'] != null &&
-        probexptData?['richness'] != null) {
-      tongueCompleted = true;
-    }
-    if (probexptData?['L'] != null &&
-        probexptData?['a'] != null &&
-        probexptData?['b'] != null &&
-        probexptData?['DL'] != null &&
-        probexptData?['CL'] != null &&
-        probexptData?['RW'] != null &&
-        probexptData?['ph'] != null &&
-        probexptData?['WBSF'] != null &&
-        probexptData?['cardepsin_activity'] != null &&
-        probexptData?['MFI'] != null &&
-        probexptData?['Collagen'] != null) {
-      labCompleted = true;
-    }
+    // if (deepAgedImage != null) {
+    //   deepAgedImageCompleted = true;
+    // }
+    // if (deepAgedFreshmeat?['marbling'] != null &&
+    //     deepAgedFreshmeat?['marbling'] != 0 &&
+    //     deepAgedFreshmeat?['color'] != null &&
+    //     deepAgedFreshmeat?['color'] != 0 &&
+    //     deepAgedFreshmeat?['texture'] != null &&
+    //     deepAgedFreshmeat?['texture'] != 0 &&
+    //     deepAgedFreshmeat?['surfaceMoisture'] != null &&
+    //     deepAgedFreshmeat?['surfaceMoisture'] != 0 &&
+    //     deepAgedFreshmeat?['overall'] != null &&
+    //     deepAgedFreshmeat?['overall'] != 0) {
+    //   deepAgedFreshCompleted = true;
+    // }
+    // if (heatedmeat?['flavor'] != null &&
+    //     heatedmeat?['flavor'] != 0 &&
+    //     heatedmeat?['juiciness'] != null &&
+    //     heatedmeat?['juiciness'] != 0 &&
+    //     heatedmeat?['tenderness'] != null &&
+    //     heatedmeat?['tenderness'] != 0 &&
+    //     heatedmeat?['umami'] != null &&
+    //     heatedmeat?['umami'] != 0 &&
+    //     heatedmeat?['palability'] != null &&
+    //     heatedmeat?['palability'] != 0) {
+    //   heatedCompleted = true;
+    // }
+    // if (probexptData?['sourness'] != null &&
+    //     probexptData?['bitterness'] != null &&
+    //     probexptData?['umami'] != null &&
+    //     probexptData?['richness'] != null) {
+    //   tongueCompleted = true;
+    // }
+    // if (probexptData?['L'] != null &&
+    //     probexptData?['a'] != null &&
+    //     probexptData?['b'] != null &&
+    //     probexptData?['DL'] != null &&
+    //     probexptData?['CL'] != null &&
+    //     probexptData?['RW'] != null &&
+    //     probexptData?['ph'] != null &&
+    //     probexptData?['WBSF'] != null &&
+    //     probexptData?['cardepsin_activity'] != null &&
+    //     probexptData?['MFI'] != null &&
+    //     probexptData?['Collagen'] != null) {
+    //   labCompleted = true;
+    // }
   }
 
   // text code
