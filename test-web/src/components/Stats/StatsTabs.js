@@ -113,7 +113,7 @@ export default function StatsTabs({ startDate, endDate }) {
         <Box>
           {value !== 3 && (
             <div>
-              <Select
+              {/* <Select
                 labelId="alignment-label"
                 id="alignment"
                 value={alignment}
@@ -122,7 +122,7 @@ export default function StatsTabs({ startDate, endDate }) {
               >
                 <MenuItem value="맛">맛</MenuItem>
                 <MenuItem value="관능">관능</MenuItem>
-              </Select>
+              </Select> */}
               <Select
                 labelId="secondary-label"
                 id="secondary"
@@ -132,9 +132,7 @@ export default function StatsTabs({ startDate, endDate }) {
               >
                 <MenuItem value="원육">원육</MenuItem>
                 <MenuItem value="처리육">처리육</MenuItem>
-                {alignment === '관능' && (
-                  <MenuItem value="가열육">가열육</MenuItem>
-                )}
+                <MenuItem value="가열육">가열육</MenuItem>
               </Select>
               <Select
                 labelId="animal-label"
@@ -167,46 +165,58 @@ export default function StatsTabs({ startDate, endDate }) {
 
       {/* BoxPlot(통계) */}
       <CustomTabPanel value={value} index={0}>
-        {alignment === '관능' && secondary === '원육' ? (
-          <Sens_FreshMeat
-            key={`${startDate}-${endDate}-${animalType}-${grade}`}
-            startDate={startDate}
-            endDate={endDate}
-            animalType={animalType}
-            grade={grade}
-          />
-        ) : alignment === '관능' && secondary === '처리육' ? (
-          <Sens_ProcMeat
-            key={`${startDate}-${endDate}-${animalType}-${grade}`}
-            startDate={startDate}
-            endDate={endDate}
-            animalType={animalType}
-            grade={grade}
-          />
-        ) : alignment === '관능' && secondary === '가열육' ? (
-          <Sens_HeatedMeat
-            key={`${startDate}-${endDate}-${animalType}-${grade}`}
-            startDate={startDate}
-            endDate={endDate}
-            animalType={animalType}
-            grade={grade}
-          />
-        ) : alignment === '맛' && secondary === '원육' ? (
-          <Taste_FreshMeat
-            key={`${startDate}-${endDate}-${animalType}-${grade}`}
-            startDate={startDate}
-            endDate={endDate}
-            animalType={animalType}
-            grade={grade}
-          />
-        ) : alignment === '맛' && secondary === '처리육' ? (
-          <Taste_ProcMeat
-            key={`${startDate}-${endDate}-${animalType}-${grade}`}
-            startDate={startDate}
-            endDate={endDate}
-            animalType={animalType}
-            grade={grade}
-          />
+        {secondary === '원육' ? (
+          <>
+            <Sens_FreshMeat
+              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            />
+            <Taste_FreshMeat
+              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            />
+          </>
+        ) : secondary === '처리육' ? (
+          <>
+            <Sens_ProcMeat
+              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            />
+            <Taste_ProcMeat
+              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            />
+          </>
+        ) : secondary === '가열육' ? (
+          <>
+            <Sens_HeatedMeat
+              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            />
+            {/* 가열육에 대한 맛 컴포넌트가 없다면 다음 줄을 제거하거나 다른 적절한 컴포넌트로 대체하세요 */}
+            {/* <Taste_FreshMeat
+              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
+              startDate={startDate}
+              endDate={endDate}
+              animalType={animalType}
+              grade={grade}
+            /> */}
+          </>
         ) : null}
       </CustomTabPanel>
 
