@@ -92,27 +92,24 @@ def getCountsByLargePart():
 
 
 # 4. 농장 지역 별 개수(소,돼지)
-@statistic_api.route("/counts/by-farm-location", methods=["GET", "POST"])
+@statistic_api.route("/counts/by-farm-location", methods=["GET"])
 def getCountsByFarmLocation():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            if start and end:
-                return get_num_by_farmAddr(db_session, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        if start and end:
+            meat_by_farm = get_num_by_farmAddr(db_session, start, end)
+            return jsonify(meat_by_farm), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

@@ -8,6 +8,7 @@ import hashlib
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 from sqlalchemy import func, create_engine
 import json
+from utils import *
 
 from .db_model import *
 
@@ -1410,66 +1411,37 @@ def get_num_by_farmAddr(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-    regions = [
-        "강원",
-        "경기",
-        "경남",
-        "경북",
-        "광주",
-        "대구",
-        "대전",
-        "부산",
-        "서울",
-        "세종",
-        "울산",
-        "인천",
-        "전남",
-        "전북",
-        "제주",
-        "충남",
-        "충북",
-    ]
-    result = {}
-
-    for speciesId in [0, 1]:  # 0 for cattle, 1 for pig
-        region_counts = {}
-        for region in regions:
-            region_like = "%".join(list(region))
-            count = (
+    
+    try:
+        result = {}
+        for speciesId in [0, 1, 2]:  # 0 for cattle, 1 for pig
+            query = (
                 db_session.query(Meat)
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
-                    CategoryInfo.speciesId == speciesId,
-                    Meat.farmAddr.like(f"%{region_like}%"),
                     Meat.createdAt.between(start, end),
                     Meat.statusType == 2,
                 )
-                .count()
             )
-            region_counts[region] = count
-        if speciesId == 0:
-            result["cattle_counts_by_region"] = region_counts
-        else:
-            result["pig_counts_by_region"] = region_counts
+            if speciesId != 2:
+                query.filter(CategoryInfo.speciesId == speciesId)
 
-    # For total data
-    total_region_counts = {}
-    for region in regions:
-        count = (
-            db_session.query(Meat)
-            .filter(
-                Meat.farmAddr.like(f"%{region}%"),
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-            )
-            .count()
-        )
-        total_region_counts[region] = count
-    result["total_counts_by_region"] = total_region_counts
+            region_counts = {}
+            for region in regions:
+                count = query.filter(Meat.farmAddr.like(f"{region}%")).count()
+                region_counts[region] = count
+                
+            if speciesId == 0:
+                result["cattle_counts_by_region"] = region_counts
+            elif speciesId == 1:
+                result["pig_counts_by_region"] = region_counts
+            else:
+                result["total_counts_by_region"] = region_counts
 
-    return jsonify(result), 200
+        return result
+    
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_probexpt_of_rawmeat(db_session, start, end):
