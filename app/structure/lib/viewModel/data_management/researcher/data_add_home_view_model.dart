@@ -76,7 +76,9 @@ class DataAddHomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 딥 에이징 데이터 추가
+  /// 딥 에이징 데이터 추가
+  ///
+  /// AddDeepAgingDataScreen 호출 후 DB에 딥에이징 추가
   void addDeepAgingData(BuildContext context) {
     isLoading = true;
     notifyListeners();
@@ -91,49 +93,42 @@ class DataAddHomeViewModel with ChangeNotifier {
         ),
       ),
     ).then((value) async {
-      _setTotal();
+      try {
+        // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
+        final response = await RemoteDataSource.getMeatData(meatModel.meatId!);
+        if (response == 200) {
+          _setTotal();
+          meatModel.fromJson(response);
+        } else {
+          throw Error();
+        }
+      } catch (e) {
+        debugPrint('Error: $e');
+      }
 
-      // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
-      dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-      if (response == null) throw Error();
-      meatModel.reset();
-      meatModel.fromJson(response);
       isLoading = false;
       notifyListeners();
     });
   }
 
-  // 원육 필드를 누를 때 작동 : 데이터 할당
+  /// 원육 데이터 입력 카드 클릭
   Future<void> clickedRawMeat(BuildContext context) async {
-    dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-    if (response == null) throw Error();
-    meatModel.reset();
-    meatModel.fromJson(response);
-    meatModel.fromJsonAdditional('RAW');
-    meatModel.seqno = 0;
+    // dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
+    // if (response == null) throw Error();
+    // meatModel.reset();
+    // meatModel.fromJson(response);
+    // meatModel.fromJsonAdditional('RAW');
+    // meatModel.seqno = 0;
     if (context.mounted) {
       context.go('/home/data-manage-researcher/add/raw-meat');
     }
   }
 
-  late BuildContext _context;
-
-  // 처리육 필드를 누를 때 작동 : 데이터 할당
+  /// 처리육 데이터 입력 카드 클릭
   Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
-    dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-    // Map<String, dynamic> data = jsonDecode(response);
+    // 선택된 회차에 해당하는 딥에이징 데이터 가져오기
+    meatModel.fromJsonDeepAged(idx);
 
-    // deepaging_data 출력
-    if (response == null) throw Error();
-    meatModel.reset();
-    meatModel.fromJson(response);
-    meatModel.fromJsonAdditional(meatModel.deepAgingData![idx]["deepAgingNum"]);
-    meatModel.seqno = idx + 1;
-    _context = context;
-    _movePage();
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-researcher/add/processed-meat');
+    context.go('/home/data-manage-researcher/add/processed-meat');
   }
 }

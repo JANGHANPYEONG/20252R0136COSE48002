@@ -52,11 +52,11 @@ class MeatModel with ChangeNotifier {
   /// String meatId
   /// <br /> String userId
   /// <br /> String userName
-  /// <br /> String imagePath,
-  /// <br /> String filmedAt, (yyyy-MM-dd hh:mm:ss)
+  /// <br /> String imagePath
+  /// <br /> String filmedAt (yyyy-MM-ddThh:mm:ss)
   /// <br /> int seqno
   /// <br /> int period
-  /// <br /> Sring createdAt (yyyy-MM-dd hh:mm:ss)
+  /// <br /> Sring createdAt (yyyy-MM-ddThh:mm:ss)
   /// <br /> double marbling
   /// <br /> double color
   /// <br /> double texture
@@ -66,8 +66,71 @@ class MeatModel with ChangeNotifier {
   // 이미지 새로 추가 여부
   bool? imgAdded;
 
+  /// 가열육 관능평가 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> String imagePath
+  /// <br /> String filmedAt (yyyy-MM-ddThh:mm:ss)
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String createdAt (yyyy-MM-ddThh:mm:ss)
+  /// <br /> double flavor
+  /// <br /> double juiciness
+  /// <br /> double palatability
+  /// <br /> double tenderness
+  /// <br /> double umami
   Map<String, dynamic>? heatedSensoryEval;
+
+  /// 전자혀 + 실험실 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String updatedAt
+  /// <br /> double CL
+  /// <br /> double Collagen
+  /// <br /> double DL
+  /// <br /> double L
+  /// <br /> double MFI
+  /// <br /> double RW
+  /// <br /> double WBSF
+  /// <br /> double a
+  /// <br /> double b
+  /// <br /> double bitterness
+  /// <br /> double cardepsin_activity
+  /// <br /> double ph
+  /// <br /> double richness
+  /// <br /> double sourness
+  /// <br /> double umami
   Map<String, dynamic>? probExpt;
+
+  /// 가열육 전자혀 + 실험실 데이터
+  ///
+  /// String meatId
+  /// <br /> String userId
+  /// <br /> String userName
+  /// <br /> int seqno
+  /// <br /> int period
+  /// <br /> String updatedAt
+  /// <br /> double CL
+  /// <br /> double Collagen
+  /// <br /> double DL
+  /// <br /> double L
+  /// <br /> double MFI
+  /// <br /> double RW
+  /// <br /> double WBSF
+  /// <br /> double a
+  /// <br /> double b
+  /// <br /> double bitterness
+  /// <br /> double cardepsin_activity
+  /// <br /> double ph
+  /// <br /> double richness
+  /// <br /> double sourness
+  /// <br /> double umami
   Map<String, dynamic>? heatedProbExpt;
 
   /* 데이터 입력 완료 확인 */
@@ -263,10 +326,14 @@ class MeatModel with ChangeNotifier {
     birthYmd = jsonData['birthYmd'];
 
     // 딥에이징 데이터
+    // 원육 데이터 저장
+    sensoryEval = jsonData['deepAgingInfo'][0]['sensory_eval'];
+    probExpt = jsonData['deepAgingInfo'][0]['probexpt_data'];
+
+    // 처리육 데이터 저장
     deepAgingInfo = jsonData['deepAgingInfo'].length == 1
         ? null
         : jsonData['deepAgingInfo'].sublist(1);
-    sensoryEval = jsonData['deepAgingInfo'][0]['sensoryEval'];
 
     // 아마 이 이후는 지워도 될듯?
 
@@ -309,6 +376,12 @@ class MeatModel with ChangeNotifier {
 
     // 완료 체크
     checkCompleted();
+  }
+
+  /// 선택된 index의 처리육 데이터
+  void fromJsonDeepAged(int idx) {
+    heatedSensoryEval = deepAgingInfo![idx]['heatedmeat_sensory_eval'];
+    heatedProbExpt = deepAgingInfo![idx]['heated_probexpt_data'];
   }
 
   // 추가 데이터 할당
