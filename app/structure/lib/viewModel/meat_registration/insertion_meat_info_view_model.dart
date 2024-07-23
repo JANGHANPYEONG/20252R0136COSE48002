@@ -147,28 +147,34 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
     saveMeatData();
     meatModel.checkCompleted();
-    await tempSave();
 
     // meatId가 null이 아니면 수정하는 데이터
     if (meatModel.meatId != null) {
-      // TODO: PATCH로 변경
-      final response =
-          await RemoteDataSource.createMeatData(null, meatModel.toJsonBasic());
+      try {
+        // 수정된 기본 정보 업데이트
+        final response =
+            await RemoteDataSource.patchMeatData(null, meatModel.toJsonBasic());
 
-      if (response == null) {
-        // 에러 페이지
-      } else {
-        isLoading = false;
-        notifyListeners();
+        if (response == 200) {
+          isLoading = false;
+          notifyListeners();
 
-        if (context.mounted) {
-          showDataManageSucceedPopup(
-            context,
-            () => context.go('/home/data-manage-normal/edit'),
-          );
+          if (context.mounted) {
+            showDataManageSucceedPopup(
+              context,
+              () => context.go('/home/data-manage-normal/edit'),
+            );
+          } else {
+            throw Error();
+          }
         }
+      } catch (e) {
+        debugPrint('Error: $e');
       }
     } else {
+      // 신규 생성
+      await tempSave();
+
       isLoading = false;
       notifyListeners();
       if (context.mounted) context.go('/home/registration');

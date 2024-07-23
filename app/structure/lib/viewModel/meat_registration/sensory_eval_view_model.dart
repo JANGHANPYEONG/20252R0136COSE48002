@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/components/custom_pop_up.dart';
+import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 
@@ -133,6 +134,15 @@ class SensoryEvalViewModel with ChangeNotifier {
         meatModel.sensoryEval!['texture'] = texture;
         meatModel.sensoryEval!['surfaceMoisture'] = surfaceMoisture;
         meatModel.sensoryEval!['overall'] = overall;
+
+        // 원육 수정
+        if (meatModel.meatId != null) {
+          meatModel.imgAdded = false;
+          final response = await RemoteDataSource.patchMeatData(
+              'sensory-eval', meatModel.toJsonSensory());
+
+          if (response != 200) throw Error();
+        }
       }
 
       // if (meatModel.seqno == 0) {
@@ -181,20 +191,19 @@ class SensoryEvalViewModel with ChangeNotifier {
   }
 
   void _goNext() {
-    if (meatModel.seqno == 0) {
-      // 원육
-      if (meatModel.meatId == null) {
-        // 등록
-        _context.go('/home/registration');
-      } else {
-        // 수정
+    if (meatModel.meatId == null) {
+      // 신규 등록
+      _context.go('/home/registration');
+    } else {
+      // 원육 수정
+      if (meatModel.sensoryEval!['seqno'] == 0) {
         showDataManageSucceedPopup(_context, () {
           _context.go('/home/data-manage-normal/edit');
         });
+      } else {
+        // 처리육 수정
+        _context.go('/home/data-manage-researcher/add/processed-meat');
       }
-    } else {
-      // 처리육
-      _context.go('/home/data-manage-researcher/add/processed-meat');
     }
   }
 
@@ -203,10 +212,9 @@ class SensoryEvalViewModel with ChangeNotifier {
     try {
       dynamic response = await LocalDataSource.saveDataToLocal(
           meatModel.toJsonTemp(), meatModel.userId!);
-      if (response == null) Error();
-      // _context = context;
+      if (response == null) throw Error();
     } catch (e) {
-      debugPrint('에러발생: $e');
+      debugPrint('Error: $e');
     }
   }
 }

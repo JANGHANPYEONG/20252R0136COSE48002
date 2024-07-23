@@ -64,7 +64,7 @@ class MeatModel with ChangeNotifier {
   /// <br /> double overall
   Map<String, dynamic>? sensoryEval;
   // 이미지 새로 추가 여부
-  bool? imgAdded;
+  bool imgAdded = false;
 
   /// 가열육 관능평가 데이터
   ///
@@ -141,7 +141,7 @@ class MeatModel with ChangeNotifier {
 
   /// 원육 이미지 등록 완료 여부
   ///
-  /// imagePath, imgAdded
+  /// imagePath
   bool rawImageCompleted = false;
 
   /// 원육 관능평가 등록 완료 여부
@@ -540,7 +540,7 @@ class MeatModel with ChangeNotifier {
     /* 딥에이징 관련 데이터 */
     deepAgingInfo = null;
     sensoryEval = null;
-    imgAdded = null;
+    imgAdded = false;
     heatedSensoryEval = null;
     probExpt = null;
     heatedProbExpt = null;
@@ -597,9 +597,8 @@ class MeatModel with ChangeNotifier {
 
     // 원육 사진 입력 완료 확인
     // imagePath, imgAdded
-    rawImageCompleted = (sensoryEval != null &&
-        sensoryEval!['imagePath'] != null &&
-        imgAdded != null);
+    rawImageCompleted =
+        (sensoryEval != null && sensoryEval!['imagePath'] != null);
 
     // 원육 관능평가
     rawSensoryCompleted = (sensoryEval != null &&
