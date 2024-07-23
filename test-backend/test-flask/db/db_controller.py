@@ -1231,99 +1231,105 @@ def get_num_of_processed_raw(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    # if start is None or end is None:
-    #     return {"msg": "Wrong start or end data", "code": 400}
-
-    processed_meats_subquery = (
-        db_session.query(DeepAgingInfo.id)
-        .filter(DeepAgingInfo.seqno > 0)
-        .group_by(DeepAgingInfo.id)
-        .subquery()
-    )
-    processed_meats_select = processed_meats_subquery.select()
-
-    # 1. Category.specieId가 0이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
-    fresh_cattle_count = (
-        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            ~Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2
-        )
-        .count()
-    )
-
-    processed_cattle_count = (
-        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2
-        )
-        .count()
-    )
-
-    # 2. Category.specieId가 1이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
-    fresh_pig_count = (
-        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            ~Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .count()
-    )
     
-    processed_pig_count = (
-        db_session.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+    try:
+        processed_meats_subquery = (
+            db_session.query(DeepAgingInfo.id)
+            .filter(DeepAgingInfo.seqno > 0)
+            .group_by(DeepAgingInfo.id)
+            .subquery()
         )
-        .count()
-    )
+        processed_meats_select = processed_meats_subquery.select()
 
-    # 3. 전체 데이터에서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인인 데이터
-    fresh_meat_count = (
-        db_session.query(Meat)
-        .filter(
-            ~Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+        # 1. Category.specieId가 0이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
+        fresh_cattle_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2
+            )
+            .count()
         )
-        .count()
-    )
 
-    processed_meat_count = (
-        db_session.query(Meat)
-        .filter(
-            Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+        processed_cattle_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2
+            )
+            .count()
         )
-        .count()
-    )
 
-    # Returning the counts in JSON format
-    return ({
-        "cattle_counts": {
-            "raw": fresh_cattle_count,
-            "processed": processed_cattle_count,
-        },
-        "pig_counts": {
-            "raw": fresh_pig_count,
-            "processed": processed_pig_count,
-        },
-        "total_counts": {
-            "raw": fresh_meat_count,
-            "processed": processed_meat_count,
-        }
-    })
+        # 2. Category.specieId가 1이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
+        fresh_pig_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
+        
+        processed_pig_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
+
+        # 3. 전체 데이터에서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인인 데이터
+        fresh_meat_count = (
+            db_session.query(Meat)
+            .filter(
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
+
+        processed_meat_count = (
+            db_session.query(Meat)
+            .filter(
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
+
+        # Returning the counts in JSON format
+        return ({
+            "cattle_counts": {
+                "raw": fresh_cattle_count,
+                "processed": processed_cattle_count,
+            },
+            "pig_counts": {
+                "raw": fresh_pig_count,
+                "processed": processed_pig_count,
+            },
+            "total_counts": {
+                "raw": fresh_meat_count,
+                "processed": processed_meat_count,
+            }
+        })
+ 
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_num_of_cattle_pig(db_session, start, end):
@@ -1359,41 +1365,45 @@ def get_num_of_primal_part(db_session, start, end):
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
 
-    # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    cow_count = (
-        db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
-        .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+    try:
+        # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
+        cow_count = (
+            db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .group_by(CategoryInfo.primalValue)
+            .all()
         )
-        .group_by(CategoryInfo.primalValue)
-        .all()
-    )
-    beef = {f"{count.primalValue}": count.counts for count in cow_count}
-    # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
+        beef = {f"{count.primalValue}": count.counts for count in cow_count}
+        # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
 
-    # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    pig_count = (
-        db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
-        .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+        # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
+        pig_count = (
+            db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .group_by(CategoryInfo.primalValue)
+            .all()
         )
-        .group_by(CategoryInfo.primalValue)
-        .all()
-    )
-    pork = {f"{count.primalValue}": count.counts for count in pig_count}
-    # logger.info(f'돼지의 부위별 고기 개수: {count_by_primal_value_port')
+        pork = {f"{count.primalValue}": count.counts for count in pig_count}
+        # logger.info(f'돼지의 부위별 고기 개수: {count_by_primal_value_port')
 
-    # Returning the counts in JSON format
-    return ({
-        "beef_counts_by_primal_value": beef,
-        "pork_counts_by_primal_value": pork,
-    })
+        # Returning the counts in JSON format
+        return ({
+            "beef_counts_by_primal_value": beef,
+            "pork_counts_by_primal_value": pork,
+        })
+    
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_num_by_farmAddr(db_session, start, end):
