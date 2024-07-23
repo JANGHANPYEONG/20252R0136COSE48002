@@ -48,7 +48,8 @@ class DataAddHomeViewModel with ChangeNotifier {
             .fold(0, (sum, minute) => sum + (minute ?? 0))
         : 0;
 
-    total = '${meatModel.deepAgingInfo?.length ?? 0}회 / $totalMinutes분';
+    total =
+        '${meatModel.deepAgingInfo?.sublist(1).length ?? 0}회 / $totalMinutes분';
   }
 
   // 딥에이징 데이터 삭제
@@ -96,9 +97,9 @@ class DataAddHomeViewModel with ChangeNotifier {
       try {
         // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
         final response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-        if (response == 200) {
-          _setTotal();
+        if (response is Map<String, dynamic>) {
           meatModel.fromJson(response);
+          _setTotal();
         } else {
           throw Error();
         }

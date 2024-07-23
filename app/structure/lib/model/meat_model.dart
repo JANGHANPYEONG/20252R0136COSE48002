@@ -369,7 +369,6 @@ class MeatModel with ChangeNotifier {
     //     });
     //   });
     // }
-
     // 완료 체크
     checkCompleted();
   }
@@ -610,52 +609,52 @@ class MeatModel with ChangeNotifier {
         sensoryEval!['surfaceMoisture'] != null &&
         sensoryEval!['overall'] != null);
 
-    if (deepAgedImage != null) {
-      deepAgedImageCompleted = true;
-    }
-    if (deepAgedFreshmeat?['marbling'] != null &&
-        deepAgedFreshmeat?['marbling'] != 0 &&
-        deepAgedFreshmeat?['color'] != null &&
-        deepAgedFreshmeat?['color'] != 0 &&
-        deepAgedFreshmeat?['texture'] != null &&
-        deepAgedFreshmeat?['texture'] != 0 &&
-        deepAgedFreshmeat?['surfaceMoisture'] != null &&
-        deepAgedFreshmeat?['surfaceMoisture'] != 0 &&
-        deepAgedFreshmeat?['overall'] != null &&
-        deepAgedFreshmeat?['overall'] != 0) {
-      deepAgedFreshCompleted = true;
-    }
-    if (heatedmeat?['flavor'] != null &&
-        heatedmeat?['flavor'] != 0 &&
-        heatedmeat?['juiciness'] != null &&
-        heatedmeat?['juiciness'] != 0 &&
-        heatedmeat?['tenderness'] != null &&
-        heatedmeat?['tenderness'] != 0 &&
-        heatedmeat?['umami'] != null &&
-        heatedmeat?['umami'] != 0 &&
-        heatedmeat?['palability'] != null &&
-        heatedmeat?['palability'] != 0) {
-      heatedCompleted = true;
-    }
-    if (probexptData?['sourness'] != null &&
-        probexptData?['bitterness'] != null &&
-        probexptData?['umami'] != null &&
-        probexptData?['richness'] != null) {
-      tongueCompleted = true;
-    }
-    if (probexptData?['L'] != null &&
-        probexptData?['a'] != null &&
-        probexptData?['b'] != null &&
-        probexptData?['DL'] != null &&
-        probexptData?['CL'] != null &&
-        probexptData?['RW'] != null &&
-        probexptData?['ph'] != null &&
-        probexptData?['WBSF'] != null &&
-        probexptData?['cardepsin_activity'] != null &&
-        probexptData?['MFI'] != null &&
-        probexptData?['Collagen'] != null) {
-      labCompleted = true;
-    }
+    // if (deepAgedImage != null) {
+    //   deepAgedImageCompleted = true;
+    // }
+    // if (deepAgedFreshmeat?['marbling'] != null &&
+    //     deepAgedFreshmeat?['marbling'] != 0 &&
+    //     deepAgedFreshmeat?['color'] != null &&
+    //     deepAgedFreshmeat?['color'] != 0 &&
+    //     deepAgedFreshmeat?['texture'] != null &&
+    //     deepAgedFreshmeat?['texture'] != 0 &&
+    //     deepAgedFreshmeat?['surfaceMoisture'] != null &&
+    //     deepAgedFreshmeat?['surfaceMoisture'] != 0 &&
+    //     deepAgedFreshmeat?['overall'] != null &&
+    //     deepAgedFreshmeat?['overall'] != 0) {
+    //   deepAgedFreshCompleted = true;
+    // }
+    // if (heatedmeat?['flavor'] != null &&
+    //     heatedmeat?['flavor'] != 0 &&
+    //     heatedmeat?['juiciness'] != null &&
+    //     heatedmeat?['juiciness'] != 0 &&
+    //     heatedmeat?['tenderness'] != null &&
+    //     heatedmeat?['tenderness'] != 0 &&
+    //     heatedmeat?['umami'] != null &&
+    //     heatedmeat?['umami'] != 0 &&
+    //     heatedmeat?['palability'] != null &&
+    //     heatedmeat?['palability'] != 0) {
+    //   heatedCompleted = true;
+    // }
+    // if (probexptData?['sourness'] != null &&
+    //     probexptData?['bitterness'] != null &&
+    //     probexptData?['umami'] != null &&
+    //     probexptData?['richness'] != null) {
+    //   tongueCompleted = true;
+    // }
+    // if (probexptData?['L'] != null &&
+    //     probexptData?['a'] != null &&
+    //     probexptData?['b'] != null &&
+    //     probexptData?['DL'] != null &&
+    //     probexptData?['CL'] != null &&
+    //     probexptData?['RW'] != null &&
+    //     probexptData?['ph'] != null &&
+    //     probexptData?['WBSF'] != null &&
+    //     probexptData?['cardepsin_activity'] != null &&
+    //     probexptData?['MFI'] != null &&
+    //     probexptData?['Collagen'] != null) {
+    //   labCompleted = true;
+    // }
   }
 
   // text code
