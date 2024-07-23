@@ -150,7 +150,7 @@ function DataView({ dataProps }) {
 
     // 3. 처리육 관능검사 데이터 수정 API POST
     const pro_len = len === 1 ? len : len - 1;
-    console.log("pro",pro_len)
+    
     for (let i = 0; i < pro_len; i++) {
       updateProcessedData(
         processedInput[i],

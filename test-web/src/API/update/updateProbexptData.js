@@ -36,7 +36,6 @@ export default async function updateProbexptData(
     ['seqno']: i,
     ['isHeated']: false,
   };
-  console.log("req : ", req)
   // /meat/add/probexpt-data로 실험 수정 데이터 전송
   try {
     const response = await fetch(`http://${apiIP}/meat/add/probexpt-data`, {
