@@ -1358,13 +1358,11 @@ def get_num_of_primal_part(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    print(start, end)
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
+
     # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    count_by_primal_value_beef = (
-        db_session.query(CategoryInfo.primalValue, func.count(Meat.id))
-        .join(Meat, Meat.categoryId == CategoryInfo.id)
+    cow_count = (
+        db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+        .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 0,
             Meat.createdAt.between(start, end),
@@ -1373,12 +1371,13 @@ def get_num_of_primal_part(db_session, start, end):
         .group_by(CategoryInfo.primalValue)
         .all()
     )
+    beef = {f"{count.primalValue}": count.counts for count in cow_count}
     # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
 
     # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    count_by_primal_value_pork = (
-        db_session.query(CategoryInfo.primalValue, func.count(Meat.id))
-        .join(Meat, Meat.categoryId == CategoryInfo.id)
+    pig_count = (
+        db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+        .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         .filter(
             CategoryInfo.speciesId == 1,
             Meat.createdAt.between(start, end),
@@ -1387,17 +1386,14 @@ def get_num_of_primal_part(db_session, start, end):
         .group_by(CategoryInfo.primalValue)
         .all()
     )
+    pork = {f"{count.primalValue}": count.counts for count in pig_count}
+    # logger.info(f'돼지의 부위별 고기 개수: {count_by_primal_value_port')
 
     # Returning the counts in JSON format
-    return (
-        jsonify(
-            {
-                "beef_counts_by_primal_value": dict(count_by_primal_value_beef),
-                "pork_counts_by_primal_value": dict(count_by_primal_value_pork),
-            }
-        ),
-        200,
-    )
+    return ({
+        "beef_counts_by_primal_value": beef,
+        "pork_counts_by_primal_value": pork,
+    })
 
 
 def get_num_by_farmAddr(db_session, start, end):
