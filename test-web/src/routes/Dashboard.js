@@ -239,7 +239,9 @@ function Dashboard() {
         </div>
       </Box>
 
-      {value === 'single' && <DataSingle data={data} />}
+      {value === 'single' && (
+        <DataSingle startDate={startDate} endDate={endDate} data={data} />
+      )}
 
       {value === 'list' && (
         <DataListComp

@@ -70,12 +70,12 @@ export default function dataProcessing(items) {
   // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육으로
   let processedData = [];
   let heatedData = [
-    items.deepAgingInfo[0]? items.deepAgingInfo[0].heatedmeat_sensory_eval || {}
+    items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].heatedmeat_sensory_eval || {}
       : {},
   ];
   let labData = [
-    items.deepAgingInfo[0]? items.deepAgingInfo[0].probexpt_data || {}
-      : {},
+    items.deepAgingInfo[0] ? items.deepAgingInfo[0].probexpt_data || {} : {},
   ];
   let processedMinute = [];
 
@@ -103,7 +103,7 @@ export default function dataProcessing(items) {
       ];
       processedDataImgPath = [
         ...processedDataImgPath,
-        items.deepAgingInfo[i].sensory_eval.imagePath || 'null',
+        items.deepAgingInfo[i]?.sensory_eval?.imagePath || 'null',
       ];
     }
   }
@@ -114,12 +114,12 @@ export default function dataProcessing(items) {
     userId: items.userId,
     createdAt: items.createdAt ? items.createdAt.replace('T', ' ') : '', // 수정 부분: 기본 값 설정
     qrImagePath: items.imagePath,
-    raw_data:
-      items.deepAgingInfo[0]? items.deepAgingInfo[0].sensory_eval || {}
-        : {},
-    raw_img_path:
-      items.deepAgingInfo[0]? items.deepAgingInfo[0].sensory_eval?.imagePath || {}
-        : {},
+    raw_data: items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].sensory_eval || {}
+      : {},
+    raw_img_path: items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].sensory_eval?.imagePath || {}
+      : {},
     processed_data: processedData,
     heated_data: heatedData,
     lab_data: labData,
