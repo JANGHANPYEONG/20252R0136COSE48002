@@ -5,8 +5,7 @@ from db.db_controller import (
     get_num_by_farmAddr,
     get_probexpt_of_rawmeat,
     get_probexpt_of_processedmeat,
-    get_sensory_of_rawmeat,
-    get_sensory_of_processedmeat,
+    get_sensory_of_meat,
     get_sensory_of_processed_heatedmeat,
     get_sensory_of_raw_heatedmeat,
     get_probexpt_of_processed_heatedmeat,
@@ -167,17 +166,17 @@ def getProbexptStatsOfProcessed():
 @statistic_api.route("/sensory-stats/fresh", methods=["GET"])
 def getSensoryStatsOfFresh():
     try:
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            animal_type = safe_str(request.args.get("animalType"))
-            grade = safe_int(request.args.get("grade"))
-            if start and end and species and grade is not None:
-                spceies_id = species.index(animal_type)
-                raw_sensory = get_sensory_of_rawmeat(db_session, start, end, spceies_id, grade)
-                return jsonify(raw_sensory), 200
-            else:
-                return jsonify({"msg": "Invalid Parameter"}), 400
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        animal_type = safe_str(request.args.get("animalType"))
+        grade = safe_int(request.args.get("grade"))
+        if start and end and species and grade is not None:
+            species_id = species.index(animal_type)
+            raw_sensory = get_sensory_of_meat(db_session, start, end, species_id, grade, is_raw = True)
+            return jsonify(raw_sensory), 200
+        else:
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -188,28 +187,27 @@ def getSensoryStatsOfFresh():
         )
 
 # 8. 가공육 관능검사 데이터 항목 별 평균, 최대, 최소
-@statistic_api.route("/sensory-stats/processed", methods=["GET", "POST"])
+@statistic_api.route("/sensory-stats/processed", methods=["GET"])
 def getSensoryStatsOfProcessed():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            seqno = safe_int(request.args.get("seqno"))
-            if start and end:
-                return get_sensory_of_processedmeat(db_session, seqno, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        animal_type = safe_str(request.args.get("animalType"))
+        grade = safe_int(request.args.get("grade"))
+        if start and end and species and grade is not None:
+            species_id = species.index(animal_type)
+            processed_sensory = get_sensory_of_meat(db_session, start, end, species_id, grade, is_raw = False)
+            return jsonify(processed_sensory), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

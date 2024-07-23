@@ -1641,7 +1641,7 @@ def get_probexpt_of_processedmeat(db_session, seqno, start, end):
     return jsonify(stats)
 
 
-def get_sensory_of_rawmeat(db_session, start, end, species, grade):
+def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
@@ -1659,34 +1659,51 @@ def get_sensory_of_rawmeat(db_session, start, end, species, grade):
             .join(Meat, Meat.id == DeepAgingInfo.id)
             .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
             .filter(
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-                DeepAgingInfo.seqno == 0,
                 CategoryInfo.speciesId == species,
                 Meat.gradeNum == grade,
+                Meat.statusType == 2,
             )
-            .one()
         )
+        query = (
+            query.filter(
+                SensoryEval.seqno == 0,
+                Meat.createdAt.between(start, end),
+            ) 
+            if is_raw 
+            else query.filter(
+                SensoryEval.seqno != 0,
+                SensoryEval.createdAt.between(start, end),
+            )
+        )
+        query = query.one()
         average = query.average
         maximum = query.maximum
         minimum = query.minimum
 
         # 실제로 존재하는 값들 찾기
-        unique_values_query = (
+        uniques_query = (
             db_session.query(getattr(SensoryEval, field))
             .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
             .join(Meat, Meat.id == DeepAgingInfo.id)
             .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
             .filter(
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-                DeepAgingInfo.seqno == 0,
                 CategoryInfo.speciesId == species,
                 Meat.gradeNum == grade,
+                Meat.statusType == 2,
             )
-            .distinct()
         )
-        uniques = [value[0] for value in unique_values_query.all()]
+        uniques_query = (
+            uniques_query.filter(
+                SensoryEval.seqno == 0,
+                Meat.createdAt.between(start, end),
+            )
+            if is_raw
+            else uniques_query.filter(
+                SensoryEval.seqno != 0,
+                SensoryEval.createdAt.between(start, end),
+            )
+        )
+        uniques = [value[0] for value in uniques_query.distinct().all()]
 
         stats[field] = {
             "avg": average,
