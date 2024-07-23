@@ -144,25 +144,26 @@ def getMeatDataByRangeData():
 
 
 # 유저 아이디에 해당하는 육류 데이터 출력
-@get_api.route("/by-user-id", methods=["GET", "POST"])
+@get_api.route("/by-user-id", methods=["GET"])
 def getMeatDataByUserId():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            userId = request.args.get("userId")
-            if not userId:
-                return jsonify("No userId in parameter"), 401
-            else:
-                return _getMeatDataByUserId(db_session, userId)
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        db_session = current_app.db_session
+        userId = request.args.get("userId")
+        offset = safe_int(request.args.get("offset"))
+        count = safe_int(request.args.get("count"))
+        start = request.args.get("start")
+        end = request.args.get("end")
+        if not (userId and start and end) or offset is None or count is None:
+            return jsonify("Invalid parameter"), 400
+        meat_by_user = _getMeatDataByUserId(db_session, userId, offset, count, start, end)
+        return jsonify(meat_by_user), 200
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
