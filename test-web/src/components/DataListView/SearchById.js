@@ -4,7 +4,7 @@ import { HiOutlineSearch } from 'react-icons/hi';
 import { TextField, IconButton, Box } from '@mui/material';
 
 function SearchById({ onDataFetch, onValueChange }) {
-  const [id, setId] = useState('');
+  const [meatId, setMeatId] = useState('');
   const [error, setError] = useState(false);
 
   const handleChange = (e) => {
@@ -12,19 +12,19 @@ function SearchById({ onDataFetch, onValueChange }) {
     // 정규식으로 영어/숫자만 허용
     const regex = /^[a-zA-Z0-9]*$/;
     if (regex.test(value)) {
-      setId(value);
+      setMeatId(value);
       setError(false);
     } else {
-      setId(value);
+      setMeatId(value);
       setError(true);
     }
   };
 
   const handleSearch = async () => {
-    if (error || !id) return; // error가 있거나 id가 없으면 검색하지 않음
+    if (error || !meatId) return; // error가 있거나 id가 없으면 검색하지 않음
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/get/by-meat-id?meatId=${id}`
+        `http://${apiIP}/meat/get/by-meat-id?meatId=${meatId}`
       );
 
       if (!response.ok) {
@@ -51,7 +51,7 @@ function SearchById({ onDataFetch, onValueChange }) {
       }}
     >
       <TextField
-        value={id}
+        value={meatId}
         onChange={handleChange}
         placeholder="ID"
         variant="outlined"

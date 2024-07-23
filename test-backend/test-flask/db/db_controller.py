@@ -8,6 +8,7 @@ import hashlib
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 from sqlalchemy import func, create_engine
 import json
+from utils import *
 
 from .db_model import *
 
@@ -1247,95 +1248,105 @@ def get_num_of_processed_raw(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-
-    # Subquery to find meats which have processed data
-    processed_meats_subquery = (
-        db_session.query(Meat.id)
-        .join(SensoryEval)
-        .filter(SensoryEval.seqno > 0)
-        .subquery()
-    )
-    processed_meats_select = processed_meats_subquery.select()
-
-    # 1. Category.specieId가 0이면서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
-    fresh_cattle_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            ~Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+    
+    try:
+        processed_meats_subquery = (
+            db_session.query(DeepAgingInfo.id)
+            .filter(DeepAgingInfo.seqno > 0)
+            .group_by(DeepAgingInfo.id)
+            .subquery()
         )
-        .count()
-    )
-    processed_cattle_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+        processed_meats_select = processed_meats_subquery.select()
+
+        # 1. Category.specieId가 0이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
+        fresh_cattle_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2
+            )
+            .count()
         )
-        .count()
-    )
 
-    # 2. Category.specieId가 1이면서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
-    fresh_pig_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            ~Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+        processed_cattle_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2
+            )
+            .count()
         )
-        .count()
-    )
-    processed_pig_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.id.in_(processed_meats_select),
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+
+        # 2. Category.specieId가 1이면서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인 데이터
+        fresh_pig_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
         )
-        .count()
-    )
+        
+        processed_pig_count = (
+            db_session.query(Meat)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
 
-    # 3. 전체 데이터에서 SensoryEval.seqno 값이 0인 데이터, 1인 데이터
-    fresh_meat_count = Meat.query.filter(
-        ~Meat.id.in_(processed_meats_select),
-        Meat.createdAt.between(start, end),
-        Meat.statusType == 2,
-    ).count()
+        # 3. 전체 데이터에서 DeepAgingInfo.seqno 값이 0인 데이터, 1 이상인인 데이터
+        fresh_meat_count = (
+            db_session.query(Meat)
+            .filter(
+                ~Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
 
-    processed_meat_count = Meat.query.filter(
-        Meat.id.in_(processed_meats_select),
-        Meat.createdAt.between(start, end),
-        Meat.statusType == 2,
-    ).count()
+        processed_meat_count = (
+            db_session.query(Meat)
+            .filter(
+                Meat.id.in_(processed_meats_select),
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .count()
+        )
 
-    # Returning the counts in JSON format
-    return (
-        jsonify(
-            {
-                "cattle_counts": {
-                    "raw": fresh_cattle_count,
-                    "processed": processed_cattle_count,
-                },
-                "pig_counts": {
-                    "raw": fresh_pig_count,
-                    "processed": processed_pig_count,
-                },
-                "total_counts": {
-                    "raw": fresh_meat_count,
-                    "processed": processed_meat_count,
-                },
+        # Returning the counts in JSON format
+        return ({
+            "cattle_counts": {
+                "raw": fresh_cattle_count,
+                "processed": processed_cattle_count,
+            },
+            "pig_counts": {
+                "raw": fresh_pig_count,
+                "processed": processed_pig_count,
+            },
+            "total_counts": {
+                "raw": fresh_meat_count,
+                "processed": processed_meat_count,
             }
-        ),
-        200,
-    )
+        })
+ 
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_num_of_cattle_pig(db_session, start, end):
@@ -1370,112 +1381,83 @@ def get_num_of_primal_part(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    print(start, end)
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-    # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    count_by_primal_value_beef = (
-        db_session.query(CategoryInfo.primalValue, func.count(Meat.id))
-        .join(Meat, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .group_by(CategoryInfo.primalValue)
-        .all()
-    )
-    # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
 
-    # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
-    count_by_primal_value_pork = (
-        db_session.query(CategoryInfo.primalValue, func.count(Meat.id))
-        .join(Meat, Meat.categoryId == CategoryInfo.id)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
+    try:
+        # 1. Category.specieId가 0일때 해당 Category.primalValue 별로 육류의 개수를 추출
+        cow_count = (
+            db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 0,
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .group_by(CategoryInfo.primalValue)
+            .all()
         )
-        .group_by(CategoryInfo.primalValue)
-        .all()
-    )
+        beef = {f"{count.primalValue}": count.counts for count in cow_count}
+        # logger.info(f'소의 부위별 고기 개수: {count_by_primal_value_beef}')
 
-    # Returning the counts in JSON format
-    return (
-        jsonify(
-            {
-                "beef_counts_by_primal_value": dict(count_by_primal_value_beef),
-                "pork_counts_by_primal_value": dict(count_by_primal_value_pork),
-            }
-        ),
-        200,
-    )
+        # 2. Category.specieId가 1일때 해당 Category.primalValue 별로 육류의 개수를 추출
+        pig_count = (
+            db_session.query((func.count(Meat.id)).label('counts'), CategoryInfo.primalValue)
+            .join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+            .filter(
+                CategoryInfo.speciesId == 1,
+                Meat.createdAt.between(start, end),
+                Meat.statusType == 2,
+            )
+            .group_by(CategoryInfo.primalValue)
+            .all()
+        )
+        pork = {f"{count.primalValue}": count.counts for count in pig_count}
+        # logger.info(f'돼지의 부위별 고기 개수: {count_by_primal_value_port')
+
+        # Returning the counts in JSON format
+        return ({
+            "beef_counts_by_primal_value": beef,
+            "pork_counts_by_primal_value": pork,
+        })
+    
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_num_by_farmAddr(db_session, start, end):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-    regions = [
-        "강원",
-        "경기",
-        "경남",
-        "경북",
-        "광주",
-        "대구",
-        "대전",
-        "부산",
-        "서울",
-        "세종",
-        "울산",
-        "인천",
-        "전남",
-        "전북",
-        "제주",
-        "충남",
-        "충북",
-    ]
-    result = {}
-
-    for speciesId in [0, 1]:  # 0 for cattle, 1 for pig
-        region_counts = {}
-        for region in regions:
-            region_like = "%".join(list(region))
-            count = (
+    
+    try:
+        result = {}
+        for speciesId in [0, 1, 2]:  # 0 for cattle, 1 for pig
+            query = (
                 db_session.query(Meat)
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
-                    CategoryInfo.speciesId == speciesId,
-                    Meat.farmAddr.like(f"%{region_like}%"),
                     Meat.createdAt.between(start, end),
                     Meat.statusType == 2,
                 )
-                .count()
             )
-            region_counts[region] = count
-        if speciesId == 0:
-            result["cattle_counts_by_region"] = region_counts
-        else:
-            result["pig_counts_by_region"] = region_counts
+            if speciesId != 2:
+                query.filter(CategoryInfo.speciesId == speciesId)
 
-    # For total data
-    total_region_counts = {}
-    for region in regions:
-        count = (
-            db_session.query(Meat)
-            .filter(
-                Meat.farmAddr.like(f"%{region}%"),
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-            )
-            .count()
-        )
-        total_region_counts[region] = count
-    result["total_counts_by_region"] = total_region_counts
+            region_counts = {}
+            for region in regions:
+                count = query.filter(Meat.farmAddr.like(f"{region}%")).count()
+                region_counts[region] = count
+                
+            if speciesId == 0:
+                result["cattle_counts_by_region"] = region_counts
+            elif speciesId == 1:
+                result["pig_counts_by_region"] = region_counts
+            else:
+                result["total_counts_by_region"] = region_counts
 
-    return jsonify(result), 200
+        return result
+    
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_probexpt_of_rawmeat(db_session, start, end):
