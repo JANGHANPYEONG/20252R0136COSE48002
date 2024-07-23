@@ -14,6 +14,7 @@ import 'package:structure/model/user_model.dart';
 class EditMeatDataViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
+
   EditMeatDataViewModel(this.meatModel, this.userModel) {
     // 만약 데이터의 상태가 '대기중'이며, 3일 내 등록 데이터이면 수정 가능으로 만든다.
     if (meatModel.statusType == '대기중' &&
@@ -25,18 +26,21 @@ class EditMeatDataViewModel with ChangeNotifier {
       isNormal = false;
     }
   }
+  bool isLoading = false;
 
   bool isEditable = false;
   bool isNormal = true;
 
   void clicekdBasic(BuildContext context) {
     if (isNormal) {
+      // 일반
       if (isEditable) {
         context.go('/home/data-manage-normal/edit/info-editable');
       } else {
         context.go('/home/data-manage-normal/edit/info');
       }
     } else {
+      // 연구원
       context.go('/home/data-manage-researcher/approve/info');
     }
   }
@@ -71,23 +75,51 @@ class EditMeatDataViewModel with ChangeNotifier {
 
   /// 육류 데이터 승이
   Future<void> acceptMeatData(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
     try {
-      await RemoteDataSource.confirmMeatData(meatModel.meatId!);
-      if (context.mounted) context.pop();
+      final response =
+          await RemoteDataSource.confirmMeatData(meatModel.meatId!);
+
+      if (response == 200) {
+        isLoading = false;
+        notifyListeners();
+
+        if (context.mounted) context.pop();
+      } else {
+        throw Error();
+      }
     } catch (e) {
       // 승인 오류
-      print(e);
+      debugPrint('Error: $e');
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 
-  /// 육류 데이터 승이
+  /// 육류 데이터 반려
   Future<void> rejectMeatData(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
     try {
-      await RemoteDataSource.rejectMeatData(meatModel.meatId!);
-      if (context.mounted) context.pop();
+      final response = await RemoteDataSource.rejectMeatData(meatModel.meatId!);
+      if (response == 200) {
+        isLoading = false;
+        notifyListeners();
+
+        if (context.mounted) context.pop();
+      } else {
+        throw Error();
+      }
     } catch (e) {
       // 승인 오류
-      print(e);
+      debugPrint('Error: $e');
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 }

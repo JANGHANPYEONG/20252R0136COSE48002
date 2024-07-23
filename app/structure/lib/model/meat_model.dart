@@ -47,7 +47,7 @@ class MeatModel with ChangeNotifier {
   /// <br /> Map<String, dynamic> heated_probexpt_data
   List<dynamic>? deepAgingInfo;
 
-  /// 원육 관능평가 데이터
+  /// 관능평가 데이터
   ///
   /// String meatId
   /// <br /> String userId
@@ -148,6 +148,9 @@ class MeatModel with ChangeNotifier {
   ///
   /// marbling, color, texture, surfaceMoisture, overall
   bool rawSensoryCompleted = false;
+
+  bool rawTongueCompleted = false;
+  bool rawExptCompleted = false;
 
   // 미완료
   // 육류 이미지 경로
@@ -326,14 +329,7 @@ class MeatModel with ChangeNotifier {
     birthYmd = jsonData['birthYmd'];
 
     // 딥에이징 데이터
-    // 원육 데이터 저장
-    sensoryEval = jsonData['deepAgingInfo'][0]['sensory_eval'];
-    probExpt = jsonData['deepAgingInfo'][0]['probexpt_data'];
-
-    // 처리육 데이터 저장
-    deepAgingInfo = jsonData['deepAgingInfo'].length == 1
-        ? null
-        : jsonData['deepAgingInfo'].sublist(1);
+    deepAgingInfo = jsonData['deepAgingInfo'];
 
     // 아마 이 이후는 지워도 될듯?
 
@@ -380,7 +376,9 @@ class MeatModel with ChangeNotifier {
 
   /// 선택된 index의 처리육 데이터
   void fromJsonDeepAged(int idx) {
+    sensoryEval = deepAgingInfo![idx]['sensory_eval'];
     heatedSensoryEval = deepAgingInfo![idx]['heatedmeat_sensory_eval'];
+    probExpt = deepAgingInfo![idx]['probexpt_data'];
     heatedProbExpt = deepAgingInfo![idx]['heated_probexpt_data'];
   }
 

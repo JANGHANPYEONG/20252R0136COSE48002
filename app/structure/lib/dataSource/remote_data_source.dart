@@ -173,18 +173,20 @@ class RemoteDataSource {
   }
 
   /// 육류 데이터 승인 (GET)
+  ///
   /// meatId에 해당하는 육류 데이터를 승인
-  // TODO : Patch 변경, meatId 변경
   static Future<dynamic> confirmMeatData(String meatId) async {
-    dynamic response = await _getApi('meat/update/confirm?id=$meatId');
+    dynamic response =
+        await _patchApi('meat/update/confirm?meatId=$meatId', null);
     return response;
   }
 
   /// 육류 데이터 반려 (GET)
+  ///
   /// meatId에 해당하는 육류 데이터를 반려
-  // TODO : Patch 변경, meatId 변경
   static Future<dynamic> rejectMeatData(String meatId) async {
-    dynamic response = await _getApi('meat/update/reject?id=$meatId');
+    dynamic response =
+        await _patchApi('meat/update/reject?meatId=$meatId', null);
     return response;
   }
 
@@ -243,7 +245,7 @@ class RemoteDataSource {
   /// API PATCH
   ///
   /// 데이터 일부 수정시 사용
-  static Future<dynamic> _patchApi(String endPoint, String jsonData) async {
+  static Future<dynamic> _patchApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
     // String requestBody = jsonData;

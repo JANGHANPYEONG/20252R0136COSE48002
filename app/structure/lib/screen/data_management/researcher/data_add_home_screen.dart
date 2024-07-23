@@ -149,30 +149,31 @@ class _DataAddHomeState extends State<DataAddHome> {
               SizedBox(
                 height: 450.h,
                 // 딥에이징 추가 데이터 입력 (DeepAgingCard 컴포넌트 사용) - 클릭 | 삭제 시 대응되는 함수 호출
+                // index 0은 원육 정보이기 때문에 index + 1 부터 리스트에 표시해야 함
                 child: dataAddHomeViewModel.isLoading
                     ? const Center(child: LoadingScreen())
                     : ListView.builder(
                         itemCount: dataAddHomeViewModel
-                                .meatModel.deepAgingInfo?.length ??
-                            0,
+                                .meatModel.deepAgingInfo!.length -
+                            1,
                         itemBuilder: (BuildContext context, int index) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: DeepAgingCard(
                               deepAgingNum:
-                                  '${dataAddHomeViewModel.meatModel.deepAgingInfo![index]['seqno']}회',
-                              minute: dataAddHomeViewModel
-                                  .meatModel.deepAgingInfo![index]['minute'],
+                                  '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회',
+                              minute: dataAddHomeViewModel.meatModel
+                                  .deepAgingInfo![index + 1]['minute'],
                               butcheryDate: dataAddHomeViewModel
-                                  .meatModel.deepAgingInfo![index]['date'],
+                                  .meatModel.deepAgingInfo![index + 1]['date'],
                               // TODO : complete check
                               completed: false,
                               // dataAddHomeViewModel
                               //     .meatModel.deepAgingInfo![index]['complete'],
                               onTap: () async => dataAddHomeViewModel
-                                  .clickedProcessedMeat(index, context),
+                                  .clickedProcessedMeat(index + 1, context),
                               delete: () async =>
-                                  dataAddHomeViewModel.deleteList(index),
+                                  dataAddHomeViewModel.deleteList(index + 1),
                             ),
                           );
                         },

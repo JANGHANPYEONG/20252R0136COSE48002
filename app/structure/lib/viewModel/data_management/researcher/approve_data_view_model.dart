@@ -1,3 +1,9 @@
+//
+//
+// 일반 데이터 승인 탭 viewModel
+//
+//
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +18,7 @@ class ApproveDataViewModel with ChangeNotifier {
   ApproveDataViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
+  bool isLoading = true;
 
   // 초기 리스트
   List<Map<String, String>> entireList = [];
@@ -27,7 +34,6 @@ class ApproveDataViewModel with ChangeNotifier {
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
 
-  bool isLoading = true;
   bool isOpnedFilter = false; // 필터가 열린지 확인.
   bool isOpenTable = false; // 날짜 선택이 열린지 확인.
   bool isChecked = false; // 필터 값이 온전한지 확인 (직접 입력에서 날짜가 정확히 골라졌는지 여부)
@@ -66,6 +72,13 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 초기화 함수.
   Future<void> _initialize() async {
+    isLoading = true;
+    notifyListeners();
+
+    entireList = [];
+    filteredList = [];
+    selectedList = [];
+
     await _fetchData();
     filterlize();
 
@@ -343,25 +356,21 @@ class ApproveDataViewModel with ChangeNotifier {
   void setDay() {
     filteredList = entireList;
     if (dateSelectedIdx == 0) {
-      print('3일');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
-      print('1개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
-      print('3개월');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
-      print('직접설정');
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(DateTime(
@@ -407,8 +416,7 @@ class ApproveDataViewModel with ChangeNotifier {
     onChanged(null);
   }
 
-  // 데이터 필드를 클릭 시에 호출된다.
-  // 데이터 필드를 클릭 시에 호출된다.
+  /// 육류 선택
   Future<void> onTapApproveCard(int idx, BuildContext context) async {
     String meatId = '';
     isLoading = true;
@@ -418,10 +426,15 @@ class ApproveDataViewModel with ChangeNotifier {
       meatId = selectedList[idx]['meatId']!;
 
       dynamic response = await RemoteDataSource.getMeatData(meatId);
+
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response);
-        meatModel.seqno = 0;
-        if (context.mounted) context.go('/home/data-manage-researcher/approve');
+        meatModel.fromJsonDeepAged(0); // 원육 데이터 저장
+        if (context.mounted) {
+          GoRouter.of(context)
+              .push('/home/data-manage-researcher/approve')
+              .then((_) => _initialize());
+        }
       } else {
         throw Error();
       }

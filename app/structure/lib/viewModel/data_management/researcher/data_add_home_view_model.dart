@@ -113,12 +113,7 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   /// 원육 데이터 입력 카드 클릭
   Future<void> clickedRawMeat(BuildContext context) async {
-    // dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-    // if (response == null) throw Error();
-    // meatModel.reset();
-    // meatModel.fromJson(response);
-    // meatModel.fromJsonAdditional('RAW');
-    // meatModel.seqno = 0;
+    meatModel.fromJsonDeepAged(0); // 원육 정보 가져오기
     if (context.mounted) {
       context.go('/home/data-manage-researcher/add/raw-meat');
     }
@@ -127,6 +122,7 @@ class DataAddHomeViewModel with ChangeNotifier {
   /// 처리육 데이터 입력 카드 클릭
   Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
     // 선택된 회차에 해당하는 딥에이징 데이터 가져오기
+    // List builder에서 idx + 1을 한 값을 받아옴
     meatModel.fromJsonDeepAged(idx);
 
     context.go('/home/data-manage-researcher/add/processed-meat');
