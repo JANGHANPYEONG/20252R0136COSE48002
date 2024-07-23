@@ -20,17 +20,14 @@ class DataAddHomeViewModel with ChangeNotifier {
 
   bool isLoading = false;
 
-  bool infoCheck = false;
-
   // 필드 값 표현 변수
   String userName = '-';
   String butcheryDate = '-';
   String speciesValue = '-';
   String secondary = '-';
-
   String total = '-';
 
-  // 초기 값 할당 (육류 정보 데이터)
+  /// 초기 값 할당 (육류 정보 데이터)
   void _initialize() async {
     userName = meatModel.userName ?? '-';
     butcheryDate = meatModel.butcheryYmd ?? '-';
@@ -42,10 +39,23 @@ class DataAddHomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 딥에이징 총 횟수, 시간 결산
+  void _setTotal() {
+    int totalMinutes = meatModel.deepAgingInfo != null
+        ? meatModel.deepAgingInfo!
+            .map((item) => item['minute'] as int?)
+            .where((minute) => minute != null)
+            .fold(0, (sum, minute) => sum + (minute ?? 0))
+        : 0;
+
+    total = '${meatModel.deepAgingInfo?.length ?? 0}회 / $totalMinutes분';
+  }
+
   // 딥에이징 데이터 삭제
   Future<void> deleteList(int idx) async {
     isLoading = true;
     notifyListeners();
+
     try {
       int deepAgeIdx = int.parse(
           meatModel.deepAgingData![idx]["deepAgingNum"].split('회')[0]);
@@ -57,9 +67,11 @@ class DataAddHomeViewModel with ChangeNotifier {
         meatModel.deepAgingData!.removeAt(idx);
       }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("Error: $e");
     }
+
     _setTotal();
+
     isLoading = false;
     notifyListeners();
   }
@@ -71,15 +83,17 @@ class DataAddHomeViewModel with ChangeNotifier {
 
     // 위젯을 누를 때, 아래 기능이 작동 : 페이지 이동
     Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider(
-            create: (context) =>
-                AddDeepAgingDataViewModel(meatModel: meatModel),
-            child: const AddDeepAgingDataScreen(),
-          ),
-        )).then((value) async {
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChangeNotifierProvider(
+          create: (context) => AddDeepAgingDataViewModel(meatModel: meatModel),
+          child: const AddDeepAgingDataScreen(),
+        ),
+      ),
+    ).then((value) async {
       _setTotal();
+
+      // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
       dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
       if (response == null) throw Error();
       meatModel.reset();
@@ -87,21 +101,6 @@ class DataAddHomeViewModel with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     });
-  }
-
-  bool? infoCheckFunc() {
-    if (meatModel.rawmeatDataComplete == true) infoCheck = true;
-    return infoCheck;
-  }
-
-  // 처리육 총 결산
-  void _setTotal() {
-    int totalMinutes = meatModel.deepAgingInfo!
-        .map((item) => item['minute'] as int?)
-        .where((minute) => minute != null)
-        .fold(0, (sum, minute) => sum + (minute ?? 0));
-
-    total = '${meatModel.deepAgingInfo!.length}회 / $totalMinutes분';
   }
 
   // 원육 필드를 누를 때 작동 : 데이터 할당
@@ -122,14 +121,9 @@ class DataAddHomeViewModel with ChangeNotifier {
   // 처리육 필드를 누를 때 작동 : 데이터 할당
   Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
     dynamic response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-    print('meat response : $response');
     // Map<String, dynamic> data = jsonDecode(response);
-    // deepaging_data 추출
-    var deepAgingData =
-        response['processedmeat']['1회']['sensory_eval']['deepaging_data'];
 
     // deepaging_data 출력
-    print('deepaging_data: $deepAgingData');
     if (response == null) throw Error();
     meatModel.reset();
     meatModel.fromJson(response);

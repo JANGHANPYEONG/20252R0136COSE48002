@@ -38,10 +38,16 @@ class MeatModel with ChangeNotifier {
   ///
   /// seqno가 0일 경우 원육, 1 이상일 경우 처리육
   ///
-  /// sensory_eval, heated_meat_sensory_eval, probexpt_data, heated_probexpt_data로 구성
+  /// int seqno
+  /// <br /> String date
+  /// <br /> int minute
+  /// <br /> Map<String, dynamic> sensory_eval
+  /// <br /> Map<String, dynamic> heated_meat_sensory_eval
+  /// <br /> Map<String, dynamic> probexpt_data
+  /// <br /> Map<String, dynamic> heated_probexpt_data
   List<dynamic>? deepAgingInfo;
 
-  /// 관능평가 데이터
+  /// 원육 관능평가 데이터
   ///
   /// String meatId
   /// <br /> String userId
@@ -234,10 +240,11 @@ class MeatModel with ChangeNotifier {
 
   // 미완료
 
-  // Data fetch
+  /// 육류 전체 데이터 저장
   void fromJson(Map<String, dynamic> jsonData) {
     reset(); // 데이터 받아올 때는 항상 초기화 먼저
 
+    // 기본 데이터
     meatId = jsonData['meatId'];
     createdAt = jsonData['createdAt'];
     userId = jsonData['userId'];
@@ -255,7 +262,11 @@ class MeatModel with ChangeNotifier {
     gradeNum = jsonData['gradeNum'];
     birthYmd = jsonData['birthYmd'];
 
-    deepAgingInfo = jsonData['deepAgingInfo'];
+    // 딥에이징 데이터
+    deepAgingInfo = jsonData['deepAgingInfo'].length == 1
+        ? null
+        : jsonData['deepAgingInfo'].sublist(1);
+    sensoryEval = jsonData['deepAgingInfo'][0]['sensoryEval'];
 
     // 아마 이 이후는 지워도 될듯?
 

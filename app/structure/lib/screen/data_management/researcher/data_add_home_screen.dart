@@ -153,21 +153,19 @@ class _DataAddHomeState extends State<DataAddHome> {
                     ? const Center(child: LoadingScreen())
                     : ListView.builder(
                         itemCount: dataAddHomeViewModel
-                            .meatModel.deepAgingInfo!.length,
+                                .meatModel.deepAgingInfo?.length ??
+                            0,
                         itemBuilder: (BuildContext context, int index) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: DeepAgingCard(
-                              // TODO : API 수정 후 수정
-                              deepAgingNum: '1',
-                              // dataAddHomeViewModel
-                              //     .meatModel.deepAgingInfo![index],
-                              minute: 1,
-                              // dataAddHomeViewModel
-                              //     .meatModel.deepAgingInfo![index]['minute'],
-                              butcheryDate: '',
-                              // dataAddHomeViewModel
-                              //     .meatModel.deepAgingInfo![index]['date'],
+                              deepAgingNum:
+                                  '${dataAddHomeViewModel.meatModel.deepAgingInfo![index]['seqno']}회',
+                              minute: dataAddHomeViewModel
+                                  .meatModel.deepAgingInfo![index]['minute'],
+                              butcheryDate: dataAddHomeViewModel
+                                  .meatModel.deepAgingInfo![index]['date'],
+                              // TODO : complete check
                               completed: false,
                               // dataAddHomeViewModel
                               //     .meatModel.deepAgingInfo![index]['complete'],
@@ -182,6 +180,7 @@ class _DataAddHomeState extends State<DataAddHome> {
               ),
               SizedBox(height: 50.h),
 
+              // 딥에이징 데이터 추가 버튼
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -189,7 +188,6 @@ class _DataAddHomeState extends State<DataAddHome> {
                     height: 133.h,
                     width: 588.w,
                     child: InkWell(
-                      // 딥에이징 추가 데이터 추가
                       onTap: () =>
                           dataAddHomeViewModel.addDeepAgingData(context),
                       child: DottedBorder(
