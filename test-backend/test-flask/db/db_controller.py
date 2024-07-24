@@ -1661,7 +1661,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1676,6 +1675,11 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                     SensoryEval.createdAt.between(start, end),
                 )
             )
+            query = (
+                query.filter(Meat.gradeNum == grade)
+                if grade < 5 else query
+            )
+
             query = query.one()
             average = query.average
             maximum = query.maximum
@@ -1689,7 +1693,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1703,6 +1706,10 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                     SensoryEval.seqno != 0,
                     SensoryEval.createdAt.between(start, end),
                 )
+            )
+            uniques_query = (
+                uniques_query.filter(Meat.gradeNum == grade)
+                if grade < 5 else uniques_query
             )
             uniques = [value[0] for value in uniques_query.distinct().all()]
 
@@ -1863,7 +1870,6 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1878,6 +1884,10 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                     HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
             )
+            query = (
+                query.filter(Meat.gradeNum == grade)
+                if grade < 5 else query
+            )
             query = query.one()
             average = query.average
             maximum = query.maximum
@@ -1891,7 +1901,6 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1905,6 +1914,10 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                     HeatedmeatSensoryEval.seqno != 0,
                     HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
+            )
+            uniques_query = (
+                uniques_query.filter(Meat.gradeNum == grade)
+                if grade < 5 else uniques_query
             )
             uniques = [value[0] for value in uniques_query.distinct().all()]
 
