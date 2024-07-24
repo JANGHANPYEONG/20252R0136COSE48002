@@ -1460,67 +1460,83 @@ def get_num_by_farmAddr(db_session, start, end):
         raise Exception("Something Wrong with DB" + str(e))
 
 
-def get_probexpt_of_rawmeat(db_session, start, end):
+def get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
+    
     # 각 필드의 평균값, 최대값, 최소값 계산
     stats = {}
     for field in ["sourness", "bitterness", "umami", "richness"]:
-        avg = (
-            db_session.query(func.avg(getattr(ProbexptData, field)))
-            .join(Meat, Meat.id == ProbexptData.id)
-            .filter(
-                ProbexptData.seqno == 0,
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
+        query = (
+                db_session.query(
+                    (func.avg(getattr(ProbexptData, field)).label('average')),
+                    (func.max(getattr(ProbexptData, field)).label('maximum')),
+                    (func.min(getattr(ProbexptData, field)).label('minimum')),
+                )
+                .join(DeepAgingInfo, DeepAgingInfo.id == ProbexptData.id and DeepAgingInfo.seqno == ProbexptData.seqno)
+                .join(Meat, Meat.id == DeepAgingInfo.id)
+                .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+                .filter(
+                    ProbexptData.isHeated == False,
+                    CategoryInfo.speciesId == specie_id,
+                    Meat.statusType == 2,
+                    Meat.createdAt.between(start, end),
+                )
             )
-            .scalar()
-        )
-        max_value = (
-            db_session.query(func.max(getattr(ProbexptData, field)))
-            .join(Meat, Meat.id == ProbexptData.id)
-            .filter(
-                ProbexptData.seqno == 0,
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-            )
-            .scalar()
-        )
-        min_value = (
-            db_session.query(func.min(getattr(ProbexptData, field)))
-            .join(Meat, Meat.id == ProbexptData.id)
-            .filter(
-                ProbexptData.seqno == 0,
-                Meat.createdAt.between(start, end),
-                Meat.statusType == 2,
-            )
-            .scalar()
-        )
 
+        query = (
+                query.filter(
+                    ProbexptData.seqno == 0,
+                ) 
+                if is_raw 
+                else query.filter(
+                    ProbexptData.seqno != 0,
+                )
+            )
+
+        query = query.filter(Meat.gradeNum == grade) if grade < 5 else query
+        
+        query = query.one()
+        average = query.average
+        maximum = query.maximum
+        minimum = query.minimum
+        
         # 실제로 존재하는 값들 찾기
-        unique_values_query = (
+        unique_query = (
             db_session.query(getattr(ProbexptData, field))
-            .join(Meat, Meat.id == ProbexptData.id)
+            .join(DeepAgingInfo, DeepAgingInfo.id == ProbexptData.id and DeepAgingInfo.seqno == ProbexptData.seqno)
+            .join(Meat, Meat.id == DeepAgingInfo.id)
+            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
             .filter(
-                ProbexptData.seqno == 0,
+                ProbexptData.isHeated == False,
+                CategoryInfo.speciesId == specie_id,
                 Meat.createdAt.between(start, end),
                 Meat.statusType == 2,
             )
-            .distinct()
         )
-        unique_values = [value[0] for value in unique_values_query.all()]
+        
+        unique_query = (
+                unique_query.filter(
+                    ProbexptData.seqno == 0,
+                ) 
+                if is_raw 
+                else unique_query.filter(
+                    ProbexptData.seqno != 0,
+                )
+            )
+        
+        unique_query = unique_query.filter(Meat.gradeNum == grade) if grade < 5 else unique_query
+        
+        unique_values = [value[0] for value in unique_query.distinct().all()[-4:]]
 
         stats[field] = {
-            "avg": avg,
-            "max": max_value,
-            "min": min_value,
+            "avg": average,
+            "max": maximum,
+            "min": minimum,
             "unique_values": unique_values,
         }
-
-    return jsonify(stats)
+    return stats
 
 
 def get_probexpt_of_processedmeat(db_session, seqno, start, end):
@@ -1661,7 +1677,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1676,6 +1691,11 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                     SensoryEval.createdAt.between(start, end),
                 )
             )
+            query = (
+                query.filter(Meat.gradeNum == grade)
+                if grade < 5 else query
+            )
+
             query = query.one()
             average = query.average
             maximum = query.maximum
@@ -1689,7 +1709,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1703,6 +1722,10 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                     SensoryEval.seqno != 0,
                     SensoryEval.createdAt.between(start, end),
                 )
+            )
+            uniques_query = (
+                uniques_query.filter(Meat.gradeNum == grade)
+                if grade < 5 else uniques_query
             )
             uniques = [value[0] for value in uniques_query.distinct().all()]
 
@@ -1863,7 +1886,6 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1878,6 +1900,10 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                     HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
             )
+            query = (
+                query.filter(Meat.gradeNum == grade)
+                if grade < 5 else query
+            )
             query = query.one()
             average = query.average
             maximum = query.maximum
@@ -1891,7 +1917,6 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
                     CategoryInfo.speciesId == species,
-                    Meat.gradeNum == grade,
                     Meat.statusType == 2,
                 )
             )
@@ -1905,6 +1930,10 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                     HeatedmeatSensoryEval.seqno != 0,
                     HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
+            )
+            uniques_query = (
+                uniques_query.filter(Meat.gradeNum == grade)
+                if grade < 5 else uniques_query
             )
             uniques = [value[0] for value in uniques_query.distinct().all()]
 
