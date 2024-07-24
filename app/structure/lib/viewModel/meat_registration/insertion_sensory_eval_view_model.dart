@@ -12,10 +12,10 @@ import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 
-class SensoryEvalViewModel with ChangeNotifier {
+class InsertionSensoryEvalViewModel with ChangeNotifier {
   MeatModel meatModel;
 
-  SensoryEvalViewModel(this.meatModel) {
+  InsertionSensoryEvalViewModel(this.meatModel) {
     _initialize();
   }
   bool isLoading = false;

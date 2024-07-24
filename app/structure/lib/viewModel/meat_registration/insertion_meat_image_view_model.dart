@@ -17,11 +17,11 @@ import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/model/user_model.dart';
 
-class RegistrationMeatImageViewModel with ChangeNotifier {
+class InsertionMeatImageViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
 
-  RegistrationMeatImageViewModel(this.meatModel, this.userModel) {
+  InsertionMeatImageViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
   bool isLoading = false;

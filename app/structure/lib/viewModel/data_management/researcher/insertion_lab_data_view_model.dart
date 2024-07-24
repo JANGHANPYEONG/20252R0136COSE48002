@@ -142,10 +142,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
         }
       }
 
-      print(response);
-
       if (response == 200) {
-        print('1');
         if (isRaw) {
           meatModel.updateProbExpt();
         } else {

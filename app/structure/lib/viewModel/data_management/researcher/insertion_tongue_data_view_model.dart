@@ -79,6 +79,7 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         meatModel.heatedProbExpt!['userId'] = userModel.userId;
         meatModel.heatedProbExpt!['seqno'] = meatModel.seqno;
       }
+      // 전자혀 데이터 입력
       meatModel.heatedProbExpt!['sourness'] = double.parse(sourness.text);
       meatModel.heatedProbExpt!['bitterness'] = double.parse(bitterness.text);
       meatModel.heatedProbExpt!['umami'] = double.parse(umami.text);
@@ -119,6 +120,7 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         _context = context;
         _movePage();
       } else {
+        // TODO : 입력한 데이터 초기화
         throw Error();
       }
     } catch (e) {

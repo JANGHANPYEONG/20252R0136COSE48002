@@ -342,6 +342,26 @@ class MeatModel with ChangeNotifier {
     });
   }
 
+  /// 가열육 관능평가 데이터 정보 json 변환
+  ///
+  /// meatId, userId, seqno, imgAdded, filmedAt, marbling, color, texture, surfaceMoisture, overall
+  String toJsonHeatedSensory() {
+    return jsonEncode({
+      'meatId': heatedSensoryEval!['meatId'],
+      'userId': heatedSensoryEval!['userId'],
+      'seqno': heatedSensoryEval!['seqno'],
+      'imgAdded': heatedImgAdded,
+      'filmedAt': heatedSensoryEval!['filmedAt'],
+      'heatedmeatSensoryData': {
+        'flavor': heatedSensoryEval!['flavor'],
+        'juiciness': heatedSensoryEval!['juiciness'],
+        'tenderness': heatedSensoryEval!['tenderness'],
+        'umami': heatedSensoryEval!['umami'],
+        'palatability': heatedSensoryEval!['palatability'],
+      }
+    });
+  }
+
   /// probExpt 정보 json 변환
   ///
   /// meatId, userId, seqno, isHeated, L, a, b, DL, CL, RW, ph, WBSF, cardepsin_activity, MFI, Collagen, sourness, bitterness, umami, richness
@@ -416,6 +436,14 @@ class MeatModel with ChangeNotifier {
     };
 
     deepAgingInfo!.add(info);
+  }
+
+  /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
+  /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
+  void updateHeatedSeonsory() {
+    final info = deepAgingInfo!.firstWhere(
+        (item) => item['seqno'] == '${heatedSensoryEval!['seqno']}');
+    info['heated_meat_sensory_eval'] = heatedSensoryEval;
   }
 
   /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
