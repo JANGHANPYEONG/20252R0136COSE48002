@@ -212,27 +212,27 @@ def getSensoryStatsOfProcessed():
 
 
 # 9. 가열된 신선육 관능 데이터 각 항목 별 평균, 최대, 최소
-@statistic_api.route("/sensory-stats/heated-fresh", methods=["GET", "POST"])
+@statistic_api.route("/sensory-stats/heated-fresh", methods=["GET"])
 def getSensoryStatsOfHeatedFresh():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            if start and end:
-                return get_sensory_of_raw_heatedmeat(db_session, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        animal_type = safe_str(request.args.get("animalType"))
+        grade = safe_int(request.args.get("grade"))
+        if start and end and species and grade is not None:
+            species_id = species.index(animal_type)
+            raw_heated_sensory = get_sensory_of_raw_heatedmeat(db_session, start, end, species_id, grade, is_raw = True)
+            return jsonify(raw_heated_sensory), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
