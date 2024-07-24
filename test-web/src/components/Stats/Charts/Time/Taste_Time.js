@@ -2,12 +2,12 @@ import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { apiIP } from '../../../../config';
 
-export default function Taste_Time({ startDate, endDate }) {
+export default function Taste_Time({ startDate, endDate, meatValue }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://${apiIP}/meat/statistic?type=10&start=${startDate}&end=${endDate}`
+          `http://${apiIP}/meat/statistic/sensory-stats/heated-fresh?start=${startDate}&end=${endDate}&meatValue=${meatValue}`
         );
 
         if (!response.ok) {
