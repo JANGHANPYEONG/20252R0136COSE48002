@@ -291,3 +291,26 @@ def getProbexptStatsOfHeatedProcessed():
             ),
             505,
         )
+
+
+# 12. 시계열 데이터 조회
+@statistic_api.route("/time", methods=["GET"])
+def getTimeSeriesData():
+    try:
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        meat_value = safe_str(request.args.get("meatValue"))
+        
+        if start and end:
+            return get_probexpt_of_processed_heatedmeat(db_session, start, end)
+        else:
+            return jsonify("No id parameter"), 400
+    except Exception as e:
+        logger.exception(str(e))
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
+        )
