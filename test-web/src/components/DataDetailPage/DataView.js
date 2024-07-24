@@ -456,7 +456,7 @@ const apiField = [
   'birthYmd',
   'butcheryYmd',
   'farmAddr',
-  'farmerNm',
+  'farmerName',
   'gradeNm',
   'primalValue',
   'secondaryValue',
