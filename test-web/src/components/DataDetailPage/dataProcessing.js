@@ -26,7 +26,7 @@ function convertToApiData(
     company: company,
     createdAt: createdAt,
     farmAddr: farmAddr,
-    farmerNm: farmerName,
+    farmerName: farmerName,
     gradeNm: gradeNum,
     imagePath: imagePath,
     meatId: meatId,
@@ -40,6 +40,7 @@ function convertToApiData(
     userNamem: userNamem,
     userType: userType,
   };
+  console.log('apidata2 : ', apiData);
   return apiData;
 }
 
@@ -47,35 +48,35 @@ function convertToApiData(
 export default function dataProcessing(items) {
   // 3-1. 축산물 이력 데이터 json 객체로 만들기
   const apiData = convertToApiData(
-    items.meatId,
-    items.userId,
-    items.userName,
-    items.userType,
-    items.company,
     items.birthYmd,
     items.butcheryYmd,
-    items.statusType,
+    items.company,
     items.createdAt,
     items.farmAddr,
     items.farmerName,
     items.gradeNum,
     items.imagePath,
+    items.meatId,
     items.primalValue,
     items.secondaryValue,
     items.sexType,
     items.specieValue,
-    items.traceNum
+    items.statusType,
+    items.traceNum,
+    items.userId,
+    items.userName,
+    items.userType
   );
 
   // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육으로
   let processedData = [];
   let heatedData = [
-    items.deepAgingInfo[0]? items.deepAgingInfo[0].heatedmeat_sensory_eval || {}
+    items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].heatedmeat_sensory_eval || {}
       : {},
   ];
   let labData = [
-    items.deepAgingInfo[0]? items.deepAgingInfo[0].probexpt_data || {}
-      : {},
+    items.deepAgingInfo[0] ? items.deepAgingInfo[0].probexpt_data || {} : {},
   ];
   let processedMinute = [];
 
@@ -114,12 +115,12 @@ export default function dataProcessing(items) {
     userId: items.userId,
     createdAt: items.createdAt ? items.createdAt.replace('T', ' ') : '', // 수정 부분: 기본 값 설정
     qrImagePath: items.imagePath,
-    raw_data:
-      items.deepAgingInfo[0]? items.deepAgingInfo[0].sensory_eval || {}
-        : {},
-    raw_img_path:
-      items.deepAgingInfo[0]? items.deepAgingInfo[0].sensory_eval?.imagePath || {}
-        : {},
+    raw_data: items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].sensory_eval || {}
+      : {},
+    raw_img_path: items.deepAgingInfo[0]
+      ? items.deepAgingInfo[0].sensory_eval?.imagePath || {}
+      : {},
     processed_data: processedData,
     heated_data: heatedData,
     lab_data: labData,
