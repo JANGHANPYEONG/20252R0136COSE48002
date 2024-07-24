@@ -3,7 +3,7 @@ from db.db_controller import (
     get_num_of_cattle_pig,
     get_num_of_primal_part,
     get_num_by_farmAddr,
-    get_probexpt_of_rawmeat,
+    get_probexpt_of_meat,
     get_probexpt_of_processedmeat,
     get_sensory_of_rawmeat,
     get_sensory_of_processedmeat,
@@ -114,27 +114,31 @@ def getCountsByFarmLocation():
 
 
 # 5. 신선육 맛데이터 항목 별 평균, 최대, 최소
-@statistic_api.route("/probexpt-stats/fresh", methods=["GET", "POST"])
+@statistic_api.route("/probexpt-stats/fresh", methods=["GET"])
 def getProbexptStatsOfFresh():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            if start and end:
-                return get_probexpt_of_rawmeat(db_session, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        animal_type = safe_str(request.args.get("animalType"))
+        grade = safe_int(request.args.get("grade"))
+        
+        print(start, end, animal_type, grade)
+        
+        if start and end and animal_type and (grade is not None):
+            specie_id = species.index(animal_type)
+            probexpt_data = get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw=1)
+            
+            return jsonify(probexpt_data), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
