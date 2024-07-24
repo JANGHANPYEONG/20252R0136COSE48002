@@ -31,18 +31,15 @@ class PartEval extends StatelessWidget {
       children: [
         // SizedBox(height: 30.w),
         // 기준 이미지
-        Container(
-          // margin: EdgeInsets.only(top: 20.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                imagePath[idx],
-                width: 624.w,
-                height: 68.h,
-              )
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              imagePath[idx],
+              width: 624.w,
+              height: 68.h,
+            )
+          ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -90,7 +87,7 @@ class PartEval extends StatelessWidget {
               },
             ),
           ),
-        ),    
+        ),
         const SizedBox(height: 10),
       ],
     );

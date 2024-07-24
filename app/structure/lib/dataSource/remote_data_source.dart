@@ -149,11 +149,14 @@ class RemoteDataSource {
   }
 
   /// 육류 정보 업데이트 (PATCH)
+  ///
   /// null - 기본 육류 정보 수정
-  /// sensory-eval - 관능평가 데이터 수정
-  /// heatedmeat-eval - 가열육 관능평가 데이터 수정
-  /// deep-aging-data - 딥에이징 데이터 수정
-  /// probexpt-data - 실험실 데이터 수정
+  /// <br /> sensory-eval - 관능평가 데이터 수정
+  /// <br /> heatedmeat-eval - 가열육 관능평가 데이터 수정
+  /// <br /> deep-aging-data - 딥에이징 데이터 수정
+  /// <br /> probexpt-data - 실험실 데이터 수정
+  ///
+  /// Status code : 200, 400, 404
   static Future<dynamic> patchMeatData(String? dest, String jsonData) async {
     String endPoint = 'meat/add/';
     if (dest != null) {

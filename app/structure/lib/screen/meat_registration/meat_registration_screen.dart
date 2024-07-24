@@ -67,7 +67,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   // STEP 2 : 육류 단면 촬영
                   StepCard(
                     mainText: '육류 단면 촬영',
-                    status: widget.meatModel.rawImageCompleted ? 1 : 2,
+                    status: widget.meatModel.imageCompleted ? 1 : 2,
                     onTap: () =>
                         meatRegistrationViewModel.clickedImage(context),
                     imageUrl: 'assets/images/meat_image.png',
@@ -77,7 +77,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   // STEP 3 : 신선육 관능평가
                   StepCard(
                     mainText: '신선육 관능평가',
-                    status: widget.meatModel.rawSensoryCompleted ? 1 : 2,
+                    status: widget.meatModel.sensoryCompleted ? 1 : 2,
                     onTap: () =>
                         meatRegistrationViewModel.clickedFreshmeat(context),
                     imageUrl: 'assets/images/meat_eval.png',

@@ -126,6 +126,25 @@ pigSmall = {
         "뒷사태살",
     ],
 }
+regions = [
+    "강원",
+    "경기",
+    "경상남",
+    "경상북",
+    "광주",
+    "대구",
+    "대전",
+    "부산",
+    "서울",
+    "세종",
+    "울산",
+    "인천",
+    "전라남",
+    "전라북",
+    "제주",
+    "충청남",
+    "충청북",
+]
 usrType = {0: "Normal", 1: "Researcher", 2: "Manager", 3: None}
 sexType = {0: "수", 1: "암", 2: "거세", 3: None}
 gradeNum = {0: "1++", 1: "1+", 2: "1", 3: "2", 4: "3", 5: None}
@@ -217,8 +236,8 @@ def convert2string(date_object, format):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt"]
-    datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
+    datetime0_cvr = ["filmedAt", "createdAt"]
+    datetime1_cvr = ["loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",
@@ -293,8 +312,8 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt"]
-    datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
+    datetime0_cvr = ["filmedAt", "createdAt"]
+    datetime1_cvr = ["loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",
