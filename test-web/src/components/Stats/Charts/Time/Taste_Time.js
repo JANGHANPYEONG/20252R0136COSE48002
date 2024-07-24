@@ -1,4 +1,4 @@
-// import ApexCharts from 'react-apexcharts';
+import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { apiIP } from '../../../../config';
 
