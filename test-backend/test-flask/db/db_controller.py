@@ -478,11 +478,9 @@ def create_specific_probexpt_data(db_session, data, is_post):
             if is_post: # 수정이지만 POST 메서드
                 return ({"msg": "Probexpt Data Already Exists", "code": 400})
             
-            if seqno == 0 and meat.statusType == 2:
-                return ({"msg": "Already Confirmed Data", "code": 400})
-            elif seqno == 0 and meat.statusType != 2:
-                meat.statusType = 0
-                db_session.merge(meat)
+            if meat.statusType != 2:
+                return ({"msg": "Not Confirmed Data", "code": 400})
+
             probexpt_data["userId"] = existed_probexpt_data["userId"]
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.merge(new_probexpt_data)
