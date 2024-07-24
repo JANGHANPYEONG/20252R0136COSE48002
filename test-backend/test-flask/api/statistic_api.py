@@ -148,7 +148,6 @@ def getProbexptStatsOfProcessed():
         end = safe_str(request.args.get("end"))
         animal_type = safe_str(request.args.get("animalType"))
         grade = safe_int(request.args.get("grade"))
-        seqno = safe_int(request.args.get("seqno"))
             
         if start and end and animal_type and (grade is not None):
             specie_id = species.index(animal_type)

@@ -1674,6 +1674,7 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .join(Meat, Meat.id == DeepAgingInfo.id)
                 .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
                 .filter(
+                    Meat.createdAt.between(start, end),
                     CategoryInfo.speciesId == species,
                     Meat.statusType == 2,
                 )
@@ -1681,12 +1682,10 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
             query = (
                 query.filter(
                     SensoryEval.seqno == 0,
-                    Meat.createdAt.between(start, end),
                 ) 
                 if is_raw 
                 else query.filter(
                     SensoryEval.seqno != 0,
-                    SensoryEval.createdAt.between(start, end),
                 )
             )
             query = (
@@ -1708,17 +1707,16 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 .filter(
                     CategoryInfo.speciesId == species,
                     Meat.statusType == 2,
+                    Meat.createdAt.between(start, end),
                 )
             )
             uniques_query = (
                 uniques_query.filter(
                     SensoryEval.seqno == 0,
-                    Meat.createdAt.between(start, end),
                 )
                 if is_raw
                 else uniques_query.filter(
                     SensoryEval.seqno != 0,
-                    SensoryEval.createdAt.between(start, end),
                 )
             )
             uniques_query = (
@@ -1885,17 +1883,16 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .filter(
                     CategoryInfo.speciesId == species,
                     Meat.statusType == 2,
+                    Meat.createdAt.between(start, end),
                 )
             )
             query = (
                 query.filter(
                     HeatedmeatSensoryEval.seqno == 0,
-                    Meat.createdAt.between(start, end),
                 ) 
                 if is_raw 
                 else query.filter(
                     HeatedmeatSensoryEval.seqno != 0,
-                    HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
             )
             query = (
@@ -1916,17 +1913,16 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 .filter(
                     CategoryInfo.speciesId == species,
                     Meat.statusType == 2,
+                    Meat.createdAt.between(start, end),
                 )
             )
             uniques_query = (
                 uniques_query.filter(
                     HeatedmeatSensoryEval.seqno == 0,
-                    Meat.createdAt.between(start, end),
                 )
                 if is_raw
                 else uniques_query.filter(
                     HeatedmeatSensoryEval.seqno != 0,
-                    HeatedmeatSensoryEval.createdAt.between(start, end),
                 )
             )
             uniques_query = (
@@ -2159,7 +2155,7 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value):
                 HeatedmeatSensoryEval.seqno == i,
                 Meat.categoryId.in_(meat_id_list),
                 Meat.statusType == 2,
-                HeatedmeatSensoryEval.createdAt.between(start, end)
+                Meat.createdAt.between(start, end)
             )
         )
         query = query.one()
