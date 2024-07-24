@@ -6,17 +6,19 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:structure/model/user_model.dart';
 
 class InsertionLabDataViewModel with ChangeNotifier {
   MeatModel meatModel;
-  InsertionLabDataViewModel(this.meatModel) {
+  UserModel userModel;
+  bool isRaw;
+  InsertionLabDataViewModel(this.meatModel, this.userModel, this.isRaw) {
     _initialize();
   }
-
   bool isLoading = false;
+  late BuildContext _context;
 
   // 컨트롤러
   TextEditingController l = TextEditingController();
@@ -33,87 +35,135 @@ class InsertionLabDataViewModel with ChangeNotifier {
 
   // 초기 할당 : 모델에 값이 있다면 불러옴.
   void _initialize() {
-    l.text = meatModel.probexptData?["L"] == null
-        ? ''
-        : meatModel.probexptData!["L"].toString();
-    a.text = meatModel.probexptData?["a"] == null
-        ? ''
-        : meatModel.probexptData!["a"].toString();
-    b.text = meatModel.probexptData?["b"] == null
-        ? ''
-        : meatModel.probexptData!["b"].toString();
-    dl.text = meatModel.probexptData?["DL"] == null
-        ? ''
-        : meatModel.probexptData!["DL"].toString();
-    cl.text = meatModel.probexptData?["CL"] == null
-        ? ''
-        : meatModel.probexptData!["CL"].toString();
-    rw.text = meatModel.probexptData?["RW"] == null
-        ? ''
-        : meatModel.probexptData!["RW"].toString();
-    ph.text = meatModel.probexptData?["ph"] == null
-        ? ''
-        : meatModel.probexptData!["ph"].toString();
-    wbsf.text = meatModel.probexptData?["WBSF"] == null
-        ? ''
-        : meatModel.probexptData!["WBSF"].toString();
-    ct.text = meatModel.probexptData?["cardepsin_activity"] == null
-        ? ''
-        : meatModel.probexptData!["cardepsin_activity"].toString();
-    mfi.text = meatModel.probexptData?["MFI"] == null
-        ? ''
-        : meatModel.probexptData!["MFI"].toString();
-    collagen.text = meatModel.probexptData?["Collagen"] == null
-        ? ''
-        : meatModel.probexptData!["Collagen"].toString();
+    if (isRaw) {
+      l.text = '${meatModel.probExpt?['L'] ?? ''}';
+      a.text = '${meatModel.probExpt?['a'] ?? ''}';
+      b.text = '${meatModel.probExpt?['b'] ?? ''}';
+      dl.text = '${meatModel.probExpt?['DL'] ?? ''}';
+      cl.text = '${meatModel.probExpt?['CL'] ?? ''}';
+      rw.text = '${meatModel.probExpt?['RW'] ?? ''}';
+      ph.text = '${meatModel.probExpt?['ph'] ?? ''}';
+      wbsf.text = '${meatModel.probExpt?['WBSF'] ?? ''}';
+      ct.text = '${meatModel.probExpt?['cardepsin_activity'] ?? ''}';
+      mfi.text = '${meatModel.probExpt?['MFI'] ?? ''}';
+      collagen.text = '${meatModel.probExpt?['Collagen'] ?? ''}';
+    } else {
+      l.text = '${meatModel.heatedProbExpt?['L'] ?? ''}';
+      a.text = '${meatModel.heatedProbExpt?['a'] ?? ''}';
+      b.text = '${meatModel.heatedProbExpt?['b'] ?? ''}';
+      dl.text = '${meatModel.heatedProbExpt?['DL'] ?? ''}';
+      cl.text = '${meatModel.heatedProbExpt?['CL'] ?? ''}';
+      rw.text = '${meatModel.heatedProbExpt?['RW'] ?? ''}';
+      ph.text = '${meatModel.heatedProbExpt?['ph'] ?? ''}';
+      wbsf.text = '${meatModel.heatedProbExpt?['WBSF'] ?? ''}';
+      ct.text = '${meatModel.heatedProbExpt?['cardepsin_activity'] ?? ''}';
+      mfi.text = '${meatModel.heatedProbExpt?['MFI'] ?? ''}';
+      collagen.text = '${meatModel.heatedProbExpt?['Collagen'] ?? ''}';
+    }
   }
-
-  late BuildContext _context;
 
   // 데이터를 객체에 할당 - 이후 POST
   Future<void> saveData(BuildContext context) async {
     isLoading = true;
     notifyListeners();
 
-    meatModel.probexptData ??= {};
-    meatModel.probexptData!['updatedAt'] = Usefuls.getCurrentDate();
-    meatModel.probexptData!['period'] = Usefuls.getMeatPeriod(meatModel);
-    meatModel.probexptData!["L"] =
-        l.text.isNotEmpty ? double.parse(l.text) : null;
-    meatModel.probexptData!["a"] =
-        a.text.isNotEmpty ? double.parse(a.text) : null;
-    meatModel.probexptData!["b"] =
-        b.text.isNotEmpty ? double.parse(b.text) : null;
-    meatModel.probexptData!["DL"] =
-        dl.text.isNotEmpty ? double.parse(dl.text) : null;
-    meatModel.probexptData!["CL"] =
-        cl.text.isNotEmpty ? double.parse(cl.text) : null;
-    meatModel.probexptData!["RW"] =
-        rw.text.isNotEmpty ? double.parse(rw.text) : null;
-    meatModel.probexptData!["ph"] =
-        ph.text.isNotEmpty ? double.parse(ph.text) : null;
-    meatModel.probexptData!["WBSF"] =
-        wbsf.text.isNotEmpty ? double.parse(wbsf.text) : null;
-    meatModel.probexptData!["cardepsin_activity"] =
-        ct.text.isNotEmpty ? double.parse(ct.text) : null;
-    meatModel.probexptData!["MFI"] =
-        mfi.text.isNotEmpty ? double.parse(mfi.text) : null;
-    meatModel.probexptData!["Collagen"] =
-        collagen.text.isNotEmpty ? double.parse(collagen.text) : null;
-    // 완료 검사
-    meatModel.checkCompleted();
+    // probExpt가 없으면 post로 진행해야 함
+    bool isPost = false;
+
+    if (isRaw) {
+      // 원육/처리육
+      if (meatModel.probExpt == null) {
+        // POST의 경우 신규 데이터 생성
+        isPost = true;
+
+        meatModel.probExpt = {};
+        meatModel.probExpt!['meatId'] = meatModel.meatId;
+        meatModel.probExpt!['userId'] = userModel.userId;
+        meatModel.probExpt!['seqno'] = meatModel.seqno;
+      }
+      // 실험 데이터 입력
+      meatModel.probExpt!['L'] = double.parse(l.text);
+      meatModel.probExpt!['a'] = double.parse(a.text);
+      meatModel.probExpt!['b'] = double.parse(b.text);
+      meatModel.probExpt!['DL'] = double.parse(dl.text);
+      meatModel.probExpt!['CL'] = double.parse(cl.text);
+      meatModel.probExpt!['RW'] = double.parse(rw.text);
+      meatModel.probExpt!['ph'] = double.parse(ph.text);
+      meatModel.probExpt!['WBSF'] = double.parse(wbsf.text);
+      meatModel.probExpt!['cardepsin_activity'] = double.parse(ct.text);
+      meatModel.probExpt!['MFI'] = double.parse(mfi.text);
+      meatModel.probExpt!['Collagen'] = double.parse(collagen.text);
+    } else {
+      // 가열육
+      if (meatModel.heatedProbExpt == null) {
+        // POST의 경우 신규 데이터 생성
+        isPost = true;
+
+        meatModel.heatedProbExpt = {};
+        meatModel.heatedProbExpt!['meatId'] = meatModel.meatId;
+        meatModel.heatedProbExpt!['userId'] = userModel.userId;
+        meatModel.heatedProbExpt!['seqno'] = meatModel.seqno;
+      }
+      // 실험 데이터 입력
+      meatModel.heatedProbExpt!['L'] = double.parse(l.text);
+      meatModel.heatedProbExpt!['a'] = double.parse(a.text);
+      meatModel.heatedProbExpt!['b'] = double.parse(b.text);
+      meatModel.heatedProbExpt!['DL'] = double.parse(dl.text);
+      meatModel.heatedProbExpt!['CL'] = double.parse(cl.text);
+      meatModel.heatedProbExpt!['RW'] = double.parse(rw.text);
+      meatModel.heatedProbExpt!['ph'] = double.parse(ph.text);
+      meatModel.heatedProbExpt!['WBSF'] = double.parse(wbsf.text);
+      meatModel.heatedProbExpt!['cardepsin_activity'] = double.parse(ct.text);
+      meatModel.heatedProbExpt!['MFI'] = double.parse(mfi.text);
+      meatModel.heatedProbExpt!['Collagen'] = double.parse(collagen.text);
+    }
+
+// API 전송
     try {
-      dynamic response = await RemoteDataSource.createMeatData(
-          'probexpt-data', meatModel.toJsonProbexpt());
-      if (response == null) {
-        throw Error();
+      dynamic response;
+
+      if (isRaw) {
+        // 원육/처리육
+        if (isPost) {
+          response = await RemoteDataSource.createMeatData(
+              'probexpt-data', meatModel.toJsonProbExpt());
+        } else {
+          response = await RemoteDataSource.patchMeatData(
+              'probexpt-data', meatModel.toJsonProbExpt());
+        }
       } else {
+        // 가열육
+        if (isPost) {
+          response = await RemoteDataSource.createMeatData(
+              'probexpt-data', meatModel.toJsonHeatedProbExpt());
+        } else {
+          response = await RemoteDataSource.patchMeatData(
+              'probexpt-data', meatModel.toJsonHeatedProbExpt());
+        }
+      }
+
+      print(response);
+
+      if (response == 200) {
+        print('1');
+        if (isRaw) {
+          meatModel.updateProbExpt();
+        } else {
+          meatModel.updateHeatedProbExpt();
+        }
+
         _context = context;
         _movePage();
+      } else {
+        // TODO: 입력한 데이터 삭제해야함
+        throw Error();
       }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint("Error: $e");
     }
+
+    // 완료 검사
+    meatModel.checkCompleted();
 
     isLoading = false;
     notifyListeners();

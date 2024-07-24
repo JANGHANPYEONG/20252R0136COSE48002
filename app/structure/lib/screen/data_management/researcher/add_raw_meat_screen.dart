@@ -1,6 +1,6 @@
 //
 //
-// 처리육(딥에이징) 추가 페이지(View) : Researcher
+// 원육 추가 페이지(View) : Researcher
 //
 //
 
@@ -9,19 +9,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_scroll.dart';
+import 'package:structure/components/main_button.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
-import 'package:structure/viewModel/data_management/researcher/add_processed_meat_view_model.dart';
-import 'package:structure/components/main_button.dart';
+import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
 
-class AddProcessedMeatMainScreen extends StatelessWidget {
+class AddRawMeatScreen extends StatelessWidget {
   final MeatModel meatModel;
-  const AddProcessedMeatMainScreen({super.key, required this.meatModel});
+  const AddRawMeatScreen({super.key, required this.meatModel});
 
   @override
   Widget build(BuildContext context) {
-    AddProcessedMeatViewModel addProcessedMeatViewModel =
-        context.watch<AddProcessedMeatViewModel>();
+    AddRawMeatViewModel addRawMeatViewModel =
+        context.watch<AddRawMeatViewModel>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -35,45 +35,49 @@ class AddProcessedMeatMainScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 40.h),
-
-              // 처리육 단면 촬영
+              // 육류 기본 정보
               StepCard(
-                mainText: '처리육 단면 촬영',
-                status: meatModel.imageCompleted ? 1 : 2,
-                onTap: () => addProcessedMeatViewModel.clickedImage(context),
+                onTap: () => addRawMeatViewModel.clicekdBasic(context),
+                mainText: '원육 기본정보',
+                status: 4, // 없음
+                imageUrl: 'assets/images/meat_info.png',
+              ),
+              SizedBox(height: 10.h),
+
+              // 육류 단면 촬영
+              StepCard(
+                mainText: '원육 단면 촬영',
+                status: 4, // 없음
+                onTap: () => addRawMeatViewModel.clickedBasicImage(context),
                 imageUrl: 'assets/images/meat_image.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 처리육 관능평가
+              // 신선육 관능 평가
               StepCard(
-                mainText: '처리육 관능평가',
-                status: meatModel.sensoryCompleted ? 1 : 2,
-                onTap: () => addProcessedMeatViewModel.clickedSensory(context),
+                mainText: '원육 관능평가',
+                status: 4, // 없음
+                onTap: () => addRawMeatViewModel.clicekdFresh(context),
                 imageUrl: 'assets/images/meat_eval.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 처리육 전자혀
               StepCard(
-                mainText: '처리육 전자혀 데이터',
+                mainText: '원육 전자혀 데이터',
                 status: meatModel.tongueCompleted ? 1 : 2,
-                onTap: () => addProcessedMeatViewModel.clickedTongue(context),
+                onTap: () => addRawMeatViewModel.clickedTongue(context),
                 imageUrl: 'assets/images/meat_tongue.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 처리육 실험
               StepCard(
-                mainText: '처리육 실험 데이터',
+                mainText: '원육 실험 데이터',
                 status: meatModel.labCompleted ? 1 : 2,
-                onTap: () => addProcessedMeatViewModel.clickedLab(context),
+                onTap: () => addRawMeatViewModel.clickedLab(context),
                 imageUrl: 'assets/images/meat_lab.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // Divdier
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 16.w),
                 child: const Divider(
@@ -82,51 +86,44 @@ class AddProcessedMeatMainScreen extends StatelessWidget {
                 ),
               ),
 
-              // 가열육 단면 촬영
+              // 가열육 단면촬영 체크하는 변수 meatModel의 변수 추가하고 변경
               StepCard(
                 mainText: '가열육 단면 촬영',
                 status: meatModel.heatedImageCompleted ? 1 : 2,
-                onTap: () =>
-                    addProcessedMeatViewModel.clickedHeatedImage(context),
+                onTap: () => addRawMeatViewModel.clickedImage(context),
                 imageUrl: 'assets/images/meat_image.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 가열육 관능 평가
               StepCard(
                 mainText: '가열육 관능평가',
                 status: meatModel.heatedSensoryCompleted ? 1 : 2,
-                onTap: () =>
-                    addProcessedMeatViewModel.clickedHeatedSensory(context),
+                onTap: () => addRawMeatViewModel.clickedHeated(context),
                 imageUrl: 'assets/images/meat_eval.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 가열육 전자혀
               StepCard(
                 mainText: '가열육 전자혀 데이터',
                 status: meatModel.heatedTongueCompleted ? 1 : 2,
-                onTap: () =>
-                    addProcessedMeatViewModel.clickedHeatedTongue(context),
+                onTap: () => addRawMeatViewModel.clickedHeatedTongue(context),
                 imageUrl: 'assets/images/meat_tongue.png',
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: 10.h),
 
-              // 가열육 실험 데이터
               StepCard(
                 mainText: '가열육 실험 데이터',
                 status: meatModel.heatedLabCompleted ? 1 : 2,
-                onTap: () =>
-                    addProcessedMeatViewModel.clickedHeatedLab(context),
+                onTap: () => addRawMeatViewModel.clickedHeatedLab(context),
                 imageUrl: 'assets/images/meat_lab.png',
               ),
-              SizedBox(height: 40.h),
+              SizedBox(height: 10.h),
 
               Container(
-                margin: EdgeInsets.only(bottom: 40.h),
+                margin: EdgeInsets.only(bottom: 20.h),
                 child: MainButton(
                   onPressed: () async {
-                    addProcessedMeatViewModel.clickedbutton(context, meatModel);
+                    addRawMeatViewModel.clickedbutton(context, meatModel);
                   },
                   text: '완료',
                   width: 658.w,

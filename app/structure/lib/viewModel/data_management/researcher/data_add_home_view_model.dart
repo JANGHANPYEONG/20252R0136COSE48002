@@ -94,30 +94,31 @@ class DataAddHomeViewModel with ChangeNotifier {
         ),
       ),
     ).then((value) async {
-      try {
-        // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
-        final response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-        if (response is Map<String, dynamic>) {
-          meatModel.fromJson(response);
-          _setTotal();
-        } else {
-          throw Error();
-        }
-      } catch (e) {
-        debugPrint('Error: $e');
-      }
+      // try {
+      //   // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
+      //   final response = await RemoteDataSource.getMeatData(meatModel.meatId!);
+      //   if (response is Map<String, dynamic>) {
+      //     meatModel.fromJson(response);
 
-      isLoading = false;
+      //   } else {
+      //     throw Error();
+      //   }
+      // } catch (e) {
+      //   debugPrint('Error: $e');
+      // }
+      _setTotal();
       notifyListeners();
     });
+
+    isLoading = false;
+    notifyListeners();
   }
 
   /// 원육 데이터 입력 카드 클릭
   Future<void> clickedRawMeat(BuildContext context) async {
     meatModel.fromJsonDeepAged(0); // 원육 정보 가져오기
-    if (context.mounted) {
-      context.go('/home/data-manage-researcher/add/raw-meat');
-    }
+
+    context.go('/home/data-manage-researcher/add/raw-meat');
   }
 
   /// 처리육 데이터 입력 카드 클릭

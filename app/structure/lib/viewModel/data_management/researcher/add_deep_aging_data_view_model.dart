@@ -68,16 +68,16 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
 
     if (meatModel.deepAgingInfo != null) {
       // 이전 처리육 딥에이징 데이터가 있을 때
-      seqno = int.parse(meatModel.deepAgingInfo!.last['seqno']) + 1;
+      seqno = int.parse('${meatModel.deepAgingInfo!.last['seqno']}') + 1;
     }
 
     // 전송할 deepAgingInfo json 생성
     String jsonData = jsonEncode({
-      "meatId": meatModel.meatId,
-      "seqno": seqno,
-      "deepAging": {
-        "date": Usefuls.dateTimeToDateString(selected),
-        "minute": int.parse(selectedMinute!),
+      'meatId': meatModel.meatId,
+      'seqno': seqno,
+      'deepAging': {
+        'date': Usefuls.dateTimeToDateString(selected),
+        'minute': int.parse(selectedMinute!),
       }
     });
 
@@ -87,6 +87,8 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
 
       if (response == 200) {
         // 딥에이징 추가 성공
+        meatModel.updateDeepAgingInfo(jsonDecode(jsonData));
+
         isLoading = false;
         notifyListeners();
 
