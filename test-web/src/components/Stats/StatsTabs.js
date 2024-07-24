@@ -60,9 +60,9 @@ export default function StatsTabs({ startDate, endDate }) {
   const [alignment, setAlignment] = useState('맛');
   //const [gradeAlignment, setGradeAlignment] = useState('소');
   const [secondary, setSecondary] = useState('원육');
-  const [animalType, setAnimalType] = useState('cattle');
-  const [grade, setGrade] = useState('all');
-  const [meatValue, setMeatValue] = useState('등심')
+  const [animalType, setAnimalType] = useState('소');
+  const [grade, setGrade] = useState('5');
+  const [meatValue, setMeatValue] = useState('등심');
 
   useEffect(() => {
     console.log('stat tab' + startDate, '-', endDate);
@@ -71,9 +71,9 @@ export default function StatsTabs({ startDate, endDate }) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  const handleMeatValueChange = (event) =>{
-    setMeatValue(event.target.value)
-  }
+  const handleMeatValueChange = (event) => {
+    setMeatValue(event.target.value);
+  };
   const handleFirstChange = (event) => {
     setAlignment(event.target.value);
     setSecondary('원육'); // Initialize secondary to "원육"
@@ -117,21 +117,20 @@ export default function StatsTabs({ startDate, endDate }) {
         <Box>
           {value == 3 && (
             <Select
-            labelId="meat-value-label"
-            id="meat-value"
-            value={meatValue}
-            onChange={handleMeatValueChange}
-            label="원육, 처리육, 가열육"
-          >
-            <MenuItem value="등심">등심</MenuItem>
-            <MenuItem value="설도">설도</MenuItem>
-          </Select>
+              labelId="meat-value-label"
+              id="meat-value"
+              value={meatValue}
+              onChange={handleMeatValueChange}
+              label="원육, 처리육, 가열육"
+            >
+              <MenuItem value="등심">등심</MenuItem>
+              <MenuItem value="설도">설도</MenuItem>
+            </Select>
           )}
         </Box>
         <Box>
           {value !== 3 && (
             <div>
-              
               <Select
                 labelId="secondary-label"
                 id="secondary"
@@ -150,8 +149,8 @@ export default function StatsTabs({ startDate, endDate }) {
                 onChange={handleAnimalChange}
                 label="동물 종류"
               >
-                <MenuItem value="cattle">소</MenuItem>
-                <MenuItem value="pork">돼지</MenuItem>
+                <MenuItem value="소">소</MenuItem>
+                <MenuItem value="돼지">돼지</MenuItem>
               </Select>
               <Select
                 labelId="grade-label"
@@ -160,12 +159,12 @@ export default function StatsTabs({ startDate, endDate }) {
                 onChange={handleGradeChange}
                 label="등급"
               >
-                <MenuItem value="all">전체</MenuItem>
-                {animalType === 'cattle' && <MenuItem value="0">1++</MenuItem>}
-                {animalType === 'cattle' && <MenuItem value="1">1+</MenuItem>}
-                {animalType === 'cattle' && <MenuItem value="2">1</MenuItem>}
-                {animalType === 'cattle' && <MenuItem value="3">2</MenuItem>}
-                {animalType === 'cattle' && <MenuItem value="4">3</MenuItem>}
+                <MenuItem value="5">전체</MenuItem>
+                {animalType === '소' && <MenuItem value="0">1++</MenuItem>}
+                {animalType === '소' && <MenuItem value="1">1+</MenuItem>}
+                {animalType === '소' && <MenuItem value="2">1</MenuItem>}
+                {animalType === '소' && <MenuItem value="3">2</MenuItem>}
+                {animalType === '소' && <MenuItem value="4">3</MenuItem>}
               </Select>
             </div>
           )}
@@ -231,7 +230,7 @@ export default function StatsTabs({ startDate, endDate }) {
 
       {/* HeatMap(분포) */}
       <CustomTabPanel value={value} index={1}>
-      {secondary === '원육' ? (
+        {secondary === '원육' ? (
           <>
             <Sens_Fresh_Map
               key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
@@ -287,7 +286,7 @@ export default function StatsTabs({ startDate, endDate }) {
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={2}>
-      {secondary === '원육' ? (
+        {secondary === '원육' ? (
           <>
             <Sense_Fresh_Corr
               key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
@@ -343,7 +342,11 @@ export default function StatsTabs({ startDate, endDate }) {
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={3}>
-        <Taste_Time startDate={startDate} endDate={endDate} meatValue = {meatValue} />
+        <Taste_Time
+          startDate={startDate}
+          endDate={endDate}
+          meatValue={meatValue}
+        />
       </CustomTabPanel>
     </Box>
   );
