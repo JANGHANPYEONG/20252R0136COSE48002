@@ -2139,3 +2139,30 @@ def get_probexpt_of_processed_heatedmeat(db_session, start, end):
         ] = probexpt_data_dict
 
     return result
+
+
+def get_timeseries_of_cattle_data(db_session, start, end, meat_value):
+    # 기간 설정
+    start = convert2datetime(start, 0)  # Start Time
+    end = convert2datetime(end, 0)  # End Time
+    meat_ids = db_session.query(CategoryInfo.id).filter(CategoryInfo.primalValue == meat_value)
+    meat_id_list = [val[0] for val in meat_ids]
+    
+    stats = {}
+    for i in range(5):
+        query = (
+            db_session.query(func.avg(getattr(HeatedmeatSensoryEval, 'tenderness')))
+            .join(DeepAgingInfo, (DeepAgingInfo.id == HeatedmeatSensoryEval.id) and (DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno))
+            .join(Meat, Meat.id == DeepAgingInfo.id)
+            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+            .filter(
+                HeatedmeatSensoryEval.seqno == i,
+                Meat.categoryId.in_(meat_id_list),
+                Meat.statusType == 2,
+                HeatedmeatSensoryEval.createdAt.between(start, end)
+            )
+        )
+        query = query.one()
+        stats[str(i)] = query[0] if query[0] else 0
+    
+    return stats
