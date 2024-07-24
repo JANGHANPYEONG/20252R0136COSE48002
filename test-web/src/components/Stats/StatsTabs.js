@@ -85,7 +85,7 @@ export default function StatsTabs({ startDate, endDate }) {
 
   const handleAnimalChange = (event) => {
     setAnimalType(event.target.value);
-    setGrade('all'); // Reset the grade to 'all' when the animal type changes
+    setGrade('5'); // Reset the grade to 'all' when the animal type changes
   };
   const handleGradeChange = (event) => {
     setGrade(event.target.value);
