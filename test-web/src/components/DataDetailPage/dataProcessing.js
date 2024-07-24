@@ -103,7 +103,7 @@ export default function dataProcessing(items) {
       ];
       processedDataImgPath = [
         ...processedDataImgPath,
-        items.deepAgingInfo[i].sensory_eval.imagePath || 'null',
+        items.deepAgingInfo[i]?.sensory_eval?.imagePath || 'null',
       ];
     }
   }

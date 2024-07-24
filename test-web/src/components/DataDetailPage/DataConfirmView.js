@@ -129,6 +129,10 @@ function DataView({ dataProps }) {
   const len = processed_data_seq.length;
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
+  //로그인한 유저 정보
+
+  const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+  console.log('type:', userInfo);
 
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
   const onClickSubmitBtn = async () => {
@@ -256,22 +260,30 @@ function DataView({ dataProps }) {
 
   return (
     <div style={{ width: '100%', marginTop: '40px' }}>
-      <div style={style.confirmEditBtnWrapper}>
-        <IconButton
-          style={style.acceptBtn}
-          onClick={() => setConfirmVal('confirm')}
-        >
-          <FaRegCheckCircle />
-          승인
-        </IconButton>
-        <IconButton
-          style={style.rejectBtn}
-          onClick={() => setConfirmVal('reject')}
-        >
-          <FaRegTimesCircle />
-          반려
-        </IconButton>
-      </div>
+      {!isUploadingDone && (
+        <div style={divStyle.loadingBackground}>
+          <Spinner />
+          <span style={divStyle.loadingText}>이미지를 업로드 중 입니다..</span>
+        </div>
+      )}
+      {userInfo.type === 'Manager' && (
+        <div style={style.confirmEditBtnWrapper}>
+          <IconButton
+            style={style.acceptBtn}
+            onClick={() => setConfirmVal('confirm')}
+          >
+            <FaRegCheckCircle />
+            승인
+          </IconButton>
+          <IconButton
+            style={style.rejectBtn}
+            onClick={() => setConfirmVal('reject')}
+          >
+            <FaRegTimesCircle />
+            반려
+          </IconButton>
+        </div>
+      )}
 
       {
         // 승인 팝업 페이지
@@ -293,12 +305,6 @@ function DataView({ dataProps }) {
           />
         )
       }
-      {!isUploadingDone && (
-        <div style={divStyle.loadingBackground}>
-          <Spinner />
-          <span style={divStyle.loadingText}>이미지를 업로드 중 입니다..</span>
-        </div>
-      )}
       {
         // 이미지 수정 불가능 팝업 - 일반 사용자임을 알리거나 서버를 확인하라는 경고 메시지
         isLimitedToChangeImage && (

@@ -200,21 +200,25 @@ function Dashboard() {
             setStartDate={setStartDate}
             setEndDate={setEndDate}
           />
-          <SearchById
-            onDataFetch={handleDataFetch}
-            onValueChange={handleValueChange}
-          />
-          <Select
-            labelId="species"
-            id="species"
-            value={specieValue}
-            onChange={handleSpeciesChange}
-            label="종류"
-          >
-            <MenuItem value="전체">전체</MenuItem>
-            <MenuItem value="소">소</MenuItem>
-            <MenuItem value="돼지">돼지</MenuItem>
-          </Select>
+          {value === 'list' && (
+            <>
+              <SearchById
+                onDataFetch={handleDataFetch}
+                onValueChange={handleValueChange}
+              />
+              <Select
+                labelId="species"
+                id="species"
+                value={specieValue}
+                onChange={handleSpeciesChange}
+                label="종류"
+              >
+                <MenuItem value="전체">전체</MenuItem>
+                <MenuItem value="소">소</MenuItem>
+                <MenuItem value="돼지">돼지</MenuItem>
+              </Select>
+            </>
+          )}
         </Box>
         <div
           style={{
@@ -235,7 +239,9 @@ function Dashboard() {
         </div>
       </Box>
 
-      {value === 'single' && <DataSingle data={data} />}
+      {value === 'single' && (
+        <DataSingle startDate={startDate} endDate={endDate} data={data} />
+      )}
 
       {value === 'list' && (
         <DataListComp
