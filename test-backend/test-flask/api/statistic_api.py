@@ -4,11 +4,11 @@ from db.db_controller import (
     get_num_of_primal_part,
     get_num_by_farmAddr,
     get_probexpt_of_meat,
-    get_probexpt_of_processedmeat,
     get_sensory_of_meat,
     get_sensory_of_processed_heatedmeat,
     get_sensory_of_raw_heatedmeat,
     get_probexpt_of_processed_heatedmeat,
+    get_timeseries_of_cattle_data,
 )
 from flask import (
     Blueprint,
@@ -148,7 +148,6 @@ def getProbexptStatsOfProcessed():
         end = safe_str(request.args.get("end"))
         animal_type = safe_str(request.args.get("animalType"))
         grade = safe_int(request.args.get("grade"))
-        seqno = safe_int(request.args.get("seqno"))
             
         if start and end and animal_type and (grade is not None):
             specie_id = species.index(animal_type)
@@ -290,4 +289,28 @@ def getProbexptStatsOfHeatedProcessed():
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
             505,
+        )
+
+
+# 12. 시계열 데이터 조회
+@statistic_api.route("/time", methods=["GET"])
+def getTimeSeriesData():
+    try:
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        meat_value = safe_str(request.args.get("meatValue"))
+        
+        if start and end and meat_value:
+            timeseries_data = get_timeseries_of_cattle_data(db_session, start, end, meat_value)
+            return jsonify(timeseries_data), 200
+        else:
+            return jsonify("Invalid parameter"), 400
+    except Exception as e:
+        logger.exception(str(e))
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
         )
