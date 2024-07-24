@@ -236,8 +236,8 @@ def convert2string(date_object, format):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt"]
-    datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
+    datetime0_cvr = ["filmedAt", "createdAt"]
+    datetime1_cvr = ["loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",
@@ -312,8 +312,8 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt"]
-    datetime1_cvr = ["createdAt", "loginAt", "updatedAt"]
+    datetime0_cvr = ["filmedAt", "createdAt"]
+    datetime1_cvr = ["loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",

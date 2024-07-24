@@ -14,7 +14,7 @@ export default function Taste_ProcMeat({
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}&seqno=1`
+        `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
       );
 
       if (!response.ok) {
