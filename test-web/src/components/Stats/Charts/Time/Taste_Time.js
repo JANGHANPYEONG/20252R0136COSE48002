@@ -17,17 +17,17 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
 
         // Extract the necessary data from the response
         const deepAgingData = [
-          data[1], // 3일
-          data[2], // 7일
-          data[3], // 14일
-          data[4], // 21일
+          parseFloat(data[1].toFixed(2)), // 3일
+          parseFloat(data[2].toFixed(2)), // 7일
+          parseFloat(data[3].toFixed(2)), // 14일
+          parseFloat(data[4].toFixed(2)), // 21일
         ];
-        
+
         const rawMeatData = [
-          data[0], // 원육 데이터를 각 시점에 맞추어 반복
-          data[0],
-          data[0],
-          data[0],
+          parseFloat(data[0].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
+          parseFloat(data[0].toFixed(2)),
+          parseFloat(data[0].toFixed(2)),
+          parseFloat(data[0].toFixed(2)),
         ];
 
         // Update the chart data
@@ -100,12 +100,12 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
     xaxis: {
       categories: ['3일', '7일', '14일', '21일'],
       title: {
-        text: '숙성 시간',
+        text: '숙성일',
       },
     },
     yaxis: {
       title: {
-        text: '맛 데이터 (tenderness)',
+        text: '연도 (Tenderness)',
       },
       min: 0,
       max: 10,
