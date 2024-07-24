@@ -123,13 +123,11 @@ def getProbexptStatsOfFresh():
         animal_type = safe_str(request.args.get("animalType"))
         grade = safe_int(request.args.get("grade"))
         
-        print(start, end, animal_type, grade)
-        
         if start and end and animal_type and (grade is not None):
             specie_id = species.index(animal_type)
-            probexpt_data = get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw=1)
+            probexpt_raw_data = get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw=1)
             
-            return jsonify(probexpt_data), 200
+            return jsonify(probexpt_raw_data), 200
         else:
             return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
@@ -143,28 +141,30 @@ def getProbexptStatsOfFresh():
 
 
 # 6. 처리육 맛데이터 항목 별 평균, 최대, 최소
-@statistic_api.route("/probexpt-stats/processed", methods=["GET", "POST"])
+@statistic_api.route("/probexpt-stats/processed", methods=["GET"])
 def getProbexptStatsOfProcessed():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            start = safe_str(request.args.get("start"))
-            end = safe_str(request.args.get("end"))
-            seqno = safe_int(request.args.get("seqno"))
-            if start and end and seqno:
-                return get_probexpt_of_processedmeat(db_session, seqno, start, end)
-            else:
-                return jsonify("No id parameter"), 401
-
+        db_session = current_app.db_session
+        start = safe_str(request.args.get("start"))
+        end = safe_str(request.args.get("end"))
+        animal_type = safe_str(request.args.get("animalType"))
+        grade = safe_int(request.args.get("grade"))
+        seqno = safe_int(request.args.get("seqno"))
+            
+        if start and end and animal_type and (grade is not None):
+            specie_id = species.index(animal_type)
+            probexpt_processed_data = get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw=0)
+                
+            return jsonify(probexpt_processed_data), 200
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 # 7. 신선육 관능검사 데이터 항목 별 평균, 최대, 최소

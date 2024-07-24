@@ -1481,18 +1481,17 @@ def get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw):
                     ProbexptData.isHeated == False,
                     CategoryInfo.speciesId == specie_id,
                     Meat.statusType == 2,
+                    Meat.createdAt.between(start, end),
                 )
             )
 
         query = (
                 query.filter(
                     ProbexptData.seqno == 0,
-                    Meat.createdAt.between(start, end),
                 ) 
                 if is_raw 
                 else query.filter(
                     ProbexptData.seqno != 0,
-                    ProbexptData.createdAt.between(start, end),
                 )
             )
 
@@ -1522,7 +1521,7 @@ def get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw):
                     ProbexptData.seqno == 0,
                 ) 
                 if is_raw 
-                else query.filter(
+                else unique_query.filter(
                     ProbexptData.seqno != 0,
                 )
             )
