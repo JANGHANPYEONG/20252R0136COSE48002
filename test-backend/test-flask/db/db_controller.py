@@ -1646,73 +1646,76 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
 
-    # 각 필드의 평균값, 최대값, 최소값 계산
-    stats = {}
-    for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
-        query = (
-            db_session.query(
-                (func.avg(getattr(SensoryEval, field)).label('average')),
-                (func.max(getattr(SensoryEval, field)).label('maximum')),
-                (func.min(getattr(SensoryEval, field)).label('minimum')),
+    try:
+        # 각 필드의 평균값, 최대값, 최소값 계산
+        stats = {}
+        for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
+            query = (
+                db_session.query(
+                    (func.avg(getattr(SensoryEval, field)).label('average')),
+                    (func.max(getattr(SensoryEval, field)).label('maximum')),
+                    (func.min(getattr(SensoryEval, field)).label('minimum')),
+                )
+                .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
+                .join(Meat, Meat.id == DeepAgingInfo.id)
+                .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+                .filter(
+                    CategoryInfo.speciesId == species,
+                    Meat.gradeNum == grade,
+                    Meat.statusType == 2,
+                )
             )
-            .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
-            .join(Meat, Meat.id == DeepAgingInfo.id)
-            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
-            .filter(
-                CategoryInfo.speciesId == species,
-                Meat.gradeNum == grade,
-                Meat.statusType == 2,
+            query = (
+                query.filter(
+                    SensoryEval.seqno == 0,
+                    Meat.createdAt.between(start, end),
+                ) 
+                if is_raw 
+                else query.filter(
+                    SensoryEval.seqno != 0,
+                    SensoryEval.createdAt.between(start, end),
+                )
             )
-        )
-        query = (
-            query.filter(
-                SensoryEval.seqno == 0,
-                Meat.createdAt.between(start, end),
-            ) 
-            if is_raw 
-            else query.filter(
-                SensoryEval.seqno != 0,
-                SensoryEval.createdAt.between(start, end),
-            )
-        )
-        query = query.one()
-        average = query.average
-        maximum = query.maximum
-        minimum = query.minimum
+            query = query.one()
+            average = query.average
+            maximum = query.maximum
+            minimum = query.minimum
 
-        # 실제로 존재하는 값들 찾기
-        uniques_query = (
-            db_session.query(getattr(SensoryEval, field))
-            .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
-            .join(Meat, Meat.id == DeepAgingInfo.id)
-            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
-            .filter(
-                CategoryInfo.speciesId == species,
-                Meat.gradeNum == grade,
-                Meat.statusType == 2,
+            # 실제로 존재하는 값들 찾기
+            uniques_query = (
+                db_session.query(getattr(SensoryEval, field))
+                .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
+                .join(Meat, Meat.id == DeepAgingInfo.id)
+                .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+                .filter(
+                    CategoryInfo.speciesId == species,
+                    Meat.gradeNum == grade,
+                    Meat.statusType == 2,
+                )
             )
-        )
-        uniques_query = (
-            uniques_query.filter(
-                SensoryEval.seqno == 0,
-                Meat.createdAt.between(start, end),
+            uniques_query = (
+                uniques_query.filter(
+                    SensoryEval.seqno == 0,
+                    Meat.createdAt.between(start, end),
+                )
+                if is_raw
+                else uniques_query.filter(
+                    SensoryEval.seqno != 0,
+                    SensoryEval.createdAt.between(start, end),
+                )
             )
-            if is_raw
-            else uniques_query.filter(
-                SensoryEval.seqno != 0,
-                SensoryEval.createdAt.between(start, end),
-            )
-        )
-        uniques = [value[0] for value in uniques_query.distinct().all()]
+            uniques = [value[0] for value in uniques_query.distinct().all()]
 
-        stats[field] = {
-            "avg": average,
-            "max": maximum,
-            "min": minimum,
-            "unique_values": sorted(uniques),
-        }
+            stats[field] = {
+                "avg": average,
+                "max": maximum,
+                "min": minimum,
+                "unique_values": sorted(uniques),
+            }
 
-    return stats
+        return stats
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 # def get_sensory_of_processedmeat(db_session, seqno, start, end):
@@ -1845,73 +1848,76 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
 
-    # 각 필드의 평균값, 최대값, 최소값 계산
-    stats = {}
-    for field in ["flavor", "juiciness", "tenderness", "umami", "palatability"]:
-        query = (
-            db_session.query(
-                (func.avg(getattr(HeatedmeatSensoryEval, field)).label('average')),
-                (func.max(getattr(HeatedmeatSensoryEval, field)).label('maximum')),
-                (func.min(getattr(HeatedmeatSensoryEval, field)).label('minimum')),
+    try:
+        # 각 필드의 평균값, 최대값, 최소값 계산
+        stats = {}
+        for field in ["flavor", "juiciness", "tenderness", "umami", "palatability"]:
+            query = (
+                db_session.query(
+                    (func.avg(getattr(HeatedmeatSensoryEval, field)).label('average')),
+                    (func.max(getattr(HeatedmeatSensoryEval, field)).label('maximum')),
+                    (func.min(getattr(HeatedmeatSensoryEval, field)).label('minimum')),
+                )
+                .join(DeepAgingInfo, DeepAgingInfo.id == HeatedmeatSensoryEval.id and DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno)
+                .join(Meat, Meat.id == DeepAgingInfo.id)
+                .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+                .filter(
+                    CategoryInfo.speciesId == species,
+                    Meat.gradeNum == grade,
+                    Meat.statusType == 2,
+                )
             )
-            .join(DeepAgingInfo, DeepAgingInfo.id == HeatedmeatSensoryEval.id and DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno)
-            .join(Meat, Meat.id == DeepAgingInfo.id)
-            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
-            .filter(
-                CategoryInfo.speciesId == species,
-                Meat.gradeNum == grade,
-                Meat.statusType == 2,
+            query = (
+                query.filter(
+                    HeatedmeatSensoryEval.seqno == 0,
+                    Meat.createdAt.between(start, end),
+                ) 
+                if is_raw 
+                else query.filter(
+                    HeatedmeatSensoryEval.seqno != 0,
+                    HeatedmeatSensoryEval.createdAt.between(start, end),
+                )
             )
-        )
-        query = (
-            query.filter(
-                HeatedmeatSensoryEval.seqno == 0,
-                Meat.createdAt.between(start, end),
-            ) 
-            if is_raw 
-            else query.filter(
-                HeatedmeatSensoryEval.seqno != 0,
-                HeatedmeatSensoryEval.createdAt.between(start, end),
-            )
-        )
-        query = query.one()
-        average = query.average
-        maximum = query.maximum
-        minimum = query.minimum
+            query = query.one()
+            average = query.average
+            maximum = query.maximum
+            minimum = query.minimum
 
-        # 실제로 존재하는 값들 찾기
-        uniques_query = (
-            db_session.query(getattr(HeatedmeatSensoryEval, field))
-            .join(DeepAgingInfo, DeepAgingInfo.id == HeatedmeatSensoryEval.id and DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno)
-            .join(Meat, Meat.id == DeepAgingInfo.id)
-            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
-            .filter(
-                CategoryInfo.speciesId == species,
-                Meat.gradeNum == grade,
-                Meat.statusType == 2,
+            # 실제로 존재하는 값들 찾기
+            uniques_query = (
+                db_session.query(getattr(HeatedmeatSensoryEval, field))
+                .join(DeepAgingInfo, DeepAgingInfo.id == HeatedmeatSensoryEval.id and DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno)
+                .join(Meat, Meat.id == DeepAgingInfo.id)
+                .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
+                .filter(
+                    CategoryInfo.speciesId == species,
+                    Meat.gradeNum == grade,
+                    Meat.statusType == 2,
+                )
             )
-        )
-        uniques_query = (
-            uniques_query.filter(
-                HeatedmeatSensoryEval.seqno == 0,
-                Meat.createdAt.between(start, end),
+            uniques_query = (
+                uniques_query.filter(
+                    HeatedmeatSensoryEval.seqno == 0,
+                    Meat.createdAt.between(start, end),
+                )
+                if is_raw
+                else uniques_query.filter(
+                    HeatedmeatSensoryEval.seqno != 0,
+                    HeatedmeatSensoryEval.createdAt.between(start, end),
+                )
             )
-            if is_raw
-            else uniques_query.filter(
-                HeatedmeatSensoryEval.seqno != 0,
-                HeatedmeatSensoryEval.createdAt.between(start, end),
-            )
-        )
-        uniques = [value[0] for value in uniques_query.distinct().all()]
+            uniques = [value[0] for value in uniques_query.distinct().all()]
 
-        stats[field] = {
-            "avg": average,
-            "max": maximum,
-            "min": minimum,
-            "unique_values": sorted(uniques),
-        }
+            stats[field] = {
+                "avg": average,
+                "max": maximum,
+                "min": minimum,
+                "unique_values": sorted(uniques),
+            }
 
-    return stats
+        return stats
+    except Exception as e:
+        raise Exception("Something Wrong with DB" + str(e))
 
 
 def get_sensory_of_processed_heatedmeat(db_session, seqno, start, end):
