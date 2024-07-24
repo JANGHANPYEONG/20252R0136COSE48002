@@ -312,8 +312,8 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt", "createdAt", "updatedAt"]
-    datetime1_cvr = ["loginAt"]
+    datetime0_cvr = ["filmedAt", "createdAt"]
+    datetime1_cvr = ["loginAt", "updatedAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",
