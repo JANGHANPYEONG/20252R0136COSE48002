@@ -466,15 +466,14 @@ def create_specific_heatedmeat_seonsory_eval(
             if is_post:  # 수정인데 POST 메서드
                 return {"msg": "Heatedmeat Sensory Data Already Exists", "code": 400}
 
-            if seqno == 0 and meat.statusType == 2:
-                return {"msg": "Already Confirmed Data", "code": 400}
-            elif seqno == 0 and meat.statusType != 2:
-                meat.statusType = 0
-                db_session.merge(meat)
+            if meat.statusType != 2:
+                return {"msg": "Not Confirmed Data", "code": 400}
+
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.merge(new_sensory_data)
+            db_session.commit()
 
         else:  # 생성
             if not is_post:  # 생성인데 PATCH 메서드
