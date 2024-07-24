@@ -1440,7 +1440,7 @@ def get_num_by_farmAddr(db_session, start, end):
                 )
             )
             if speciesId != 2:
-                query.filter(CategoryInfo.speciesId == speciesId)
+                query = query.filter(CategoryInfo.speciesId == speciesId)
 
             region_counts = {}
             for region in regions:
