@@ -1,6 +1,6 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
-import { apiIP } from '../../../../config';
+import { statisticSensoryHeated } from '../../../../API/statistic/statisticSensoryHeated';
 
 export default function Sens_Heated_Map({
   startDate,
@@ -14,10 +14,12 @@ export default function Sens_Heated_Map({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/sensory-stats/heated-fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+        const response = await statisticSensoryHeated(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
-
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }

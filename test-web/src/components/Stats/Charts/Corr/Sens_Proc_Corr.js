@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { apiIP } from '../../../../config';
+import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
 
 export default function Sense_Proc_Corr({
   startDate,
@@ -14,10 +14,12 @@ export default function Sense_Proc_Corr({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+        const response = await statisticSensoryProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
-
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }

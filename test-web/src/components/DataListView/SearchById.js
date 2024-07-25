@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { apiIP } from '../../config';
 import { HiOutlineSearch } from 'react-icons/hi';
 import { TextField, IconButton, Box } from '@mui/material';
+import { getByMeatId } from '../../API/get/getByMeatId';
 
 function SearchById({ onDataFetch, onValueChange }) {
   const [meatId, setMeatId] = useState('');
@@ -23,13 +24,7 @@ function SearchById({ onDataFetch, onValueChange }) {
   const handleSearch = async () => {
     if (error || !meatId) return; // error가 있거나 id가 없으면 검색하지 않음
     try {
-      const response = await fetch(
-        `http://${apiIP}/meat/get/by-meat-id?meatId=${meatId}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      const response = await getByMeatId(meatId)//getbymeatid api 호출
       const data = await response.json();
       onDataFetch(data);
       onValueChange('single');
