@@ -6,7 +6,7 @@ import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 // mui
 import { IconButton } from '@mui/material';
 // 이미지 수정 api 호출
-import updateRawData from '../../../API/update/updateRawData';
+import updateRawImg from '../../../API/update/updateRawImg';
 import updateProcessedData from '../../../API/update/updateProcessedData';
 import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
 
@@ -95,7 +95,7 @@ const MeatImgsCard = ({
 
         // 원육 이미지 수정 api 호출 currentIdx == 0
         if (currentIdx === 0) {
-          const response = updateRawData(
+          const response = updateRawImg(
             raw_data,
             id,
             userId,
