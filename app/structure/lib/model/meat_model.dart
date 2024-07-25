@@ -331,13 +331,13 @@ class MeatModel with ChangeNotifier {
       'userId': sensoryEval!['userId'],
       'seqno': sensoryEval!['seqno'],
       'imgAdded': imgAdded,
-      'filmedAt': sensoryEval!['filmedAt'],
+      'filmedAt': sensoryEval?['filmedAt'],
       'sensoryData': {
-        'marbling': sensoryEval!['marbling'],
-        'color': sensoryEval!['color'],
-        'texture': sensoryEval!['texture'],
-        'surfaceMoisture': sensoryEval!['surfaceMoisture'],
-        'overall': sensoryEval!['overall'],
+        'marbling': sensoryEval?['marbling'],
+        'color': sensoryEval?['color'],
+        'texture': sensoryEval?['texture'],
+        'surfaceMoisture': sensoryEval?['surfaceMoisture'],
+        'overall': sensoryEval?['overall'],
       }
     });
   }
@@ -438,7 +438,15 @@ class MeatModel with ChangeNotifier {
     deepAgingInfo!.add(info);
   }
 
-  /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
+  /// 새로 추가된 sensoryEval 데이터를 로컬 deepAgingInfo에 추가하는 함수
+  /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
+  void updateSeonsory() {
+    final info = deepAgingInfo!
+        .firstWhere((item) => item['seqno'] == '${sensoryEval!['seqno']}');
+    info['sensory_eval'] = sensoryEval;
+  }
+
+  /// 새로 추가된 heatedSensoryEval 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateHeatedSeonsory() {
     final info = deepAgingInfo!.firstWhere(
@@ -446,7 +454,7 @@ class MeatModel with ChangeNotifier {
     info['heated_meat_sensory_eval'] = heatedSensoryEval;
   }
 
-  /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
+  /// 새로 추가된 probExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateProbExpt() {
     final info = deepAgingInfo!
@@ -828,22 +836,22 @@ class MeatModel with ChangeNotifier {
   @override
   String toString() {
     return 'meatId: $meatId,'
+        'userId: $userId,'
         'seqno: $seqno,'
-        'freshmeat: $freshmeat,'
-        'deepAgedFreshmeat: $deepAgedFreshmeat,'
+        'primalValue: $primalValue,'
+        'secondaryValue: $secondaryValue,'
+        'traceNum: $traceNum,'
+        'farmerName: $farmerName,'
+        'farmAddr: $farmAddr,'
+        'butcheryYmd: $butcheryYmd,'
+        'speciesValue: $speciesValue,'
+        'sexType: $sexType,'
+        'gradeNum: $gradeNum,'
+        'birthYmd: $birthYmd,'
         'statusType: $statusType,'
-
-        // 연구 데이터 추가 입력 완료 시 저장
-        'deepAging: $deepAgingData,'
-        'heatedmeat: $heatedmeat,'
-        'probexptData: $probexptData,'
-
-        // 데이터 fetch 시 저장
-        'processedmeat: $processedmeat,'
-        'rawmeat: $rawmeat,'
-
-        // // 데이터 입력 완료시 저장
-        'rawmeatDataComplete: $rawmeatDataComplete,'
-        'processedmeatDataComplete: $processedmeatDataComplete,';
+        'sensoryEval: $sensoryEval,'
+        'heatedSensoryEval: $heatedSensoryEval,'
+        'probExpt: $probExpt,'
+        'heatedProbExpt: $heatedProbExpt,';
   }
 }

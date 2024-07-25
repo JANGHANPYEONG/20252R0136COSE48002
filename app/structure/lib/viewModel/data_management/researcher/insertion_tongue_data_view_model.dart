@@ -11,9 +11,9 @@ import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
 class InsertionTongueDataViewModel with ChangeNotifier {
-  MeatModel meatModel;
-  UserModel userModel;
-  bool isRaw;
+  final MeatModel meatModel;
+  final UserModel userModel;
+  final bool isRaw;
   InsertionTongueDataViewModel(this.meatModel, this.userModel, this.isRaw) {
     _initialize();
   }
@@ -28,6 +28,9 @@ class InsertionTongueDataViewModel with ChangeNotifier {
 
   // 초기 값 할당 (모델에 값이 존재하면 할당)
   void _initialize() {
+    isLoading = true;
+    notifyListeners();
+
     if (isRaw) {
       // 원육/처리육
       sourness.text = '${meatModel.probExpt?['sourness'] ?? ''}';
@@ -41,6 +44,9 @@ class InsertionTongueDataViewModel with ChangeNotifier {
       umami.text = '${meatModel.heatedProbExpt?['umami'] ?? ''}';
       richness.text = '${meatModel.heatedProbExpt?['richness'] ?? ''}';
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 
   // 데이터를 객체에 할당 - 이후 POST
@@ -117,6 +123,12 @@ class InsertionTongueDataViewModel with ChangeNotifier {
           meatModel.updateHeatedProbExpt();
         }
 
+        // 완료 검사
+        meatModel.checkCompleted();
+
+        isLoading = false;
+        notifyListeners();
+
         _context = context;
         _movePage();
       } else {
@@ -124,11 +136,9 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         throw Error();
       }
     } catch (e) {
+      // TODO : 오류 팝업 표시
       debugPrint("Error: $e");
     }
-
-    // 완료 검사
-    meatModel.checkCompleted();
 
     isLoading = false;
     notifyListeners();
