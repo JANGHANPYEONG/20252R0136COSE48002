@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useMapFetch } from '../../../API/listCharts/getChoroplethMapSWR';
+import { useStatisticChoroplethMap } from '../../../API/statistic/statsticChoroplethMapSWR';
 
 const ChoroplethMap = ({ mapData, startDate, endDate }) => {
   const [keyIdx, setKeyIdx] = useState(0);
@@ -41,7 +41,7 @@ const ChoroplethMap = ({ mapData, startDate, endDate }) => {
   };
 
   // 지역 별 개수 데이터 API fetch
-  const { data, isLoading, isError } = useMapFetch(startDate, endDate);
+  const { data, isLoading, isError } = useStatisticChoroplethMap(startDate, endDate);
   console.log('map fetch 결과:', data);
 
   // fetch한 JSON 데이터 전처리

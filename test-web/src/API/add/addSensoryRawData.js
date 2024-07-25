@@ -1,6 +1,6 @@
 import { apiIP } from '../../config';
 import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
-export default async function updateRawData(rawInput, i, meatId) {
+export default async function addSensoryRawData(rawInput, i, meatId) {
   const [yy, mm, dd] = computeCurrentDate();
   const dataSet = {
     marbling: parseFloat(rawInput.marbling),
@@ -17,7 +17,6 @@ export default async function updateRawData(rawInput, i, meatId) {
     ['filmedAt']: '2024-07-08T12:12:12',
     ['sensoryData']: dataSet,
   };
-  console.log(req)
 
   try {
     const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
@@ -40,4 +39,3 @@ export default async function updateRawData(rawInput, i, meatId) {
     console.error(err);
   }
 }
-

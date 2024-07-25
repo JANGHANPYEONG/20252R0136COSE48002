@@ -18,10 +18,10 @@ import ApiTable from './tablesComps/apiTable';
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
 // import update APIs
-import updateHeatedData from '../../API/update/updateHeatedData';
-import updateProbexptData from '../../API/update/updateProbexptData';
-import updateProcessedData from '../../API/update/updateProcessedData';
-import updateRawData from '../../API/update/updateRawData';
+import addHeatedData from '../../API/add/addHeatedData';
+import addProbexptData from '../../API/add/addProbexptData';
+import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
+import addSensoryRawData from '../../API/add/addSensoryRawData';
 import RestrictedModal from './restrictedModal';
 // import card
 import QRInfoCard from './cardComps/QRInfoCard';
@@ -150,7 +150,7 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST **승인되지 않은 데이터
     // for (let i = 0; i < len; i++) {
-    //   updateHeatedData(
+    //   addHeatedData(
     //     heatInput[i],
     //     i,
     //     meatId,
@@ -168,7 +168,7 @@ function DataView({ dataProps }) {
     // }
     // 2. 실험실 데이터 수정 API POST ** 승인되지 않은 데이터
     // for (let i = 0; i < len; i++) {
-    //   updateProbexptData(
+    //   addProbexptData(
     //     labInput[i],
     //     i,
     //     meatId,
@@ -189,7 +189,7 @@ function DataView({ dataProps }) {
     // const pro_len = len === 1 ? len : len - 1;
     // console.log('pro', pro_len);
     // for (let i = 0; i < pro_len; i++) {
-    //   updateProcessedData(
+    //   addSensoryProcessedData(
     //     processedInput[i],
     //     // processed_data[i],
     //     // processedMinute[i],
@@ -205,7 +205,7 @@ function DataView({ dataProps }) {
     //     });
     // }
     //4. 원육 데이터 수정 API
-    updateRawData(rawInput, 0, meatId)
+    addSensoryRawData(rawInput, 0, meatId)
       .then((response) => {
         console.log('원육 수정 POST요청 성공:', response);
       })

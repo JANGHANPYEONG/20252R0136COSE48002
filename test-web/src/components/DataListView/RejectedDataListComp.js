@@ -3,7 +3,7 @@ import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DataList from './DataList';
 import Spinner from 'react-bootstrap/Spinner';
 import Pagination from './Pagination';
-import { useRejectedMeatListFetch } from '../../API/getRejectedMeatListSWR';
+import { useRejectedMeatList } from '../../API/get/getRejectedMeatListSWR';
 
 const navy = '#0F3659';
 
@@ -33,7 +33,7 @@ const RejectedDataListComp = ({
   };
 
   //API fetch
-  const { data, isLoading, isError } = useRejectedMeatListFetch(
+  const { data, isLoading, isError } = useRejectedMeatList (
     currentPage - 1,
     count,
     startDate,

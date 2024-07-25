@@ -1,7 +1,7 @@
-import { apiIP } from "../../config";
+import { apiIP } from '../../config';
 
 // 원육 수정 POST API (이미지 수정)
-export default async function updateRawImg(
+export default async function addSensoryRawImg(
   raw_data, // 원육 데이터
   id, // 이력번호
   userId, // 로그인한 사용자 id
@@ -14,29 +14,25 @@ export default async function updateRawImg(
   };
   req = {
     ...req,
-    ["id"]: id,
-    ["createdAt"]: createdDate,
-    ["userId"]: userId,
-    ["seqno"]: 0,
-    ["period"]: Math.round(elapsedHour),
+    ['id']: id,
+    ['createdAt']: createdDate,
+    ['userId']: userId,
+    ['seqno']: 0,
+    ['period']: Math.round(elapsedHour),
   };
 
   // /meat/add/sensory-eval로 원육 수정 데이터 API 전송
   try {
     const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
-      method: "PATCH",
+      method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(req),
     });
-    /*if (!response.ok) {
-            throw new Error('sensory_eval 서버에서 응답 코드가 성공(2xx)이 아닙니다.');
-        }
-        */
     return response;
   } catch (err) {
-    console.log("error");
+    console.log('error');
     console.error(err);
   }
 }
