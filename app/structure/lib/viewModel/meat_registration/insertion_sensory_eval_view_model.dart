@@ -45,7 +45,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     }
 
     if (meatModel.sensoryEval != null) {
-      meatImage = meatModel.sensoryEval!['imagePath'];
+      meatImage = meatModel.sensoryEval!['imagePath'] ?? '';
       // 수정 시 불러온 데이터, 등록 시 초기 값 1로 설정
       marbling = meatModel.sensoryEval?["marbling"] ?? 1;
       color = meatModel.sensoryEval?["color"] ?? 1;
@@ -110,8 +110,6 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     // 처리육의 경우 sensoryEval이 없으면 post 처리
     bool isPost = false;
 
-    print(meatModel);
-
     if (meatModel.sensoryEval == null && meatModel.seqno != 0) {
       isPost = true;
 
@@ -133,11 +131,14 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     meatModel.sensoryEval!['surfaceMoisture'] = surfaceMoisture;
     meatModel.sensoryEval!['overall'] = overall;
 
-    try {
-      dynamic response;
+    meatModel.checkCompleted();
 
-      if (meatModel.meatId != null) {
-        // 수정하는 경우
+    // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
+    // 원육은 creation_management_num에서 처리
+    if (meatModel.meatId != null) {
+      try {
+        dynamic response;
+
         if (isPost) {
           // 처리육 등록
           response = await RemoteDataSource.createMeatData(
@@ -149,25 +150,23 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
         }
 
         if (response == 200) {
-          if (meatModel.meatId != null) {
-            meatModel.updateSeonsory();
-          }
+          meatModel.updateSeonsory();
         } else {
-          throw Error();
+          throw ErrorDescription(response);
         }
+      } catch (e) {
+        debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context);
       }
-
-      meatModel.checkCompleted();
+    } else {
       await tempSave(); // 임시저장
-
-      isLoading = false;
-      notifyListeners();
-
-      _context = context;
-      _goNext();
-    } catch (e) {
-      debugPrint('에러발생: $e');
     }
+
+    isLoading = false;
+    notifyListeners();
+
+    _context = context;
+    _goNext();
   }
 
   void _goNext() {
@@ -195,6 +194,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
       if (response == null) throw Error();
     } catch (e) {
       debugPrint('Error: $e');
+      // TODO : 임시저장 에러 메시지 팝업
     }
   }
 }

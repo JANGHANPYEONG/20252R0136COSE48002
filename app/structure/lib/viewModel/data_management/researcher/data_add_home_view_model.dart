@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/screen/data_management/researcher/add_deep_aging_data_screen.dart';
@@ -53,7 +54,7 @@ class DataAddHomeViewModel with ChangeNotifier {
   }
 
   // 딥에이징 데이터 삭제
-  Future<void> deleteList(int idx) async {
+  Future<void> deleteList(BuildContext context, int idx) async {
     isLoading = true;
     notifyListeners();
 
@@ -67,10 +68,11 @@ class DataAddHomeViewModel with ChangeNotifier {
         meatModel.deepAgingInfo!.removeAt(idx);
       } else {
         // TODO : 오류 메시지 팝업
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint("Error: $e");
+      if (context.mounted) showErrorPopup(context);
     }
 
     _setTotal();
@@ -116,6 +118,8 @@ class DataAddHomeViewModel with ChangeNotifier {
     // 선택된 회차에 해당하는 딥에이징 데이터 가져오기
     // List builder에서 idx + 1을 한 값을 받아옴
     meatModel.fromJsonDeepAged(idx);
+
+    print(meatModel);
 
     context.go('/home/data-manage-researcher/add/processed-meat');
   }

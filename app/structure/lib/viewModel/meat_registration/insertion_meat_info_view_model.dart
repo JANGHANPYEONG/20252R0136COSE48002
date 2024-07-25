@@ -83,6 +83,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error getting getMeatSpecies: $e');
+      // TODO : 에러 메시지 팝업
     }
 
     // 종에 따른 대분류 데이터 할당
@@ -148,7 +149,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
     saveMeatData();
     meatModel.checkCompleted();
 
-    // meatId가 null이 아니면 수정하는 데이터
+    // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
+    // 원육은 creation_management_num에서 처리
     if (meatModel.meatId != null) {
       try {
         // 수정된 기본 정보 업데이트
@@ -164,12 +166,13 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
               context,
               () => context.go('/home/data-manage-normal/edit'),
             );
-          } else {
-            throw Error();
           }
+        } else {
+          throw ErrorDescription(response);
         }
       } catch (e) {
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context);
       }
     } else {
       // 신규 생성
@@ -188,7 +191,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) Error();
     } catch (e) {
-      debugPrint('에러발생: $e');
+      debugPrint('Error: $e');
+      // TODO : 임시저장 에러 메시지 팝업
     }
   }
 }

@@ -48,7 +48,8 @@ class MeatRegistrationViewModel with ChangeNotifier {
         await _showTempDataDialog(response);
       }
     } catch (e) {
-      debugPrint('에러발생: $e');
+      // TODO : 임시저장 에러 메시지
+      debugPrint('Error: $e');
     }
   }
 
@@ -109,7 +110,8 @@ class MeatRegistrationViewModel with ChangeNotifier {
       if (response == null) throw Error();
       if (context.mounted) showTemporarySavePopup(context);
     } catch (e) {
-      debugPrint('에러발생: $e');
+      // TODO : 임시저장 에러 메시지 팝업
+      debugPrint('Error: $e');
     }
   }
 }

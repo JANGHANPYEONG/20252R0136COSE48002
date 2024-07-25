@@ -66,10 +66,8 @@ class UserDetailViewModel with ChangeNotifier {
   ///checkbox 클릭
   void clicked1stCheckBox(bool value) {
     isActivateButton = true;
-    print('체크박스 클릭됨');
     isChecked = value;
     notifyListeners();
-    print('value : $value');
   }
 
   Future<void> clickedSaveButton(BuildContext context) async {
@@ -93,10 +91,10 @@ class UserDetailViewModel with ChangeNotifier {
       if (response == 200) {
         if (context.mounted) showSuccessChangeUserInfo(context);
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
-      debugPrint('$e');
+      debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context);
     }
 

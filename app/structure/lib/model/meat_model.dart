@@ -42,7 +42,7 @@ class MeatModel with ChangeNotifier {
   /// <br /> String date
   /// <br /> int minute
   /// <br /> Map<String, dynamic> sensory_eval
-  /// <br /> Map<String, dynamic> heated_meat_sensory_eval
+  /// <br /> Map<String, dynamic> heatedmeat_sensory_eval
   /// <br /> Map<String, dynamic> probexpt_data
   /// <br /> Map<String, dynamic> heatedmeat_probexpt_data
   List<dynamic>? deepAgingInfo;
@@ -192,26 +192,29 @@ class MeatModel with ChangeNotifier {
   List<bool> processedCompleted = [];
 
   // Constructor
-  // 미완료
   MeatModel({
-    // 관리 번호 생성 시 저장
     this.meatId,
-    this.userId,
-    this.sexType,
-    this.gradeNum,
-    this.statusType,
     this.createdAt,
-    this.traceNum,
-    this.farmAddr,
-    this.farmerName,
-    this.butcheryYmd,
-    this.birthYmd,
+    this.userId,
     this.userName,
-    // Species, primal, secondary를 토대로 백에서 categoryId 생성
-    this.speciesValue,
+    this.statusType,
+    this.imagePath,
     this.primalValue,
     this.secondaryValue,
+    this.traceNum,
+    this.farmerName,
+    this.farmAddr,
+    this.butcheryYmd,
+    this.speciesValue,
+    this.sexType,
+    this.gradeNum,
+    this.birthYmd,
+    this.deepAgingInfo,
     this.seqno,
+    this.sensoryEval,
+    this.heatedSensoryEval,
+    this.probExpt,
+    this.heatedProbExpt,
   });
 
   /// 임시 데이터 저장
@@ -388,7 +391,7 @@ class MeatModel with ChangeNotifier {
       'minute': jsonData['deepAging']['minute'],
       'seqno': jsonData['seqno'],
       'sensory_eval': null,
-      'heated_meat_sensory_eval': null,
+      'heatedmeat_sensory_eval': null,
       'probexpt_data': null,
       'heatedmeat_probexpt_data': null,
     };
@@ -400,7 +403,7 @@ class MeatModel with ChangeNotifier {
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateSeonsory() {
     final info = deepAgingInfo!
-        .firstWhere((item) => item['seqno'] == '${sensoryEval!['seqno']}');
+        .firstWhere((item) => '${item['seqno']}' == '${sensoryEval!['seqno']}');
     info['sensory_eval'] = sensoryEval;
   }
 
@@ -408,27 +411,25 @@ class MeatModel with ChangeNotifier {
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateHeatedSeonsory() {
     final info = deepAgingInfo!.firstWhere(
-        (item) => item['seqno'] == '${heatedSensoryEval!['seqno']}');
-    info['heated_meat_sensory_eval'] = heatedSensoryEval;
+        (item) => '${item['seqno']}' == '${heatedSensoryEval!['seqno']}');
+    info['heatedmeat_sensory_eval'] = heatedSensoryEval;
   }
 
   /// 새로 추가된 probExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateProbExpt() {
     final info = deepAgingInfo!
-        .firstWhere((item) => item['seqno'] == '${probExpt!['seqno']}');
+        .firstWhere((item) => '${item['seqno']}' == '${probExpt!['seqno']}');
     info['probexpt_data'] = probExpt;
   }
 
   /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateHeatedProbExpt() {
-    final info = deepAgingInfo!
-        .firstWhere((item) => item['seqno'] == '${heatedProbExpt!['seqno']}');
+    final info = deepAgingInfo!.firstWhere(
+        (item) => '${item['seqno']}' == '${heatedProbExpt!['seqno']}');
     info['heatedmeat_probexpt_data'] = heatedProbExpt;
   }
-
-  // 미완료
 
   /// 육류 전체 데이터 저장
   void fromJson(Map<String, dynamic> jsonData) {

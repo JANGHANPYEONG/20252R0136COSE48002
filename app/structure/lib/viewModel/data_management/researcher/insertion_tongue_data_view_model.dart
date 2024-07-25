@@ -122,26 +122,23 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         } else {
           meatModel.updateHeatedProbExpt();
         }
-
-        // 완료 검사
-        meatModel.checkCompleted();
-
-        isLoading = false;
-        notifyListeners();
-
-        _context = context;
-        _movePage();
       } else {
         // TODO : 입력한 데이터 초기화
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
-      // TODO : 오류 팝업 표시
-      debugPrint("Error: $e");
+      debugPrint("Error1: $e");
+      // if (context.mounted) showErrorPopup(context);
     }
+
+    // 완료 검사
+    meatModel.checkCompleted();
 
     isLoading = false;
     notifyListeners();
+
+    _context = context;
+    _movePage();
   }
 
   void _movePage() {

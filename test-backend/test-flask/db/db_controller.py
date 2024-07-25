@@ -242,8 +242,7 @@ def create_specific_std_meat_data(
             new_meat = create_meat(db_session=db_session, meat_data=data)
             new_meat.statusType = 0
 
-            db_session.merge(new_meat)
-            db_session.commit()
+            db_session.add(new_meat)
 
             # 2. Firestore -> S3
             transfer_folder_image(
@@ -269,11 +268,13 @@ def create_specific_std_meat_data(
                 .first()
             )
             existing_meat.categoryId = new_category.id
+            existing_meat.statusType = 0
 
-            db_session.add(existing_meat)
-            db_session.commit()
+            db_session.merge(existing_meat)
+        db_session.commit()
 
     except Exception as e:
+        # logger.info(str(e))
         db_session.rollback()
         raise e
 
@@ -366,12 +367,13 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
 
             user_id = safe_str(data.get("userId"))
             # sensory_eval 생성
-            sensory_data["createdAt"] = convert2string(datetime.now(), 1)
-            new_sensory_eval = create_SensoryEval(
-                db_session, data, sensory_data, seqno, meat_id, user_id
-            )
-            db_session.add(new_sensory_eval)
-            db_session.commit()
+            if any(value is not None for value in sensory_data.values()):
+                sensory_data["createdAt"] = convert2string(datetime.now(), 1)
+                new_sensory_eval = create_SensoryEval(
+                    db_session, data, sensory_data, seqno, meat_id, user_id
+                )
+                db_session.add(new_sensory_eval)
+                db_session.commit()
 
             if need_img:
                 transfer_folder_image(
@@ -400,16 +402,18 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             if seqno == 0:
                 if meat.statusType == 2:
                     return {"msg": "Already Confirmed Meat", "code": 400}
-                meat.statusType == 0
+                meat.statusType = 0
                 db_session.merge(meat)
-                db_session.commit()
 
             # sensory_eval 생성
-            sensory_data["createdAt"] = convert2string(existing_sensory.createdAt, 1)
-            new_sensory_eval = create_SensoryEval(
-                db_session, data, sensory_data, seqno, meat_id, existing_user
-            )
-            db_session.merge(new_sensory_eval)
+            if any(value is not None for value in sensory_data.values()):
+                sensory_data["createdAt"] = convert2string(
+                    existing_sensory.createdAt, 1
+                )
+                new_sensory_eval = create_SensoryEval(
+                    db_session, data, sensory_data, seqno, meat_id, existing_user
+                )
+                db_session.merge(new_sensory_eval)
 
             if need_img:
                 transfer_folder_image(
@@ -425,6 +429,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                 "msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}",
                 "code": 200,
             }
+
     except Exception as e:
         db_session.rollback()
         raise e
@@ -799,6 +804,7 @@ def delete_user(db_session, user):
 # USER
 def create_user(db_session, user_data: dict):
     try:
+        user_data["createdAt"] = convert2string(datetime.now(), 1)
         for field, value in user_data.items():
             if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()

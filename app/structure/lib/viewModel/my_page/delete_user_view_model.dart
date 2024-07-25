@@ -64,7 +64,7 @@ class DeleteUserViewModel with ChangeNotifier {
 
     if (response != 200) {
       // TODO : 에러 메시지 팝업
-      throw Error();
+      throw ErrorDescription(response);
     }
 
     password.clear();
@@ -101,7 +101,7 @@ class DeleteUserViewModel with ChangeNotifier {
           showDeleteIdDialog(_context, popDialogCancel, popDialogConfirm);
         }
       } else {
-        throw Error();
+        throw ErrorDescription('User does not exist');
       }
     } on FirebaseException catch (e) {
       debugPrint('error: ${e.code}');
@@ -111,7 +111,7 @@ class DeleteUserViewModel with ChangeNotifier {
         _showSnackBar('오류가 발생했습니다.');
       }
     } catch (e) {
-      debugPrint('error: $e');
+      debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context);
     }
 

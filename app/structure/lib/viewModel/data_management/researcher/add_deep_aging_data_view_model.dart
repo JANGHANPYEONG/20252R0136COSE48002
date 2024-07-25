@@ -7,6 +7,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -94,10 +95,11 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
 
         if (context.mounted) Navigator.pop(context);
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
   }
 }

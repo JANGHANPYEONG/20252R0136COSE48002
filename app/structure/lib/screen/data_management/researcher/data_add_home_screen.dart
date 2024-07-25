@@ -171,8 +171,8 @@ class _DataAddHomeState extends State<DataAddHome> {
                               //     .meatModel.deepAgingInfo![index]['complete'],
                               onTap: () async => dataAddHomeViewModel
                                   .clickedProcessedMeat(index + 1, context),
-                              delete: () async =>
-                                  dataAddHomeViewModel.deleteList(index + 1),
+                              delete: () async => dataAddHomeViewModel
+                                  .deleteList(context, index + 1),
                             ),
                           );
                         },
