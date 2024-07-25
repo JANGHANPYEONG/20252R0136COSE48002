@@ -23,8 +23,6 @@ class HomeViewModel with ChangeNotifier {
         userType = 'None';
       }
     }
-    print('타입 : ${userModel.type}');
-    print('타입 : $userType');
   }
 
   void clickedMyPage(BuildContext context) {

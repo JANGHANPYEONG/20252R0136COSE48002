@@ -153,7 +153,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
         _movePage();
       } else {
         // TODO: 입력한 데이터 삭제해야함
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint("Error: $e");

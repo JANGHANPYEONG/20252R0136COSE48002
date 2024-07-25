@@ -67,7 +67,7 @@ class DataAddHomeViewModel with ChangeNotifier {
         meatModel.deepAgingInfo!.removeAt(idx);
       } else {
         // TODO : 오류 메시지 팝업
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint("Error: $e");

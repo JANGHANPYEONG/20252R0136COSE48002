@@ -80,13 +80,13 @@ class InsertionUserDetailViewModel with ChangeNotifier {
           await credential.user!.sendEmailVerification();
           emailcheck = true;
         } else {
-          throw Error();
+          throw ErrorDescription('User does not exist');
         }
 
         userModel.password = null; // 계정 생성 완료 후 userModel에서 비밀번호 초기화
         if (context.mounted) context.go('/sign-in/complete-sign-up');
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

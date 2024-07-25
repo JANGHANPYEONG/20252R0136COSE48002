@@ -110,7 +110,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
         _movePage();
       } else {
         // TODO : 입력한 데이터 초기화
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');

@@ -93,7 +93,7 @@ class UserDetailViewModel with ChangeNotifier {
       if (response == 200) {
         if (context.mounted) showSuccessChangeUserInfo(context);
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('$e');

@@ -88,7 +88,7 @@ class EditMeatDataViewModel with ChangeNotifier {
 
         if (context.mounted) context.pop();
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       // 승인 오류
@@ -112,7 +112,7 @@ class EditMeatDataViewModel with ChangeNotifier {
 
         if (context.mounted) context.pop();
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       // 승인 오류

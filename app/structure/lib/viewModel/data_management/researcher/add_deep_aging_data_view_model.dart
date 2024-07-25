@@ -94,7 +94,7 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
 
         if (context.mounted) Navigator.pop(context);
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');

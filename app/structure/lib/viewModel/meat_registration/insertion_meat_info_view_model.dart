@@ -148,7 +148,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
     saveMeatData();
     meatModel.checkCompleted();
 
-    // meatId가 null이 아니면 수정하는 데이터
+    // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
+    // 원육은 creation_management_num에서 처리
     if (meatModel.meatId != null) {
       try {
         // 수정된 기본 정보 업데이트
@@ -164,9 +165,9 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
               context,
               () => context.go('/home/data-manage-normal/edit'),
             );
-          } else {
-            throw Error();
           }
+        } else {
+          throw ErrorDescription(response);
         }
       } catch (e) {
         debugPrint('Error: $e');

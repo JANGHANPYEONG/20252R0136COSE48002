@@ -136,10 +136,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
     // sensoryEval이 없으면 post로 진행
     bool isPost = false;
 
-    print('isRaw: $isRaw');
-    print('Sensory: ${meatModel.sensoryEval}');
-    print('Heated: ${meatModel.heatedSensoryEval}');
-
     if (isRaw) {
       // 원육/처리육
       // 원육 등록의 경우 이미지 등록을 해야 관능평가가 가능하기 때문에 이미지 등록 시점에서는 sensoryEval = null
@@ -173,14 +169,14 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       meatModel.heatedImgAdded = imgAdded;
     }
 
-    try {
-      // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
-      // 원육은 creation_management_num에서 처리
-      if (meatModel.meatId != null) {
-        if (meatModel.meatId != null) {
-          // 이미지 업로드 먼저
-          await _sendImageToFirebase();
-        }
+    meatModel.checkCompleted();
+
+    // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
+    // 원육은 creation_management_num에서 처리
+    if (meatModel.meatId != null) {
+      try {
+        // 이미지 업로드 먼저
+        await _sendImageToFirebase();
 
         dynamic response;
 
@@ -216,21 +212,21 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           }
         } else {
           // TODO : 입력한 데이터 초기화
-          throw Error();
+          throw ErrorDescription(response);
         }
+      } catch (e) {
+        debugPrint('Error: $e');
       }
-
-      meatModel.checkCompleted();
-      await tempSave(); // 임시저장
-
-      isLoading = false;
-      notifyListeners();
-
-      _context = context; // movePage를 위한 context 설정
-      _movePage();
-    } catch (e) {
-      debugPrint('Error: $e');
+    } else {
+      // 신규 생성일때만 임시저장
+      await tempSave();
     }
+
+    isLoading = false;
+    notifyListeners();
+
+    _context = context; // movePage를 위한 context 설정
+    _movePage();
   }
 
   /// 페이지 이동
@@ -268,17 +264,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         refMeatImage = FirebaseStorage.instance.ref().child(
             'heatedmeat_sensory_evals/${meatModel.meatId}-${meatModel.seqno}.png');
       }
-
-      // if (imgPath!.contains('http')) {
-      //   // db 사진
-      //   final http.Response response =
-      //       await http.get(Uri.parse(meatModel.imagePath!));
-      //   final Uint8List imageData = Uint8List.fromList(response.bodyBytes);
-      //   await refMeatImage.putData(
-      //     imageData,
-      //     SettableMetadata(contentType: 'image/jpeg'),
-      //   );
-      // } else
 
       // 이미지가 새롭게 수정된 경우에만 firebase에 업로드
       if (imgAdded) {

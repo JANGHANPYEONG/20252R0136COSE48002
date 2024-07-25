@@ -48,7 +48,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       try {
         final response = await RemoteDataSource.confirmMeatData(managementNum);
 
-        if (response != 200) throw Error();
+        if (response != 200) throw ErrorDescription(response);
       } catch (e) {
         debugPrint('Error: $e');
       }
@@ -141,8 +141,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   /// 3. 육류 정보를 서버로 전송
   Future<void> _sendMeatData() async {
-    print(meatModel.toJsonBasic());
-
     try {
       // 육류 기본 정보 입력
       final response1 =
@@ -157,7 +155,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
         isLoading = false;
         notifyListeners();
       } else {
-        throw Error();
+        throw ErrorDescription(response2);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -199,23 +197,4 @@ class CreationManagementNumViewModel with ChangeNotifier {
   void clickedHomeButton(BuildContext context) {
     context.go('/home');
   }
-
-  // Future<void> clickedAddData(BuildContext context) async {
-  //   String id = managementNum;
-
-  //   try {
-  //     isFetchLoading = true;
-  //     notifyListeners();
-
-  //     dynamic response = await RemoteDataSource.getMeatData(id);
-  //     if (response == null) throw Error();
-  //     meatModel.reset();
-  //     meatModel.fromJson(response);
-  //     if (context.mounted) context.go('/home/data-manage-researcher/add');
-  //   } catch (e) {
-  //     debugPrint("Error: $e");
-  //   }
-  //   isFetchLoading = false;
-  //   notifyListeners();
-  // }
 }
