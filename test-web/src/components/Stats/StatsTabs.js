@@ -115,7 +115,7 @@ export default function StatsTabs({ startDate, endDate }) {
           <Tab label="시계열" {...a11yProps(3)} />
         </Tabs>
         <Box>
-          {value == 3 && (
+          {value == 3 ? (
             <Select
               labelId="meat-value-label"
               id="meat-value"
@@ -126,10 +126,7 @@ export default function StatsTabs({ startDate, endDate }) {
               <MenuItem value="등심">등심</MenuItem>
               <MenuItem value="설도">설도</MenuItem>
             </Select>
-          )}
-        </Box>
-        <Box>
-          {value !== 3 && (
+          ) : (
             <div>
               <Select
                 labelId="secondary-label"
@@ -288,20 +285,24 @@ export default function StatsTabs({ startDate, endDate }) {
       <CustomTabPanel value={value} index={2}>
         {secondary === '원육' ? (
           <>
-            <Sense_Fresh_Corr
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <Taste_Fresh_Corr
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
+            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+              <Sense_Fresh_Corr
+                key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
+                startDate={startDate}
+                endDate={endDate}
+                animalType={animalType}
+                grade={grade}
+              />
+            </div>
+            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+              <Taste_Fresh_Corr
+                key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
+                startDate={startDate}
+                endDate={endDate}
+                animalType={animalType}
+                grade={grade}
+              />
+            </div>
           </>
         ) : secondary === '처리육' ? (
           <>
