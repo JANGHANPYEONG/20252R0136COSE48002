@@ -148,62 +148,6 @@ function DataView({ dataProps }) {
     //로그인한 유저 정보
     const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
-    // 1. 가열육 관능검사 데이터 수정 API POST **승인되지 않은 데이터
-    // for (let i = 0; i < len; i++) {
-    //   addHeatedData(
-    //     heatInput[i],
-    //     i,
-    //     meatId,
-    //     createdDate,
-    //     userId,
-    //     elapsedHour
-    //   )
-    //     .then((response) => {
-    //       console.log('가열육 수정 POST요청 성공:', response);
-    //     })
-    //     .catch((error) => {
-    //       // 오류 발생 시의 처리
-    //       console.error('가열육 수정 POST 요청 오류:', error);
-    //     });
-    // }
-    // 2. 실험실 데이터 수정 API POST ** 승인되지 않은 데이터
-    // for (let i = 0; i < len; i++) {
-    //   addProbexptData(
-    //     labInput[i],
-    //     i,
-    //     meatId,
-    //     createdDate,
-    //     userId,
-    //     elapsedHour
-    //   )
-    //     .then((response) => {
-    //       console.log('실험실 수정 POST요청 성공:', response);
-    //     })
-    //     .catch((error) => {
-    //       // 오류 발생 시의 처리
-    //       console.error('실험실 수정 POST 요청 오류:', error);
-    //     });
-    // }
-
-    // 3. 처리육 관능검사 데이터 수정 API POST **승인되지 않은 육류데이터
-    // const pro_len = len === 1 ? len : len - 1;
-    // console.log('pro', pro_len);
-    // for (let i = 0; i < pro_len; i++) {
-    //   addSensoryProcessedData(
-    //     processedInput[i],
-    //     // processed_data[i],
-    //     // processedMinute[i],
-    //     i,
-    //     meatId
-    //   )
-    //     .then((response) => {
-    //       console.log('처리육 수정 POST요청 성공:', response);
-    //     })
-    //     .catch((error) => {
-    //       // 오류 발생 시의 처리
-    //       console.error('처리육 수정 POST 요청 오류:', error);
-    //     });
-    // }
     //4. 원육 데이터 수정 API
     addSensoryRawData(rawInput, 0, meatId)
       .then((response) => {

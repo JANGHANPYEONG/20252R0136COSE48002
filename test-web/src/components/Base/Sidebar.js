@@ -132,12 +132,6 @@ function Sidebar() {
   };
   const logout = async () => {
     try {
-      // const response = await fetch(
-      //   `http://${apiIP}/user/logout?id=${userEmail}`
-      // );
-      // const auth = getAuth();
-      // await signOut(auth);
-      // console.log(response);
       localStorage.setItem('isLoggedIn', 'false');
       navigate('/');
       window.location.reload();

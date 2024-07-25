@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { apiIP } from '../../../../config';
+import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
 
 export default function Taste_Proc_Corr({
   startDate,
@@ -14,8 +14,11 @@ export default function Taste_Proc_Corr({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}&seqno=1`
+        const response = await statisticProbexptProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
 
         if (!response.ok) {

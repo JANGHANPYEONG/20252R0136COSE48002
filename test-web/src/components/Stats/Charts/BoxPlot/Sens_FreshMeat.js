@@ -1,7 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import { apiIP } from '../../../../config';
+import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
 
 export default function Sens_FreshMeat({
   startDate,
@@ -12,10 +12,7 @@ export default function Sens_FreshMeat({
   const [chartData, setChartData] = useState([]);
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        //`http://${apiIP}/meat/statistic?type=6&start=${startDate}&end=${endDate}`
-        `http://${apiIP}/meat/statistic/sensory-stats/fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
-      );
+      const response = await statisticSensoryFresh(startDate, endDate, animalType, grade);
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
