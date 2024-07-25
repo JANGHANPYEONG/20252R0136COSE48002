@@ -742,6 +742,7 @@ def delete_user(db_session, user):
 # USER
 def create_user(db_session, user_data: dict):
     try:
+        user_data['createdAt'] = convert2string(datetime.now(), 1)
         for field, value in user_data.items():
             if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()

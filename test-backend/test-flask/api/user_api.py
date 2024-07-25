@@ -115,7 +115,6 @@ def register_user_data():
         existing_user = get_user(db_session, user_id)
         if existing_user:
             return jsonify({"msg": "User already exists"}), 400
-        data["createdAt"] = datetime.now()
 
         create_user(db_session, data)
 
