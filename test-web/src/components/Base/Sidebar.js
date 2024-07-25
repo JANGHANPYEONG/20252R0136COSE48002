@@ -281,12 +281,20 @@ function Sidebar() {
                 onClick={() => handleListItemClick(item)}
                 selected={location.pathname === item.path}
                 sx={{
+                  margin: '0 auto 16px auto',
+                  width: open ? 245 : 64,
+                  height: 64,
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
                   ...(location.pathname === item.path && {
                     '& .MuiSvgIcon-root, .MuiTypography-root': {
                       color: '#FFFFFF',
                     },
                     '&.Mui-selected': {
                       backgroundColor: '#7BD758',
+                      borderRadius: '16px',
+                      boxShadow:3,
                     },
                   }),
                 }}
