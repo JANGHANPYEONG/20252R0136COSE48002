@@ -170,9 +170,9 @@ class RemoteDataSource {
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨
   // TODO : Patch로 변경, meatId 변경
-  static Future<dynamic> deleteDeepAging(String id, int seqno) async {
+  static Future<dynamic> deleteDeepAging(String meatId, int seqno) async {
     dynamic response =
-        await _deleteApi('meat/delete/deep-aging?id=$id&seqno=$seqno');
+        await _deleteApi('meat/delete/deep-aging?meatId=$meatId&seqno=$seqno');
     return response;
   }
 
@@ -306,11 +306,11 @@ class RemoteDataSource {
 
       if (response.statusCode == 200) {
         debugPrint('DELETE 요청 성공');
-        return jsonDecode(response.body);
       } else {
         debugPrint('DELETE 요청 실패: (${response.statusCode})${response.body}');
-        return;
       }
+
+      return response.statusCode;
     } catch (e) {
       debugPrint('DELETE 요청 중 예외 발생: $e');
       return;

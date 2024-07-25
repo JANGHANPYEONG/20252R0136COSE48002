@@ -136,7 +136,6 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                           itemBuilder: (context, index) => ListCardNormal(
                             onTap: () async => await dataManagementHomeViewModel
                                 .onTap(index, context),
-                            idx: index + 1,
                             num: dataManagementHomeViewModel.selectedList[index]
                                 ["meatId"]!,
                             dayTime: dataManagementHomeViewModel

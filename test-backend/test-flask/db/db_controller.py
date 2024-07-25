@@ -447,6 +447,7 @@ def create_specific_heatedmeat_seonsory_eval(
         sensory_data = data["heatedmeatSensoryData"]
         sensory_data["filmedAt"] = data["filmedAt"]
         existed_sensory_data = get_HeatedmeatSensoryEval(db_session, id, seqno)
+        print(existed_sensory_data)
 
         if existed_sensory_data:  # 수정
             if is_post:  # 수정인데 POST 메서드
@@ -459,7 +460,7 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.merge(new_sensory_data)
-            # db_session.commit()
+            db_session.commit()
 
         else:  # 생성
             if not is_post:  # 생성인데 PATCH 메서드
@@ -469,6 +470,7 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["period"] = calculate_period(db_session, id)
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.add(new_sensory_data)
+            db_session.commit()
 
         if need_img:
             transfer_folder_image(

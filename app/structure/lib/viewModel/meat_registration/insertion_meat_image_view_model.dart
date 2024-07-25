@@ -136,6 +136,10 @@ class InsertionMeatImageViewModel with ChangeNotifier {
     // sensoryEval이 없으면 post로 진행
     bool isPost = false;
 
+    print('isRaw: $isRaw');
+    print('Sensory: ${meatModel.sensoryEval}');
+    print('Heated: ${meatModel.heatedSensoryEval}');
+
     if (isRaw) {
       // 원육/처리육
       // 원육 등록의 경우 이미지 등록을 해야 관능평가가 가능하기 때문에 이미지 등록 시점에서는 sensoryEval = null
@@ -202,11 +206,13 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         }
 
         if (response == 200) {
-          // deepAgingInfo 업데이트
-          if (isRaw) {
-            meatModel.updateSeonsory();
-          } else {
-            meatModel.updateHeatedSeonsory();
+          // 원육 등록이 아닌 경우에는 deepAgingInfo 업데이트
+          if (meatModel.meatId != null) {
+            if (isRaw) {
+              meatModel.updateSeonsory();
+            } else {
+              meatModel.updateHeatedSeonsory();
+            }
           }
         } else {
           // TODO : 입력한 데이터 초기화
@@ -215,9 +221,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       }
 
       meatModel.checkCompleted();
-
-      // 임시저장
-      await tempSave();
+      await tempSave(); // 임시저장
 
       isLoading = false;
       notifyListeners();

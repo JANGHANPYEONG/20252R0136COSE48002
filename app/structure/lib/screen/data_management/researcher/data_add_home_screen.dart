@@ -109,15 +109,14 @@ class _DataAddHomeState extends State<DataAddHome> {
 
                               // 원육 데이터의 모든 데이터 입력 확인.
                               Text(
-                                dataAddHomeViewModel
-                                        .meatModel.rawmeatDataComplete
+                                dataAddHomeViewModel.meatModel.rawCompleted
                                     ? '완료'
                                     : '미완료',
                                 style: TextStyle(
                                   fontSize: 28.sp,
                                   fontWeight: FontWeight.w700,
                                   color: dataAddHomeViewModel
-                                          .meatModel.rawmeatDataComplete
+                                          .meatModel.rawCompleted
                                       ? const Color.fromARGB(255, 56, 197, 95)
                                       : const Color.fromARGB(255, 255, 73, 73),
                                 ),

@@ -184,7 +184,7 @@ class UserRouter {
                   path: 'freshmeat',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
-                        InsertionSensoryEvalViewModel(meatModel),
+                        InsertionSensoryEvalViewModel(meatModel, userModel),
                     child: const SensoryEvalScreen(),
                   ),
                 ),
@@ -298,7 +298,7 @@ class UserRouter {
                       path: 'freshmeat-editable',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
-                            InsertionSensoryEvalViewModel(meatModel),
+                            InsertionSensoryEvalViewModel(meatModel, userModel),
                         child: const SensoryEvalScreen(),
                       ),
                     ),
@@ -433,8 +433,8 @@ class UserRouter {
                         GoRoute(
                           path: 'sensory',
                           builder: (context, state) => ChangeNotifierProvider(
-                            create: (context) =>
-                                InsertionSensoryEvalViewModel(meatModel),
+                            create: (context) => InsertionSensoryEvalViewModel(
+                                meatModel, userModel),
                             child: const SensoryEvalScreen(),
                           ),
                         ),
