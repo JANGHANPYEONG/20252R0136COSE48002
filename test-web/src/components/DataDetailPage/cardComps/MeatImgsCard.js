@@ -32,11 +32,13 @@ const MeatImgsCard = ({
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
   useEffect(() => {
-    processed_img_path.length !== 0
-      ? //{}이 아닌 경우
-        setImgArr([...imgArr, ...processed_img_path])
-      : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
-        setImgArr([...imgArr, null]);
+    setImgArr([...imgArr, ...processed_img_path]);
+
+    // processed_img_path.length !== 0
+    //   ? //{}이 아닌 경우
+    //     setImgArr([...imgArr, ...processed_img_path])
+    //   : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
+    //     setImgArr([...imgArr, null]);
   }, []);
 
   // 이미지 배열 페이지네이션
@@ -102,7 +104,7 @@ const MeatImgsCard = ({
             createdDate,
             elapsedHour
           );
-          
+
           response.then((response) => {
             if (response.statusText === 'NOT FOUND') {
               setIsLimitedToChangeImage(true); //실패시

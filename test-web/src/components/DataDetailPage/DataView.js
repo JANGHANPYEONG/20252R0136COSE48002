@@ -36,7 +36,7 @@ function DataView({ dataProps }) {
   //dataProps로 부터 properties destruct
   const {
     meatId, // 이력번호
-    userId, // 로그인한 사용자 meatI    
+    userId, // 로그인한 사용자
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -59,7 +59,6 @@ function DataView({ dataProps }) {
   useEffect(() => {
     options = processed_data_seq;
   }, []);
-
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
@@ -126,8 +125,14 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-
-      updateHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
+      updateHeatedData(
+        heatInput[i],
+        i,
+        meatId,
+        createdDate,
+        userId,
+        elapsedHour
+      )
         .then((response) => {
           console.log('가열육 수정 POST요청 성공:', response);
         })
@@ -137,8 +142,15 @@ function DataView({ dataProps }) {
         });
     }
     // 2. 실험실 데이터 수정 API POST
-    for (let i = 0; i < len ; i++) {
-      updateProbexptData(labInput[i], i, meatId, createdDate, userId, elapsedHour)
+    for (let i = 0; i < len; i++) {
+      updateProbexptData(
+        labInput[i],
+        i,
+        meatId,
+        createdDate,
+        userId,
+        elapsedHour
+      )
         .then((response) => {
           console.log('실험실 수정 POST요청 성공:', response);
         })
@@ -150,7 +162,6 @@ function DataView({ dataProps }) {
 
     // 3. 처리육 관능검사 데이터 수정 API POST
     const pro_len = len === 1 ? len : len - 1;
-    
     for (let i = 0; i < pro_len; i++) {
       updateProcessedData(
         processedInput[i],
@@ -450,7 +461,7 @@ const labField = [
   'bitterness',
   'umami',
   'richness',
-  'Collagen'
+  'Collagen',
 ];
 const apiField = [
   'birthYmd',
