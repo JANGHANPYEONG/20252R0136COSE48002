@@ -1,7 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import { apiIP } from '../../../../config';
+import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
 
 export default function Sens_ProcMeat({
   startDate,
@@ -13,8 +13,11 @@ export default function Sens_ProcMeat({
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+      const response = await statisticSensoryProcessed(
+        startDate,
+        endDate,
+        animalType,
+        grade
       );
 
       if (!response.ok) {

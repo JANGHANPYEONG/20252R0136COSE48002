@@ -1,6 +1,6 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
-import { apiIP } from '../../../../config';
+import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
 
 export default function Sens_Proc_Map({
   startDate,
@@ -14,8 +14,11 @@ export default function Sens_Proc_Map({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+        const response = await statisticSensoryProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
 
         if (!response.ok) {

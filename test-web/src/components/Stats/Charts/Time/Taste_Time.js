@@ -1,18 +1,12 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
-import { apiIP } from '../../../../config';
+import { statisticTime } from '../../../../API/statistic/statisticTime';
 
 export default function Taste_Time({ startDate, endDate, meatValue }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/time?start=${startDate}&end=${endDate}&meatValue=${meatValue}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        const response = await statisticTime(startDate, endDate, meatValue); //시계열 api 호출
         const data = await response.json();
 
         // Extract the necessary data from the response
@@ -135,4 +129,3 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
     </div>
   );
 }
-

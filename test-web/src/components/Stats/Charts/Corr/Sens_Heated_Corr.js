@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { apiIP } from '../../../../config';
+import { statisticSensoryHeated } from '../../../../API/statistic/statisticSensoryHeated';
 
 export default function Sense_Heated_Corr({
   startDate,
@@ -14,8 +14,11 @@ export default function Sense_Heated_Corr({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/sensory-stats/heated-fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+        const response = await statisticSensoryHeated(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
 
         if (!response.ok) {
