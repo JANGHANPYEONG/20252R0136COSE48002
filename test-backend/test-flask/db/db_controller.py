@@ -237,7 +237,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
             new_meat = create_meat(db_session=db_session, meat_data=data)
             new_meat.statusType = 0
             
-            db_session.merge(new_meat)
+            db_session.add(new_meat)
             
             # 2. Firestore -> S3
             transfer_folder_image(
@@ -260,10 +260,11 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
             ).first()
             existing_meat.categoryId = new_category.id
             
-            db_session.add(existing_meat)
+            db_session.merge(existing_meat)
         db_session.commit()
 
     except Exception as e:
+        # logger.info(str(e))
         db_session.rollback()
         raise e
 
@@ -424,7 +425,7 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.merge(new_sensory_data)
-            
+
         else: # 생성
             if not is_post: # 생성인데 PATCH 메서드
                 return ({"msg": "Heatedmeat Sensory Data Does NOT Exists", "code": 400})
