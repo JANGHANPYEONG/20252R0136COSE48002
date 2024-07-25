@@ -4,13 +4,11 @@ import { apiIP } from '../../config';
 // 처리육 수정 POST API
 export default async function updateProcessedData(
   processedInput, // 처리육 데이터 (수정값)
-  processed_data, // 처리육 데이터
-  processedMinute, // 처리(딥에이징) 시간
+  // processed_data, // 처리육 데이터
+  // processedMinute, // 처리(딥에이징) 시간
   i, // 처리육 seqno
   meatId, // 이력번호
-  userId, // 로그인한 사용자 id
-  createdDate, // 생성 날짜
-  elapsedHour //경과 시간
+  
 ) {
   const [yy, mm, dd] = computeCurrentDate();
   //console.log("CHECK",processedInput)

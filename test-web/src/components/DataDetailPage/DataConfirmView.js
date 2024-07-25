@@ -21,6 +21,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import updateHeatedData from '../../API/update/updateHeatedData';
 import updateProbexptData from '../../API/update/updateProbexptData';
 import updateProcessedData from '../../API/update/updateProcessedData';
+import updateRawData from '../../API/update/updateRawData';
 import RestrictedModal from './restrictedModal';
 // import card
 import QRInfoCard from './cardComps/QRInfoCard';
@@ -34,6 +35,7 @@ import RejectModal from './rejectModal';
 import { FaRegCheckCircle, FaRegTimesCircle } from 'react-icons/fa';
 // mui
 import { IconButton, TextField, Autocomplete } from '@mui/material';
+
 // import tables
 // import RawTable from './tablesComps/rawTable';
 import ProcessedTableStatic from './tablesComps/processedTableStatic';
@@ -146,65 +148,71 @@ function DataView({ dataProps }) {
     //로그인한 유저 정보
     const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
-    // 1. 가열육 관능검사 데이터 수정 API POST
-    for (let i = 0; i < len; i++) {
-      updateHeatedData(
-        heatInput[i],
-        i,
-        meatId,
-        createdDate,
-        userId,
-        elapsedHour
-      )
-        .then((response) => {
-          console.log('가열육 수정 POST요청 성공:', response);
-        })
-        .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('가열육 수정 POST 요청 오류:', error);
-        });
-    }
-    // 2. 실험실 데이터 수정 API POST
-    for (let i = 0; i < len; i++) {
-      updateProbexptData(
-        labInput[i],
-        i,
-        meatId,
-        createdDate,
-        userId,
-        elapsedHour
-      )
-        .then((response) => {
-          console.log('실험실 수정 POST요청 성공:', response);
-        })
-        .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('실험실 수정 POST 요청 오류:', error);
-        });
-    }
+    // 1. 가열육 관능검사 데이터 수정 API POST **승인되지 않은 데이터
+    // for (let i = 0; i < len; i++) {
+    //   updateHeatedData(
+    //     heatInput[i],
+    //     i,
+    //     meatId,
+    //     createdDate,
+    //     userId,
+    //     elapsedHour
+    //   )
+    //     .then((response) => {
+    //       console.log('가열육 수정 POST요청 성공:', response);
+    //     })
+    //     .catch((error) => {
+    //       // 오류 발생 시의 처리
+    //       console.error('가열육 수정 POST 요청 오류:', error);
+    //     });
+    // }
+    // 2. 실험실 데이터 수정 API POST ** 승인되지 않은 데이터
+    // for (let i = 0; i < len; i++) {
+    //   updateProbexptData(
+    //     labInput[i],
+    //     i,
+    //     meatId,
+    //     createdDate,
+    //     userId,
+    //     elapsedHour
+    //   )
+    //     .then((response) => {
+    //       console.log('실험실 수정 POST요청 성공:', response);
+    //     })
+    //     .catch((error) => {
+    //       // 오류 발생 시의 처리
+    //       console.error('실험실 수정 POST 요청 오류:', error);
+    //     });
+    // }
 
-    // 3. 처리육 관능검사 데이터 수정 API POST
-    const pro_len = len === 1 ? len : len - 1;
-    console.log('pro', pro_len);
-    for (let i = 0; i < pro_len; i++) {
-      updateProcessedData(
-        processedInput[i],
-        processed_data[i],
-        processedMinute[i],
-        i,
-        meatId,
-        userId,
-        createdDate,
-        elapsedHour
-      )
-        .then((response) => {
-          console.log('처리육 수정 POST요청 성공:', response);
-        })
-        .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('처리육 수정 POST 요청 오류:', error);
-        });
-    }
+    // 3. 처리육 관능검사 데이터 수정 API POST **승인되지 않은 육류데이터
+    // const pro_len = len === 1 ? len : len - 1;
+    // console.log('pro', pro_len);
+    // for (let i = 0; i < pro_len; i++) {
+    //   updateProcessedData(
+    //     processedInput[i],
+    //     // processed_data[i],
+    //     // processedMinute[i],
+    //     i,
+    //     meatId
+    //   )
+    //     .then((response) => {
+    //       console.log('처리육 수정 POST요청 성공:', response);
+    //     })
+    //     .catch((error) => {
+    //       // 오류 발생 시의 처리
+    //       console.error('처리육 수정 POST 요청 오류:', error);
+    //     });
+    // }
+    //4. 원육 데이터 수정 API
+    updateRawData(rawInput, 0, meatId)
+      .then((response) => {
+        console.log('원육 수정 POST요청 성공:', response);
+      })
+      .catch((error) => {
+        // 오류 발생 시의 처리
+        console.error('원육 수정 POST 요청 오류:', error);
+      });
   };
 
   // 처리육 이미지 먼저 업로드 경고 창 필요 여부
@@ -236,6 +244,13 @@ function DataView({ dataProps }) {
       }));
       console.log('result', temp, valueIdx);
     }
+  };
+  const handleRawInputChange = (e, field) => {
+    const { name, value } = e.target;
+    setRawInput((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const [imgArr, setImgArr] = useState([raw_img_path]);
@@ -358,7 +373,11 @@ function DataView({ dataProps }) {
             style={{ backgroundColor: 'white', width: '100%' }}
           >
             <Tab value="raw" eventKey="rawMeat" title="원육">
-              <RawTable data={rawInput} />
+              <RawTable
+                data={rawInput}
+                edited={edited}
+                handleRawInputChange={handleRawInputChange}
+              />
             </Tab>
             <Tab
               value="proc"
