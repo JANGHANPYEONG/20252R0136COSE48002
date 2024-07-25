@@ -4,7 +4,7 @@ import DataPAView from './DataPAView';
 import DataConfirmView from './DataConfirmView';
 import dataProcessing from './dataProcessing';
 import Spinner from 'react-bootstrap/Spinner';
-import { useDetailMeatDataFetch } from '../../API/getDetailMeatDataSWR';
+import { useDetailMeatData  } from '../../API/get/getDetailMeatDataSWR';
 
 //하나의 관리번호에 대한 육류 상세 데이터를 API로 부터 fetch
 const DataLoad = ({ id, page }) => { 
@@ -12,7 +12,7 @@ const DataLoad = ({ id, page }) => {
   const [detailData, setDetailData] = useState();
 
   // 육류 상세 데이터 API fetch
-  const { data, isLoading, isError } = useDetailMeatDataFetch(id);
+  const { data, isLoading, isError } = useDetailMeatData (id);
 
   //데이터 전처리
   useEffect(() => {
