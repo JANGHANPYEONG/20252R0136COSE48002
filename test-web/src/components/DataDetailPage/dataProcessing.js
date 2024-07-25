@@ -26,7 +26,7 @@ function convertToApiData(
     company: company,
     createdAt: createdAt,
     farmAddr: farmAddr,
-    farmerNm: farmerName,
+    farmerName: farmerName,
     gradeNm: gradeNum,
     imagePath: imagePath,
     meatId: meatId,
@@ -40,6 +40,7 @@ function convertToApiData(
     userName: userName,
     userType: userType,
   };
+  console.log('apidata2 : ', apiData);
   return apiData;
 }
 
@@ -75,6 +76,7 @@ export default function dataProcessing(items) {
   let processedData = [];
   let heatedData = [
     deepAgingInfo[0] ? deepAgingInfo[0].heatedmeat_sensory_eval || {} : {},
+
   ];
   let labData = [deepAgingInfo[0] ? deepAgingInfo[0].probexpt_data || {} : {}];
   let processedMinute = [];
@@ -111,6 +113,7 @@ export default function dataProcessing(items) {
     raw_data: deepAgingInfo[0] ? deepAgingInfo[0].sensory_eval || {} : {},
     raw_img_path: deepAgingInfo[0]
       ? deepAgingInfo[0].sensory_eval?.imagePath || {}
+
       : {},
     processed_data: processedData,
     heated_data: heatedData,
