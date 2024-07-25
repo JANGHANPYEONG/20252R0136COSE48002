@@ -259,6 +259,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
                 CategoryInfo.secondaryValue == data.get("secondaryValue")
             ).first()
             existing_meat.categoryId = new_category.id
+            existing_meat.statusType = 0
             
             db_session.add(existing_meat)
         db_session.commit()
@@ -372,7 +373,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             if seqno == 0:
                 if meat.statusType == 2:
                     return {"msg": "Already Confirmed Meat", "code": 400}
-                meat.statusType == 0
+                meat.statusType = 0
                 db_session.merge(meat)
                 
             # sensory_eval 생성
