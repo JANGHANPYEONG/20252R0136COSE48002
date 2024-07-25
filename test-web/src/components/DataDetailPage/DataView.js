@@ -36,7 +36,7 @@ function DataView({ dataProps }) {
   //dataProps로 부터 properties destruct
   const {
     meatId, // 이력번호
-    userId, // 로그인한 사용자 meatI
+    userId, // 로그인한 사용자
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -162,7 +162,6 @@ function DataView({ dataProps }) {
 
     // 3. 처리육 관능검사 데이터 수정 API POST
     const pro_len = len === 1 ? len : len - 1;
-    console.log('pro', pro_len);
     for (let i = 0; i < pro_len; i++) {
       updateProcessedData(
         processedInput[i],
