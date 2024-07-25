@@ -135,3 +135,4 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
     </div>
   );
 }
+
