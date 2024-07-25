@@ -237,7 +237,7 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
             new_meat = create_meat(db_session=db_session, meat_data=data)
             new_meat.statusType = 0
             
-            db_session.add(new_meat)
+            # db_session.add(new_meat)
             
             # 2. Firestore -> S3
             transfer_folder_image(
@@ -351,7 +351,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             # sensory_eval 생성
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
-            db_session.add(new_sensory_eval)
+            # db_session.add(new_sensory_eval)
 
             if need_img:
                 transfer_folder_image(
@@ -380,7 +380,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             # sensory_eval 생성
             sensory_data["createdAt"] = convert2string(existing_sensory.createdAt, 1)
             new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, existing_user)
-            db_session.merge(new_sensory_eval)
+            # db_session.merge(new_sensory_eval)
 
             if need_img:
                 transfer_folder_image(
@@ -434,7 +434,7 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             sensory_data["period"] = calculate_period(db_session, id)
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
-            db_session.add(new_sensory_data)
+            # db_session.add(new_sensory_data)
 
         if need_img:
             transfer_folder_image(
