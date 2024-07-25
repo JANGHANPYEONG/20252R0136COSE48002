@@ -90,7 +90,7 @@ def create_meat(db_session, meat_data: dict):
         db_session.query(GradeInfo).filter_by(value=meat_data.get("gradeNum")).first()
     )
     # 3. meat_data에 없는 not null 필드 추가
-    meat_data['createdAt'] = convert2string(datetime.now(), 1)
+    meat_data['createdAt'] = datetime.now().strftime('%Y-%m-%d')
     
     # 4, meat_data에 있는 필드 수정
     meat_data['id'] = meat_data.pop('meatId')
@@ -237,7 +237,8 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
             new_meat = create_meat(db_session=db_session, meat_data=data)
             new_meat.statusType = 0
             
-            db_session.add(new_meat)
+            db_session.merge(new_meat)
+            db_session.commit()
             
             # 2. Firestore -> S3
             transfer_folder_image(
@@ -259,13 +260,11 @@ def create_specific_std_meat_data(db_session, s3_conn, firestore_conn, data, mea
                 CategoryInfo.secondaryValue == data.get("secondaryValue")
             ).first()
             existing_meat.categoryId = new_category.id
-            existing_meat.statusType = 0
             
-            db_session.merge(existing_meat)
-        db_session.commit()
+            db_session.add(existing_meat)
+            db_session.commit()
 
     except Exception as e:
-        # logger.info(str(e))
         db_session.rollback()
         raise e
 
@@ -349,21 +348,25 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             
             user_id = safe_str(data.get("userId"))
             # sensory_eval 생성
-            sensory_data["createdAt"] = convert2string(datetime.now(), 1)
-            new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
-            db_session.add(new_sensory_eval)
+            if any(value is not None for value in sensory_data.values()):
+                sensory_data["createdAt"] = convert2string(datetime.now(), 1)
+                new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
+                db_session.add(new_sensory_eval)
+                db_session.commit()
 
-            if need_img:
-                transfer_folder_image(
-                    s3_conn,
-                    firestore_conn,
-                    db_session,
-                    f"{meat_id}-{seqno}",
-                    new_sensory_eval,
-                    "sensory_evals",
-                )
-            db_session.commit()
-            return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+                if need_img:
+                    transfer_folder_image(
+                        s3_conn,
+                        firestore_conn,
+                        db_session,
+                        f"{meat_id}-{seqno}",
+                        new_sensory_eval,
+                        "sensory_evals",
+                    )
+                db_session.commit()
+                return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            else:
+                return {"msg": f"No Sensory Data to Create Sensory Evaluation", "code": 400}
         # PATCH 요청
         else:
             # 기존 관능 평가 데이터가 존재하지 않을 때 에러 처리
@@ -374,26 +377,29 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             if seqno == 0:
                 if meat.statusType == 2:
                     return {"msg": "Already Confirmed Meat", "code": 400}
-                meat.statusType = 0
+                meat.statusType == 0
                 db_session.merge(meat)
+                db_session.commit()
                 
             # sensory_eval 생성
-            sensory_data["createdAt"] = convert2string(existing_sensory.createdAt, 1)
-            new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, existing_user)
-            db_session.merge(new_sensory_eval)
+            if any(value is not None for value in sensory_data.values()):
+                sensory_data["createdAt"] = convert2string(existing_sensory.createdAt, 1)
+                new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, existing_user)
+                db_session.merge(new_sensory_eval)
 
-            if need_img:
-                transfer_folder_image(
-                    s3_conn,
-                    firestore_conn,
-                    db_session,
-                    f"{meat_id}-{seqno}",
-                    new_sensory_eval,
-                    "sensory_evals",
-                )
-            db_session.commit()
-            return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
-            
+                if need_img:
+                    transfer_folder_image(
+                        s3_conn,
+                        firestore_conn,
+                        db_session,
+                        f"{meat_id}-{seqno}",
+                        new_sensory_eval,
+                        "sensory_evals",
+                    )
+                db_session.commit()
+                return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            else:
+                return {"msg": f"No Sensory Data to Update Sensory Evaluation", "code": 400}
     except Exception as e:
         db_session.rollback()
         raise e
@@ -426,7 +432,8 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.merge(new_sensory_data)
-
+            db_session.commit()
+            
         else: # 생성
             if not is_post: # 생성인데 PATCH 메서드
                 return ({"msg": "Heatedmeat Sensory Data Does NOT Exists", "code": 400})
@@ -742,6 +749,7 @@ def delete_user(db_session, user):
 # USER
 def create_user(db_session, user_data: dict):
     try:
+        user_data['createdAt'] = convert2string(datetime.now(), 1)
         for field, value in user_data.items():
             if field == "type":
                 user_type = db_session.query(UserTypeInfo).filter_by(name=value).first()
