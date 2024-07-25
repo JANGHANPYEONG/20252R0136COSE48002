@@ -58,14 +58,16 @@ class DataAddHomeViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      int deepAgeIdx = int.parse(
-          meatModel.deepAgingData![idx]["deepAgingNum"].split('회')[0]);
-      dynamic response =
-          await RemoteDataSource.deleteDeepAging(meatModel.meatId!, deepAgeIdx);
-      if (response == null) {
-        throw Error();
+      final seqno = int.parse('${meatModel.deepAgingInfo![idx]['seqno']}');
+
+      final response =
+          await RemoteDataSource.deleteDeepAging(meatModel.meatId!, seqno);
+
+      if (response == 200) {
+        meatModel.deepAgingInfo!.removeAt(idx);
       } else {
-        meatModel.deepAgingData!.removeAt(idx);
+        // TODO : 오류 메시지 팝업
+        throw Error();
       }
     } catch (e) {
       debugPrint("Error: $e");
@@ -94,18 +96,6 @@ class DataAddHomeViewModel with ChangeNotifier {
         ),
       ),
     ).then((value) async {
-      // try {
-      //   // 딥에이징 데이터 추가 후 육류 정보 다시 가져오기
-      //   final response = await RemoteDataSource.getMeatData(meatModel.meatId!);
-      //   if (response is Map<String, dynamic>) {
-      //     meatModel.fromJson(response);
-
-      //   } else {
-      //     throw Error();
-      //   }
-      // } catch (e) {
-      //   debugPrint('Error: $e');
-      // }
       _setTotal();
       notifyListeners();
     });

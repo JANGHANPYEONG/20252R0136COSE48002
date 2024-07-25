@@ -59,16 +59,14 @@ class AddRawMeatViewModel with ChangeNotifier {
 
   /// 완료 버튼 클릭
   void clickedbutton(BuildContext context, MeatModel model) {
-    // popup = model.deepAgedImageCompleted &&
-    //     model.deepAgedFreshCompleted &&
-    //     model.heatedCompleted &&
-    //     model.tongueCompleted &&
-    //     model.labCompleted;
-
-    if (meatModel.heatedCompleted &&
+    if (meatModel.tongueCompleted &&
         meatModel.labCompleted &&
-        meatModel.tongueCompleted) {
+        meatModel.heatedImageCompleted &&
+        meatModel.heatedSensoryCompleted &&
+        meatModel.heatedTongueCompleted &&
+        meatModel.heatedLabCompleted) {
       showDataCompleteDialog(context, null, () {
+        meatModel.rawCompleted = true;
         context.go('/home/data-manage-researcher/add');
       });
     } else {

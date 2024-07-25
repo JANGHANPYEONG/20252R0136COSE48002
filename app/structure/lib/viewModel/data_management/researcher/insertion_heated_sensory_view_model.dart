@@ -11,8 +11,8 @@ import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
 class InsertionHeatedSensoryViewModel with ChangeNotifier {
-  MeatModel meatModel;
-  UserModel userModel;
+  final MeatModel meatModel;
+  final UserModel userModel;
   InsertionHeatedSensoryViewModel(this.meatModel, this.userModel) {
     _initialize();
   }

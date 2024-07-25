@@ -61,7 +61,9 @@ class DeleteUserViewModel with ChangeNotifier {
 
     // DB에서 유저 삭제 API 호출
     final response = await RemoteDataSource.deleteUser(userModel.userId!);
-    if (response == null) {
+
+    if (response != 200) {
+      // TODO : 에러 메시지 팝업
       throw Error();
     }
 

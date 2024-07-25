@@ -7,6 +7,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/main.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/components/custom_dialog.dart';
 
@@ -55,11 +56,14 @@ class AddProcessedMeatViewModel with ChangeNotifier {
   }
 
   void clickedbutton(BuildContext context, MeatModel model) {
-    popup = model.deepAgedImageCompleted &&
-        model.deepAgedFreshCompleted &&
-        model.heatedCompleted &&
+    popup = model.imageCompleted &&
+        model.sensoryCompleted &&
         model.tongueCompleted &&
-        model.labCompleted;
+        model.labCompleted &&
+        meatModel.heatedImageCompleted &&
+        meatModel.heatedSensoryCompleted &&
+        meatModel.heatedTongueCompleted &&
+        meatModel.heatedLabCompleted;
     if (popup == true) {
       showDataCompleteDialog(context, null, () {
         context.go('/home/data-manage-researcher/add');

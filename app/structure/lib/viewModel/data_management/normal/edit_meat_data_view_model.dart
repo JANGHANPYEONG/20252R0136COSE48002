@@ -17,7 +17,7 @@ class EditMeatDataViewModel with ChangeNotifier {
 
   EditMeatDataViewModel(this.meatModel, this.userModel) {
     // 만약 데이터의 상태가 '대기중'이며, 3일 내 등록 데이터이면 수정 가능으로 만든다.
-    if (meatModel.statusType == '대기중' &&
+    if (meatModel.statusType != '승인' &&
         Usefuls.calculateDateDifference(meatModel.createdAt!) <= 3) {
       isEditable = true;
     }

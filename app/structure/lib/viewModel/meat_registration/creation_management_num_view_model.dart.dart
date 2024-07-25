@@ -32,6 +32,8 @@ class CreationManagementNumViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
+    // TODO : 실패 화면
+
     // 관리번호 생성
     await _createManagementNum();
 
@@ -139,6 +141,8 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   /// 3. 육류 정보를 서버로 전송
   Future<void> _sendMeatData() async {
+    print(meatModel.toJsonBasic());
+
     try {
       // 육류 기본 정보 입력
       final response1 =

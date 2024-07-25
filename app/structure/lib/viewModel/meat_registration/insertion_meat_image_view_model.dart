@@ -20,14 +20,16 @@ import 'package:structure/model/user_model.dart';
 class InsertionMeatImageViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
+  final bool isRaw;
 
-  InsertionMeatImageViewModel(this.meatModel, this.userModel) {
+  InsertionMeatImageViewModel(this.meatModel, this.userModel, this.isRaw) {
     _initialize();
   }
   bool isLoading = false;
+  late BuildContext _context;
 
   // 초기 변수
-  String filmedAt = '-';
+  String filmedAt = '-'; // 촬영된 날짜
   String date = '-'; // 화면에 표시하는 촬영 날짜
   String userName = '-'; // 촬영자
 
@@ -36,28 +38,32 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   File? imgFile;
   bool imgAdded = false;
 
-  late BuildContext _context;
-
   /// 초기 할당
   void _initialize() async {
     isLoading = true;
     notifyListeners();
 
-    // 임시저장/수정 데이터 불러오기
-    if (meatModel.sensoryEval != null) {
-      userName = meatModel.sensoryEval!['userName'];
-      imgPath = meatModel.sensoryEval!['imagePath'];
-      filmedAt = meatModel.sensoryEval!['filmedAt'];
-      date = Usefuls.parseDate(meatModel.sensoryEval!['filmedAt']);
+    if (isRaw) {
+      // 원육/처리육
+      // 임시저장/수정 데이터 불러오기
+      if (meatModel.sensoryEval != null && meatModel.imageCompleted) {
+        userName = meatModel.sensoryEval!['userName'];
+        imgPath = meatModel.sensoryEval!['imagePath'];
+        filmedAt = meatModel.sensoryEval!['filmedAt'];
+        date = Usefuls.parseDate(meatModel.sensoryEval!['filmedAt']);
+      }
+    } else {
+      if (meatModel.heatedSensoryEval != null &&
+          meatModel.heatedImageCompleted) {
+        userName = meatModel.heatedSensoryEval!['userName'];
+        imgPath = meatModel.heatedSensoryEval!['imagePath'];
+        filmedAt = meatModel.heatedSensoryEval!['filmedAt'];
+        date = Usefuls.parseDate(meatModel.heatedSensoryEval!['filmedAt']);
+      }
     }
 
     isLoading = false;
     notifyListeners();
-  }
-
-  /// 촬영한 이미지가 있는지 확인하는 함수
-  bool imageCheck() {
-    return imgPath != null;
   }
 
   /// 뒤로가기 버튼
@@ -127,38 +133,95 @@ class InsertionMeatImageViewModel with ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    try {
-      if (meatModel.meatId == null) {
-        // 새로운 이미지 등록
-        meatModel.imgAdded = true; // 새로 등록할때는 항상 true
+    // sensoryEval이 없으면 post로 진행
+    bool isPost = false;
+
+    print('isRaw: $isRaw');
+    print('Sensory: ${meatModel.sensoryEval}');
+    print('Heated: ${meatModel.heatedSensoryEval}');
+
+    if (isRaw) {
+      // 원육/처리육
+      // 원육 등록의 경우 이미지 등록을 해야 관능평가가 가능하기 때문에 이미지 등록 시점에서는 sensoryEval = null
+      if (meatModel.sensoryEval == null) {
+        // POST의 경우 신규 데이터 생상
+        isPost = true;
+
         meatModel.sensoryEval = {};
-        meatModel.sensoryEval!['userId'] = userModel.userId;
-        meatModel.sensoryEval!['userName'] = userModel.name;
-        meatModel.sensoryEval!['imagePath'] = imgPath; // 로컬을 위한 imgagePath 저장
-        meatModel.sensoryEval!['filmedAt'] = filmedAt;
-        meatModel.sensoryEval!['seqno'] = 0;
-      } else {
-        // 이미지 수정
-        meatModel.imgAdded = imgAdded;
-        meatModel.sensoryEval!['imagePath'] = imgPath; // 로컬을 위한 imgagePath 저장
-        meatModel.sensoryEval!['filmedAt'] = filmedAt;
-        await _sendImageToFirebase();
+        // 처리육의 경우 meatId는 있음. 원육의 경우 null
+        meatModel.sensoryEval!['meatId'] = meatModel.meatId;
+        meatModel.sensoryEval!['seqno'] = meatModel.seqno;
+      }
+      meatModel.sensoryEval!['userId'] = userModel.userId;
+      meatModel.sensoryEval!['userName'] = userModel.name;
+      meatModel.sensoryEval!['imagePath'] = imgPath; // 로컬을 위한 imgagePath 저장
+      meatModel.sensoryEval!['filmedAt'] = filmedAt;
+      meatModel.imgAdded = imgAdded;
+    } else {
+      if (meatModel.heatedSensoryEval == null) {
+        // POST의 경우 신규 데이터 생상
+        isPost = true;
 
-        final response = await RemoteDataSource.patchMeatData(
-            'sensory-eval', meatModel.toJsonSensory());
+        meatModel.heatedSensoryEval = {};
+        meatModel.heatedSensoryEval!['meatId'] = meatModel.meatId;
+        meatModel.heatedSensoryEval!['seqno'] = meatModel.seqno;
+      }
+      meatModel.heatedSensoryEval!['userId'] = userModel.userId;
+      meatModel.heatedSensoryEval!['userName'] = userModel.name;
+      meatModel.heatedSensoryEval!['imagePath'] = imgPath;
+      meatModel.heatedSensoryEval!['filmedAt'] = filmedAt;
+      meatModel.heatedImgAdded = imgAdded;
+    }
 
-        if (response != 200) {
-          throw Error();
+    try {
+      // API 전송은 원육 등록이 아닌 경우에만 (meatId != null)
+      // 원육은 creation_management_num에서 처리
+      if (meatModel.meatId != null) {
+        if (meatModel.meatId != null) {
+          // 이미지 업로드 먼저
+          await _sendImageToFirebase();
         }
 
-        // 팝업 띄우기 전에 isLoading 끄기
-        isLoading = false;
-        notifyListeners();
-      }
-      meatModel.checkCompleted();
+        dynamic response;
 
-      // 임시저장
-      await tempSave();
+        if (isRaw) {
+          // 처리육
+          if (isPost) {
+            response = await RemoteDataSource.createMeatData(
+                'sensory-eval', meatModel.toJsonSensory());
+          } else {
+            // 처리육 patch
+            response = await RemoteDataSource.patchMeatData(
+                'sensory-eval', meatModel.toJsonSensory());
+          }
+        } else {
+          // 가열육
+          if (isPost) {
+            response = await RemoteDataSource.createMeatData(
+                'heatedmeat-eval', meatModel.toJsonHeatedSensory());
+          } else {
+            response = await RemoteDataSource.patchMeatData(
+                'heatedmeat-eval', meatModel.toJsonHeatedSensory());
+          }
+        }
+
+        if (response == 200) {
+          // 원육 등록이 아닌 경우에는 deepAgingInfo 업데이트
+          if (meatModel.meatId != null) {
+            if (isRaw) {
+              meatModel.updateSeonsory();
+            } else {
+              meatModel.updateHeatedSeonsory();
+            }
+          }
+        } else {
+          // TODO : 입력한 데이터 초기화
+          throw Error();
+        }
+      }
+
+      meatModel.checkCompleted();
+      await tempSave(); // 임시저장
 
       isLoading = false;
       notifyListeners();
@@ -166,7 +229,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       _context = context; // movePage를 위한 context 설정
       _movePage();
     } catch (e) {
-      debugPrint('에러발생: $e');
+      debugPrint('Error: $e');
     }
   }
 
@@ -177,12 +240,14 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       _context.go('/home/registration');
     } else {
       // 원육 수정
-      if (meatModel.sensoryEval!['seqno'] == 0) {
+      if (meatModel.seqno == 0 && isRaw) {
         showDataManageSucceedPopup(_context, () {
           _context.go('/home/data-manage-normal/edit');
         });
+      } else if (meatModel.seqno == 0) {
+        _context.go('/home/data-manage-researcher/add/raw-meat');
       } else {
-        // 처리육 수정
+        // 처리육/가열육
         _context.go('/home/data-manage-researcher/add/processed-meat');
       }
     }
@@ -194,9 +259,15 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   Future<void> _sendImageToFirebase() async {
     try {
       // fire storage에 육류 이미지 저장
-      final refMeatImage = FirebaseStorage.instance
-          .ref()
-          .child('sensory_evals/${meatModel.meatId}-${meatModel.seqno}.png');
+      Reference refMeatImage;
+      if (isRaw) {
+        refMeatImage = FirebaseStorage.instance
+            .ref()
+            .child('sensory_evals/${meatModel.meatId}-${meatModel.seqno}.png');
+      } else {
+        refMeatImage = FirebaseStorage.instance.ref().child(
+            'heatedmeat_sensory_evals/${meatModel.meatId}-${meatModel.seqno}.png');
+      }
 
       // if (imgPath!.contains('http')) {
       //   // db 사진
