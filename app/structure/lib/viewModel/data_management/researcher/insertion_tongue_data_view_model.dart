@@ -6,6 +6,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -136,8 +137,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
-      // TODO : 오류 팝업 표시
       debugPrint("Error: $e");
+      if (context.mounted) showErrorPopup(context);
     }
 
     isLoading = false;

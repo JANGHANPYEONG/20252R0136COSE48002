@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/screen/data_management/researcher/add_deep_aging_data_screen.dart';
@@ -53,7 +54,7 @@ class DataAddHomeViewModel with ChangeNotifier {
   }
 
   // 딥에이징 데이터 삭제
-  Future<void> deleteList(int idx) async {
+  Future<void> deleteList(BuildContext context, int idx) async {
     isLoading = true;
     notifyListeners();
 
@@ -71,6 +72,7 @@ class DataAddHomeViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Error: $e");
+      if (context.mounted) showErrorPopup(context);
     }
 
     _setTotal();

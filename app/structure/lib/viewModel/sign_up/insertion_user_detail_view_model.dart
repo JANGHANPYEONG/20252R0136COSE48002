@@ -100,7 +100,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
           debugPrint('Error: ${e.code}');
       }
     } catch (e) {
-      debugPrint('$e');
+      debugPrint('Error: $e');
       // DB 생성 오류시 오류 메시지 띄우고 반환
       if (context.mounted) showErrorPopup(context);
     }

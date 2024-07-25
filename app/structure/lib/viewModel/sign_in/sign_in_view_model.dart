@@ -59,6 +59,7 @@ class SignInViewModel with ChangeNotifier {
       // 이메일 validation
       // 이메일 인증을 위해서 필요
       final bool isValidEmail = await validateEmail();
+
       if (!isValidEmail) {
         // 이메일 invalid
         _authentication.signOut();
@@ -104,6 +105,7 @@ class SignInViewModel with ChangeNotifier {
         // 기타 오류
         errorMessage = '오류가 발생했습니다.';
       }
+
       // 로딩 상태를 비활성화
       isLoading = false;
       notifyListeners();
@@ -153,9 +155,11 @@ class SignInViewModel with ChangeNotifier {
         meatModel.userId = userModel.userId;
         return true;
       } else {
-        return false;
+        throw ErrorDescription(userInfo);
       }
     } catch (e) {
+      debugPrint('Error: $e');
+      // TODO : 에러 메시지 팝업
       return false;
     }
   }

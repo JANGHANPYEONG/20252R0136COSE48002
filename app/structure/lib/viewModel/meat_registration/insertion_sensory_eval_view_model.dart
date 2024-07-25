@@ -156,6 +156,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
         }
       } catch (e) {
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context);
       }
     } else {
       await tempSave(); // 임시저장
@@ -193,6 +194,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
       if (response == null) throw Error();
     } catch (e) {
       debugPrint('Error: $e');
+      // TODO : 임시저장 에러 메시지 팝업
     }
   }
 }

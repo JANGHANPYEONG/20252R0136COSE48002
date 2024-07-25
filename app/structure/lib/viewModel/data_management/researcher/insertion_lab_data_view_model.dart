@@ -6,6 +6,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -157,6 +158,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Error: $e");
+      if (context.mounted) showErrorPopup(context);
     }
 
     // 완료 검사

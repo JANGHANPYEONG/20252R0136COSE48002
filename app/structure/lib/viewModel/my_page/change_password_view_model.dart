@@ -115,6 +115,7 @@ class ChangePasswordViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
 
     isLoading = false;

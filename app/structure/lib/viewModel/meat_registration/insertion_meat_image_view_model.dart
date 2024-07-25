@@ -216,6 +216,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         }
       } catch (e) {
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context);
       }
     } else {
       // 신규 생성일때만 임시저장
@@ -275,7 +276,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      // 에러 팝업
       if (_context.mounted) showFileUploadFailPopup(_context);
     }
   }
@@ -288,6 +288,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       if (response == null) throw Error();
     } catch (e) {
       debugPrint('Error: $e');
+      // TODO : 임시저장 에러 메시지 팝업
     }
   }
 }

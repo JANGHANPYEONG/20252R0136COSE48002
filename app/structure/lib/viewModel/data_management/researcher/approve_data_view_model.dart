@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/components/get_qr.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -440,6 +441,7 @@ class ApproveDataViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
 
     isLoading = false;
