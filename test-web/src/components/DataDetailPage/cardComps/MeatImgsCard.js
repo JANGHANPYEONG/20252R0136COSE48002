@@ -6,8 +6,8 @@ import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 // mui
 import { IconButton } from '@mui/material';
 // 이미지 수정 api 호출
-import updateRawImg from '../../../API/update/updateRawImg';
-import updateProcessedData from '../../../API/update/updateProcessedData';
+import addSensoryRawImg from '../../../API/add/addSensoryRawImg';
+import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
 import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
 
 import { TIME_ZONE } from '../../../config';
@@ -97,7 +97,7 @@ const MeatImgsCard = ({
 
         // 원육 이미지 수정 api 호출 currentIdx == 0
         if (currentIdx === 0) {
-          const response = updateRawImg(
+          const response = addSensoryRawImg(
             raw_data,
             id,
             userId,
@@ -119,7 +119,7 @@ const MeatImgsCard = ({
         } else {
           // 처리육 수정 api 호출 이미지인 경우 0이상
           const i = currentIdx - 1;
-          await updateProcessedData(
+          await addSensoryProcessedData(
             processedInput[i],
             processed_data[i],
             processedMinute[i],

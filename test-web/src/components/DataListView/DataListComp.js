@@ -3,7 +3,7 @@ import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Spinner from 'react-bootstrap/Spinner';
 import DataList from './DataList';
 import Pagination from './Pagination';
-import { useMeatListFetch } from '../../API/getMeatListSWR';
+import { useMeatList } from '../../API/get/getMeatListSWR';
 
 // 데이터 목록 조회 페이지 컴포넌트
 const DataListComp = ({
@@ -43,7 +43,7 @@ const DataListComp = ({
   };
 
   // API fetch
-  const { data, isLoading, isError } = useMeatListFetch(
+  const { data, isLoading, isError } = useMeatList(
     currentPage - 1,
     count,
     startDate,
