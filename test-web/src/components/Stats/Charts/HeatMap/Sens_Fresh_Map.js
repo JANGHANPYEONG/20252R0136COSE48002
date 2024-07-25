@@ -65,7 +65,7 @@ export default function Sens_Fresh_Map({
       max: 10, // Adjust the max value as needed
     },
     title: {
-      text: '신선육 관능데이터 범위별 분포(빈도수)',
+      text: '원육 관능데이터 범위별 분포(빈도수)',
     },
     grid: {
       padding: {

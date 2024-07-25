@@ -103,7 +103,7 @@ export default function Sense_Fresh_Corr({
       categories: xCategories, // 4가지 요소로 구성된 배열을 사용
     },
     title: {
-      text: '신선육 관능데이터 상관관계',
+      text: '원육 관능데이터 상관관계',
     },
     grid: {
       padding: {
