@@ -202,13 +202,10 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         }
 
         if (response == 200) {
-          // 원육 등록이 아닌 경우에는 deepAgingInfo 업데이트
-          if (meatModel.meatId != null) {
-            if (isRaw) {
-              meatModel.updateSeonsory();
-            } else {
-              meatModel.updateHeatedSeonsory();
-            }
+          if (isRaw) {
+            meatModel.updateSeonsory();
+          } else {
+            meatModel.updateHeatedSeonsory();
           }
         } else {
           // TODO : 입력한 데이터 초기화

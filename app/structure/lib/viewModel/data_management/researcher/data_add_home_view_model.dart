@@ -119,6 +119,8 @@ class DataAddHomeViewModel with ChangeNotifier {
     // List builder에서 idx + 1을 한 값을 받아옴
     meatModel.fromJsonDeepAged(idx);
 
+    print(meatModel);
+
     context.go('/home/data-manage-researcher/add/processed-meat');
   }
 }

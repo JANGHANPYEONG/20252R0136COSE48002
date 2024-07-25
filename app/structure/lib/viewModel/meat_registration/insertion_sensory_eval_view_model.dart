@@ -45,7 +45,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     }
 
     if (meatModel.sensoryEval != null) {
-      meatImage = meatModel.sensoryEval!['imagePath'];
+      meatImage = meatModel.sensoryEval!['imagePath'] ?? '';
       // 수정 시 불러온 데이터, 등록 시 초기 값 1로 설정
       marbling = meatModel.sensoryEval?["marbling"] ?? 1;
       color = meatModel.sensoryEval?["color"] ?? 1;
