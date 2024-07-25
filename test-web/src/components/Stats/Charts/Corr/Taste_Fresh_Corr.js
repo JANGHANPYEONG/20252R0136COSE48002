@@ -41,7 +41,7 @@ export default function Taste_Fresh_Corr({
 
     for (let colIndex = 0; colIndex < prop.length; colIndex++) {
       if (colIndex === rowIndex) {
-        correlation[colIndex] = 1; // 대각선 위치는 1로 설정
+        correlation[colIndex] = 100; // 대각선 위치는 1로 설정
       } else {
         const uniqueValues2 = chartData[prop[colIndex]]?.unique_values || [];
 
@@ -88,14 +88,22 @@ export default function Taste_Fresh_Corr({
       return 0;
     }
 
-    return numerator / denominator;
+    const correlation = (numerator / denominator) * 100;
+    return parseFloat(correlation.toFixed(3)); // 소수점 세 번째 자리까지 반올림
   }
 
   const xCategories = prop;
   const ChartOption = {
     chart: {
       height: 450,
+      width: '100%',
       type: 'heatmap',
+    },
+    grid: {
+      padding: {
+        left: 50, // 왼쪽에 여백 추가 (이 값을 조정하여 맞춤)
+        right: 20,
+      },
     },
     dataLabels: {
       enabled: false,
@@ -117,34 +125,64 @@ export default function Taste_Fresh_Corr({
         colorScale: {
           ranges: [
             {
+              from: -100,
+              to: -99,
+              name: '-100% ~',
+              color: '#26578B', // 군청색
+            },
+            {
+              from: -99,
+              to: -96,
+              name: '-99% ~',
+              color: '#456F9B', // 덜 진한 군청색
+            },
+            {
+              from: -96,
+              to: -93,
+              name: '-96% ~',
+              color: '#6487AC', // 중간 군청색
+            },
+            {
+              from: -93,
+              to: -80,
+              name: '-93% ~',
+              color: '#839FBC', // 연한 군청색
+            },
+            {
+              from: -80,
+              to: -0.00001,
+              name: '-80% ~ 0%',
+              color: '#A2B7CD', // 아주 연한 군청색
+            },
+            {
               from: 0,
-              to: 0.8,
-              name: ' 0 - 80 % ',
-              color: '#CCCCCC', // 연한회색
+              to: 80,
+              name: '0% ~ 80%',
+              color: '#C89191', // 아주 연한 진홍색
             },
             {
-              from: 0.8,
-              to: 0.93,
-              name: ' 80 - 93 % ',
-              color: '#999999', // 덜연한회색
+              from: 80,
+              to: 93,
+              name: '~ 93%',
+              color: '#B66D6D', // 연한 진홍색
             },
             {
-              from: 0.93,
-              to: 0.96,
-              name: ' 93 - 96 % ',
-              color: '#777777', // 회색
+              from: 93,
+              to: 96,
+              name: '~ 96%',
+              color: '#A44848', // 중간 진홍색
             },
             {
-              from: 0.96,
-              to: 0.99,
-              name: ' 96 - 99 % ',
-              color: '#444444', // 될진한회색
+              from: 96,
+              to: 99,
+              name: '~ 99%',
+              color: '#922424', // 덜 진한 진홍색
             },
             {
-              from: 0.99,
-              to: 1.0,
-              name: ' 99 - 100 % ',
-              color: '#111111', // 진한회색
+              from: 99,
+              to: 100,
+              name: '~ 100%',
+              color: '#800000', // 진한 진홍색
             },
           ],
         },
@@ -157,6 +195,7 @@ export default function Taste_Fresh_Corr({
       options={ChartOption}
       series={ChartSeries}
       type="heatmap"
+      width="100%" // 이 줄을 추가
       height={350}
     />
   );

@@ -28,7 +28,6 @@ export default function Sens_Fresh_Map({
         console.error('Error fetching data:', error);
       }
     };
-
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
@@ -60,7 +59,7 @@ export default function Sens_Fresh_Map({
     },
     xaxis: {
       type: 'numeric',
-      tickAmount: 10, // Number of ticks on the x-axis
+      tickAmount: 20, // Number of ticks on the x-axis
       min: 0,
       max: 10, // Adjust the max value as needed
     },
@@ -70,6 +69,18 @@ export default function Sens_Fresh_Map({
     grid: {
       padding: {
         right: 20,
+      },
+    },
+    tooltip: {
+      enabled: true,
+      x: {
+        show: true,
+        formatter: function (
+          value,
+          { series, seriesIndex, dataPointIndex, w }
+        ) {
+          return `${value} ~ ${value + 1}점 [항목: 개수]`;
+        },
       },
     },
   };

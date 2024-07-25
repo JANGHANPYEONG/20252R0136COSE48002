@@ -285,20 +285,24 @@ export default function StatsTabs({ startDate, endDate }) {
       <CustomTabPanel value={value} index={2}>
         {secondary === '원육' ? (
           <>
-            <Sense_Fresh_Corr
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <Taste_Fresh_Corr
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
+            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+              <Sense_Fresh_Corr
+                key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
+                startDate={startDate}
+                endDate={endDate}
+                animalType={animalType}
+                grade={grade}
+              />
+            </div>
+            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+              <Taste_Fresh_Corr
+                key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
+                startDate={startDate}
+                endDate={endDate}
+                animalType={animalType}
+                grade={grade}
+              />
+            </div>
           </>
         ) : secondary === '처리육' ? (
           <>
