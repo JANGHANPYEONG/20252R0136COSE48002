@@ -13,15 +13,15 @@ import 'package:structure/components/image_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/viewModel/meat_registration/registration_meat_image_view_model.dart';
+import 'package:structure/viewModel/meat_registration/insertion_meat_image_view_model.dart';
 
 class RegistrationMeatImageScreen extends StatelessWidget {
   const RegistrationMeatImageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    RegistrationMeatImageViewModel registrationMeatImageViewModel =
-        context.watch<RegistrationMeatImageViewModel>();
+    InsertionMeatImageViewModel registrationMeatImageViewModel =
+        context.watch<InsertionMeatImageViewModel>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -183,7 +183,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
           ),
 
           // 로딩 화면
-          context.read<RegistrationMeatImageViewModel>().isLoading
+          context.read<InsertionMeatImageViewModel>().isLoading
               ? const Center(child: LoadingScreen())
               : Container(),
         ],

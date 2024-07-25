@@ -197,6 +197,8 @@ class InsertionTraceNumViewModel with ChangeNotifier {
               pigAPIData['response']['body']['items']['item'][0]['pigNo'];
         }
       } catch (e) {
+        // TODO : 에러 메시지 팝업
+        debugPrint('Error: $e');
         reset();
         isAllInserted = 2;
       }
@@ -243,6 +245,8 @@ class InsertionTraceNumViewModel with ChangeNotifier {
         gradeNum =
             meatAPIData3['response']['body']['items']['item']['gradeNm'] ?? '';
       } catch (e) {
+        // TODO : 에러 메시지 팝업
+        debugPrint('Error: $e');
         reset();
         isAllInserted = 2;
       }
@@ -265,6 +269,8 @@ class InsertionTraceNumViewModel with ChangeNotifier {
 
         speciesValue = '돼지';
       } catch (e) {
+        // TODO: 에러 메시지 팝업
+        debugPrint('Error: $e');
         reset();
         isAllInserted = 2;
       }

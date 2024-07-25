@@ -14,7 +14,7 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/pallete.dart';
-import 'package:structure/viewModel/meat_registration/sensory_eval_view_model.dart';
+import 'package:structure/viewModel/meat_registration/insertion_sensory_eval_view_model.dart';
 
 class SensoryEvalScreen extends StatefulWidget {
   const SensoryEvalScreen({super.key});
@@ -44,8 +44,8 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
 
   @override
   Widget build(BuildContext context) {
-    SensoryEvalViewModel freshMeatEvalViewModel =
-        context.watch<SensoryEvalViewModel>();
+    InsertionSensoryEvalViewModel freshMeatEvalViewModel =
+        context.watch<InsertionSensoryEvalViewModel>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -111,10 +111,12 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
                       SizedBox(width: 70.w),
                       Icon(
                         Icons.check,
-                        color:
-                            context.watch<SensoryEvalViewModel>().marbling > 0
-                                ? Palette.meatRegiBtnBg
-                                : Colors.transparent,
+                        color: context
+                                    .watch<InsertionSensoryEvalViewModel>()
+                                    .marbling >
+                                0
+                            ? Palette.meatRegiBtnBg
+                            : Colors.transparent,
                       ),
                       const Spacer(),
                       Icon(
@@ -176,7 +178,7 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
                   Container(
                     margin: EdgeInsets.only(top: 10.h),
                     height: 250.h,
-                    child: Consumer<SensoryEvalViewModel>(
+                    child: Consumer<InsertionSensoryEvalViewModel>(
                       // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
                       builder: (context, viewModel, child) => TabBarView(
                         controller: _tabController,

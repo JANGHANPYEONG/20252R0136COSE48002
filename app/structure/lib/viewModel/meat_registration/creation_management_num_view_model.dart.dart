@@ -23,7 +23,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
     _listenToPrinterStatus();
   }
   bool isLoading = true;
-  late BuildContext _context;
 
   String managementNum = '-';
   bool isFetchLoading = false;
@@ -32,6 +31,8 @@ class CreationManagementNumViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     isLoading = true;
     notifyListeners();
+
+    // TODO : 실패 화면
 
     // 관리번호 생성
     await _createManagementNum();
@@ -42,9 +43,15 @@ class CreationManagementNumViewModel with ChangeNotifier {
     // 데이터 전송
     await _sendMeatData();
 
-    // 데이터 승인
+    // 연구원의 경우 바로 데이터 승인
     if (userModel.type == 'Researcher') {
-      await RemoteDataSource.confirmMeatData(managementNum);
+      try {
+        final response = await RemoteDataSource.confirmMeatData(managementNum);
+
+        if (response != 200) throw ErrorDescription(response);
+      } catch (e) {
+        debugPrint('Error: $e');
+      }
     }
 
     isLoading = false;
@@ -134,20 +141,25 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   /// 3. 육류 정보를 서버로 전송
   Future<void> _sendMeatData() async {
-    // 육류 기본 정보 입력
-    final response1 =
-        await RemoteDataSource.createMeatData(null, meatModel.toJsonBasic());
-    // 원육 관능평가 데이터 입력
-    final response2 = await RemoteDataSource.createMeatData(
-        'sensory-eval', meatModel.toJsonSensory());
+    try {
+      // 육류 기본 정보 입력
+      final response1 =
+          await RemoteDataSource.createMeatData(null, meatModel.toJsonBasic());
+      // 원육 관능평가 데이터 입력
+      final response2 = await RemoteDataSource.createMeatData(
+          'sensory-eval', meatModel.toJsonSensory());
 
-    if (response1 == null || response2 == null) {
-      // 에러 페이지
-      print('error');
-    } else {
-      // 로딩상태 비활성화
-      isLoading = false;
-      notifyListeners();
+      if (response1 == 200 && response2 == 200) {
+        // 육류 등록 성공
+        // 로딩상태 비활성화
+        isLoading = false;
+        notifyListeners();
+      } else {
+        throw ErrorDescription(response2);
+      }
+    } catch (e) {
+      // TODO : 에러 메시지 팝업
+      debugPrint('Error: $e');
     }
   }
 
@@ -185,29 +197,5 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   void clickedHomeButton(BuildContext context) {
     context.go('/home');
-  }
-
-  Future<void> clickedAddData(BuildContext context) async {
-    String id = managementNum;
-
-    try {
-      isFetchLoading = true;
-      notifyListeners();
-
-      dynamic response = await RemoteDataSource.getMeatData(id);
-      if (response == null) throw Error();
-      meatModel.reset();
-      meatModel.fromJson(response);
-      _context = context;
-      _movePage();
-    } catch (e) {
-      print("에러발생: $e");
-    }
-    isFetchLoading = false;
-    notifyListeners();
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-researcher/add');
   }
 }

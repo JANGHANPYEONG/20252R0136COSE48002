@@ -29,6 +29,9 @@ class DataManagementHomeScreen extends StatefulWidget {
 class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
   @override
   Widget build(BuildContext context) {
+    DataManagementHomeViewModel dataManagementHomeViewModel =
+        context.watch<DataManagementHomeViewModel>();
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -40,7 +43,7 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
         ),
         body: SingleChildScrollView(
           child: SizedBox(
-            height: context.watch<DataManagementHomeViewModel>().isOpenTable
+            height: dataManagementHomeViewModel.isOpenTable
                 ? MediaQuery.of(context).size.height + 120.h
                 : MediaQuery.of(context).size.height - 120.h,
             child: Stack(
@@ -53,39 +56,31 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                         // 필터 버튼에 대한 기능을 정의한다.
                         InkWell(
                           // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
-                          onTap: () => context
-                              .read<DataManagementHomeViewModel>()
-                              .clickedFilter(),
+                          onTap: () =>
+                              dataManagementHomeViewModel.clickedFilter(),
                           child: Container(
                             alignment: Alignment.center,
                             child: Row(
                               children: [
                                 Text(
-                                  context
-                                      .watch<DataManagementHomeViewModel>()
-                                      .filterdResult,
+                                  dataManagementHomeViewModel.filterdResult,
                                   style: Palette.h4,
                                 ),
-                                context
-                                        .watch<DataManagementHomeViewModel>()
-                                        .isOpnedFilter
+                                dataManagementHomeViewModel.isOpnedFilter
                                     ? const Icon(Icons.arrow_drop_up_outlined)
                                     : const Icon(Icons.arrow_drop_down),
                               ],
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 30.w,
-                        ),
+                        SizedBox(width: 30.w),
                       ],
                     ),
-                    context.watch<DataManagementHomeViewModel>().isOpnedFilter
-                        // 'isOpendFilter'변수를 참조하여 filter를 표출한다.
+
+                    // 'isOpendFilter'변수를 참조하여 filter를 표출한다.
+                    dataManagementHomeViewModel.isOpnedFilter
                         ? const NormalFilterBox()
-                        : const SizedBox(
-                            height: 10.0,
-                          ),
+                        : SizedBox(height: 10.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -93,88 +88,75 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                         MainTextField(
                           validateFunc: null,
                           onSaveFunc: null,
-                          controller: context
-                              .read<DataManagementHomeViewModel>()
-                              .controller,
-                          onChangeFunc: (value) => context
-                              .read<DataManagementHomeViewModel>()
-                              .onChanged(value),
-                          focusNode: context
-                              .read<DataManagementHomeViewModel>()
-                              .focusNode,
+                          controller: dataManagementHomeViewModel.controller,
+                          onChangeFunc: (value) =>
+                              dataManagementHomeViewModel.onChanged(value),
+                          focusNode: dataManagementHomeViewModel.focusNode,
                           mainText: '관리번호 입력',
                           width: 590.w,
                           height: 72.h,
                           canAlert: false,
                           prefixIcon: const Icon(Icons.search),
-                          suffixIcon: context
-                                  .watch<DataManagementHomeViewModel>()
-                                  .focusNode
-                                  .hasFocus
-                              ? IconButton(
-                                  onPressed: () {
-                                    context
-                                        .read<DataManagementHomeViewModel>()
-                                        .textClear(context);
-                                  },
-                                  icon: const Icon(
-                                    Icons.cancel_outlined,
-                                    color: Colors.black,
-                                  ),
-                                )
-                              : null,
+                          suffixIcon:
+                              dataManagementHomeViewModel.focusNode.hasFocus
+                                  ? IconButton(
+                                      onPressed: () {
+                                        dataManagementHomeViewModel
+                                            .textClear(context);
+                                      },
+                                      icon: const Icon(
+                                        Icons.cancel_outlined,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  : null,
                         ),
                         IconButton(
                           // QR 코드 확인 기능을 정의한다.
                           iconSize: 48.w,
-                          onPressed: () async => context
-                              .read<DataManagementHomeViewModel>()
-                              .clickedQr(context),
+                          onPressed: () async =>
+                              dataManagementHomeViewModel.clickedQr(context),
                           icon: const Icon(Icons.qr_code_scanner_rounded),
                         ),
                       ],
                     ),
                     Container(
-                        margin: EdgeInsets.symmetric(vertical: 10.h),
-                        // 'CustomTableBar' 컴포넌트를 통해 table label 지정.
-                        child: const CustomTableNormalBar(
-                          isNormal: true,
-                        )),
+                      margin: EdgeInsets.symmetric(vertical: 10.h),
+                      // 'CustomTableBar' 컴포넌트를 통해 table label 지정.
+                      child: const CustomTableNormalBar(
+                        isNormal: true,
+                      ),
+                    ),
                     Expanded(
                       child: SizedBox(
                         width: 640.w,
-                        child: Consumer<DataManagementHomeViewModel>(
-                          // ListView 위젯을 활용하여, ListCard 출력 : 데이터 목록 표현
-                          builder: (context, viewModel, child) =>
-                              ListView.builder(
-                            itemCount: viewModel.selectedList.length,
-                            itemBuilder: (context, index) => ListCardNormal(
-                              onTap: () async =>
-                                  await viewModel.onTap(index, context),
-                              idx: index + 1,
-                              num: viewModel.selectedList[index]["id"]!,
-                              dayTime: viewModel.selectedList[index]
-                                  ["dayTime"]!,
-                              statusType: viewModel.selectedList[index]
-                                  ["statusType"]!,
-                              dDay: 3 -
-                                  Usefuls.calculateDateDifference(
-                                    viewModel.selectedList[index]["createdAt"]!,
-                                  ),
-                            ),
+                        child: ListView.builder(
+                          itemCount:
+                              dataManagementHomeViewModel.selectedList.length,
+                          itemBuilder: (context, index) => ListCardNormal(
+                            onTap: () async => await dataManagementHomeViewModel
+                                .onTap(index, context),
+                            num: dataManagementHomeViewModel.selectedList[index]
+                                ["meatId"]!,
+                            dayTime: dataManagementHomeViewModel
+                                .selectedList[index]["createdAt"]!,
+                            statusType: dataManagementHomeViewModel
+                                .selectedList[index]["statusType"]!,
+                            dDay: 3 -
+                                Usefuls.calculateDateDifference(
+                                  Usefuls.dateShortToDateLong(
+                                      dataManagementHomeViewModel
+                                          .selectedList[index]["createdAt"]!),
+                                ),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 50.h,
-                    ),
+                    SizedBox(height: 50.h),
                   ],
                 ),
-                context.watch<DataManagementHomeViewModel>().isLoading
-                    ? const Center(
-                        child: LoadingScreen(),
-                      )
+                dataManagementHomeViewModel.isLoading
+                    ? const Center(child: LoadingScreen())
                     : Container(),
               ],
             ),

@@ -20,7 +20,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ListCardNormal extends StatelessWidget {
   final VoidCallback? onTap;
-  final int idx;
   final String num;
   final String dayTime;
   final String statusType;
@@ -28,7 +27,6 @@ class ListCardNormal extends StatelessWidget {
   const ListCardNormal({
     super.key,
     required this.onTap,
-    required this.idx,
     required this.num,
     required this.dayTime,
     required this.statusType,
@@ -68,7 +66,7 @@ class ListCardNormal extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            statusType == "대기중"
+            statusType != "승인"
                 ? Stack(
                     children: [
                       Image.asset(
@@ -103,91 +101,6 @@ class ListCardNormal extends StatelessWidget {
                   ),
             SizedBox(
               width: 30.w,
-            ),
-            Icon(
-              Icons.arrow_forward_ios_outlined,
-              size: 30.sp,
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//
-//
-// ListCardResearcher 위젯.
-// 데이터 관리 페이지에서 데이터 목록에 사용되는 데이터 출력 위젯
-// 해당 위젯은 'Researcher' 권한에서 사용된다.
-//
-// 파라미터로는
-// 1. 데이터 정보를 누를 때 수행할 기능을 정의.
-// 2. 데이터의 순서를 정의. (거의 사용되지 않음.)
-// 3. 이력 번호.
-// 4. 생성 날짜.
-// 5. 생성자(유저)의 id(계정)
-//
-//
-
-class ListCardResearcher extends StatelessWidget {
-  final VoidCallback? onTap;
-  final int idx;
-  final String num;
-  final String dayTime;
-  final String userId;
-  const ListCardResearcher({
-    super.key,
-    required this.onTap,
-    required this.idx,
-    required this.num,
-    required this.dayTime,
-    required this.userId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: 640.w,
-        height: 72.w,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
-          ),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 5.w,
-            ),
-            SizedBox(
-              child: Text(
-                num,
-                style: Palette.h4,
-              ),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: 160.w,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Text(
-                  userId,
-                  style: Palette.filterContent,
-                ),
-              ),
-            ),
-            const Spacer(),
-            SizedBox(
-              child: Text(
-                dayTime,
-                style: Palette.filterContent,
-              ),
-            ),
-            SizedBox(
-              width: 5.w,
             ),
             Icon(
               Icons.arrow_forward_ios_outlined,

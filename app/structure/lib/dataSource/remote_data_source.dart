@@ -75,32 +75,58 @@ class RemoteDataSource {
   /* 육류 관련 API */
   /// 모든 고기의 데이터 조회 (GET)
   ///
-  /// 일반데이터승인 - 전체 조회
+  /// 데이터 관리 - 일반 데이터 승인에서 사용하는 함수.
   ///
-  /// 전송 데이터 : offset, count, start, end, specieValue(전체, 소, 돼지)
-  static Future<dynamic> getALLMeatData(int offset, int count, String start,
-      String end, String specieValue) async {
+  /// 전체 데이터 조회:
+  /// <br /> Offset, count - null
+  /// <br /> specieValue - 전체
+  /// <br /> start - 1970-01-01T00:00:00
+  /// <br /> end - 현재 시간
+  ///
+  /// Status code : 200
+  static Future<dynamic> getALLMeatData() async {
     String endPoint =
-        'meat/get?offset=$offset&count=$count&start=$start&end=$end&specieValue=$specieValue';
+        'meat/get?specieValue=전체&start=1970-01-01T00:00:00&end=${DateTime.now().toIso8601String().substring(0, 19)}&offset=0&count=100';
     dynamic response = await _getApi(endPoint);
     return response;
   }
 
   /// 관리번호 육류 정보 조회 (GET)
-  /// meatId를 전송하면 해당 meat에 대한 모든 정보를 불러옴
-  // TODO : by-meat-id로 변경
-  static Future<dynamic> getMeatData(String id) async {
-    dynamic response = await _getApi('meat/get/by-id?id=$id');
+  ///
+  /// meatId를 전송하면 해당 meat에 대한 모든 정보를 불러오는 함수.
+  ///
+  /// 기본 육류 정보 + deepAgingInfo[]
+  /// <br /> sensory_eval, heatedmeat_sensory_eval, probexpt_data, heated_probexpt_data
+  ///
+  /// Status code : 200, 400, 404
+  static Future<dynamic> getMeatData(String meatId) async {
+    dynamic response = await _getApi('meat/get/by-meat-id?meatId=$meatId');
     return response;
   }
 
-  /// 승인된 관리번호 검색
-  /// 추가정보입력 - 전체 조회
-  /// 추가정보 입력을 위한 statusType = 2(승인)인 육류 데이터만 불러오기
-  /// TODO : offset, count, start, end, specieValue(전체, 소, 돼지)
-  /// 전체 데이터 조회시 start에 1970-01-01T00:00:00Z 입력
+  /// 승인된 관리번호 검색 (GET)
+  ///
+  /// 데이터 관리 - 추가 정보 입력에서 사용하는 함수.
+  /// <br /> 추가정보 입력을 위한 statusType = 2(승인)인 육류 데이터만 불러오기
+  ///
+  /// 전체 데이터 조회:
+  /// <br /> Offset, count - null
+  /// <br /> specieValue - 전체
+  /// <br /> start - 1970-01-01T00:00:00
+  /// <br /> end - 현재 시간
+  ///
+  /// Status code : 200, 400
   static Future<dynamic> getConfirmedMeatData() async {
-    dynamic response = await _getApi('meat/get/by-status?statusType=2');
+    dynamic response = await _getApi(
+        'meat/get/by-status?statusType=2&specieValue=전체&start=1970-01-01T00:00:00&end=${DateTime.now().toIso8601String().substring(0, 19)}&offset=0&count=100');
+    return response;
+  }
+
+  /// 유저가 등록한 관리번호 조회 (GET)
+  static Future<dynamic> getUserMeatData(String userId) async {
+    String endPoint =
+        'meat/get/by-user-id?userId=$userId&specieValue=전체&start=1970-01-01T00:00:00&end=${DateTime.now().toIso8601String().substring(0, 19)}&offset=0&count=100';
+    dynamic response = await _getApi(endPoint);
     return response;
   }
 
@@ -111,6 +137,8 @@ class RemoteDataSource {
   /// <br /> heatedmeat-eval - 가열육 관능평가 데이터 생성
   /// <br /> deep-aging-data - 딥에이징 데이터 생성
   /// <br /> probexpt-data - 실험실 데이터 생성
+  ///
+  /// Status code : 200, 400, 404
   static Future<dynamic> createMeatData(String? dest, String jsonData) async {
     String endPoint = 'meat/add/';
     if (dest != null) {
@@ -121,11 +149,14 @@ class RemoteDataSource {
   }
 
   /// 육류 정보 업데이트 (PATCH)
+  ///
   /// null - 기본 육류 정보 수정
-  /// sensory-eval - 관능평가 데이터 수정
-  /// heatedmeat-eval - 가열육 관능평가 데이터 수정
-  /// deep-aging-data - 딥에이징 데이터 수정
-  /// probexpt-data - 실험실 데이터 수정
+  /// <br /> sensory-eval - 관능평가 데이터 수정
+  /// <br /> heatedmeat-eval - 가열육 관능평가 데이터 수정
+  /// <br /> deep-aging-data - 딥에이징 데이터 수정
+  /// <br /> probexpt-data - 실험실 데이터 수정
+  ///
+  /// Status code : 200, 400, 404
   static Future<dynamic> patchMeatData(String? dest, String jsonData) async {
     String endPoint = 'meat/add/';
     if (dest != null) {
@@ -139,25 +170,27 @@ class RemoteDataSource {
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨
   // TODO : Patch로 변경, meatId 변경
-  static Future<dynamic> deleteDeepAging(String id, int seqno) async {
+  static Future<dynamic> deleteDeepAging(String meatId, int seqno) async {
     dynamic response =
-        await _deleteApi('meat/delete/deep-aging?id=$id&seqno=$seqno');
+        await _deleteApi('meat/delete/deep-aging?meatId=$meatId&seqno=$seqno');
     return response;
   }
 
   /// 육류 데이터 승인 (GET)
+  ///
   /// meatId에 해당하는 육류 데이터를 승인
-  // TODO : Patch 변경, meatId 변경
   static Future<dynamic> confirmMeatData(String meatId) async {
-    dynamic response = await _getApi('meat/update/confirm?id=$meatId');
+    dynamic response =
+        await _patchApi('meat/update/confirm?meatId=$meatId', null);
     return response;
   }
 
   /// 육류 데이터 반려 (GET)
+  ///
   /// meatId에 해당하는 육류 데이터를 반려
-  // TODO : Patch 변경, meatId 변경
   static Future<dynamic> rejectMeatData(String meatId) async {
-    dynamic response = await _getApi('meat/update/reject?id=$meatId');
+    dynamic response =
+        await _patchApi('meat/update/reject?meatId=$meatId', null);
     return response;
   }
 
@@ -170,14 +203,6 @@ class RemoteDataSource {
   }
 
   /* 삭제 예정 */
-  /// 유저가 등록한 관리번호 조회 (GET)
-  /// TODO : 삭제
-  static Future<dynamic> getUserMeatData(String userId) async {
-    String endPoint = 'meat/get/by-user-id?userId=$userId';
-    dynamic response = await _getApi(endPoint);
-    return response;
-  }
-
   /// 일반 데이터와 연구 데이터 조회 (GET)
   // TODO : 삭제
   static Future<dynamic> getNormalResearchMeatData(String userType) async {
@@ -224,7 +249,7 @@ class RemoteDataSource {
   /// API PATCH
   ///
   /// 데이터 일부 수정시 사용
-  static Future<dynamic> _patchApi(String endPoint, String jsonData) async {
+  static Future<dynamic> _patchApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
     // String requestBody = jsonData;
@@ -281,11 +306,11 @@ class RemoteDataSource {
 
       if (response.statusCode == 200) {
         debugPrint('DELETE 요청 성공');
-        return jsonDecode(response.body);
       } else {
         debugPrint('DELETE 요청 실패: (${response.statusCode})${response.body}');
-        return;
       }
+
+      return response.statusCode;
     } catch (e) {
       debugPrint('DELETE 요청 중 예외 발생: $e');
       return;

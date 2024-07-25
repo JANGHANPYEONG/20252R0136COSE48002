@@ -67,8 +67,8 @@ class CameraViewModel with ChangeNotifier {
       }
     } catch (e) {
       // 사진 촬영 오류
+      debugPrint('Error taking picture');
       if (context.mounted) showCameraErrorPopup(context);
-      print('Error taking picture');
     }
   }
 

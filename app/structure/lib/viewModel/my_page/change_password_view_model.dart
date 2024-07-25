@@ -102,24 +102,22 @@ class ChangePasswordViewModel with ChangeNotifier {
           ),
         );
         await user.updatePassword(newPW.text); // Firebase update password
-        // DB에 비밀번호 변경
-        // final response =
-        //     await RemoteDataSource.changeUserPw(_convertChangeUserPwToJson());
-        // if (response == null) {
-        //   throw Error();
-        // }
         _success();
       } else {
-        print('User does not exist.');
+        throw ErrorDescription('User does not exist');
       }
     } on FirebaseException catch (e) {
-      print('error: ${e.code}');
+      debugPrint('error: ${e.code}');
       if (e.code == 'wrong-password') {
         _showAlert('현재 비밀번호가 일치하지 않습니다.'); // 기존 비밀번호가 틀리면 alert 생성
       } else {
         _showAlert('오류가 발생했습니다.');
       }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
+
     isLoading = false;
     notifyListeners();
   }

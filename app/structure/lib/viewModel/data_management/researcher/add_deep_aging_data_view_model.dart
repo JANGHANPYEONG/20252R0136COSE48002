@@ -7,39 +7,36 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
-import 'package:intl/intl.dart';
 
 class AddDeepAgingDataViewModel with ChangeNotifier {
   MeatModel meatModel = MeatModel();
-
   AddDeepAgingDataViewModel({required this.meatModel});
 
-  // 컨트롤러
+  bool isLoading = false;
+
+  // 초음파 처리 시간 컨트롤러
   final TextEditingController textEditingController = TextEditingController();
 
-  // 날짜 입력을 위한 기본 변수
-  DateTime selected = DateTime.now();
-  DateTime focused = DateTime.now();
-
   // 대상 값들이 입력되었는지 확인 (분, 날짜)
-  bool isInsertedMinute = false;
   bool isSelectedDate = false;
+  bool isInsertedMinute = false;
 
-  // 대상 값들이 들어오게 될 변수 (선택된 날짜, 처리 시간)
-  String selectedMonth = DateTime.now().month.toString();
-  String selectedDay = DateTime.now().day.toString();
-  String selectedYear = DateTime.now().year.toString();
-  String selectedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  // 날짜 관련 변수
+  DateTime selected = DateTime.now(); // 달력에서 선택한 날짜
+  DateTime focused = DateTime.now(); // 달력에서 선택한 날짜
+  String selectedDate =
+      Usefuls.parseDate(Usefuls.getCurrentDate()); // inkwell에 표시할 날짜 string
+
+  // 초음파 처리 시간
   String? selectedMinute;
 
-  // 현재 위치를 결정 지음(사용되지 않음.)
-  int fieldValue = 0;
-
-  // 입력 상태를 결정짓는다. (날짜, 시간 입력이 완료 되었는지를 체크한다.)
-  // (state == '선택' : 날짜 입력 | state == value : 시간 입력)
+  /// 입력 상태를 결정짓는다. (날짜, 시간 입력이 완료 되었는지를 체크한다.)
+  ///
+  /// (state == '선택' : 날짜 입력 | state == value : 시간 입력)
   void changeState(String state) {
     if (state == '선택' && isSelectedDate == false) {
       isSelectedDate = true;
@@ -55,67 +52,54 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 달력 위젯에서 날짜가 선택될 때 작동
+  /// 달력 위젯에서 날짜가 선택될 때 작동
   void onDaySelected(DateTime selectedDays, DateTime focusedDay) {
-    selected = selectedDays; // 이전 날짜를 기억할 수 있도록 변수 보관
-    focused = focusedDay; // 이전 날짜를 기억할 수 있도록 변수 보관
-    selectedMonth = selected.month.toString();
-    selectedYear = selected.year.toString();
-    selectedDay = selected.day.toString();
+    selected = selectedDays;
+    selectedDate = Usefuls.parseDate(Usefuls.dateTimeToDateString(selected));
 
-    setDate();
     notifyListeners();
   }
 
-  // 날짜 값 변환 (10 이하의 날짜면 앞에 0을 붙임 : 1일 -> 01일)
-  void setDate() {
-    if (int.parse(selectedMonth) < 10) {
-      selectedMonth = selectedMonth;
-    }
-    if (int.parse(selectedDay) < 10) {
-      selectedDay = selectedDay;
-    }
-    selectedDate = '$selectedYear-$selectedMonth-$selectedDay';
-  }
-
-  late BuildContext _context;
-
   // 데이터 저장
   Future<void> saveData(BuildContext context) async {
-    setDate();
+    isLoading = true;
+    notifyListeners();
 
-    int seqno = meatModel.deepAgingData!.length + 1;
+    int seqno = 1; // Defualt: 첫 딥에이징 seqno (1)
+
+    if (meatModel.deepAgingInfo != null) {
+      // 이전 처리육 딥에이징 데이터가 있을 때
+      seqno = int.parse('${meatModel.deepAgingInfo!.last['seqno']}') + 1;
+    }
+
+    // 전송할 deepAgingInfo json 생성
     String jsonData = jsonEncode({
-      "meatId": meatModel.meatId,
-      "userId": meatModel.userName,
-      "createdAt": Usefuls.getCurrentDate(),
-      "period": 0,
-      "seqno": seqno,
-      "deepAging": {
-        "date": '$selectedYear$selectedMonth$selectedDay',
-        "minute": int.parse(selectedMinute!),
+      'meatId': meatModel.meatId,
+      'seqno': seqno,
+      'deepAging': {
+        'date': Usefuls.dateTimeToDateString(selected),
+        'minute': int.parse(selectedMinute!),
       }
     });
 
     try {
-      dynamic response =
+      final response =
           await RemoteDataSource.createMeatData('deep-aging-data', jsonData);
-      if (response == null) {
-        throw Error();
-      } else if (response == 400) {
-        meatModel.deepAgingData!.add({
-          "deepAgingNum": '$seqno회',
-          "date": '$selectedYear$selectedMonth$selectedDay',
-          "minute": int.parse(selectedMinute!),
-          "complete": false
-        });
-        _context = context;
-        _movePage();
-      }
-    } catch (e) {}
-  }
 
-  void _movePage() {
-    Navigator.pop(_context);
+      if (response == 200) {
+        // 딥에이징 추가 성공
+        meatModel.updateDeepAgingInfo(jsonDecode(jsonData));
+
+        isLoading = false;
+        notifyListeners();
+
+        if (context.mounted) Navigator.pop(context);
+      } else {
+        throw ErrorDescription(response);
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
+    }
   }
 }

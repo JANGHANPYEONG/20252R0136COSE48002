@@ -194,7 +194,7 @@ class _DataManagementHomeResearcherScreenState
                                 index, context),
                         idx: index + 1,
                         meatId: dataManagementHomeResearcherViewModel
-                            .selectedList[index]["id"]!,
+                            .selectedList[index]['meatId']!,
                       ),
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
