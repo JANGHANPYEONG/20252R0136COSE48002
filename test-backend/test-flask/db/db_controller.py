@@ -242,7 +242,7 @@ def create_specific_std_meat_data(
             new_meat = create_meat(db_session=db_session, meat_data=data)
             new_meat.statusType = 0
             
-            db_session.add(new_meat)
+            # db_session.add(new_meat)
             
             # 2. Firestore -> S3
             transfer_folder_image(
@@ -274,7 +274,6 @@ def create_specific_std_meat_data(
         db_session.commit()
 
     except Exception as e:
-        # logger.info(str(e))
         # logger.info(str(e))
         db_session.rollback()
         raise e
@@ -370,7 +369,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             # sensory_eval 생성
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             new_sensory_eval = create_SensoryEval(db_session, data, sensory_data, seqno, meat_id, user_id)
-            db_session.add(new_sensory_eval)
+            # db_session.add(new_sensory_eval)
 
             if need_img:
                 transfer_folder_image(
@@ -450,7 +449,6 @@ def create_specific_heatedmeat_seonsory_eval(
 
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
-            sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             db_session.merge(new_sensory_data)
 
@@ -458,8 +456,6 @@ def create_specific_heatedmeat_seonsory_eval(
             if not is_post: # 생성인데 PATCH 메서드
                 return ({"msg": "Heatedmeat Sensory Data Does NOT Exists", "code": 400})
             sensory_data["userId"] = data["userId"]
-            sensory_data["createdAt"] = convert2string(datetime.now(), 1)
-            sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             sensory_data["period"] = calculate_period(db_session, id)
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)

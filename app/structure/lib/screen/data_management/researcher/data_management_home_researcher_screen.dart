@@ -185,21 +185,24 @@ class _DataManagementHomeResearcherScreenState
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
                     height: 800.h,
-                    child: ListView.separated(
-                      itemCount: dataManagementHomeResearcherViewModel
-                          .selectedList.length,
-                      itemBuilder: (context, index) => ListCardDataManage(
-                        onTap: () async =>
-                            await dataManagementHomeResearcherViewModel.onTap(
-                                index, context),
-                        idx: index + 1,
-                        meatId: dataManagementHomeResearcherViewModel
-                            .selectedList[index]['meatId']!,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        itemCount: dataManagementHomeResearcherViewModel
+                            .selectedList.length,
+                        itemBuilder: (context, index) => ListCardDataManage(
+                          onTap: () async =>
+                              await dataManagementHomeResearcherViewModel.onTap(
+                                  index, context),
+                          idx: index + 1,
+                          meatId: dataManagementHomeResearcherViewModel
+                              .selectedList[index]['meatId']!,
+                        ),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const CustomDivider(),
                       ),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const CustomDivider(),
                     ),
                   ),
                   SizedBox(height: 50.h),
