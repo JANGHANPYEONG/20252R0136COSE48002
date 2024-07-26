@@ -9,7 +9,6 @@ from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 from sqlalchemy import func, create_engine
 import json
 from utils import *
-from utils import *
 
 from .db_model import *
 
@@ -461,10 +460,9 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["userId"] = data["userId"]
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             sensory_data["createdAt"] = convert2string(datetime.now(), 1)
+            sensory_data["createdAt"] = convert2string(datetime.now(), 1)
             sensory_data["period"] = calculate_period(db_session, id)
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
-            db_session.add(new_sensory_data)
-            db_session.commit()
 
         if need_img:
             transfer_folder_image(
@@ -508,7 +506,6 @@ def create_specific_probexpt_data(db_session, data, is_post):
                 return ({"msg": "Not Confirmed Data", "code": 400})
 
             probexpt_data["userId"] = existed_probexpt_data["userId"]
-            probexpt_data["updatedAt"] = existed_probexpt_data["updatedAt"]
             probexpt_data["updatedAt"] = existed_probexpt_data["updatedAt"]
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.merge(new_probexpt_data)
@@ -1579,9 +1576,6 @@ def get_probexpt_of_meat(db_session, start, end, specie_id, grade, is_raw):
             "avg": average,
             "max": maximum,
             "min": minimum,
-            "avg": average,
-            "max": maximum,
-            "min": minimum,
             "unique_values": unique_values,
         }
     return stats
@@ -1707,7 +1701,6 @@ def get_probexpt_of_processedmeat(db_session, seqno, start, end):
 
 
 def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
-def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
@@ -1752,7 +1745,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
 
             # 실제로 존재하는 값들 찾기
             uniques_query = (
-            uniques_query = (
                 db_session.query(getattr(SensoryEval, field))
                 .join(DeepAgingInfo, DeepAgingInfo.id == SensoryEval.id and DeepAgingInfo.seqno == SensoryEval.seqno)
                 .join(Meat, Meat.id == DeepAgingInfo.id)
@@ -1779,143 +1771,6 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
             uniques = [value[0] for value in uniques_query.distinct().all()]
 
             stats[field] = {
-                "avg": average,
-                "max": maximum,
-                "min": minimum,
-                "unique_values": sorted(uniques),
-            }
-
-        return stats
-    except Exception as e:
-        raise Exception("Something Wrong with DB" + str(e))
-
-
-# def get_sensory_of_processedmeat(db_session, seqno, start, end):
-#     # 기간 설정
-#     start = convert2datetime(start, 0)  # Start Time
-#     end = convert2datetime(end, 0)  # End Time
-#     if start is None or end is None:
-#         return jsonify({"msg": "Wrong start or end data"}), 404
-
-#     stats = {}
-#     seqno = safe_int(seqno)
-#     if seqno:
-#         # 각 필드의 평균값, 최대값, 최소값 계산
-#         for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
-#             avg = (
-#                 db_session.query(func.avg(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno == seqno,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-#             max_value = (
-#                 db_session.query(func.max(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno == seqno,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-#             min_value = (
-#                 db_session.query(func.min(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno == seqno,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-
-#             # 실제로 존재하는 값들 찾기
-#             unique_values_query = (
-#                 db_session.query(getattr(SensoryEval, field))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno == seqno,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .distinct()
-#             )
-#             unique_values = [
-#                 value[0] for value in unique_values_query.all() if value[0] is not None
-#             ]
-
-#             stats[field] = {
-#                 "avg": avg,
-#                 "max": max_value,
-#                 "min": min_value,
-#                 "unique_values": (
-#                     sorted(unique_values) if unique_values else unique_values
-#                 ),
-#             }
-#     else:
-#         # 각 필드의 평균값, 최대값, 최소값 계산
-#         for field in ["marbling", "color", "texture", "surfaceMoisture", "overall"]:
-#             avg = (
-#                 db_session.query(func.avg(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno != 0,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-#             max_value = (
-#                 db_session.query(func.max(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno != 0,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-#             min_value = (
-#                 db_session.query(func.min(getattr(SensoryEval, field)))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno != 0,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .scalar()
-#             )
-
-#             # 실제로 존재하는 값들 찾기
-#             unique_values_query = (
-#                 db_session.query(getattr(SensoryEval, field))
-#                 .join(Meat, Meat.id == SensoryEval.id)
-#                 .filter(
-#                     SensoryEval.seqno != 0,
-#                     Meat.createdAt.between(start, end),
-#                     Meat.statusType == 2,
-#                 )
-#                 .distinct()
-#             )
-#             unique_values = [
-#                 value[0] for value in unique_values_query.all() if value[0] is not None
-#             ]
-
-#             stats[field] = {
-#                 "avg": avg,
-#                 "max": max_value,
-#                 "min": min_value,
-#                 "unique_values": sorted(unique_values),
-#             }
-
-#     return jsonify(stats)
-
-
-def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw):
                 "avg": average,
                 "max": maximum,
                 "min": minimum,
@@ -2134,9 +1989,6 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 "unique_values": sorted(uniques),
             }
 
-        return stats
-    except Exception as e:
-        raise Exception("Something Wrong with DB" + str(e))
         return stats
     except Exception as e:
         raise Exception("Something Wrong with DB" + str(e))

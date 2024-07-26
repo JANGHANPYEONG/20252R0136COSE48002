@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
-import { apiIP } from '../../config';
+import { deleteMeat } from '../../API/delete/deleteMeat';
 const navy = '#0F3659';
 
 // 삭제 경고창 컴포넌트
@@ -21,15 +21,6 @@ export default function DelWarningModal({
 
   // 삭제 API 호출함수
 
-  const onDelete = async (req) => {
-    await fetch(`http://${apiIP}/meat/delete/`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req),
-    });
-  };
 
   // 삭제 후 reload 시 쿼리 파라미터 변수 값
   const params = [
@@ -40,7 +31,7 @@ export default function DelWarningModal({
 
   // 삭제 버튼 클릭 시
   const handleOnDelete = async () => {
-    await onDelete({ id: idArr });
+    await deleteMeat({ id: idArr });
     // 삭체 후 새로고침
     window.location.href =
       'http://' +
