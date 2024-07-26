@@ -404,6 +404,7 @@ def transfer_folder_image(s3_conn, firestore_conn, db_session, id, new_meat, fol
 
         new_meat.imagePath = s3_conn.get_image_url(s3_conn.bucket, f"{folder}/{id}")
         db_session.merge(new_meat)
+        # setattr(new_meat, 'imagePath', new_meat.imagePath)
         db_session.commit()
     except Exception as e:
         db_session.rollback()
