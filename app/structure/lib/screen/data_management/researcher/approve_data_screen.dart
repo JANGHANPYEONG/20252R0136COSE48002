@@ -106,6 +106,10 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                           checkedFilter: approveDataViewModel.checkedFilter(),
                           onPressedFilterSave: () =>
                               approveDataViewModel.onPressedFilterSave(),
+                          statusList: approveDataViewModel.statusList,
+                          onTapstatus: (index) =>
+                              approveDataViewModel.onTapStatus(index),
+                          statusStatus: approveDataViewModel.statusStatus,
                         )
                       : SizedBox(height: 16.h),
 

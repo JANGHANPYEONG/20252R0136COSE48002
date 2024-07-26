@@ -124,6 +124,13 @@ class _DataManagementHomeResearcherScreenState
                           onPressedFilterSave: () =>
                               dataManagementHomeResearcherViewModel
                                   .onPressedFilterSave(),
+                          statusList:
+                              dataManagementHomeResearcherViewModel.statusList,
+                          onTapstatus: (index) =>
+                              dataManagementHomeResearcherViewModel
+                                  .onTapStatus(index),
+                          statusStatus: dataManagementHomeResearcherViewModel
+                              .statusStatus,
                         )
                       : SizedBox(height: 16.h),
 

@@ -55,6 +55,10 @@ class ApproveDataViewModel with ChangeNotifier {
   List<bool> speciesStatus = [true, false, false];
   int speciesSelectedIdx = 0;
 
+  List<String> statusList = ['전체', '대기중', '승인', '반려'];
+  List<bool> statusStatus = [true, false, false, false];
+  int statusSelectedIdx = 0;
+
   // 날짜 값이 담길 변수
   DateTime? toDay;
   DateTime? threeDaysAgo;
@@ -136,6 +140,8 @@ class ApproveDataViewModel with ChangeNotifier {
     dataStatus[dataSelectedIdx] = true;
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[speciesSelectedIdx] = true;
+    statusStatus = List.filled(statusStatus.length, false);
+    statusStatus[statusSelectedIdx] = true;
 
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {
@@ -168,6 +174,7 @@ class ApproveDataViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
+    setStatus();
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
@@ -175,6 +182,7 @@ class ApproveDataViewModel with ChangeNotifier {
     filteredList.sort((a, b) {
       DateTime dateA = DateTime.parse(a['createdAt']!);
       DateTime dateB = DateTime.parse(b['createdAt']!);
+      print('selected() : $selectedList');
       return dateB.compareTo(dateA);
     });
     selectedList = filteredList;
@@ -187,10 +195,12 @@ class ApproveDataViewModel with ChangeNotifier {
         return (data['userId'] == userModel.userId);
       }).toList();
     } else {}
+    print('setdata호출');
   }
 
   // 육종 별 필터링 진행. (소 / 돼지)
   void setSpecies() {
+    print('setspecies호출');
     if (speciesSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '소');
@@ -204,16 +214,35 @@ class ApproveDataViewModel with ChangeNotifier {
     selectedList = filteredList;
   }
 
+  void setStatus() {
+    print('setStatus 호출');
+    if (statusSelectedIdx == 1) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '대기중');
+      }).toList();
+    } else if (statusSelectedIdx == 2) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '승인');
+      }).toList();
+    } else if (statusSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '반려');
+      }).toList();
+    }
+    selectedList = filteredList;
+  }
+
   // 필터 조회 버튼 클릭시 호출
   void onPressedFilterSave() {
     // 필터 값 기억
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
     dataSelectedIdx = dataStatus.indexWhere((element) => element == true);
     speciesSelectedIdx = speciesStatus.indexWhere((element) => element == true);
+    statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
 
     // 필터 텍스트 할당
     filterdResult =
-        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}';
+        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}∙${statusList[statusSelectedIdx]}';
 
     // 필터 창 닫기
     isOpnedFilter = false;
@@ -304,6 +333,13 @@ class ApproveDataViewModel with ChangeNotifier {
   void onTapSpecies(int index) {
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[index] = true;
+    notifyListeners();
+  }
+
+  //상태 필터 클릭
+  void onTapStatus(int index) {
+    statusStatus = List.filled(statusList.length, false);
+    statusStatus[index] = true;
     notifyListeners();
   }
 
