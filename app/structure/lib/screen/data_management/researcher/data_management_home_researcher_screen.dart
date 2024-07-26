@@ -30,7 +30,8 @@ class _DataManagementHomeResearcherScreenState
     final DataManagementHomeResearcherViewModel
         dataManagementHomeResearcherViewModel =
         context.watch<DataManagementHomeResearcherViewModel>();
-
+    final int selectedListNum =
+        dataManagementHomeResearcherViewModel.selectedListNum;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -187,6 +188,15 @@ class _DataManagementHomeResearcherScreenState
                     ],
                   ),
                   SizedBox(height: 16.h),
+                  SizedBox(
+                    height: 30.h,
+                    width: 560.w,
+                    child: Text(
+                      '육류 개수 : $selectedListNum',
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  ),
 
                   // 육류 리스트
                   Container(

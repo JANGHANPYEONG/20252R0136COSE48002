@@ -75,6 +75,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   String lastDayText = '';
   int indexDay = 0;
 
+  //총 개수
+  int selectedListNum = 0;
+
   // 초기화 함수.
   Future<void> _initialize() async {
     await _fetchData();
@@ -229,6 +232,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
     formatting();
     filterlize();
+
+    selectedListNum = selectedList.length;
+    print('개수 : $selectedListNum');
     notifyListeners();
   }
 
