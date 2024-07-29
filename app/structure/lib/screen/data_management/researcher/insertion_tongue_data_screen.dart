@@ -25,10 +25,8 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // 키보드 unfocus
-        FocusScope.of(context).unfocus();
-      },
+      // 키보드 unfocus
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(
@@ -42,9 +40,6 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
               Column(
                 // 'datafield' 컴포넌트를 이용하여 전자혀 데이터 측정
                 children: [
-                  SizedBox(
-                    height: 30.h,
-                  ),
                   DataField(
                     mainText: 'Sourness',
                     subText: '신맛',

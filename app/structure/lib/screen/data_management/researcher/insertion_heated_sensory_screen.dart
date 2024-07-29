@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/data_title.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
@@ -49,136 +50,47 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
             Column(
               children: [
                 // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
-                SizedBox(height: 10.h),
-                Row(
-                  children: [
-                    SizedBox(width: 40.w),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: const Row(children: [
-                        Text(
-                          'Flavor ',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '풍미',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ]),
-                    ),
-                  ],
-                ),
-
+                const DataTitle(korText: '풍미', engText: 'Flavor'),
                 PartEval(
-                  idx: 0,
+                  idx: 4,
                   selectedText: text[0],
                   value: insertionHeatedSensoryViewModel.flavor,
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedFlavor(value),
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 36.h),
 
-                Row(
-                  children: [
-                    SizedBox(width: 40.w),
-                    const Row(children: [
-                      Text(
-                        'Juiciness ',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '다즙성',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ]),
-                  ],
-                ),
-
+                const DataTitle(korText: '다즙성', engText: 'Juiciness'),
                 PartEval(
-                  idx: 1,
+                  idx: 4,
                   selectedText: text[1],
                   value: insertionHeatedSensoryViewModel.juiciness,
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedJuiciness(value),
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 36.h),
 
-                Row(
-                  children: [
-                    SizedBox(width: 40.w),
-                    const Row(children: [
-                      Text(
-                        'Tenderness ',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '연도',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ]),
-                  ],
-                ),
-
+                const DataTitle(korText: '연도', engText: 'Tenderness'),
                 PartEval(
-                  idx: 2,
+                  idx: 4,
                   selectedText: text[2],
                   value: insertionHeatedSensoryViewModel.tenderness,
                   onChanged: (value) => insertionHeatedSensoryViewModel
                       .onChangedTenderness(value),
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 36.h),
 
-                Row(
-                  children: [
-                    SizedBox(width: 40.w),
-                    const Row(children: [
-                      Text(
-                        'Umami ',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '표면육즙',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ]),
-                  ],
-                ),
-
+                const DataTitle(korText: '표면육즙', engText: 'Umami'),
                 PartEval(
-                  idx: 3,
+                  idx: 4,
                   selectedText: text[3],
                   value: insertionHeatedSensoryViewModel.umami,
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedUmami(value),
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 36.h),
 
-                Row(
-                  children: [
-                    SizedBox(width: 40.w),
-                    const Row(children: [
-                      Text(
-                        'Palatability ',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '기호도',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ]),
-                  ],
-                ),
-
+                const DataTitle(korText: '기호도', engText: 'Palatability'),
                 PartEval(
                   idx: 4,
                   selectedText: text[4],
@@ -186,11 +98,11 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   onChanged: (value) => insertionHeatedSensoryViewModel
                       .onChangedPalatability(value),
                 ),
-                SizedBox(height: 60.h),
+                SizedBox(height: 64.h),
 
                 // 데이터 저장 버튼
                 Container(
-                  margin: EdgeInsets.only(bottom: 18.h),
+                  margin: EdgeInsets.only(bottom: 40.h),
                   child: MainButton(
                     onPressed: () =>
                         insertionHeatedSensoryViewModel.saveData(context),

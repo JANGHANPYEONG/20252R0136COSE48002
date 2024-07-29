@@ -14,21 +14,25 @@
 // 7. 삭제 버튼을 누를 때 수행할 기능 정의.
 //
 //
+import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:structure/config/userfuls.dart';
 
 class DeepAgingCard extends StatelessWidget {
+  final bool isRaw;
   final String deepAgingNum;
-  final int minute;
+  final String mainText;
   final String butcheryDate;
   final bool completed;
   final VoidCallback onTap;
   final VoidCallback? delete;
   const DeepAgingCard({
     super.key,
+    this.isRaw = false,
     required this.deepAgingNum,
-    required this.minute,
+    required this.mainText,
     required this.butcheryDate,
     required this.completed,
     required this.onTap,
@@ -40,17 +44,18 @@ class DeepAgingCard extends StatelessWidget {
     return Stack(
       children: [
         SizedBox(
-          height: 133.h,
+          height: 132.h,
+          width: double.infinity,
           child: OutlinedButton(
             onPressed: onTap,
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(20.r),
               ),
               side: const BorderSide(color: Color(0xFFEAEAEA)),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 15.h),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Row(
                 children: [
                   SizedBox(
@@ -61,22 +66,30 @@ class DeepAgingCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.sp),
-                                color: const Color.fromARGB(255, 232, 229, 255),
+                            // 딥에이징 회차
+                            if (!isRaw)
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20.r),
+                                  color:
+                                      const Color.fromARGB(255, 232, 229, 255),
+                                ),
+                                width: 84.w,
+                                height: 32.h,
+                                child: Center(child: Text(deepAgingNum)),
                               ),
-                              width: 84.w,
-                              height: 32.h,
-                              child: Center(child: Text(deepAgingNum)),
-                            ),
-                            SizedBox(width: 10.w),
-                            Text(butcheryDate, style: Palette.h5Grey),
+                            if (!isRaw) SizedBox(width: 10.w),
+
+                            // 도축/등록 날짜
+                            Text(Usefuls.butcheryDateToDateShort(butcheryDate),
+                                style: Palette.h5Grey),
                           ],
                         ),
-                        SizedBox(height: 15.h),
+                        SizedBox(height: 16.h),
+
+                        // Main text
                         Text(
-                          '$minute분',
+                          mainText,
                           style: TextStyle(
                             fontSize: 36.sp,
                             fontWeight: FontWeight.w700,
@@ -87,6 +100,8 @@ class DeepAgingCard extends StatelessWidget {
                     ),
                   ),
                   VerticalDivider(thickness: 1, color: Colors.grey[300]),
+
+                  // 추가정보 입력 완료 여부
                   SizedBox(
                     width: 160.w,
                     child: Column(
@@ -94,7 +109,9 @@ class DeepAgingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('추가정보 입력', style: Palette.h5LightGrey),
-                        SizedBox(height: 15.h),
+                        SizedBox(height: 16.h),
+
+                        // 데이터 입력 확인
                         Text(
                           completed ? '완료' : '미완료',
                           style: TextStyle(
@@ -113,18 +130,21 @@ class DeepAgingCard extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          top: -5.h,
-          right: -10.w,
-          child: IconButton(
-            onPressed: delete,
-            icon: Icon(
-              Icons.delete,
-              size: 30.sp,
-              color: Palette.greyTextColor,
+
+        // 삭제 버튼
+        if (!isRaw)
+          Positioned(
+            top: -5.h,
+            right: -10.w,
+            child: IconButton(
+              onPressed: () => showDeepAgingDeleteDialog(context, delete),
+              icon: Icon(
+                Icons.delete,
+                size: 30.sp,
+                color: Palette.greyTextColor,
+              ),
             ),
-          ),
-        )
+          )
       ],
     );
   }

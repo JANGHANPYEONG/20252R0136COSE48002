@@ -43,6 +43,7 @@ void showDataRegisterDialog(
   );
 }
 
+/// 데이터 입력 미완료 dialog
 void showDataNotCompleteDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
   showCustomDialog(
@@ -57,6 +58,7 @@ void showDataNotCompleteDialog(
   );
 }
 
+/// 데이터 입력 완료 dialog
 void showDataCompleteDialog(
     BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
   showCustomDialog(
@@ -115,6 +117,27 @@ void showTemporarySaveDialog(BuildContext context, VoidCallback? rightFunc) {
   );
 }
 
+/// 딥에이징 데이터 삭제 dialog
+void showDeepAgingDeleteDialog(BuildContext context, VoidCallback? rightFunc) {
+  void handleRightFunc() {
+    if (rightFunc != null) {
+      rightFunc();
+    }
+    Navigator.of(context).pop();
+  }
+
+  showCustomDialog(
+    context,
+    'assets/images/trash_image.png',
+    '딥에이징 정보를 삭제할까요?',
+    '관련된 모든 데이터가 삭제됩니다. \n 삭제한 데이터는 되돌릴 수 없습니다.',
+    '취소',
+    '삭제',
+    null,
+    handleRightFunc,
+  );
+}
+
 // 다이얼로그 형식입니다.
 /// 커스텀 dialog
 void showCustomDialog(
@@ -137,7 +160,7 @@ void showCustomDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
         child: SizedBox(
-          height: iconPath != null ? 504.h : 333.h,
+          height: iconPath != null ? 504.h : 332.h,
           width: 650.w,
           child: Center(
             child: Column(
@@ -161,6 +184,7 @@ void showCustomDialog(
                 SizedBox(height: 14.h),
                 Text(
                   contentText,
+                  textAlign: TextAlign.center,
                   style: Palette.dialogContentSmall,
                 ),
                 iconPath != null
