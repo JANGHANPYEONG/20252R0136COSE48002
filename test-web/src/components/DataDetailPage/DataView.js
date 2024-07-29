@@ -62,7 +62,7 @@ function DataView({ dataProps }) {
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('');
+  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
   const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
@@ -125,14 +125,7 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      addHeatedData(
-        heatInput[i],
-        i,
-        meatId,
-        createdDate,
-        userId,
-        elapsedHour
-      )
+      addHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
         .then((response) => {
           console.log('가열육 수정 POST요청 성공:', response);
         })
@@ -143,14 +136,7 @@ function DataView({ dataProps }) {
     }
     // 2. 실험실 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      addProbexptData(
-        labInput[i],
-        i,
-        meatId,
-        createdDate,
-        userId,
-        elapsedHour
-      )
+      addProbexptData(labInput[i], i, meatId, createdDate, userId, elapsedHour)
         .then((response) => {
           console.log('실험실 수정 POST요청 성공:', response);
         })
@@ -301,34 +287,42 @@ function DataView({ dataProps }) {
               title="처리육"
               style={{ backgroundColor: 'white' }}
             >
-              <Autocomplete
-                id={'controllable-states-processed'}
-                label="처리상태"
-                value={processed_toggle}
-                onChange={(event, newValue) => {
-                  setProcessedToggle(newValue);
-                }}
-                inputValue={processedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
-                }}
-                options={options.slice(1)}
-                size="small"
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => <TextField {...params} />}
-              />
-              <ProcessedTable
-                edited={edited}
-                modal={modal}
-                setModal={setModal}
-                processed_img_path={processed_img_path}
-                processedMinute={processedMinute}
-                setProcessedMinute={setProcessedMinute}
-                processedInput={processedInput}
-                processed_data={processed_data}
-                processedToggleValue={processedToggleValue}
-                handleInputChange={handleInputChange}
-              />
+              {processed_data.length !== 0 ? (
+                <>
+                  <Autocomplete
+                    id={'controllable-states-processed'}
+                    label="처리상태"
+                    value={processed_toggle}
+                    onChange={(event, newValue) => {
+                      setProcessedToggle(newValue);
+                    }}
+                    inputValue={processedToggleValue}
+                    onInputChange={(event, newInputValue) => {
+                      setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
+                    }}
+                    options={options.slice(1)}
+                    size="small"
+                    sx={{ width: 'fit-content', marginBottom: '10px' }}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  <ProcessedTable
+                    edited={edited}
+                    modal={modal}
+                    setModal={setModal}
+                    processed_img_path={processed_img_path}
+                    processedMinute={processedMinute}
+                    setProcessedMinute={setProcessedMinute}
+                    processedInput={processedInput}
+                    processed_data={processed_data}
+                    processedToggleValue={processedToggleValue}
+                    handleInputChange={handleInputChange}
+                  />
+                </>
+              ) : (
+                <div style={divStyle.errorContainer}>
+                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
+                </div>
+              )}
             </Tab>
             <Tab
               value="heat"
@@ -567,6 +561,18 @@ const divStyle = {
   },
   loadingText: {
     fontSize: '25px',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    height: '65vh',
+    minHeight: '500px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: '16px',
     textAlign: 'center',
   },
 };

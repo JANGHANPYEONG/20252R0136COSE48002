@@ -15,11 +15,12 @@ import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import SearchIcon from '@mui/icons-material/Search';
 import { IoMdPersonAdd } from 'react-icons/io';
-import { deleteUser, getAuth } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { Box } from '@mui/material';
 import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { userList } from '../../API/user/userList';
 import { userUpdate } from '../../API/user/userUpdate';
+import { userDelete } from '../../API/user/userDelete';
 
 function UserList() {
   const [registerShow, setRegisterShow] = useState(false);
@@ -56,8 +57,8 @@ function UserList() {
       }
 
       // If reauthentication is successful, proceed with the account deletion
-      const response = await deleteUser(userId);
-
+      const response = await userDelete(userId);
+      console.log('res', response);
       if (response.ok) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
         setAllUsers((prevUsers) =>
