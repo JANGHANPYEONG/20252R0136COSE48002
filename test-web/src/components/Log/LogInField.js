@@ -60,14 +60,21 @@ const LogInField = () => {
         setLoginError('비밀번호를 입력해주세요.');
         return;
       }
-      const auth = getAuth();
       const response = await userIsLogin(loginEmail);
       const user = await response.json();
+
+      // 사용자 존재 여부 확인
+      if (!user.userId) {
+        setLoginError('존재하지 않는 유저입니다.');
+        return;
+      }
       if (user.type === 'Normal') {
-        //아이디는 존재하지만 관리자가 아니라면
+        // 관리자가 아닌 경우
         setLoginError('로그인 권한이 없습니다. 관리자에게 문의해주세요.');
         return;
       }
+
+      const auth = getAuth();
 
       try {
         await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
@@ -97,7 +104,6 @@ const LogInField = () => {
       } else {
         localStorage.removeItem('rememberedEmail');
       }
-      //로그인 성공 시 홈으로 이동
       const userCredential = await signInWithEmailAndPassword(
         auth,
         loginEmail,
@@ -106,6 +112,7 @@ const LogInField = () => {
       localStorage.setItem('UserInfo', JSON.stringify(user));
       const updateinfo = JSON.parse(localStorage.getItem('updateinfo'));
 
+      //로그인 성공 시 홈으로 이동
       localStorage.setItem('isLoggedIn', 'true');
       console.log('LOGIN SUCCESS');
       navigate('/Home');
