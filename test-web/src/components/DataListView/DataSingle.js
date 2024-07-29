@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import DataList from './DataList';
 
-
 // 데이터 목록 조회 페이지 컴포넌트
 const DataSingle = ({ startDate, endDate, data }) => {
   // 현재 페이지 번호

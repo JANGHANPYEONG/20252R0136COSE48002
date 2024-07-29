@@ -30,7 +30,8 @@ class _DataManagementHomeResearcherScreenState
     final DataManagementHomeResearcherViewModel
         dataManagementHomeResearcherViewModel =
         context.watch<DataManagementHomeResearcherViewModel>();
-
+    final int selectedListNum =
+        dataManagementHomeResearcherViewModel.selectedListNum;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -124,6 +125,13 @@ class _DataManagementHomeResearcherScreenState
                           onPressedFilterSave: () =>
                               dataManagementHomeResearcherViewModel
                                   .onPressedFilterSave(),
+                          statusList:
+                              dataManagementHomeResearcherViewModel.statusList,
+                          onTapstatus: (index) =>
+                              dataManagementHomeResearcherViewModel
+                                  .onTapStatus(index),
+                          statusStatus: dataManagementHomeResearcherViewModel
+                              .statusStatus,
                         )
                       : SizedBox(height: 16.h),
 
@@ -180,26 +188,38 @@ class _DataManagementHomeResearcherScreenState
                     ],
                   ),
                   SizedBox(height: 16.h),
+                  SizedBox(
+                    height: 30.h,
+                    width: 560.w,
+                    child: Text(
+                      '육류 개수 : $selectedListNum',
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  ),
 
                   // 육류 리스트
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
                     height: 800.h,
-                    child: ListView.separated(
-                      itemCount: dataManagementHomeResearcherViewModel
-                          .selectedList.length,
-                      itemBuilder: (context, index) => ListCardDataManage(
-                        onTap: () async =>
-                            await dataManagementHomeResearcherViewModel.onTap(
-                                index, context),
-                        idx: index + 1,
-                        meatId: dataManagementHomeResearcherViewModel
-                            .selectedList[index]['meatId']!,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      child: ListView.separated(
+                        itemCount: dataManagementHomeResearcherViewModel
+                            .selectedList.length,
+                        itemBuilder: (context, index) => ListCardDataManage(
+                          onTap: () async =>
+                              await dataManagementHomeResearcherViewModel.onTap(
+                                  index, context),
+                          idx: index + 1,
+                          meatId: dataManagementHomeResearcherViewModel
+                              .selectedList[index]['meatId']!,
+                        ),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const CustomDivider(),
                       ),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const CustomDivider(),
                     ),
                   ),
                   SizedBox(height: 50.h),

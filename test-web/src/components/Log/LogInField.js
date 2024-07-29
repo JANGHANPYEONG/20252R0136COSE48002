@@ -15,7 +15,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import Layer_1 from '../../src_assets/Layer_1.png';
 import BackGround from '../../src_assets/BackGround.png';
-import { apiIP } from '../../config';
+import { userIsLogin } from '../../API/user/userIsLogin';
 
 const defaultTheme = createTheme();
 const LogInField = () => {
@@ -61,9 +61,7 @@ const LogInField = () => {
         return;
       }
       const auth = getAuth();
-      const response = await fetch(
-        `http://${apiIP}/user/login?userId=${loginEmail}`
-      );
+      const response = await userIsLogin(loginEmail);
       const user = await response.json();
       if (user.type === 'Normal') {
         //아이디는 존재하지만 관리자가 아니라면

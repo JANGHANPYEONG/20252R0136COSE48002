@@ -8,20 +8,20 @@ import updateDataStatus from '../../API/updateDataStatus';
 const navy = '#0F3659';
 
 // 승인 여부 확인 모달
-export default function AcceptModal({ id, setConfirmVal, confirmVal }) {
+export default function AcceptModal({ meatId, setConfirmVal, confirmVal }) {
   const navigate = useNavigate();
   const location = useLocation();
-
   //화면 창 닫기
   const [open, setOpen] = useState(true);
   const handleClose = () => {
     setOpen(false);
     setConfirmVal(null);
   };
+  // console.log('as', id, confirmVal);
 
   // 승인 Api 호출
   const changeConfirmState = () => {
-    updateDataStatus(confirmVal, id, setStateChanged);
+    updateDataStatus(confirmVal, meatId, setStateChanged);
   };
   // 최종 변경 완료 팝업
   const [stateChanged, setStateChanged] = useState(false);
@@ -64,7 +64,7 @@ export default function AcceptModal({ id, setConfirmVal, confirmVal }) {
                   lineHeight: '5px',
                 }}
               >
-                관리번호 '{id}'의 일반 데이터를
+                관리번호 '{meatId}'의 일반 데이터를
               </span>
               <span
                 style={{

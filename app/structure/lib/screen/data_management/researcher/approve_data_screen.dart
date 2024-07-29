@@ -106,6 +106,10 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                           checkedFilter: approveDataViewModel.checkedFilter(),
                           onPressedFilterSave: () =>
                               approveDataViewModel.onPressedFilterSave(),
+                          statusList: approveDataViewModel.statusList,
+                          onTapstatus: (index) =>
+                              approveDataViewModel.onTapStatus(index),
+                          statusStatus: approveDataViewModel.statusStatus,
                         )
                       : SizedBox(height: 16.h),
 
@@ -165,23 +169,27 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
                     height: 800.h,
-                    child: ListView.separated(
-                      itemCount: approveDataViewModel.selectedList.length,
-                      itemBuilder: (context, index) => ListCardApprove(
-                        onTap: () async => await approveDataViewModel
-                            .onTapApproveCard(index, context),
-                        idx: index + 1,
-                        meatId: approveDataViewModel.selectedList[index]
-                            ['meatId']!,
-                        dayTime: Usefuls.parseDate(approveDataViewModel
-                            .selectedList[index]['createdAt']!),
-                        statusType: approveDataViewModel.selectedList[index]
-                            ['statusType']!,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      // thickness: 8,
+                      child: ListView.separated(
+                        itemCount: approveDataViewModel.selectedList.length,
+                        itemBuilder: (context, index) => ListCardApprove(
+                          onTap: () async => await approveDataViewModel
+                              .onTapApproveCard(index, context),
+                          idx: index + 1,
+                          meatId: approveDataViewModel.selectedList[index]
+                              ['meatId']!,
+                          dayTime: Usefuls.parseDate(approveDataViewModel
+                              .selectedList[index]['createdAt']!),
+                          statusType: approveDataViewModel.selectedList[index]
+                              ['statusType']!,
+                        ),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const CustomDivider(),
                       ),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const CustomDivider(),
                     ),
                   ),
                   SizedBox(height: 50.h),

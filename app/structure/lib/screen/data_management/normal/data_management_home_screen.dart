@@ -130,24 +130,28 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                     Expanded(
                       child: SizedBox(
                         width: 640.w,
-                        child: ListView.builder(
-                          itemCount:
-                              dataManagementHomeViewModel.selectedList.length,
-                          itemBuilder: (context, index) => ListCardNormal(
-                            onTap: () async => await dataManagementHomeViewModel
-                                .onTap(index, context),
-                            num: dataManagementHomeViewModel.selectedList[index]
-                                ["meatId"]!,
-                            dayTime: dataManagementHomeViewModel
-                                .selectedList[index]["createdAt"]!,
-                            statusType: dataManagementHomeViewModel
-                                .selectedList[index]["statusType"]!,
-                            dDay: 3 -
-                                Usefuls.calculateDateDifference(
-                                  Usefuls.dateShortToDateLong(
-                                      dataManagementHomeViewModel
-                                          .selectedList[index]["createdAt"]!),
-                                ),
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            itemCount:
+                                dataManagementHomeViewModel.selectedList.length,
+                            itemBuilder: (context, index) => ListCardNormal(
+                              onTap: () async =>
+                                  await dataManagementHomeViewModel.onTap(
+                                      index, context),
+                              num: dataManagementHomeViewModel
+                                  .selectedList[index]["meatId"]!,
+                              dayTime: dataManagementHomeViewModel
+                                  .selectedList[index]["createdAt"]!,
+                              statusType: dataManagementHomeViewModel
+                                  .selectedList[index]["statusType"]!,
+                              dDay: 3 -
+                                  Usefuls.calculateDateDifference(
+                                    Usefuls.dateShortToDateLong(
+                                        dataManagementHomeViewModel
+                                            .selectedList[index]["createdAt"]!),
+                                  ),
+                            ),
                           ),
                         ),
                       ),

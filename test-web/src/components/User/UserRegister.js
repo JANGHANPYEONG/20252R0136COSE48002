@@ -8,7 +8,8 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { apiIP } from '../../config';
+import { userRegister } from '../../API/user/userRegister';
+import { userDuplicateCheck } from '../../API/user/userDuplicateCheck';
 
 function UserRegister({ handleClose }) {
   const [userId, setuserId] = useState('');
@@ -65,13 +66,9 @@ function UserRegister({ handleClose }) {
     if (isFormValid()) {
       try {
         setCreatedAt(new Date().toISOString().slice(0, -5));
-        const toJson = {
+        const req = {
           userId: userId,
           name: name,
-          // createdAt: createdAt,
-          // updatedAt: updatedAt,
-          // loginAt: loginAt,
-          // password: password,
           company: company,
           jobTitle: jobTitle,
           homeAddr: homeAddr,
@@ -81,16 +78,7 @@ function UserRegister({ handleClose }) {
 
         // Check registrationResponse.ok before calling createUserWithEmailAndPassword
 
-        const registrationResponse = await fetch(
-          `http://${apiIP}/user/register`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(toJson),
-          }
-        );
+        const registrationResponse = await userRegister(req); // userRegister api 호출
         if (registrationResponse.ok) {
           const tempPassword = generateTempPassword();
           const { user } = await createUserWithEmailAndPassword(
@@ -120,11 +108,8 @@ function UserRegister({ handleClose }) {
   const [showifduplicate, setShowifduplicate] = useState(false);
   const handleDuplicateCheck = async () => {
     try {
-      const response = await fetch(
-        `http://${apiIP}/user/duplicate-check?userId=${userId}`
-      );
-      console.log(response);
-      const check = await response.json()
+      const response = await userDuplicateCheck(userId);
+      const check = await response.json();
       if (!check.isDuplicated) {
         setIsEmailAvailable(true);
         console.log('OK');

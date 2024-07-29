@@ -18,9 +18,9 @@ import ApiTable from './tablesComps/apiTable';
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
 // import update APIs
-import updateHeatedData from '../../API/update/updateHeatedData';
-import updateProbexptData from '../../API/update/updateProbexptData';
-import updateProcessedData from '../../API/update/updateProcessedData';
+import addHeatedData from '../../API/add/addHeatedData';
+import addProbexptData from '../../API/add/addProbexptData';
+import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
 import RestrictedModal from './restrictedModal';
 // import card
 import QRInfoCard from './cardComps/QRInfoCard';
@@ -36,7 +36,7 @@ function DataView({ dataProps }) {
   //dataProps로 부터 properties destruct
   const {
     meatId, // 이력번호
-    userId, // 로그인한 사용자 meatI    
+    userId, // 로그인한 사용자
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -108,7 +108,7 @@ function DataView({ dataProps }) {
   };
 
   const len = processed_data_seq.length;
-  console.log("pds",processed_data_seq)
+
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
@@ -125,8 +125,14 @@ function DataView({ dataProps }) {
 
     // 1. 가열육 관능검사 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      console.log("여기 ㅡmid?",meatId)
-      updateHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
+      addHeatedData(
+        heatInput[i],
+        i,
+        meatId,
+        createdDate,
+        userId,
+        elapsedHour
+      )
         .then((response) => {
           console.log('가열육 수정 POST요청 성공:', response);
         })
@@ -135,10 +141,16 @@ function DataView({ dataProps }) {
           console.error('가열육 수정 POST 요청 오류:', error);
         });
     }
-
     // 2. 실험실 데이터 수정 API POST
     for (let i = 0; i < len; i++) {
-      updateProbexptData(labInput[i], i, meatId, createdDate, userId, elapsedHour)
+      addProbexptData(
+        labInput[i],
+        i,
+        meatId,
+        createdDate,
+        userId,
+        elapsedHour
+      )
         .then((response) => {
           console.log('실험실 수정 POST요청 성공:', response);
         })
@@ -151,7 +163,7 @@ function DataView({ dataProps }) {
     // 3. 처리육 관능검사 데이터 수정 API POST
     const pro_len = len === 1 ? len : len - 1;
     for (let i = 0; i < pro_len; i++) {
-      updateProcessedData(
+      addSensoryProcessedData(
         processedInput[i],
         processed_data[i],
         processedMinute[i],
@@ -219,7 +231,7 @@ function DataView({ dataProps }) {
 
   // 이미지 파일 변경 완료 여부
   const [isUploadingDone, setIsUploadingDone] = useState(true);
-  console.log("here",raw_data)
+
   return (
     <div style={{ width: '100%', marginTop: '40px' }}>
       {!isUploadingDone && (
@@ -449,12 +461,13 @@ const labField = [
   'bitterness',
   'umami',
   'richness',
+  'Collagen',
 ];
 const apiField = [
   'birthYmd',
   'butcheryYmd',
   'farmAddr',
-  'farmerNm',
+  'farmerName',
   'gradeNm',
   'primalValue',
   'secondaryValue',

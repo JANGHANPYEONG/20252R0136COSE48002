@@ -6,8 +6,8 @@ import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 // mui
 import { IconButton } from '@mui/material';
 // 이미지 수정 api 호출
-import updateRawData from '../../../API/update/updateRawData';
-import updateProcessedData from '../../../API/update/updateProcessedData';
+import addSensoryRawImg from '../../../API/add/addSensoryRawImg';
+import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
 import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
 
 import { TIME_ZONE } from '../../../config';
@@ -32,11 +32,13 @@ const MeatImgsCard = ({
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
   useEffect(() => {
-    processed_img_path.length !== 0
-      ? //{}이 아닌 경우
-        setImgArr([...imgArr, ...processed_img_path])
-      : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
-        setImgArr([...imgArr, null]);
+    setImgArr([...imgArr, ...processed_img_path]);
+
+    // processed_img_path.length !== 0
+    //   ? //{}이 아닌 경우
+    //     setImgArr([...imgArr, ...processed_img_path])
+    //   : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
+    //     setImgArr([...imgArr, null]);
   }, []);
 
   // 이미지 배열 페이지네이션
@@ -95,14 +97,14 @@ const MeatImgsCard = ({
 
         // 원육 이미지 수정 api 호출 currentIdx == 0
         if (currentIdx === 0) {
-          const response = updateRawData(
+          const response = addSensoryRawImg(
             raw_data,
             id,
             userId,
             createdDate,
             elapsedHour
           );
-          
+
           response.then((response) => {
             if (response.statusText === 'NOT FOUND') {
               setIsLimitedToChangeImage(true); //실패시
@@ -117,7 +119,7 @@ const MeatImgsCard = ({
         } else {
           // 처리육 수정 api 호출 이미지인 경우 0이상
           const i = currentIdx - 1;
-          await updateProcessedData(
+          await addSensoryProcessedData(
             processedInput[i],
             processed_data[i],
             processedMinute[i],

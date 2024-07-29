@@ -45,6 +45,11 @@ class FilterBox extends StatelessWidget {
   final bool checkedFilter;
   final Function()? onPressedFilterSave;
 
+  //상태 (대기중 : 0, 승인 : 2, 반려 : 1)
+  final List<String>? statusList;
+  final Function? onTapstatus;
+  final List<bool>? statusStatus;
+
   const FilterBox({
     super.key,
     required this.dateList,
@@ -64,6 +69,9 @@ class FilterBox extends StatelessWidget {
     required this.speciesList,
     required this.onTapSpecies,
     required this.speciesStatus,
+    this.statusList,
+    this.onTapstatus,
+    this.statusStatus,
     required this.checkedFilter,
     this.onPressedFilterSave,
   });
@@ -157,6 +165,15 @@ class FilterBox extends StatelessWidget {
                 filterList: speciesList,
                 onTap: onTapSpecies,
                 status: speciesStatus,
+              ),
+              SizedBox(height: 24.h),
+              // 상태
+              Text('상태', style: Palette.fieldTitle),
+              SizedBox(height: 16.h),
+              FilterRow(
+                filterList: statusList!,
+                onTap: onTapstatus,
+                status: statusStatus!,
               ),
               SizedBox(height: 32.h),
 

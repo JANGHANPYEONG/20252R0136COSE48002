@@ -55,6 +55,10 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   List<bool> speciesStatus = [true, false, false];
   int speciesSelectedIdx = 0;
 
+  List<String> statusList = ['전체', '대기중', '승인', '반려'];
+  List<bool> statusStatus = [true, false, false, false];
+  int statusSelectedIdx = 0;
+
   // 날짜 값이 담길 변수
   DateTime? today;
   DateTime? threeDaysAgo;
@@ -70,6 +74,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   String firstDayText = '';
   String lastDayText = '';
   int indexDay = 0;
+
+  //총 개수
+  int selectedListNum = 0;
 
   // 초기화 함수.
   Future<void> _initialize() async {
@@ -225,6 +232,9 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
     formatting();
     filterlize();
+
+    selectedListNum = selectedList.length;
+    print('개수 : $selectedListNum');
     notifyListeners();
   }
 
@@ -337,6 +347,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
       temp2 = selectedDay;
       lastDayText = DateFormat('yyyy.MM.dd').format(temp2!);
     }
+    notifyListeners();
+  }
+
+  //상태 필터 클릭
+  void onTapStatus(int index) {
+    statusStatus = List.filled(statusList.length, false);
+    statusStatus[index] = true;
     notifyListeners();
   }
 
