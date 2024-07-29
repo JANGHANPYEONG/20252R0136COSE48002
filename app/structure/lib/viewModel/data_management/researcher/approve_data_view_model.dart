@@ -5,6 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:structure/components/custom_pop_up.dart';
@@ -34,6 +35,7 @@ class ApproveDataViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
+  final scrollController = ScrollController();
 
   bool isOpnedFilter = false; // 필터가 열린지 확인.
   bool isOpenTable = false; // 날짜 선택이 열린지 확인.

@@ -33,6 +33,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   bool isLoading = true;
   bool isOpnedFilter = false; // 필터가 열린지 확인.
@@ -234,7 +235,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     filterlize();
 
     selectedListNum = selectedList.length;
-    print('개수 : $selectedListNum');
     notifyListeners();
   }
 

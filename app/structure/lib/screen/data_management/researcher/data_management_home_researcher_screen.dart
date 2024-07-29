@@ -30,8 +30,6 @@ class _DataManagementHomeResearcherScreenState
     final DataManagementHomeResearcherViewModel
         dataManagementHomeResearcherViewModel =
         context.watch<DataManagementHomeResearcherViewModel>();
-    final int selectedListNum =
-        dataManagementHomeResearcherViewModel.selectedListNum;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -192,7 +190,7 @@ class _DataManagementHomeResearcherScreenState
                     height: 30.h,
                     width: 560.w,
                     child: Text(
-                      '육류 개수 : $selectedListNum',
+                      '육류 개수 : ${dataManagementHomeResearcherViewModel.selectedList.length}',
                       textAlign: TextAlign.left,
                       style: const TextStyle(color: Colors.grey, fontSize: 15),
                     ),
@@ -204,7 +202,11 @@ class _DataManagementHomeResearcherScreenState
                     height: 800.h,
                     child: Scrollbar(
                       thumbVisibility: true,
+                      controller: dataManagementHomeResearcherViewModel
+                          .scrollController,
                       child: ListView.separated(
+                        controller: dataManagementHomeResearcherViewModel
+                            .scrollController,
                         itemCount: dataManagementHomeResearcherViewModel
                             .selectedList.length,
                         itemBuilder: (context, index) => ListCardDataManage(
