@@ -12,7 +12,12 @@ export default function Sens_FreshMeat({
   const [chartData, setChartData] = useState([]);
   const fetchData = async () => {
     try {
-      const response = await statisticSensoryFresh(startDate, endDate, animalType, grade);
+      const response = await statisticSensoryFresh(
+        startDate,
+        endDate,
+        animalType,
+        grade
+      );
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -26,7 +31,6 @@ export default function Sens_FreshMeat({
 
   useEffect(() => {
     fetchData();
-    console.log('new data ', chartData);
   }, [startDate, endDate, animalType, grade]);
 
   const calculateBoxPlotStatistics = (data) => {

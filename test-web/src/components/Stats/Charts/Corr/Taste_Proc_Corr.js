@@ -180,6 +180,12 @@ export default function Taste_Proc_Corr({
               name: '~ 100%',
               color: '#800000', // 진한 진홍색
             },
+            {
+              from: 99.99999,
+              to: 100,
+              name: '100%',
+              color: '#000000', // 검정색(자기자신과의 상관계수)
+            },
           ],
         },
       },
