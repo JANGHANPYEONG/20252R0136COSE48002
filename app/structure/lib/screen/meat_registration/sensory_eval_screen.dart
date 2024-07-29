@@ -6,6 +6,7 @@
 
 import 'dart:io';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -63,45 +64,76 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
                 children: [
                   // SizedBox(height: 40.h),
                   ClipRRect(
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: SizedBox(
-                        width: 640.w,
-                        height: 640.w,
-                        // 관능평가를 위한 이미지 할당.
-                        child: freshMeatEvalViewModel.meatImage.contains('http')
-                            ? Image.network(
-                                freshMeatEvalViewModel.meatImage,
-                                loadingBuilder: (BuildContext context,
-                                    Widget child,
-                                    ImageChunkEvent? loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    return child;
-                                  } else {
-                                    return LoadingScreen(
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  (loadingProgress
-                                                          .expectedTotalBytes ??
-                                                      1)
-                                              : null,
-                                    );
-                                  }
-                                },
-                                // 에러 정의
-                                errorBuilder: (BuildContext context,
-                                    Object error, StackTrace? stackTrace) {
-                                  return const Icon(Icons.error);
-                                },
-                                fit: BoxFit.cover,
-                              )
-                            : Image.file(
-                                File(freshMeatEvalViewModel.meatImage),
-                                fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(20.0),
+                    child: SizedBox(
+                      width: 640.w,
+                      height: 640.w,
+                      // 관능평가를 위한 이미지 할당.
+                      child: freshMeatEvalViewModel.meatImage != ''
+                          ? freshMeatEvalViewModel.meatImage.contains('http')
+                              ? Image.network(
+                                  freshMeatEvalViewModel.meatImage,
+                                  loadingBuilder: (BuildContext context,
+                                      Widget child,
+                                      ImageChunkEvent? loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child;
+                                    } else {
+                                      return LoadingScreen(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                (loadingProgress
+                                                        .expectedTotalBytes ??
+                                                    1)
+                                            : null,
+                                      );
+                                    }
+                                  },
+                                  // 에러 정의
+                                  errorBuilder: (BuildContext context,
+                                      Object error, StackTrace? stackTrace) {
+                                    return const Icon(Icons.error);
+                                  },
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(freshMeatEvalViewModel.meatImage),
+                                  fit: BoxFit.cover,
+                                )
+                          : InkWell(
+                              child: DottedBorder(
+                                radius: Radius.circular(20.sp),
+                                borderType: BorderType.RRect,
+                                color: Palette.imageErrorColor,
+                                strokeWidth: 2.sp,
+                                dashPattern: [10.w, 10.w],
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      width: 640.w,
+                                      height: 503.h,
+                                      child: const Icon(
+                                        Icons.error_outline,
+                                        color: Palette.imageErrorColor,
+                                        size: 50,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      child: Text(
+                                        '이미지 로드에 실패하였습니다',
+                                        style: TextStyle(
+                                            color: Palette.imageErrorColor),
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
-                      )),
+                            ),
+                    ),
+                  ),
                   SizedBox(height: 30.h),
 
                   // 관능평가 데이터가 입력 되었는지 체크.

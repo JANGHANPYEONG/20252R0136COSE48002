@@ -49,35 +49,51 @@ class _DataManagementHomeResearcherScreenState
                   // 필터 버튼
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () => dataManagementHomeResearcherViewModel
-                          .clickedFilter(context),
-                      borderRadius: BorderRadius.circular(20.r),
-                      child: Container(
-                        padding: EdgeInsets.all(8.w),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // 선택된 필터
-                            Text(
-                                dataManagementHomeResearcherViewModel
-                                    .filterdResult,
-                                style: Palette.h4),
-
-                            // 화살표
-                            dataManagementHomeResearcherViewModel.isOpnedFilter
-                                ? const Icon(Icons.arrow_drop_up_outlined)
-                                : const Icon(Icons.arrow_drop_down),
-                          ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        //데이터 개수 텍스트
+                        SizedBox(
+                          child: Text(
+                            '${dataManagementHomeResearcherViewModel.selectedList.length}개의 데이터',
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 15),
+                          ),
                         ),
-                      ),
+                        //필터 버튼
+                        InkWell(
+                          onTap: () => dataManagementHomeResearcherViewModel
+                              .clickedFilter(context),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // 선택된 필터
+                                Text(
+                                    dataManagementHomeResearcherViewModel
+                                        .filterdResult,
+                                    style: Palette.h4),
+
+                                // 화살표
+                                dataManagementHomeResearcherViewModel
+                                        .isOpnedFilter
+                                    ? const Icon(Icons.arrow_drop_up_outlined)
+                                    : const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
                   // 필터 area
                   dataManagementHomeResearcherViewModel.isOpnedFilter
                       ? FilterBox(
+                          type: 1,
                           dateList:
                               dataManagementHomeResearcherViewModel.dateList,
                           onTapDate: (index) =>
@@ -186,15 +202,6 @@ class _DataManagementHomeResearcherScreenState
                     ],
                   ),
                   SizedBox(height: 16.h),
-                  SizedBox(
-                    height: 30.h,
-                    width: 560.w,
-                    child: Text(
-                      '육류 개수 : ${dataManagementHomeResearcherViewModel.selectedList.length}',
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(color: Colors.grey, fontSize: 15),
-                    ),
-                  ),
 
                   // 육류 리스트
                   Container(
