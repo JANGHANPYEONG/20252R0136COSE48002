@@ -39,14 +39,14 @@ export default function Sense_Fresh_Corr({
   const propArray = Array.isArray(prop) ? prop : [];
 
   const ChartSeries = propArray.map((property, rowIndex) => {
-    const uniqueValues1 = chartData[property]?.unique_values || [];
+    const uniqueValues1 = chartData[property]?.values || [];
     const correlation = new Array(prop.length).fill(0);
 
     for (let colIndex = 0; colIndex < prop.length; colIndex++) {
       if (colIndex === rowIndex) {
         correlation[colIndex] = 100; // 대각선 위치는 1로 설정
       } else {
-        const uniqueValues2 = chartData[prop[colIndex]]?.unique_values || [];
+        const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
         const correlationCoefficient = calculateCorrelation(
           uniqueValues1,
           uniqueValues2

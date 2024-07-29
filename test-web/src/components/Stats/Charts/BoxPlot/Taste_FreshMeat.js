@@ -58,9 +58,7 @@ export default function Taste_FreshMeat({
   // Conditionally render the chart or CircularProgress based on chartData
   return (
     <div>
-      {chartData &&
-      chartData.bitterness &&
-      chartData.bitterness.unique_values ? (
+      {chartData && chartData.bitterness && chartData.bitterness.values ? (
         <ApexCharts
           series={[
             {
@@ -68,25 +66,19 @@ export default function Taste_FreshMeat({
               data: [
                 {
                   x: 'bitterness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.bitterness.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.bitterness.values),
                 },
                 {
                   x: 'richness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.richness.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.richness.values),
                 },
                 {
                   x: 'sourness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.sourness.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.sourness.values),
                 },
                 {
                   x: 'umami',
-                  y: calculateBoxPlotStatistics(chartData.umami.unique_values),
+                  y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],
             },

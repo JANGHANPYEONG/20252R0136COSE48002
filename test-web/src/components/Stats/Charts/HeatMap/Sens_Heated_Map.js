@@ -37,7 +37,7 @@ export default function Sens_Heated_Map({
   let ChartSeries = [];
   if (prop.length > 0) {
     ChartSeries = prop.map((property) => {
-      const uniqueValues = chartData[property].unique_values;
+      const uniqueValues = chartData[property].values;
       const frequencies = new Array(9).fill(0);
 
       uniqueValues.forEach((value) => {

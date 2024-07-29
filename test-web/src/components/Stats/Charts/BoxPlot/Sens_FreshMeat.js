@@ -57,7 +57,7 @@ export default function Sens_FreshMeat({
   // Conditionally render the chart only when chartData is not empty
   return (
     <div>
-      {chartData && chartData.color && chartData.color.unique_values ? (
+      {chartData && chartData.color && chartData.color.values ? (
         <ApexCharts
           series={[
             {
@@ -65,31 +65,25 @@ export default function Sens_FreshMeat({
               data: [
                 {
                   x: 'Color',
-                  y: calculateBoxPlotStatistics(chartData.color.unique_values),
+                  y: calculateBoxPlotStatistics(chartData.color.values),
                 },
                 {
                   x: 'Marbling',
-                  y: calculateBoxPlotStatistics(
-                    chartData.marbling.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.marbling.values),
                 },
                 {
                   x: 'Overall',
-                  y: calculateBoxPlotStatistics(
-                    chartData.overall.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.overall.values),
                 },
                 {
                   x: 'SurfaceMoisture',
                   y: calculateBoxPlotStatistics(
-                    chartData.surfaceMoisture.unique_values
+                    chartData.surfaceMoisture.values
                   ),
                 },
                 {
                   x: 'Texture',
-                  y: calculateBoxPlotStatistics(
-                    chartData.texture.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.texture.values),
                 },
               ],
             },

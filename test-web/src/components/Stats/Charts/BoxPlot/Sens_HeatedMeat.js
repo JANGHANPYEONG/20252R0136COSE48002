@@ -58,7 +58,7 @@ export default function Sens_HeatedMeat({
   // Conditionally render the chart only when chartData is not empty
   return (
     <div>
-      {chartData && chartData.flavor && chartData.flavor.unique_values ? (
+      {chartData && chartData.flavor && chartData.flavor.values ? (
         <ApexCharts
           series={[
             {
@@ -66,29 +66,23 @@ export default function Sens_HeatedMeat({
               data: [
                 {
                   x: 'flavor',
-                  y: calculateBoxPlotStatistics(chartData.flavor.unique_values),
+                  y: calculateBoxPlotStatistics(chartData.flavor.values),
                 },
                 {
                   x: 'juiciness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.juiciness.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.juiciness.values),
                 },
                 {
                   x: 'palatability',
-                  y: calculateBoxPlotStatistics(
-                    chartData.palatability.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.palatability.values),
                 },
                 {
                   x: 'tenderness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.tenderness.unique_values
-                  ),
+                  y: calculateBoxPlotStatistics(chartData.tenderness.values),
                 },
                 {
                   x: 'umami',
-                  y: calculateBoxPlotStatistics(chartData.umami.unique_values),
+                  y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],
             },
