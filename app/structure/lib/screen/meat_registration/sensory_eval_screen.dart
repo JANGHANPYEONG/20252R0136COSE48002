@@ -105,7 +105,7 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
                                 )
                           : InkWell(
                               child: DottedBorder(
-                                radius: Radius.circular(20.sp),
+                                radius: Radius.circular(20.r),
                                 borderType: BorderType.RRect,
                                 color: Palette.imageErrorColor,
                                 strokeWidth: 2.sp,

@@ -188,6 +188,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                     height: 133.h,
                     width: 588.w,
                     child: InkWell(
+                      borderRadius: BorderRadius.circular(16.r),
                       onTap: () =>
                           dataAddHomeViewModel.addDeepAgingData(context),
                       child: DottedBorder(
