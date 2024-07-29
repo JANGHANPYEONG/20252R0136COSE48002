@@ -172,9 +172,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                               .saveMeatData(context);
                         }
                       : null,
-                  text: registrationMeatImageViewModel.meatModel.meatId == null
-                      ? '완료'
-                      : "수정사항 저장",
+                  text: registrationMeatImageViewModel.saveBtnText,
                   width: 640.w,
                   height: 96.h,
                   mode: 1,

@@ -28,6 +28,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   bool isLoading = false;
   late BuildContext _context;
 
+  String saveBtnText = '완료';
+
   // 초기 변수
   String filmedAt = '-'; // 촬영된 날짜
   String date = '-'; // 화면에 표시하는 촬영 날짜
@@ -51,6 +53,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         imgPath = meatModel.sensoryEval!['imagePath'];
         filmedAt = meatModel.sensoryEval!['filmedAt'];
         date = Usefuls.parseDate(meatModel.sensoryEval!['filmedAt']);
+        saveBtnText = '수정사항 저장';
       }
     } else {
       if (meatModel.heatedSensoryEval != null &&
@@ -59,6 +62,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         imgPath = meatModel.heatedSensoryEval!['imagePath'];
         filmedAt = meatModel.heatedSensoryEval!['filmedAt'];
         date = Usefuls.parseDate(meatModel.heatedSensoryEval!['filmedAt']);
+        saveBtnText = '수정사항 저장';
       }
     }
 
