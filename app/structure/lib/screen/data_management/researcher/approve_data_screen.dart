@@ -164,6 +164,15 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                   // 육류 리스트 상단바
                   const CustomTableBarApprove(),
                   SizedBox(height: 16.h),
+                  SizedBox(
+                    height: 30.h,
+                    width: 560.w,
+                    child: Text(
+                      '육류 개수 : ${approveDataViewModel.selectedList.length}',
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  ),
 
                   // 육류 리스트
                   Container(
@@ -171,8 +180,10 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                     height: 800.h,
                     child: Scrollbar(
                       thumbVisibility: true,
+                      controller: approveDataViewModel.scrollController,
                       // thickness: 8,
                       child: ListView.separated(
+                        controller: approveDataViewModel.scrollController,
                         itemCount: approveDataViewModel.selectedList.length,
                         itemBuilder: (context, index) => ListCardApprove(
                           onTap: () async => await approveDataViewModel
