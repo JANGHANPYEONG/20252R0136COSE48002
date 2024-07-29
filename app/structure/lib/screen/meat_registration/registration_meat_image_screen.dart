@@ -138,6 +138,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       // 등록된 이미지가 없음 (사진 촬영)
                       // 이미지 삽입 버튼
                       : InkWell(
+                          borderRadius: BorderRadius.circular(16.r),
                           onTap: () =>
                               registrationMeatImageViewModel.pickImage(context),
                           child: DottedBorder(
@@ -148,7 +149,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             dashPattern: [10.w, 10.w],
                             child: SizedBox(
                               width: 640.w,
-                              height: 653.h,
+                              height: 640.h,
                               child: Image.asset(
                                 'assets/images/add_circle.png',
                                 cacheWidth: 50,
