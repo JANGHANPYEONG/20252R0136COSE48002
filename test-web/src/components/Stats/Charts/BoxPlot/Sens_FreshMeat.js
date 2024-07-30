@@ -55,6 +55,14 @@ export default function Sens_FreshMeat({
     title: {
       text: '원육 관능데이터 박스 플롯(Box Plot) 분포',
     },
+    // plotOptions: {
+    //   boxPlot: {
+    //     colors: {
+    //       upper: '#7BD758',
+    //       lower: '#BFE692',
+    //     },
+    //   },
+    // },
   };
 
   // Conditionally render the chart only when chartData is not empty
