@@ -263,7 +263,7 @@ class DialogButton extends StatelessWidget {
   }
 }
 
-/// 사진 삭제 dialog
+/// 사진 저장 dialog
 void showSaveImageDialog(BuildContext context, String imgPath,
     VoidCallback leftButtonFunc, VoidCallback rightButtonFunc) {
   showDialog(
@@ -271,24 +271,24 @@ void showSaveImageDialog(BuildContext context, String imgPath,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
-        insetPadding: EdgeInsets.all(30.w),
+        insetPadding: EdgeInsets.all(16.w),
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
         child: SizedBox(
-          height: 850.h,
+          height: 900.h,
           width: 650.w,
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('사진 저장', style: Palette.dialogContentBold),
-                SizedBox(height: 14.h),
+                SizedBox(height: 16.h),
                 Text(
                   '사진을 저장할까요? 마음에 안드신다면 재촬영이 가능해요.\n재촬영시 아래 사진은 삭제됩니다.',
                   style: Palette.dialogContentSmall,
                 ),
-                SizedBox(height: 18.h),
+                SizedBox(height: 16.h),
 
                 // 이미지
                 ClipRRect(
@@ -296,20 +296,20 @@ void showSaveImageDialog(BuildContext context, String imgPath,
                   child: Image.file(File(imgPath),
                       width: 570.w, height: 570.w, fit: BoxFit.fitWidth),
                 ),
-                // ImageCard(imagePath: Image.file(File(imgPath))),
-                SizedBox(height: 55.h),
+                SizedBox(height: 32.h),
 
                 // 버튼
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // 왼쪽 버튼
+                    // width: 275
                     DialogButton(
                       buttonFunc: leftButtonFunc,
                       buttonText: '재촬영',
                       isLeft: true,
                     ),
-                    SizedBox(width: 20.w),
+                    SizedBox(width: 16.w),
 
                     // 오른쪽 버튼
                     DialogButton(

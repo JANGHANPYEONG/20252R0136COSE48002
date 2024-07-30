@@ -4,7 +4,6 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
-import 'package:go_router/go_router.dart';
 
 class UserDetailViewModel with ChangeNotifier {
   UserModel userModel;

@@ -7,8 +7,6 @@ import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 
 class InsertionUserDetailViewModel with ChangeNotifier {
   UserModel userModel;
