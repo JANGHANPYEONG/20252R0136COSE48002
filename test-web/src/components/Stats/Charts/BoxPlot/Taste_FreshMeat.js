@@ -53,6 +53,9 @@ export default function Taste_FreshMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '원육 맛데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart or CircularProgress based on chartData
@@ -65,19 +68,19 @@ export default function Taste_FreshMeat({
               type: 'boxPlot',
               data: [
                 {
-                  x: 'bitterness',
+                  x: '진한맛(bitterness)',
                   y: calculateBoxPlotStatistics(chartData.bitterness.values),
                 },
                 {
-                  x: 'richness',
+                  x: '후미(richness)',
                   y: calculateBoxPlotStatistics(chartData.richness.values),
                 },
                 {
-                  x: 'sourness',
+                  x: '신맛(sourness)',
                   y: calculateBoxPlotStatistics(chartData.sourness.values),
                 },
                 {
-                  x: 'umami',
+                  x: '감칠맛(umami)',
                   y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],

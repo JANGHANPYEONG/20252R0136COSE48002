@@ -35,32 +35,42 @@ export default function Sense_Fresh_Corr({
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
+  const axis_labels = {
+    color: '색',
+    marbling: '마블링',
+    overall: '기호도',
+    surfaceMoisture: '육즙',
+    texture: '조직감',
+  };
+
   // Check if prop is an array, otherwise use an empty array
   const propArray = Array.isArray(prop) ? prop : [];
 
-  const ChartSeries = propArray.map((property, rowIndex) => {
-    const uniqueValues1 = chartData[property]?.values || [];
-    const correlation = new Array(prop.length).fill(0);
+  const ChartSeries = propArray
+    .map((property, rowIndex) => {
+      const uniqueValues1 = chartData[property]?.values || [];
+      const correlation = new Array(prop.length).fill(0);
 
-    for (let colIndex = 0; colIndex < prop.length; colIndex++) {
-      if (colIndex === rowIndex) {
-        correlation[colIndex] = 100; // 대각선 위치는 1로 설정
-      } else {
-        const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
-        const correlationCoefficient = calculateCorrelation(
-          uniqueValues1,
-          uniqueValues2
-        );
+      for (let colIndex = 0; colIndex < prop.length; colIndex++) {
+        if (colIndex === rowIndex) {
+          correlation[colIndex] = 100; // 대각선 위치는 1로 설정
+        } else {
+          const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
+          const correlationCoefficient = calculateCorrelation(
+            uniqueValues1,
+            uniqueValues2
+          );
 
-        correlation[colIndex] = correlationCoefficient;
+          correlation[colIndex] = correlationCoefficient;
+        }
       }
-    }
 
-    return {
-      name: property,
-      data: correlation,
-    };
-  });
+      return {
+        name: axis_labels[property] || property,
+        data: correlation.reverse(),
+      };
+    })
+    .reverse();
 
   // 두 배열의 상관 관계 계수 계산
   function calculateCorrelation(arr1, arr2) {
@@ -93,7 +103,10 @@ export default function Sense_Fresh_Corr({
     return parseFloat(correlation.toFixed(3)); // 소수점 세 번째 자리까지 반올림
   }
 
-  const xCategories = prop;
+  const xCategories = prop
+    .slice()
+    .reverse()
+    .map((p) => axis_labels[p] || p);
   const ChartOption = {
     chart: {
       height: 450,
