@@ -128,6 +128,15 @@ export default function Sense_Proc_Corr({
         right: 20,
       },
     },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: function (value) {
+          const decimalValue = value / 100;
+          return decimalValue.toFixed(3);
+        },
+      },
+    },
     plotOptions: {
       heatmap: {
         colorScale: {
@@ -135,67 +144,67 @@ export default function Sense_Proc_Corr({
             {
               from: -100,
               to: -99,
-              name: '-100% ~',
+              name: '-1 ~',
               color: '#26578B', // 군청색
             },
             {
               from: -99,
               to: -96,
-              name: '-99% ~',
+              name: '-0.99 ~',
               color: '#456F9B', // 덜 진한 군청색
             },
             {
               from: -96,
               to: -93,
-              name: '-96% ~',
+              name: '-0.96 ~',
               color: '#6487AC', // 중간 군청색
             },
             {
               from: -93,
               to: -80,
-              name: '-93% ~',
+              name: '-0.93 ~',
               color: '#839FBC', // 연한 군청색
             },
             {
               from: -80,
               to: -0.00001,
-              name: '-80% ~ 0%',
+              name: '-0.80 ~ 0',
               color: '#A2B7CD', // 아주 연한 군청색
             },
             {
               from: 0,
               to: 80,
-              name: '0% ~ 80%',
+              name: '0 ~ 0.80',
               color: '#C89191', // 아주 연한 진홍색
             },
             {
               from: 80,
               to: 93,
-              name: '~ 93%',
+              name: '~ 0.93',
               color: '#B66D6D', // 연한 진홍색
             },
             {
               from: 93,
               to: 96,
-              name: '~ 96%',
+              name: '~ 0.96',
               color: '#A44848', // 중간 진홍색
             },
             {
               from: 96,
               to: 99,
-              name: '~ 99%',
+              name: '~ 0.99',
               color: '#922424', // 덜 진한 진홍색
             },
             {
               from: 99,
-              to: 100,
-              name: '~ 100%',
+              to: 99.99999,
+              name: '~ 1',
               color: '#800000', // 진한 진홍색
             },
             {
               from: 99.99999,
               to: 100,
-              name: '100%',
+              name: '1',
               color: '#000000', // 검정색(자기자신과의 상관계수)
             },
           ],
