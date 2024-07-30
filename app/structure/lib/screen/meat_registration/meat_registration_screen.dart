@@ -97,7 +97,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         MainButton(
                           onPressed: () async =>
                               meatRegistrationViewModel.clickCreateBtn(context),
-                          text: '관리번호 만들기',
+                          text: '관리번호 생성',
                           width: 282.w,
                           height: 96.h,
                           mode: 1,
