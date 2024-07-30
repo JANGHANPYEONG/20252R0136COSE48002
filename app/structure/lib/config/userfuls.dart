@@ -38,6 +38,15 @@ class Usefuls {
     return dateTimeToDateString(temp);
   }
 
+  /// 육류 도축 날짜 yyyyMMdd 형식을 yyyy.MM.dd 형식으로 변환하는 함수
+  static String butcheryDateToDateShort(String butcheryDate) {
+    String year = butcheryDate.substring(0, 4);
+    String month = butcheryDate.substring(4, 6);
+    String day = butcheryDate.substring(6, 8);
+
+    return '$year.$month.$day';
+  }
+
   /// yyyy-MM-ddThh:mm:ss 형식의 날짜를 yyyy.MM.dd 형식으로 파싱
   static String parseDate(String? inputDate) {
     if (inputDate == null) return '-';

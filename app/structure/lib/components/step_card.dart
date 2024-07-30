@@ -55,25 +55,19 @@ class StepCard extends StatelessWidget {
     ];
 
     return Container(
-        // padding: EdgeInsets.all(20.w),
-        padding: EdgeInsets.symmetric(
-          horizontal: 20.w,
-        ),
-        margin: EdgeInsets.symmetric(horizontal: 20.w),
-        // width: 588.w,
-        height: 109.h,
-        decoration: const BoxDecoration(
-          border: null,
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20.r),
-          onTap: () => onTap(),
+      margin: EdgeInsets.symmetric(horizontal: 40.w),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20.r),
+        onTap: () => onTap(),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          height: 108.w,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // 이미지 지정
               Image.asset(imageUrl, width: 62.w, height: 62.h),
-              SizedBox(width: 35.w),
+              SizedBox(width: 32.w),
 
               // 메인 텍스트
               Text(mainText, style: Palette.h4),
@@ -99,9 +93,11 @@ class StepCard extends StatelessWidget {
 
               // 오른쪽 화살표
               Image.asset('assets/images/arrow-r.png',
-                  width: 33.w, height: 33.h),
+                  width: 32.w, height: 32.h),
             ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

@@ -44,7 +44,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
     await _sendMeatData();
 
     // 연구원의 경우 바로 데이터 승인
-    if (userModel.type == 'Researcher') {
+    if (userModel.type != 'Normal') {
       try {
         final response = await RemoteDataSource.confirmMeatData(managementNum);
 

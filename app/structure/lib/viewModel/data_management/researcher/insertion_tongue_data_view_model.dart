@@ -18,6 +18,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     _initialize();
   }
   bool isLoading = false;
+  String title = '전자혀 데이터';
+
   late BuildContext _context;
 
   // 컨트롤러
@@ -25,6 +27,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   TextEditingController bitterness = TextEditingController();
   TextEditingController umami = TextEditingController();
   TextEditingController richness = TextEditingController();
+
+  bool inputComplete = false;
 
   // 초기 값 할당 (모델에 값이 존재하면 할당)
   void _initialize() {
@@ -37,16 +41,32 @@ class InsertionTongueDataViewModel with ChangeNotifier {
       bitterness.text = '${meatModel.probExpt?['bitterness'] ?? ''}';
       umami.text = '${meatModel.probExpt?['umami'] ?? ''}';
       richness.text = '${meatModel.probExpt?['richness'] ?? ''}';
+
+      if (meatModel.seqno == 0) {
+        title = '원육 전자혀 데이터';
+      } else {
+        title = '처리육 전자혀 데이터';
+      }
     } else {
       // 가열육
       sourness.text = '${meatModel.heatedProbExpt?['sourness'] ?? ''}';
       bitterness.text = '${meatModel.heatedProbExpt?['bitterness'] ?? ''}';
       umami.text = '${meatModel.heatedProbExpt?['umami'] ?? ''}';
       richness.text = '${meatModel.heatedProbExpt?['richness'] ?? ''}';
+
+      title = '가열육 전자혀 데이터';
     }
 
     isLoading = false;
     notifyListeners();
+  }
+
+  /// 모든 필드가 입력 되었는지 확인하는 함수
+  void inputCheck() {
+    inputComplete = sourness.text.isNotEmpty &&
+        bitterness.text.isNotEmpty &&
+        umami.text.isNotEmpty &&
+        richness.text.isNotEmpty;
   }
 
   // 데이터를 객체에 할당 - 이후 POST

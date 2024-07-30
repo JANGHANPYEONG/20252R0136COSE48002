@@ -28,6 +28,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   bool isLoading = false;
   late BuildContext _context;
 
+  String title = '단면 촬영';
   String saveBtnText = '완료';
 
   // 초기 변수
@@ -55,6 +56,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         date = Usefuls.parseDate(meatModel.sensoryEval!['filmedAt']);
         saveBtnText = '수정사항 저장';
       }
+
+      title = meatModel.seqno == 0 ? '원육 단면 촬영' : '처리육 단면 촬영';
     } else {
       if (meatModel.heatedSensoryEval != null &&
           meatModel.heatedImageCompleted) {
@@ -64,6 +67,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         date = Usefuls.parseDate(meatModel.heatedSensoryEval!['filmedAt']);
         saveBtnText = '수정사항 저장';
       }
+
+      title = '가열육 단면 촬영';
     }
 
     isLoading = false;

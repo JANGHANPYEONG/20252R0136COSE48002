@@ -24,86 +24,88 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
-        title: '육류 단면 촬영',
+        title: '원육 단면 촬영',
         backButton: true,
         closeButton: false,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: 30.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 촬영 날짜
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('촬영 날짜', style: Palette.h4),
-                  SizedBox(height: 20.h),
-                  Container(
-                    width: 315.w,
-                    height: 88.h,
-                    decoration: BoxDecoration(
-                      color: Palette.fieldEmptyBg,
-                      borderRadius: BorderRadius.circular(15.r),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 20.w),
-                      child: Text(
-                        insertionMeatImageNotEditableViewModel.date,
-                        style: Palette.h4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(width: 10.w),
+          SizedBox(height: 24.h),
 
-              // 촬영자
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('촬영자', style: Palette.h4),
-                  SizedBox(height: 20.h),
-                  Container(
-                    width: 315.w,
-                    height: 88.h,
-                    decoration: BoxDecoration(
-                      color: Palette.fieldEmptyBg,
-                      borderRadius: BorderRadius.circular(15.r),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 20.w),
-                      child: Text(
-                        insertionMeatImageNotEditableViewModel.userName,
-                        style: Palette.h4,
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 촬영 날짜
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('촬영 날짜', style: Palette.h4),
+                    SizedBox(height: 16.h),
+                    Container(
+                      width: 316.w,
+                      height: 88.h,
+                      decoration: BoxDecoration(
+                        color: Palette.fieldEmptyBg,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.w),
+                        child: Text(
+                          insertionMeatImageNotEditableViewModel.date,
+                          style: Palette.h4,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                SizedBox(width: 8.w),
+
+                // 촬영자
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('촬영자', style: Palette.h4),
+                    SizedBox(height: 16.h),
+                    Container(
+                      width: 316.w,
+                      height: 88.h,
+                      decoration: BoxDecoration(
+                        color: Palette.fieldEmptyBg,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.w),
+                        child: Text(
+                          insertionMeatImageNotEditableViewModel.userName,
+                          style: Palette.h4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 30.h),
+          SizedBox(height: 32.h),
 
-          // 사진
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('단면 촬영 사진', style: Palette.h4),
-              SizedBox(height: 20.h),
+          // 단면 사진 촬영 텍스트
+          Container(
+            alignment: Alignment.centerLeft,
+            margin: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Text('단면 촬영 사진', style: Palette.h4),
+          ),
+          SizedBox(height: 16.h),
 
-              // 이미지
-              ImageCard(
-                imagePath:
-                    insertionMeatImageNotEditableViewModel.imagePath == null
-                        ? '없음'
-                        : insertionMeatImageNotEditableViewModel.imagePath!,
-              ),
-            ],
+          // 이미지
+          ImageCard(
+            imagePath: insertionMeatImageNotEditableViewModel.imagePath,
           ),
         ],
       ),

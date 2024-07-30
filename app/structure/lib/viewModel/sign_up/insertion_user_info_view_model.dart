@@ -120,13 +120,13 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   }
 
   /// 유효성 검사 함수
-  void tryValidation() {
-    final isValid = formKey.currentState!.validate();
-    if (isValid) {
-      formKey.currentState!.save();
-    }
-    notifyListeners();
-  }
+  // void tryValidation() {
+  //   final isValid = formKey.currentState!.validate();
+  //   if (isValid) {
+  //     formKey.currentState!.save();
+  //   }
+  //   notifyListeners();
+  // }
 
   /// 비밀번호 유효성 검사 (정규식)
   /// 조건: 영문 대/소문자, 숫자, 특수문자 10자 이상

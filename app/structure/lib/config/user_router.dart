@@ -179,7 +179,7 @@ class UserRouter {
                     ),
                   ],
                 ),
-                // 신선육 관능평가
+                // 원육 관능평가
                 GoRoute(
                   path: 'freshmeat',
                   builder: (context, state) => ChangeNotifierProvider(

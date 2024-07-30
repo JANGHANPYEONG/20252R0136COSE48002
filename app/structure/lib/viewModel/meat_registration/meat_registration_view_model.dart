@@ -82,7 +82,7 @@ class MeatRegistrationViewModel with ChangeNotifier {
     if (meatModel.basicCompleted) context.go('/home/registration/image');
   }
 
-  /// STEP 3 : 신선육 관능평가
+  /// STEP 3 : 원육 관능평가
   void clickedFreshmeat(BuildContext context) {
     if (meatModel.imageCompleted) context.go('/home/registration/freshmeat');
   }

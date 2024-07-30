@@ -47,7 +47,10 @@ class Palette {
   static const Color popupLeftBtnBg = Color(0xffeeeeee);
   static const Color popupRightBtnBg = Color(0xff000000);
 
-  static const Color userLevelCardBg = Color(0xffe1dcff);
+  // static const Color userLevelCardBg = Color(0xffe1dcff);
+  static const Color userNormalCardBg = Color(0xFFFFF856);
+  static const Color userResearcherCardBg = Color(0xFF70E391);
+  static const Color userManagerCardBg = Color(0xFFD9C2FF);
 
   static const Color dDayCardBg = Color(0xffe8e5ff);
 
