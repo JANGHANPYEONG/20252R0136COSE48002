@@ -171,9 +171,10 @@ class FilterBox extends StatelessWidget {
                           onTap: onTapData,
                           status: dataStatus ?? [],
                         ),
+                        SizedBox(height: 24.h),
                       ],
                     ),
-              SizedBox(height: 24.h),
+
               //육종 필터
               type == 0
                   ? Container()
@@ -193,23 +194,17 @@ class FilterBox extends StatelessWidget {
                       ],
                     ),
               //상태 필터 (관리자/데이터 승인만 사용)
-              type != 2
-                  ? Container()
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(height: 24.h),
-                        Text('상태', style: Palette.fieldTitle),
-                        SizedBox(height: 16.h),
-                        FilterRow(
-                          filterList: statusList ?? [],
-                          onTap: onTapstatus,
-                          status: statusStatus ?? [],
-                        ),
-                        SizedBox(height: 32.h),
-                      ],
-                    ),
+
+              SizedBox(height: 24.h),
+              Text('상태', style: Palette.fieldTitle),
+              SizedBox(height: 16.h),
+              FilterRow(
+                filterList: statusList ?? [],
+                onTap: onTapstatus,
+                status: statusStatus ?? [],
+              ),
+              SizedBox(height: 32.h),
+
               //정렬 순서 필터 (normal만 사용)
               type != 0
                   ? Container()

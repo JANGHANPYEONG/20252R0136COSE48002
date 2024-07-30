@@ -114,10 +114,11 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                             onPressedFilterSave: () =>
                                 dataManagementHomeViewModel
                                     .onPressedFilterSave(),
-                            // statusList: dataManagementHomeViewModel.statusList,
-                            // onTapstatus: (index) =>
-                            //     dataManagementHomeViewModel.onTapStatus(index),
-                            // statusStatus: dataManagementHomeViewModel.statusStatus,
+                            statusList: dataManagementHomeViewModel.statusList,
+                            onTapstatus: (index) =>
+                                dataManagementHomeViewModel.onTapStatus(index),
+                            statusStatus:
+                                dataManagementHomeViewModel.statusStatus,
                             sortList: dataManagementHomeViewModel.sortList,
                             onTapSort: (index) =>
                                 dataManagementHomeViewModel.onTapSort(index),
