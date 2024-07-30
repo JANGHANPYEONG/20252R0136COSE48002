@@ -9,11 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_bar.dart';
-import 'package:structure/components/custom_table_calendar.dart';
 import 'package:structure/components/filter_box.dart';
 import 'package:structure/components/list_card_normal.dart';
 import 'package:structure/components/loading_screen.dart';
-import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/pallete.dart';
 import 'package:structure/config/userfuls.dart';
@@ -51,31 +49,41 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
               children: [
                 Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // 필터 버튼에 대한 기능을 정의한다.
-                        InkWell(
-                          // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
-                          onTap: () =>
-                              dataManagementHomeViewModel.clickedFilter(),
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: [
-                                Text(
-                                  dataManagementHomeViewModel.filterdResult,
-                                  style: Palette.h4,
-                                ),
-                                dataManagementHomeViewModel.isOpnedFilter
-                                    ? const Icon(Icons.arrow_drop_up_outlined)
-                                    : const Icon(Icons.arrow_drop_down),
-                              ],
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 40.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // 필터 버튼에 대한 기능을 정의한다.
+                          SizedBox(
+                            child: Text(
+                              '${dataManagementHomeViewModel.selectedList.length}개의 데이터',
+                              textAlign: TextAlign.left,
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 15),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 30.w),
-                      ],
+                          InkWell(
+                            // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
+                            onTap: () =>
+                                dataManagementHomeViewModel.clickedFilter(),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    dataManagementHomeViewModel.filterdResult,
+                                    style: Palette.h4,
+                                  ),
+                                  dataManagementHomeViewModel.isOpnedFilter
+                                      ? const Icon(Icons.arrow_drop_up_outlined)
+                                      : const Icon(Icons.arrow_drop_down),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     // 'isOpendFilter'변수를 참조하여 filter를 표출한다.
