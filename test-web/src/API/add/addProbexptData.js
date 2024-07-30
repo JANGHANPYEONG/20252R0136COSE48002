@@ -37,7 +37,6 @@ export default async function addProbexptData(
     ['isHeated']: false,
   };
   if (!isPost) delete req['userId'];
-  console.log(req);
 
   // /meat/add/probexpt-data로 실험실 데이터 생성/수정 API 전송
   try {

@@ -3,8 +3,6 @@ export default async function isPost(
   input, // 새로운 Input 데이터
   isPosted = false // 같은 세션에서 POST로 등록된 데이터인지 여부 -> 액셀 import 시에는 기본값 false
 ) {
-  console.log(data);
-  console.log(input);
   const newInput = input.map((value) => {
     if (value === '') return null;
     else if (value !== null) return Number(value);

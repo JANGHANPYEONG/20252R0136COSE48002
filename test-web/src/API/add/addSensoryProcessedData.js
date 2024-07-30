@@ -32,7 +32,6 @@ export default async function addSensoryProcessedData(
     ['filmedAt']: '2024-07-08T12:12:12',
   };
   if (!isPost) delete req['userId'];
-  console.log(req, isPost);
 
   ///meat/add/sensory-eval로 처리육 데이터 생성/수정 API 전송
   try {
