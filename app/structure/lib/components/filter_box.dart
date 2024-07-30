@@ -35,14 +35,14 @@ class FilterBox extends StatelessWidget {
   final dynamic Function(DateTime, DateTime) onDaySelected;
 
   // 데이터
-  final List<String> dataList;
+  final List<String>? dataList;
   final Function? onTapData;
-  final List<bool> dataStatus;
+  final List<bool>? dataStatus;
 
   // 육종
-  final List<String> speciesList;
+  final List<String>? speciesList;
   final Function? onTapSpecies;
-  final List<bool> speciesStatus;
+  final List<bool>? speciesStatus;
 
   // 조회 버튼
   final bool checkedFilter;
@@ -52,6 +52,11 @@ class FilterBox extends StatelessWidget {
   final List<String>? statusList;
   final Function? onTapstatus;
   final List<bool>? statusStatus;
+
+  //정렬 순서 (normal만)
+  final List<String>? sortList;
+  final Function? onTapSort;
+  final List<bool>? sortStatus;
 
   const FilterBox({
     super.key,
@@ -67,17 +72,20 @@ class FilterBox extends StatelessWidget {
     required this.isOpenTable,
     required this.focused,
     required this.onDaySelected,
-    required this.dataList,
+    this.dataList,
     this.onTapData,
-    required this.dataStatus,
-    required this.speciesList,
-    required this.onTapSpecies,
-    required this.speciesStatus,
+    this.dataStatus,
+    this.speciesList,
+    this.onTapSpecies,
+    this.speciesStatus,
     this.statusList,
     this.onTapstatus,
     this.statusStatus,
     required this.checkedFilter,
     this.onPressedFilterSave,
+    this.sortList,
+    this.onTapSort,
+    this.sortStatus,
   });
 
   @override
@@ -146,60 +154,79 @@ class FilterBox extends StatelessWidget {
                     )
                   : Container(),
               SizedBox(height: 24.h),
-
-              // 데이터
-              Text('데이터', style: Palette.fieldTitle),
-              SizedBox(height: 16.h),
-
-              // 데이터 filterrow
-              // FilterRow 컴포넌트를 이용하여 Filter list 표현
-              FilterRow(
-                filterList: dataList,
-                onTap: onTapData,
-                status: dataStatus,
-              ),
-              SizedBox(height: 24.h),
-
-              // 육종
-              Text('육종', style: Palette.fieldTitle),
-              SizedBox(height: 16.h),
-
-              // 육종 filterRow
-              FilterRow(
-                filterList: speciesList,
-                onTap: onTapSpecies,
-                status: speciesStatus,
-              ),
-              // type == 2 ? SizedBox(height: 24.h) : const Text(''),
-              // type == 2
-              //     ?
-              //     // 상태
-              //     Text('상태', style: Palette.fieldTitle)
-              //     : const Text(''),
-              // SizedBox(height: 16.h),
-              // type == 2
-              //     ? FilterRow(
-              //         filterList: statusList!,
-              //         onTap: onTapstatus,
-              //         status: statusStatus!,
-              //       )
-              //     : const Text(''),
-              // type == 2 ? SizedBox(height: 32.h) : const Text(''),
-              Column(
-                children: [
-                  if (type == 2) SizedBox(height: 24.h),
-                  if (type == 2) Text('상태', style: Palette.fieldTitle),
-                  SizedBox(height: 16.h),
-                  if (type == 2)
-                    FilterRow(
-                      filterList: statusList!,
-                      onTap: onTapstatus,
-                      status: statusStatus!,
+              //데이터 필터 (나의 데이터)
+              type == 0
+                  ? Container()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 데이터
+                        Text('데이터', style: Palette.fieldTitle),
+                        SizedBox(height: 16.h),
+                        // 데이터 filterrow
+                        // FilterRow 컴포넌트를 이용하여 Filter list 표현
+                        FilterRow(
+                          filterList: dataList ?? [],
+                          onTap: onTapData,
+                          status: dataStatus ?? [],
+                        ),
+                      ],
                     ),
-                  if (type == 2) SizedBox(height: 32.h),
-                ],
-              ),
-
+              SizedBox(height: 24.h),
+              //육종 필터
+              type == 0
+                  ? Container()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 육종
+                        Text('육종', style: Palette.fieldTitle),
+                        SizedBox(height: 16.h),
+                        // 육종 filterRow
+                        FilterRow(
+                          filterList: speciesList ?? [],
+                          onTap: onTapSpecies,
+                          status: speciesStatus ?? [],
+                        ),
+                      ],
+                    ),
+              //상태 필터 (관리자/데이터 승인만 사용)
+              type != 2
+                  ? Container()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(height: 24.h),
+                        Text('상태', style: Palette.fieldTitle),
+                        SizedBox(height: 16.h),
+                        FilterRow(
+                          filterList: statusList ?? [],
+                          onTap: onTapstatus,
+                          status: statusStatus ?? [],
+                        ),
+                        SizedBox(height: 32.h),
+                      ],
+                    ),
+              //정렬 순서 필터 (normal만 사용)
+              type != 0
+                  ? Container()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // SizedBox(height: 24.h),
+                        Text('정렬 순서', style: Palette.fieldTitle),
+                        SizedBox(height: 16.h),
+                        FilterRow(
+                            filterList: sortList ?? [],
+                            onTap: onTapSort,
+                            status: sortStatus ?? []),
+                      ],
+                    ),
+              SizedBox(height: 16.h),
               // 조회 버튼
               MainButton(
                 text: '조회',

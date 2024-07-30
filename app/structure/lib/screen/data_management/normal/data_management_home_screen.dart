@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/custom_table_calendar.dart';
+import 'package:structure/components/filter_box.dart';
 import 'package:structure/components/list_card_normal.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
@@ -79,7 +80,49 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
 
                     // 'isOpendFilter'변수를 참조하여 filter를 표출한다.
                     dataManagementHomeViewModel.isOpnedFilter
-                        ? const NormalFilterBox()
+                        ? FilterBox(
+                            type: 0,
+                            dateList: dataManagementHomeViewModel.dateList,
+                            onTapDate: (index) =>
+                                dataManagementHomeViewModel.onTapDate(index),
+                            dateStatus: dataManagementHomeViewModel.dateStatus,
+                            firstDayText:
+                                dataManagementHomeViewModel.firstDayText,
+                            indexDay: dataManagementHomeViewModel.indexDay,
+                            firstDayOnTapTable: () =>
+                                dataManagementHomeViewModel.onTapTable(0),
+                            lastDayText:
+                                dataManagementHomeViewModel.lastDayText,
+                            lastDayOnTapTable: () =>
+                                dataManagementHomeViewModel.onTapTable(1),
+                            isOpenTable:
+                                dataManagementHomeViewModel.isOpenTable,
+                            focused: dataManagementHomeViewModel.focused,
+                            onDaySelected: (selectedDay, focusedDay) =>
+                                dataManagementHomeViewModel.onDaySelected(
+                                    selectedDay, focusedDay),
+                            // dataList: dataManagementHomeViewModel.dataList,
+                            // onTapData: (index) =>
+                            //     dataManagementHomeViewModel.onTapData(index),
+                            // dataStatus: dataManagementHomeViewModel.dataStatus,
+                            // speciesList: dataManagementHomeViewModel.speciesList,
+                            // onTapSpecies: (index) =>
+                            //     dataManagementHomeViewModel.onTapSpecies(index),
+                            // speciesStatus: dataManagementHomeViewModel.speciesStatus,
+                            checkedFilter:
+                                dataManagementHomeViewModel.checkedFilter(),
+                            onPressedFilterSave: () =>
+                                dataManagementHomeViewModel
+                                    .onPressedFilterSave(),
+                            // statusList: dataManagementHomeViewModel.statusList,
+                            // onTapstatus: (index) =>
+                            //     dataManagementHomeViewModel.onTapStatus(index),
+                            // statusStatus: dataManagementHomeViewModel.statusStatus,
+                            sortList: dataManagementHomeViewModel.sortList,
+                            onTapSort: (index) =>
+                                dataManagementHomeViewModel.onTapSort(index),
+                            sortStatus: dataManagementHomeViewModel.sortStatus)
+                        // const NormalFilterBox()
                         : SizedBox(height: 10.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

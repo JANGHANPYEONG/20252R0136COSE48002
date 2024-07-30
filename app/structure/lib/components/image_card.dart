@@ -65,7 +65,7 @@ class ImageCard extends StatelessWidget {
                         children: [
                           SizedBox(
                             width: 640.w,
-                            height: 503.h,
+                            height: 640.w,
                             child: const Icon(
                               Icons.error_outline,
                               color: Palette.imageErrorColor,
