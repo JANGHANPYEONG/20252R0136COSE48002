@@ -86,31 +86,35 @@ class _DataAddHomeState extends State<DataAddHome> {
                 // index 0은 원육 정보이기 때문에 index + 1 부터 리스트에 표시해야 함
                 child: dataAddHomeViewModel.isLoading
                     ? const Center(child: LoadingScreen())
-                    : ListView.builder(
-                        itemCount: dataAddHomeViewModel
-                                .meatModel.deepAgingInfo!.length -
-                            1,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.h),
-                            child: DeepAgingCard(
-                              deepAgingNum:
-                                  '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회',
-                              mainText:
-                                  '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
-                              butcheryDate: dataAddHomeViewModel
-                                  .meatModel.deepAgingInfo![index + 1]['date'],
-                              // TODO : complete check
-                              completed: false,
-                              // dataAddHomeViewModel
-                              //     .meatModel.deepAgingInfo![index]['complete'],
-                              onTap: () async => await dataAddHomeViewModel
-                                  .clickedProcessedMeat(index + 1, context),
-                              delete: () async => await dataAddHomeViewModel
-                                  .deleteList(context, index + 1),
-                            ),
-                          );
-                        },
+                    : Scrollbar(
+                        thumbVisibility: true,
+                        // controller: ,
+                        child: ListView.builder(
+                          itemCount: dataAddHomeViewModel
+                                  .meatModel.deepAgingInfo!.length -
+                              1,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.h),
+                              child: DeepAgingCard(
+                                deepAgingNum:
+                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회',
+                                mainText:
+                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
+                                butcheryDate: dataAddHomeViewModel.meatModel
+                                    .deepAgingInfo![index + 1]['date'],
+                                // TODO : complete check
+                                completed: false,
+                                // dataAddHomeViewModel
+                                //     .meatModel.deepAgingInfo![index]['complete'],
+                                onTap: () async => await dataAddHomeViewModel
+                                    .clickedProcessedMeat(index + 1, context),
+                                delete: () async => await dataAddHomeViewModel
+                                    .deleteList(context, index + 1),
+                              ),
+                            );
+                          },
+                        ),
                       ),
               ),
               SizedBox(height: 36.h),
@@ -123,6 +127,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                     height: 132.h,
                     width: double.infinity,
                     child: InkWell(
+                      borderRadius: BorderRadius.circular(16.r),
                       onTap: () =>
                           dataAddHomeViewModel.addDeepAgingData(context),
                       child: DottedBorder(

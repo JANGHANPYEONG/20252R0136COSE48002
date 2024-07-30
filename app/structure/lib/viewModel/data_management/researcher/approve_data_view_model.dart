@@ -35,6 +35,7 @@ class ApproveDataViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
+  //스크롤바
   final scrollController = ScrollController();
 
   bool isOpnedFilter = false; // 필터가 열린지 확인.

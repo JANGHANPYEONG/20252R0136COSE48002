@@ -27,6 +27,8 @@ class DataAddHomeViewModel with ChangeNotifier {
   String speciesValue = '-';
   String secondary = '-';
   String total = '-';
+  //스크롤바
+  final scrollController = ScrollController();
 
   /// 초기 값 할당 (육류 정보 데이터)
   void _initialize() async {

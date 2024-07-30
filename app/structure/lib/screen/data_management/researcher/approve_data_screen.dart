@@ -47,38 +47,51 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(height: 16.h),
-
-                  // 필터 버튼
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () => approveDataViewModel.clickedFilter(context),
-                      borderRadius: BorderRadius.circular(20.r),
-                      child: Container(
-                        padding: EdgeInsets.all(8.w),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // 선택된 필터
-                            Text(
-                              approveDataViewModel.filterdResult,
-                              style: Palette.h4,
-                            ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        //데이터 개수 텍스트
+                        SizedBox(
+                          child: Text(
+                            '${approveDataViewModel.selectedList.length}개의 데이터',
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 15),
+                          ),
+                        ), // 필터 버튼
+                        InkWell(
+                          onTap: () =>
+                              approveDataViewModel.clickedFilter(context),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // 선택된 필터
+                                Text(
+                                  approveDataViewModel.filterdResult,
+                                  style: Palette.h4,
+                                ),
 
-                            // 화살표
-                            approveDataViewModel.isOpnedFilter
-                                ? const Icon(Icons.arrow_drop_up_outlined)
-                                : const Icon(Icons.arrow_drop_down),
-                          ],
+                                // 화살표
+                                approveDataViewModel.isOpnedFilter
+                                    ? const Icon(Icons.arrow_drop_up_outlined)
+                                    : const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
 
                   // 필터 area
                   approveDataViewModel.isOpnedFilter
                       ? FilterBox(
+                          type: 2,
                           dateList: approveDataViewModel.dateList,
                           onTapDate: (index) =>
                               approveDataViewModel.onTapDate(index),
@@ -164,15 +177,6 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                   // 육류 리스트 상단바
                   const CustomTableBarApprove(),
                   SizedBox(height: 16.h),
-                  SizedBox(
-                    height: 30.h,
-                    width: 560.w,
-                    child: Text(
-                      '육류 개수 : ${approveDataViewModel.selectedList.length}',
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(color: Colors.grey, fontSize: 15),
-                    ),
-                  ),
 
                   // 육류 리스트
                   Container(

@@ -56,7 +56,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                           SizedBox(height: 25.h),
 
                           // 딥에이징 일자 container
-                          InkWell(
+                          GestureDetector(
                             onTap: () {
                               addDeepAgingDataViewModel.changeState('선택');
                             },
