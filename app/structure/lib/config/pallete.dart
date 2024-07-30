@@ -151,7 +151,7 @@ class Palette {
   static TextStyle userLevelText = TextStyle(
       fontSize: 16.sp,
       fontWeight: FontWeight.w600,
-      color: const Color(0xff816cff));
+      color: const Color.fromARGB(255, 0, 0, 0));
 
   static TextStyle appBarTitle = TextStyle(
       fontSize: 30.sp,
