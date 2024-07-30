@@ -18,6 +18,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     _initialize();
   }
   bool isLoading = false;
+  String title = '전자혀 데이터';
+
   late BuildContext _context;
 
   // 컨트롤러
@@ -37,12 +39,20 @@ class InsertionTongueDataViewModel with ChangeNotifier {
       bitterness.text = '${meatModel.probExpt?['bitterness'] ?? ''}';
       umami.text = '${meatModel.probExpt?['umami'] ?? ''}';
       richness.text = '${meatModel.probExpt?['richness'] ?? ''}';
+
+      if (meatModel.seqno == 0) {
+        title = '원육 전자혀 데이터';
+      } else {
+        title = '처리육 전자혀 데이터';
+      }
     } else {
       // 가열육
       sourness.text = '${meatModel.heatedProbExpt?['sourness'] ?? ''}';
       bitterness.text = '${meatModel.heatedProbExpt?['bitterness'] ?? ''}';
       umami.text = '${meatModel.heatedProbExpt?['umami'] ?? ''}';
       richness.text = '${meatModel.heatedProbExpt?['richness'] ?? ''}';
+
+      title = '가열육 전자혀 데이터';
     }
 
     isLoading = false;

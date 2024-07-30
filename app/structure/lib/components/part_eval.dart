@@ -27,45 +27,39 @@ class PartEval extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // SizedBox(height: 30.w),
-        // 기준 이미지
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              imagePath[idx],
-              width: 624.w,
-              height: 68.h,
-            )
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (int i = 2; i < 7; i++)
-              SizedBox(
-                width: 123.w,
-                child: Text(
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 40.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 기준 이미지
+          Image.asset(
+            imagePath[idx],
+            width: double.infinity,
+            height: 68.h,
+            fit: BoxFit.fitWidth,
+          ),
+
+          // 기준 텍스트
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (int i = 2; i < 7; i++)
+                Text(
                   selectedText![i],
                   style: Palette.h5,
                   textAlign: TextAlign.center,
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
 
-        // 슬라이더
-        Container(
-          width: 770.w,
-          height: 12.h,
-          margin: EdgeInsets.symmetric(vertical: 50.h, horizontal: 16.w),
-          child: SfSliderTheme(
-            data: const SfSliderThemeData(
+          // 슬라이더
+          SfSliderTheme(
+            data: SfSliderThemeData(
               tooltipBackgroundColor: Palette.meatRegiBtnBg,
-              // activeTrackHeight: 8,
-              // inactiveTrackHeight: 8,
+              activeTrackHeight: 12.h,
+              inactiveTrackHeight: 12.h,
+              overlayRadius: 0,
             ),
             child: SfSlider(
               min: 1.0,
@@ -76,9 +70,7 @@ class PartEval extends StatelessWidget {
               showLabels: false,
               activeColor: Palette.meatRegiBtnBg,
               inactiveColor: Palette.notEditableBg,
-
               enableTooltip: true,
-              // minorTicksPerInterval: 1,
               onChanged: onChanged,
               tooltipTextFormatterCallback:
                   (dynamic actualValue, String formattedText) {
@@ -87,9 +79,8 @@ class PartEval extends StatelessWidget {
               },
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-      ],
+        ],
+      ),
     );
   }
 }
