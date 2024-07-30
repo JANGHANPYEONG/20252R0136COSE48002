@@ -2,13 +2,15 @@ import 'package:structure/components/data_title.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:structure/config/pallete.dart';
 
-class DataField extends StatelessWidget {
+class DataField extends StatefulWidget {
   final String mainText;
   final String subText;
   final String? unit;
   final TextEditingController controller;
   final bool? isPercent;
+  final void Function(String)? onChangeFunc;
 
   const DataField({
     super.key,
@@ -17,15 +19,21 @@ class DataField extends StatelessWidget {
     this.unit,
     required this.controller,
     this.isPercent,
+    this.onChangeFunc,
   });
 
+  @override
+  State<DataField> createState() => _DataFieldState();
+}
+
+class _DataFieldState extends State<DataField> {
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         // 제목
-        DataTitle(korText: subText, engText: mainText),
+        DataTitle(korText: widget.subText, engText: widget.mainText),
         SizedBox(height: 12.h),
 
         // 입력 textfield
@@ -40,7 +48,7 @@ class DataField extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final isFocused = Focus.of(context).hasFocus;
-                return TextField(
+                return TextFormField(
                   decoration: InputDecoration(
                     filled: true,
                     fillColor:
@@ -56,13 +64,24 @@ class DataField extends StatelessWidget {
                         width: 1, // 테두리 두께 설정
                       ),
                     ),
-                    suffixIcon: unit != null
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                      borderSide:
+                          const BorderSide(color: Palette.fieldAlertBorder),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                      borderSide:
+                          const BorderSide(color: Palette.fieldAlertBorder),
+                    ),
+                    errorStyle: Palette.fieldAlert,
+                    suffixIcon: widget.unit != null
                         ? Container(
                             width: 20.w, // 필요한 너비로 조정
                             height: 20.h,
                             alignment: Alignment.center, // 오른쪽 끝에 맞춤
                             child: Text(
-                              unit!,
+                              widget.unit!,
                               style: TextStyle(
                                 color: const Color(0xFF686868),
                                 fontSize: 30.sp,
@@ -73,16 +92,18 @@ class DataField extends StatelessWidget {
                           )
                         : null,
                   ),
-                  controller: controller,
+                  controller: widget.controller,
                   textAlign: TextAlign.left,
-                  inputFormatters: isPercent != null && isPercent == true
-                      ? [_PercentageInputFormatter()]
-                      : [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
-                          ),
-                        ],
+                  inputFormatters:
+                      widget.isPercent != null && widget.isPercent == true
+                          ? [_PercentageInputFormatter()]
+                          : [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
+                              ),
+                            ],
                   keyboardType: TextInputType.number,
+                  onChanged: widget.onChangeFunc,
                 );
               },
             ),

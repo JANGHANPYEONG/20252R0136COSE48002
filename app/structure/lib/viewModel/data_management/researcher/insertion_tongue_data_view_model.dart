@@ -28,6 +28,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   TextEditingController umami = TextEditingController();
   TextEditingController richness = TextEditingController();
 
+  bool inputComplete = false;
+
   // 초기 값 할당 (모델에 값이 존재하면 할당)
   void _initialize() {
     isLoading = true;
@@ -57,6 +59,14 @@ class InsertionTongueDataViewModel with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
+  }
+
+  /// 모든 필드가 입력 되었는지 확인하는 함수
+  void inputCheck() {
+    inputComplete = sourness.text.isNotEmpty &&
+        bitterness.text.isNotEmpty &&
+        umami.text.isNotEmpty &&
+        richness.text.isNotEmpty;
   }
 
   // 데이터를 객체에 할당 - 이후 POST
