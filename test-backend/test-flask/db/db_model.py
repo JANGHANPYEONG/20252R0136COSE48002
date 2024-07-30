@@ -11,6 +11,7 @@ from sqlalchemy import (
     CheckConstraint, create_engine,
 )
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
 from utils import *
@@ -485,7 +486,7 @@ class ProbexptData(Base):
     )
 
     # 2. 연구실 메타 데이터
-    updatedAt = Column(DateTime)
+    createdAt = Column(DateTime, nullable=False)
     userId = Column(
         String(255), 
         nullable=False,
@@ -530,6 +531,51 @@ class ProbexptData(Base):
         CheckConstraint('"DL" >= 0 AND "DL" <= 100', name="check_DL_percentage"),
         CheckConstraint('"CL" >= 0 AND "CL" <= 100', name="check_CL_percentage"),
         CheckConstraint('"RW" >= 0 AND "RW" <= 100', name="check_RW_percentage"),
+    )
+
+
+class OpenCVImagesInfo(Base):
+    __tablename__ = "openCV_images_info"
+    # 1. 복합키 설정
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+
+    # 2. 단면 이미지
+    section_imagePath = Column(String(255))
+    
+    # 3. 컬러팔레트 및 단백질 비율
+    full_palette = Column(JSONB)
+    fat_palette = Column(JSONB)
+    protein_palette = Column(JSONB)
+    protein_rate = Column(Float)
+    
+    # 4. 학습에 필요한 이미지 URL JSONB
+    lbp_images = Column(JSONB)
+    gabor_images = Column(JSONB)
+    
+    # 5. 학습에 필요한 텍스쳐 정보
+    contrast = Column(Float)
+    dissimilarity = Column(Float)
+    homogeneity = Column(Float)
+    energy = Column(Float)
+    correlation = Column(Float)
+    
+    createdAt = Column(DateTime, nullable=False)
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], 
+            ["deepAging_info.id", "deepAging_info.seqno"], 
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+        CheckConstraint('"protein_rate" >= 0 and "protein_rate" <= 100', name="check_protein_rate"),
+        CheckConstraint('"contrast" >= 0', name="check_texture_contrast"),
+        CheckConstraint('"dissimilarity" >= 0', name="check_texture_dissimilarity"),
+        CheckConstraint('"homogeneity" >= 0', name="check_texture_homogeneity"),
+        CheckConstraint('"energy" >= 0', name="check_texture_energy"),
+        CheckConstraint('"correlation" >= 0', name="check_texture_correlation"),
     )
 
 
@@ -643,6 +689,14 @@ DeepAgingInfo.probexptDatas = relationship(
     cascade="all, delete-orphan"
 )
 ProbexptData.deepAgingInfos = relationship("DeepAgingInfo", back_populates="probexptDatas")
+
+# deepAgingInfo - OpenCVImagesInfo
+DeepAgingInfo.openCVImagesInfos = relationship(
+    "OpenCVImagesInfo",
+    back_populates="deepAgingInfos",
+    cascade="all, delete-orphan"
+)
+OpenCVImagesInfo.deepAgingInfos = relationship("DeepAgingInfo", back_populates="openCVImagesInfos")
 
 # sensoryEval - aiSensoryEval
 SensoryEval.aiSensoryEvals = relationship(
