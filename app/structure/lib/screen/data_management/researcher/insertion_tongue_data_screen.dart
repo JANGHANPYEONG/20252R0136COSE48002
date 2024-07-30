@@ -73,14 +73,12 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                     height: 112.h,
                   ),
                   DataField(
+                    isFinal: 1,
                     mainText: 'Richness',
                     subText: '후미',
                     controller:
                         context.read<InsertionTongueDataViewModel>().richness,
                   ),
-                  // SizedBox(
-                  //   height: 200.h,
-                  // ),
                   // 데이터 저장 버튼
                   Container(
                     margin: EdgeInsets.only(bottom: 28.h, top: 150.h),

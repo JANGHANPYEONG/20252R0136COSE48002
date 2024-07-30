@@ -9,6 +9,7 @@ class DataField extends StatelessWidget {
   final String? unit;
   final TextEditingController controller;
   final bool? isPercent;
+  final int? isFinal;
 
   const DataField({
     super.key,
@@ -17,6 +18,7 @@ class DataField extends StatelessWidget {
     this.unit,
     required this.controller,
     this.isPercent,
+    this.isFinal,
   });
 
   @override
@@ -58,7 +60,10 @@ class DataField extends StatelessWidget {
                   child: Builder(
                     builder: (context) {
                       final isFocused = Focus.of(context).hasFocus;
-                      return TextField(
+                      return TextFormField(
+                        keyboardType: TextInputType.number,
+                        textInputAction:
+                            isFinal != null ? null : TextInputAction.next,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isFocused
@@ -102,7 +107,6 @@ class DataField extends StatelessWidget {
                                 FilteringTextInputFormatter.allow(
                                     RegExp(r'^-?\d{0,8}(\.\d{0,4})?')),
                               ],
-                        keyboardType: TextInputType.number,
                       );
                     },
                   ),

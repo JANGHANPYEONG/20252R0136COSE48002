@@ -127,6 +127,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                     height: 30.h,
                   ),
                   DataField(
+                      isFinal: 1,
                       mainText: 'Collagen ',
                       subText: '콜라겐',
                       controller:
