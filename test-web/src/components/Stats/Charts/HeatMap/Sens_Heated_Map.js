@@ -34,22 +34,32 @@ export default function Sens_Heated_Map({
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
+  const y_axis = {
+    flavor: '풍미',
+    juiciness: '육즙',
+    palatability: '기호도',
+    tenderness: '연도',
+    umami: '감칠맛',
+  };
+
   let ChartSeries = [];
   if (prop.length > 0) {
-    ChartSeries = prop.map((property) => {
-      const uniqueValues = chartData[property].unique_values;
-      const frequencies = new Array(10).fill(0);
+    ChartSeries = prop
+      .map((property) => {
+        const uniqueValues = chartData[property].values;
+        const frequencies = new Array(9).fill(0);
 
-      uniqueValues.forEach((value) => {
-        const index = Math.floor(value);
-        frequencies[index] += 1;
-      });
+        uniqueValues.forEach((value) => {
+          const index = Math.floor(value);
+          frequencies[index - 1] += 1;
+        });
 
-      return {
-        name: property,
-        data: frequencies,
-      };
-    });
+        return {
+          name: y_axis[property] || property,
+          data: frequencies,
+        };
+      })
+      .reverse();
   }
 
   const ChartOption = {
@@ -62,9 +72,9 @@ export default function Sens_Heated_Map({
     },
     xaxis: {
       type: 'numeric',
-      tickAmount: 10, // Number of ticks on the x-axis
-      min: 0,
-      max: 10, // Adjust the max value as needed
+      tickAmount: 9,
+      min: 1,
+      max: 10,
     },
     title: {
       text: '가열육 관능데이터 범위별 분포(빈도수)',
@@ -72,6 +82,28 @@ export default function Sens_Heated_Map({
     grid: {
       padding: {
         right: 20,
+      },
+    },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: function (value, { seriesIndex, dataPointIndex }) {
+          const count = ChartSeries[seriesIndex].data[dataPointIndex] || 0;
+          const total =
+            ChartSeries[seriesIndex].data.reduce((a, b) => a + b, 0) || 1;
+          const percentage = ((count / total) * 100).toFixed(1);
+          return `${count}개 (${percentage}%)`;
+        },
+      },
+      x: {
+        show: true,
+        formatter: function (value, { seriesIndex }) {
+          const total = ChartSeries[seriesIndex]?.data.reduce(
+            (a, b) => a + b,
+            0
+          );
+          return `${value} ~ ${value + 1}점 [전체 ${total}개]`;
+        },
       },
     },
   };

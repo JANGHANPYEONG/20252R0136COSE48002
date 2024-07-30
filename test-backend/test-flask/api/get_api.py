@@ -253,7 +253,7 @@ def getMeatDataByRangeStatusType():
 
         start = convert2datetime(start_str, 0)
         end = convert2datetime(end_str, 0)
-        if status_type and specie_value:
+        if status_type is not None and specie_value is not None:
             return _getMeatDataByRangeStatusType(
                 db_session, status_type, offset, count, specie_value, start, end
             )

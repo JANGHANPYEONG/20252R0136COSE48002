@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
@@ -23,46 +23,17 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LogoutIcon from '@mui/icons-material/Logout';
-import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
-import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
-import GroupIcon from '@mui/icons-material/Group';
-import HomeIcon from '@mui/icons-material/Home';
-import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 
 import DeeplantLong from '../../src_assets/Deeplant_long.webp';
 import LOGO from '../../src_assets/LOGO.png';
+import CreateFilterQueryParams from '../../Utils/createFilterQueryParams';
+import pageListItems from '../../Utils/pageListItems';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const mainListItems = [
-  {
-    label: '홈',
-    icon: <HomeIcon sx={{ fontSize: 30 }} />,
-    path: '/Home',
-  },
-  {
-    label: '대시보드',
-    icon: <DataThresholdingIcon sx={{ fontSize: 30 }} />,
-    path: '/DataManage',
-  },
-  {
-    label: '데이터 예측',
-    icon: <TroubleshootIcon style={{ fontSize: 30 }} />,
-    path: '/PA',
-  },
-  {
-    label: '통계 분석',
-    icon: <StackedLineChartIcon sx={{ fontSize: 30 }} />,
-    path: '/stats',
-  },
-  {
-    label: '사용자 관리',
-    icon: <GroupIcon sx={{ fontSize: 30 }} />,
-    path: '/UserManagement',
-  },
-];
+const mainListItems = pageListItems;
 
 // const drawerWidth = `${(345 / 1920) * 100}vw`; // Width when drawer is open
 const drawerWidth = '345px'; // Width when drawer is open
@@ -121,30 +92,17 @@ function Sidebar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
-  const userEmail = UserInfo.userId;
-  console.log(userEmail);
+  //const userEmail = UserInfo.userId;
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const logout = async () => {
-    try {
-      localStorage.setItem('isLoggedIn', 'false');
-      navigate('/');
-      window.location.reload();
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  useEffect(() => {}, [location]);
-
-  const createFilterQueryParams = () => {
-    const queryParams = new URLSearchParams(location.search); // 현재 쿼리 파라미터를 복사
-    return queryParams.toString();
+  
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   const handleListItemClick = (item) => {
@@ -154,16 +112,10 @@ function Sidebar() {
     } else {
       navigate(item.path);
       if (item.label !== '홈' && item.label !== '사용자 관리') {
-        const queryParams = createFilterQueryParams();
+        const queryParams = <CreateFilterQueryParams />;
         navigate(`${item.path}?${queryParams}`);
       }
-      //const queryParams = createFilterQueryParams();
-      //navigate(`${item.path}?${queryParams}`);
     }
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
   };
 
   return (
@@ -238,7 +190,7 @@ function Sidebar() {
               </Typography>
             )}
           </IconButton>
-          <IconButton onClick={logout}>
+          <IconButton onClick={<logout />}>
             <div
               style={{
                 backgroundColor: '#E8E8E8',
@@ -288,7 +240,7 @@ function Sidebar() {
                     '&.Mui-selected': {
                       backgroundColor: '#7BD758',
                       borderRadius: '16px',
-                      boxShadow:3,
+                      boxShadow: 3,
                     },
                   }),
                 }}

@@ -12,7 +12,12 @@ export default function Sens_FreshMeat({
   const [chartData, setChartData] = useState([]);
   const fetchData = async () => {
     try {
-      const response = await statisticSensoryFresh(startDate, endDate, animalType, grade);
+      const response = await statisticSensoryFresh(
+        startDate,
+        endDate,
+        animalType,
+        grade
+      );
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -26,7 +31,6 @@ export default function Sens_FreshMeat({
 
   useEffect(() => {
     fetchData();
-    console.log('new data ', chartData);
   }, [startDate, endDate, animalType, grade]);
 
   const calculateBoxPlotStatistics = (data) => {
@@ -48,44 +52,41 @@ export default function Sens_FreshMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '원육 관능데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart only when chartData is not empty
   return (
     <div>
-      {chartData && chartData.color && chartData.color.unique_values ? (
+      {chartData && chartData.color && chartData.color.values ? (
         <ApexCharts
           series={[
             {
               type: 'boxPlot',
               data: [
                 {
-                  x: 'Color',
-                  y: calculateBoxPlotStatistics(chartData.color.unique_values),
+                  x: '색(Color)',
+                  y: calculateBoxPlotStatistics(chartData.color.values),
                 },
                 {
-                  x: 'Marbling',
+                  x: '마블링(Marbling)',
+                  y: calculateBoxPlotStatistics(chartData.marbling.values),
+                },
+                {
+                  x: '기호도(Overall)',
+                  y: calculateBoxPlotStatistics(chartData.overall.values),
+                },
+                {
+                  x: '육즙(SurfaceMoisture)',
                   y: calculateBoxPlotStatistics(
-                    chartData.marbling.unique_values
+                    chartData.surfaceMoisture.values
                   ),
                 },
                 {
-                  x: 'Overall',
-                  y: calculateBoxPlotStatistics(
-                    chartData.overall.unique_values
-                  ),
-                },
-                {
-                  x: 'SurfaceMoisture',
-                  y: calculateBoxPlotStatistics(
-                    chartData.surfaceMoisture.unique_values
-                  ),
-                },
-                {
-                  x: 'Texture',
-                  y: calculateBoxPlotStatistics(
-                    chartData.texture.unique_values
-                  ),
+                  x: '조직감(Texture)',
+                  y: calculateBoxPlotStatistics(chartData.texture.values),
                 },
               ],
             },

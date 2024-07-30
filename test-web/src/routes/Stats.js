@@ -65,7 +65,7 @@ function Stats() {
   }, [searchParams]);
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" style={{ height: '80%' }}>
       <Box
         sx={{
           width: '100%',

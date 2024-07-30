@@ -2,18 +2,20 @@ import { useState, useEffect, useRef } from 'react';
 import { ExcelRenderer } from 'react-excel-renderer';
 import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
 import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
-import { Box, Button, SvgIcon } from '@mui/material';
+import { Box, Button, SvgIcon, CircularProgress } from '@mui/material';
 import { getDataListJSON, downloadExcel } from './excelExport';
 import { apiIP } from '../../config';
 import ExcelImportAlertModal from '../DataDetailPage/excelImportAlertModal';
 
 const navy = '#0F3659';
 
-function ExcelController({startDate, endDate, specieValue}) {
-  //엑셀 업로드 성공 여부
+function ExcelController({ startDate, endDate, specieValue }) {
+  // 엑셀 업로드 성공 여부
   const [isImportSuccessed, setIsImportSuccessed] = useState(true);
-  //엑셀 업로드 완료
+  // 엑셀 업로드 완료
   const [alertDone, setAlertDone] = useState(false);
+  // 로딩 상태
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileRef = useRef(null);
 
@@ -26,7 +28,7 @@ function ExcelController({startDate, endDate, specieValue}) {
 
   // 선택한 엑셀 파일을 json으로 변환한 뒤 추가 API로 전송
   const handleExcelFile = async (file) => {
-    //엑셀 시트를 JSON객체로 변경
+    // 엑셀 시트를 JSON 객체로 변경
     ExcelRenderer(file, (err, resp) => {
       // 변경 중 에러가 난 경우
       if (err) {
@@ -40,7 +42,7 @@ function ExcelController({startDate, endDate, specieValue}) {
           // 파일 최종 수정 시간
           const lastModified = file.lastModified;
 
-          // 가열육 수정 정보를 저장할 객채
+          // 가열육 수정 정보를 저장할 객체
           const heatedmeat_eval = {};
           // 처리육 수정 정보를 저장할 객체
           const probexpt_data = {};
@@ -62,11 +64,11 @@ function ExcelController({startDate, endDate, specieValue}) {
           const lastModifiedDate = file.lastModifiedDate
             .toISOString()
             .slice(0, -5);
-          // 수정이후 period 계산
+          // 수정 이후 period 계산
           const butcheryDate = new Date(2023, 1, 1, 0, 0, 0);
           const elapsedMSec = lastModified - butcheryDate.getTime();
           const elapsedHour = elapsedMSec / 1000 / 60 / 60;
-          //로그인한 유저 정보
+          // 로그인한 유저 정보
           const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
           // 1.1 가열육 관능평가 데이터 JSON으로 변환
@@ -88,7 +90,7 @@ function ExcelController({startDate, endDate, specieValue}) {
               },
               body: JSON.stringify(heatedmeatEvalReq),
             });
-            //업로드에 성공한 경우
+            // 업로드에 성공한 경우
             response.then((res) => {
               if (res.status === 404) {
                 setIsImportSuccessed(false);
@@ -96,7 +98,7 @@ function ExcelController({startDate, endDate, specieValue}) {
             });
           } catch (err) {
             console.error(err);
-            //업로드에 실패한 경우
+            // 업로드에 실패한 경우
             setIsImportSuccessed(false);
           }
 
@@ -120,7 +122,7 @@ function ExcelController({startDate, endDate, specieValue}) {
               },
               body: JSON.stringify(probexptReq),
             });
-            //업로드에 성공한 경우
+            // 업로드에 성공한 경우
             response.then((res) => {
               if (res.status === 404) {
                 setIsImportSuccessed(false);
@@ -128,7 +130,7 @@ function ExcelController({startDate, endDate, specieValue}) {
             });
           } catch (err) {
             console.error(err);
-            //업로드에 실패한 경우
+            // 업로드에 실패한 경우
             setIsImportSuccessed(false);
           }
         }
@@ -147,9 +149,14 @@ function ExcelController({startDate, endDate, specieValue}) {
 
   // excel export할 목록 데이터 fetch
   useEffect(() => {
-    getDataListJSON({ startDate, endDate, specieValue }).then((data) => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const data = await getDataListJSON({ startDate, endDate, specieValue });
       setExcelData(data);
-    });
+      setIsLoading(false);
+    };
+
+    fetchData();
   }, [startDate, endDate, specieValue]);
 
   return (
@@ -162,7 +169,7 @@ function ExcelController({startDate, endDate, specieValue}) {
         />
       )}
       <input
-        class="form-control"
+        className="form-control"
         accept=".csv,.xlsx,.xls"
         type="file"
         id="formFile"
@@ -187,14 +194,22 @@ function ExcelController({startDate, endDate, specieValue}) {
         </div>
       </Button>
 
-      <Button style={style.exportBtnWrapper} onClick={handleExcelExport}>
-        <div style={{ display: 'flex' }}>
-          <SvgIcon fontSize="small">
-            <ArrowDownOnSquareIcon />
-          </SvgIcon>
-          <span>Export</span>
-        </div>
-      </Button>
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <Button
+          style={style.exportBtnWrapper}
+          onClick={handleExcelExport}
+          disabled={!excelData}
+        >
+          <div style={{ display: 'flex' }}>
+            <SvgIcon fontSize="small">
+              <ArrowDownOnSquareIcon />
+            </SvgIcon>
+            <span>Export</span>
+          </div>
+        </Button>
+      )}
     </Box>
   );
 }

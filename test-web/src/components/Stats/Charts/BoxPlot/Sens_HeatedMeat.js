@@ -53,42 +53,39 @@ export default function Sens_HeatedMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '가열육 관능데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart only when chartData is not empty
   return (
     <div>
-      {chartData && chartData.flavor && chartData.flavor.unique_values ? (
+      {chartData && chartData.flavor && chartData.flavor.values ? (
         <ApexCharts
           series={[
             {
               type: 'boxPlot',
               data: [
                 {
-                  x: 'flavor',
-                  y: calculateBoxPlotStatistics(chartData.flavor.unique_values),
+                  x: '풍미(flavor)',
+                  y: calculateBoxPlotStatistics(chartData.flavor.values),
                 },
                 {
-                  x: 'juiciness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.juiciness.unique_values
-                  ),
+                  x: '육즙(juiciness)',
+                  y: calculateBoxPlotStatistics(chartData.juiciness.values),
                 },
                 {
-                  x: 'palatability',
-                  y: calculateBoxPlotStatistics(
-                    chartData.palatability.unique_values
-                  ),
+                  x: '기호도(palatability)',
+                  y: calculateBoxPlotStatistics(chartData.palatability.values),
                 },
                 {
-                  x: 'tenderness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.tenderness.unique_values
-                  ),
+                  x: '연도(tenderness)',
+                  y: calculateBoxPlotStatistics(chartData.tenderness.values),
                 },
                 {
-                  x: 'umami',
-                  y: calculateBoxPlotStatistics(chartData.umami.unique_values),
+                  x: '감칠맛(umami)',
+                  y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],
             },

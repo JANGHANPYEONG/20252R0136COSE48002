@@ -115,7 +115,6 @@ def register_user_data():
         existing_user = get_user(db_session, user_id)
         if existing_user:
             return jsonify({"msg": "User already exists"}), 400
-        data["createdAt"] = datetime.now()
 
         create_user(db_session, data)
 
@@ -258,7 +257,7 @@ def delete_user_data():
                 401,
             )
         # Firebase에서 유저 삭제
-        user_record = firebase_auth.get_user_by_email(id)
+        user_record = firebase_auth.get_user_by_email(user_id)
         firebase_auth.delete_user(user_record.uid)
         
         delete_user(db_session, user)

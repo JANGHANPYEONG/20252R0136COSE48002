@@ -53,40 +53,35 @@ export default function Taste_FreshMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '원육 맛데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart or CircularProgress based on chartData
   return (
     <div>
-      {chartData &&
-      chartData.bitterness &&
-      chartData.bitterness.unique_values ? (
+      {chartData && chartData.bitterness && chartData.bitterness.values ? (
         <ApexCharts
           series={[
             {
               type: 'boxPlot',
               data: [
                 {
-                  x: 'bitterness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.bitterness.unique_values
-                  ),
+                  x: '진한맛(bitterness)',
+                  y: calculateBoxPlotStatistics(chartData.bitterness.values),
                 },
                 {
-                  x: 'richness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.richness.unique_values
-                  ),
+                  x: '후미(richness)',
+                  y: calculateBoxPlotStatistics(chartData.richness.values),
                 },
                 {
-                  x: 'sourness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.sourness.unique_values
-                  ),
+                  x: '신맛(sourness)',
+                  y: calculateBoxPlotStatistics(chartData.sourness.values),
                 },
                 {
-                  x: 'umami',
-                  y: calculateBoxPlotStatistics(chartData.umami.unique_values),
+                  x: '감칠맛(umami)',
+                  y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],
             },
