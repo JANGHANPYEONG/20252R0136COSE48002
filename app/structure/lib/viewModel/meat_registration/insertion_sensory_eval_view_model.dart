@@ -24,7 +24,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
 
   // 초기 변수
   String title = '';
-  String meatImage = '';
+  String? meatImage = '';
 
   // 관능평가 값
   // 초기 값은 1(최하)로 설정
@@ -45,8 +45,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     }
 
     if (meatModel.sensoryEval != null) {
-      meatImage = meatModel.sensoryEval!['imagePath'] ?? '';
-      print('이미지 : $meatImage');
+      meatImage = meatModel.sensoryEval!['imagePath'];
       // 수정 시 불러온 데이터, 등록 시 초기 값 1로 설정
       marbling = meatModel.sensoryEval?["marbling"] ?? 1;
       color = meatModel.sensoryEval?["color"] ?? 1;
@@ -54,7 +53,6 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
       surfaceMoisture = meatModel.sensoryEval?['surfaceMoisture'] ?? 1;
       overall = meatModel.sensoryEval?['overall'] ?? 1;
     }
-    print('이미지 : ; :$meatImage');
 
     notifyListeners();
   }

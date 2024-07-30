@@ -36,6 +36,8 @@ class InsertionLabDataViewModel with ChangeNotifier {
   TextEditingController mfi = TextEditingController();
   TextEditingController collagen = TextEditingController();
 
+  bool inputComplete = false;
+
   // 초기 할당 : 모델에 값이 있다면 불러옴.
   void _initialize() {
     if (isRaw) {
@@ -71,6 +73,22 @@ class InsertionLabDataViewModel with ChangeNotifier {
 
       title = '가열육 실험 데이터';
     }
+  }
+
+  /// 모든 필드가 입력 되었는지 확인하는 함수
+  void inputCheck() {
+    inputComplete = l.text.isNotEmpty &&
+        a.text.isNotEmpty &&
+        b.text.isNotEmpty &&
+        dl.text.isNotEmpty &&
+        cl.text.isNotEmpty &&
+        cl.text.isNotEmpty &&
+        rw.text.isNotEmpty &&
+        ph.text.isNotEmpty &&
+        wbsf.text.isNotEmpty &&
+        ct.text.isNotEmpty &&
+        mfi.text.isNotEmpty &&
+        collagen.text.isNotEmpty;
   }
 
   // 데이터를 객체에 할당 - 이후 POST
@@ -129,7 +147,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
       meatModel.heatedProbExpt!['Collagen'] = double.parse(collagen.text);
     }
 
-// API 전송
+    // API 전송
     try {
       dynamic response;
 

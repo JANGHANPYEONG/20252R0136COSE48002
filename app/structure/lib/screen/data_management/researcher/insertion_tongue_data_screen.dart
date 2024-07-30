@@ -48,39 +48,46 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                     mainText: 'Sourness',
                     subText: '신맛',
                     controller: insertionTongueDataViewModel.sourness,
+                    onChangeFunc: (_) =>
+                        insertionTongueDataViewModel.inputCheck(),
                   ),
                   SizedBox(height: 32.h),
 
                   // 진한맛
                   DataField(
-                    mainText: 'Bitterness',
-                    subText: '진한맛',
-                    controller: insertionTongueDataViewModel.bitterness,
-                  ),
+                      mainText: 'Bitterness',
+                      subText: '진한맛',
+                      controller: insertionTongueDataViewModel.bitterness,
+                      onChangeFunc: (_) =>
+                          insertionTongueDataViewModel.inputCheck()),
                   SizedBox(height: 32.h),
 
                   // 감칠맛
                   DataField(
-                    mainText: 'Umami',
-                    subText: '감칠맛',
-                    controller: insertionTongueDataViewModel.umami,
-                  ),
+                      mainText: 'Umami',
+                      subText: '감칠맛',
+                      controller: insertionTongueDataViewModel.umami,
+                      onChangeFunc: (_) =>
+                          insertionTongueDataViewModel.inputCheck()),
                   SizedBox(height: 32.h),
 
                   // 후미
                   DataField(
-                    mainText: 'Richness',
-                    subText: '후미',
-                    controller: insertionTongueDataViewModel.richness,
-                  ),
+                      mainText: 'Richness',
+                      subText: '후미',
+                      controller: insertionTongueDataViewModel.richness,
+                      onChangeFunc: (_) =>
+                          insertionTongueDataViewModel.inputCheck()),
                   SizedBox(height: 352.w),
 
                   // 데이터 저장 버튼
                   Container(
                     margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 40.w),
                     child: MainButton(
-                      onPressed: () async =>
-                          insertionTongueDataViewModel.saveData(context),
+                      onPressed: insertionTongueDataViewModel.inputComplete
+                          ? () async =>
+                              insertionTongueDataViewModel.saveData(context)
+                          : null,
                       text: '저장',
                       width: double.infinity,
                       height: 96.h,
