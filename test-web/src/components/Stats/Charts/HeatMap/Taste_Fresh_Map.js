@@ -35,25 +35,23 @@ export default function Taste_Fresh_Map({
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
-  // Check if prop is an array, otherwise use an empty array
-  const propArray = Array.isArray(prop) ? prop : [];
+  let ChartSeries = [];
+  if (prop.length > 0) {
+    ChartSeries = prop.map((property) => {
+      const uniqueValues = chartData[property].values;
+      const frequencies = new Array(9).fill(0);
 
-  const ChartSeries = propArray.map((property) => {
-    const uniqueValues = chartData[property]?.unique_values || [];
-    const frequencies = new Array(10).fill(0);
+      uniqueValues.forEach((value) => {
+        const index = Math.floor(value);
+        frequencies[index - 1] += 1;
+      });
 
-    uniqueValues.forEach((value) => {
-      const index = Math.floor(value);
-      if (index >= 0 && index < frequencies.length) {
-        frequencies[index] += 1;
-      }
+      return {
+        name: property,
+        data: frequencies,
+      };
     });
-
-    return {
-      name: property,
-      data: frequencies,
-    };
-  });
+  }
 
   const ChartOption = {
     chart: {
@@ -65,8 +63,8 @@ export default function Taste_Fresh_Map({
     },
     xaxis: {
       type: 'numeric',
-      tickAmount: 10, // Number of ticks on the x-axis
-      min: 0,
+      tickAmount: 9, // Number of ticks on the x-axis
+      min: 1,
       max: 10, // Adjust the max value as needed
     },
     title: {

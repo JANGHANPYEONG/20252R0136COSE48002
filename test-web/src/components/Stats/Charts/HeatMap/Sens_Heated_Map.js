@@ -37,12 +37,12 @@ export default function Sens_Heated_Map({
   let ChartSeries = [];
   if (prop.length > 0) {
     ChartSeries = prop.map((property) => {
-      const uniqueValues = chartData[property].unique_values;
-      const frequencies = new Array(10).fill(0);
+      const uniqueValues = chartData[property].values;
+      const frequencies = new Array(9).fill(0);
 
       uniqueValues.forEach((value) => {
         const index = Math.floor(value);
-        frequencies[index] += 1;
+        frequencies[index - 1] += 1;
       });
 
       return {
@@ -62,8 +62,8 @@ export default function Sens_Heated_Map({
     },
     xaxis: {
       type: 'numeric',
-      tickAmount: 10, // Number of ticks on the x-axis
-      min: 0,
+      tickAmount: 9, // Number of ticks on the x-axis
+      min: 1,
       max: 10, // Adjust the max value as needed
     },
     title: {

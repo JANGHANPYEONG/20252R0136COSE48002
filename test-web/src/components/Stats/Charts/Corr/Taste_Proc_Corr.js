@@ -39,14 +39,14 @@ export default function Taste_Proc_Corr({
   const propArray = Array.isArray(prop) ? prop : [];
 
   const ChartSeries = propArray.map((property, rowIndex) => {
-    const uniqueValues1 = chartData[property]?.unique_values || [];
+    const uniqueValues1 = chartData[property]?.values || [];
     const correlation = new Array(prop.length).fill(0);
 
     for (let colIndex = 0; colIndex < prop.length; colIndex++) {
       if (colIndex === rowIndex) {
         correlation[colIndex] = 100; // 대각선 위치는 1로 설정
       } else {
-        const uniqueValues2 = chartData[prop[colIndex]]?.unique_values || [];
+        const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
 
         // 상관 관계 계수 계산
         const correlationCoefficient = calculateCorrelation(
@@ -179,6 +179,12 @@ export default function Taste_Proc_Corr({
               to: 100,
               name: '~ 100%',
               color: '#800000', // 진한 진홍색
+            },
+            {
+              from: 99.99999,
+              to: 100,
+              name: '100%',
+              color: '#000000', // 검정색(자기자신과의 상관계수)
             },
           ],
         },
