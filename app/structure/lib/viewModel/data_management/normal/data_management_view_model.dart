@@ -157,7 +157,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
 
   // 날짜 fomatting
   void formatting() {
-    isOpenTable = !isOpenTable; //
+    isOpenTable = !isOpenTable;
     indexDay = 0;
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
@@ -332,10 +332,12 @@ class DataManagementHomeViewModel with ChangeNotifier {
       }).toList();
     } else {
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data['createdAt']!);
-        // DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
-        return dateTime.isAfter(DateTime(
-                firstDay!.year, firstDay!.month, firstDay!.day, 0, 0, 0, 0)) &&
+        // DateTime dateTime = DateTime.parse(data['createdAt']!);
+        print(data['createdAt']);
+        DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
+
+        return dateTime.isAfter(DateTime(firstDay!.year, firstDay!.month,
+                firstDay!.day - 1, 0, 0, 0, 0)) &&
             dateTime.isBefore(DateTime(
                 lastDay!.year, lastDay!.month, lastDay!.day + 1, 0, 0, 0, 0));
       }).toList();
