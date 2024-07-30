@@ -58,7 +58,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedFlavor(value),
                 ),
-                SizedBox(height: 36.h),
+                SizedBox(height: 32.h),
 
                 const DataTitle(korText: '다즙성', engText: 'Juiciness'),
                 PartEval(
@@ -68,7 +68,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedJuiciness(value),
                 ),
-                SizedBox(height: 36.h),
+                SizedBox(height: 32.h),
 
                 const DataTitle(korText: '연도', engText: 'Tenderness'),
                 PartEval(
@@ -78,7 +78,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   onChanged: (value) => insertionHeatedSensoryViewModel
                       .onChangedTenderness(value),
                 ),
-                SizedBox(height: 36.h),
+                SizedBox(height: 32.h),
 
                 const DataTitle(korText: '표면육즙', engText: 'Umami'),
                 PartEval(
@@ -88,7 +88,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   onChanged: (value) =>
                       insertionHeatedSensoryViewModel.onChangedUmami(value),
                 ),
-                SizedBox(height: 36.h),
+                SizedBox(height: 32.h),
 
                 const DataTitle(korText: '기호도', engText: 'Palatability'),
                 PartEval(

@@ -19,6 +19,8 @@ class InsertionLabDataViewModel with ChangeNotifier {
     _initialize();
   }
   bool isLoading = false;
+  String title = '실험 데이터';
+
   late BuildContext _context;
 
   // 컨트롤러
@@ -48,6 +50,12 @@ class InsertionLabDataViewModel with ChangeNotifier {
       ct.text = '${meatModel.probExpt?['cardepsin_activity'] ?? ''}';
       mfi.text = '${meatModel.probExpt?['MFI'] ?? ''}';
       collagen.text = '${meatModel.probExpt?['Collagen'] ?? ''}';
+
+      if (meatModel.seqno == 0) {
+        title = '원육 실험 데이터';
+      } else {
+        title = '처리육 실험 데이터';
+      }
     } else {
       l.text = '${meatModel.heatedProbExpt?['L'] ?? ''}';
       a.text = '${meatModel.heatedProbExpt?['a'] ?? ''}';
@@ -60,6 +68,8 @@ class InsertionLabDataViewModel with ChangeNotifier {
       ct.text = '${meatModel.heatedProbExpt?['cardepsin_activity'] ?? ''}';
       mfi.text = '${meatModel.heatedProbExpt?['MFI'] ?? ''}';
       collagen.text = '${meatModel.heatedProbExpt?['Collagen'] ?? ''}';
+
+      title = '가열육 실험 데이터';
     }
   }
 

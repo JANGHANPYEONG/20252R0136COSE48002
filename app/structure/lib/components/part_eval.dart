@@ -42,24 +42,24 @@ class PartEval extends StatelessWidget {
 
           // 기준 텍스트
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               for (int i = 2; i < 7; i++)
-                SizedBox(
-                  width: 123.w,
-                  child: Text(
-                    selectedText![i],
-                    style: Palette.h5,
-                    textAlign: TextAlign.center,
-                  ),
+                Text(
+                  selectedText![i],
+                  style: Palette.h5,
+                  textAlign: TextAlign.center,
                 ),
             ],
           ),
 
           // 슬라이더
           SfSliderTheme(
-            data: const SfSliderThemeData(
+            data: SfSliderThemeData(
               tooltipBackgroundColor: Palette.meatRegiBtnBg,
+              activeTrackHeight: 12.h,
+              inactiveTrackHeight: 12.h,
+              overlayRadius: 0,
             ),
             child: SfSlider(
               min: 1.0,
