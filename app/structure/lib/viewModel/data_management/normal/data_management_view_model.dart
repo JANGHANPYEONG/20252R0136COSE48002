@@ -44,6 +44,10 @@ class DataManagementHomeViewModel with ChangeNotifier {
   List<bool> sortStatus = [true, false];
   int sortSelectedIdx = 0;
 
+  List<String> statusList = ['전체', '대기중', '승인', '반려'];
+  List<bool> statusStatus = [true, false, false, false];
+  int statusSelectedIdx = 0;
+
   // 날짜 값이 담길 변수
   DateTime? toDay;
   DateTime? threeDaysAgo;
@@ -62,6 +66,13 @@ class DataManagementHomeViewModel with ChangeNotifier {
 
   /// 초기화 함수
   Future<void> _initialize() async {
+    isLoading = true;
+    notifyListeners();
+
+    entireList = [];
+    filteredList = [];
+    selectedList = [];
+
     await _fetchData();
     filterlize();
     isLoading = false;
@@ -107,6 +118,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
     setTime();
     setDay();
     sortUserData();
+    setStatus();
   }
 
   // 직접 설정 필터가 적용된 후, 날짜 선택이 완료 되었는지 판단
@@ -123,9 +135,10 @@ class DataManagementHomeViewModel with ChangeNotifier {
     // 필터 값 기억
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
     sortSelectedIdx = sortStatus.indexWhere((element) => element == true);
-
+    statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
     // 필터 텍스트 할당
-    filterdResult = '${dateList[dateSelectedIdx]}∙${sortList[sortSelectedIdx]}';
+    filterdResult =
+        '${dateList[dateSelectedIdx]}∙${statusList[statusSelectedIdx]}∙${sortList[sortSelectedIdx]}';
 
     // 필터 창 닫기
     isOpnedFilter = false;
@@ -145,7 +158,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
   // 날짜 fomatting
   void formatting() {
     isOpenTable = !isOpenTable;
-
+    indexDay = 0;
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
     }
@@ -177,7 +190,8 @@ class DataManagementHomeViewModel with ChangeNotifier {
     dateStatus[dateSelectedIdx] = true;
     sortStatus = List.filled(sortStatus.length, false);
     sortStatus[sortSelectedIdx] = true;
-
+    statusStatus = List.filled(statusStatus.length, false);
+    statusStatus[statusSelectedIdx] = true;
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {
       firstDayText = '';
@@ -249,6 +263,13 @@ class DataManagementHomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  //상태 필터 클릭
+  void onTapStatus(int index) {
+    statusStatus = List.filled(statusList.length, false);
+    statusStatus[index] = true;
+    notifyListeners();
+  }
+
   // TableCalendar 위젯에 사용될 날짜 변경 함수
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     focused = selectedDay;
@@ -256,10 +277,13 @@ class DataManagementHomeViewModel with ChangeNotifier {
     if (indexDay == 0) {
       temp1 = selectedDay;
       firstDayText = DateFormat('yyyy.MM.dd').format(temp1!);
+      indexDay = 1;
     } else {
       temp2 = selectedDay;
       lastDayText = DateFormat('yyyy.MM.dd').format(temp2!);
+      indexDay = 0;
     }
+
     notifyListeners();
   }
 
@@ -308,13 +332,34 @@ class DataManagementHomeViewModel with ChangeNotifier {
       }).toList();
     } else {
       filteredList = filteredList.where((data) {
+        // DateTime dateTime = DateTime.parse(data['createdAt']!);
+        print(data['createdAt']);
         DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
-        return dateTime.isAfter(DateTime(
-                firstDay!.year, firstDay!.month, firstDay!.day, 0, 0, 0, 0)) &&
+
+        return dateTime.isAfter(DateTime(firstDay!.year, firstDay!.month,
+                firstDay!.day - 1, 0, 0, 0, 0)) &&
             dateTime.isBefore(DateTime(
                 lastDay!.year, lastDay!.month, lastDay!.day + 1, 0, 0, 0, 0));
       }).toList();
     }
+  }
+
+  void setStatus() {
+    print('setStatus 호출');
+    if (statusSelectedIdx == 1) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '대기중');
+      }).toList();
+    } else if (statusSelectedIdx == 2) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '승인');
+      }).toList();
+    } else if (statusSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '반려');
+      }).toList();
+    }
+    selectedList = filteredList;
   }
 
   // qr 관련 기능 시에 호출된다.
