@@ -31,6 +31,7 @@ class PartEval extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 40.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // 기준 이미지
           Image.asset(
@@ -52,6 +53,7 @@ class PartEval extends StatelessWidget {
                 ),
             ],
           ),
+          SizedBox(height: 16.h),
 
           // 슬라이더
           SfSliderTheme(
