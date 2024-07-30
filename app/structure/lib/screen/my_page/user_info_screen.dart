@@ -73,7 +73,13 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                               alignment: Alignment.center,
                               padding: EdgeInsets.symmetric(horizontal: 13.w),
                               decoration: BoxDecoration(
-                                  color: Palette.userLevelCardBg,
+                                  // color: Palette.userLevelCardBg,
+                                  color: userInfoViewModel.userType == 'Normal'
+                                      ? Palette.userNormalCardBg
+                                      : userInfoViewModel.userType ==
+                                              'Researcher'
+                                          ? Palette.userResearcherCardBg
+                                          : Palette.userManagerCardBg,
                                   borderRadius: BorderRadius.all(
                                       Radius.circular(28.5.sp))),
                               child: Text(
@@ -138,7 +144,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 40.w),
               child: InkWell(
-                onTap: () => userInfoViewModel.clickedEdit(context),
+                onTap: () {
+                  userInfoViewModel.clickedEdit(context);
+                },
                 borderRadius: BorderRadius.circular(20.r),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),

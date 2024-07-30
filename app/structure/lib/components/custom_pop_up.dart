@@ -44,8 +44,8 @@ void showFileUploadFailPopup(BuildContext context) {
 }
 
 /// 유저 정보 변경 성공 popup
-void showSuccessChangeUserInfo(BuildContext context) {
-  showPopup(context, successChangeUserInfo, '확인');
+void showSuccessChangeUserInfo(BuildContext context, Function()? onTap) {
+  showPopup(context, successChangeUserInfo, '확인', onTap: onTap);
 }
 
 /// 임시저장 popup

@@ -4,6 +4,7 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
+import 'package:go_router/go_router.dart';
 
 class UserDetailViewModel with ChangeNotifier {
   UserModel userModel;
@@ -89,7 +90,16 @@ class UserDetailViewModel with ChangeNotifier {
       // 데이터 전송
       final response = await RemoteDataSource.updateUser(userModel.toJson());
       if (response == 200) {
-        if (context.mounted) showSuccessChangeUserInfo(context);
+        if (context.mounted) {
+          isLoading = false;
+          notifyListeners();
+
+          showSuccessChangeUserInfo(context, () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            // context.go('/home/my-page');
+          });
+        }
       } else {
         throw ErrorDescription(response);
       }
@@ -97,9 +107,6 @@ class UserDetailViewModel with ChangeNotifier {
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context);
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   void _initialize() {
