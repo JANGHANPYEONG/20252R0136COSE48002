@@ -332,7 +332,6 @@ class DataManagementHomeViewModel with ChangeNotifier {
       }).toList();
     } else {
       filteredList = filteredList.where((data) {
-        // DateTime dateTime = DateTime.parse(data['createdAt']!);
         print(data['createdAt']);
         DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
 

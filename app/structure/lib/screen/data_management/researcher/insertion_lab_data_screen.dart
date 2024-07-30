@@ -131,6 +131,12 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                     controller: insertionLabDataViewModel.mfi,
                     onChangeFunc: (_) => insertionLabDataViewModel.inputCheck(),
                   ),
+                  DataField(
+                      isFinal: 1,
+                      mainText: 'Collagen ',
+                      subText: '콜라겐',
+                      controller:
+                          context.read<InsertionLabDataViewModel>().collagen),
                   SizedBox(height: 32.h),
 
                   DataField(

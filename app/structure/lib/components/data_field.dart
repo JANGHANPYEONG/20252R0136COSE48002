@@ -11,6 +11,7 @@ class DataField extends StatefulWidget {
   final TextEditingController controller;
   final bool? isPercent;
   final void Function(String)? onChangeFunc;
+  final int? isFinal;
 
   const DataField({
     super.key,
@@ -19,6 +20,7 @@ class DataField extends StatefulWidget {
     this.unit,
     required this.controller,
     this.isPercent,
+    this.isFinal,
     this.onChangeFunc,
   });
 
@@ -49,6 +51,8 @@ class _DataFieldState extends State<DataField> {
               builder: (context) {
                 final isFocused = Focus.of(context).hasFocus;
                 return TextFormField(
+                   textInputAction:
+                            isFinal != null ? null : TextInputAction.next,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor:

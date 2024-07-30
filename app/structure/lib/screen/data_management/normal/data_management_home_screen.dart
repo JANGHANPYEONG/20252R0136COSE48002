@@ -49,31 +49,41 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
               children: [
                 Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // 필터 버튼에 대한 기능을 정의한다.
-                        InkWell(
-                          // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
-                          onTap: () =>
-                              dataManagementHomeViewModel.clickedFilter(),
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: [
-                                Text(
-                                  dataManagementHomeViewModel.filterdResult,
-                                  style: Palette.h4,
-                                ),
-                                dataManagementHomeViewModel.isOpnedFilter
-                                    ? const Icon(Icons.arrow_drop_up_outlined)
-                                    : const Icon(Icons.arrow_drop_down),
-                              ],
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 40.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // 필터 버튼에 대한 기능을 정의한다.
+                          SizedBox(
+                            child: Text(
+                              '${dataManagementHomeViewModel.selectedList.length}개의 데이터',
+                              textAlign: TextAlign.left,
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 15),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 30.w),
-                      ],
+                          InkWell(
+                            // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
+                            onTap: () =>
+                                dataManagementHomeViewModel.clickedFilter(),
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    dataManagementHomeViewModel.filterdResult,
+                                    style: Palette.h4,
+                                  ),
+                                  dataManagementHomeViewModel.isOpnedFilter
+                                      ? const Icon(Icons.arrow_drop_up_outlined)
+                                      : const Icon(Icons.arrow_drop_down),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     // 'isOpendFilter'변수를 참조하여 filter를 표출한다.

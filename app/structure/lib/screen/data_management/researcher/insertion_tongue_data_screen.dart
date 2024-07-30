@@ -73,13 +73,13 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
 
                   // 후미
                   DataField(
+                      isFinal: 1,    
                       mainText: 'Richness',
                       subText: '후미',
                       controller: insertionTongueDataViewModel.richness,
                       onChangeFunc: (_) =>
                           insertionTongueDataViewModel.inputCheck()),
                   SizedBox(height: 352.w),
-
                   // 데이터 저장 버튼
                   Container(
                     margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 40.w),
