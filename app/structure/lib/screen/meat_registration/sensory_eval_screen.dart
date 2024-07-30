@@ -34,7 +34,7 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
     _tabController = TabController(length: 5, vsync: this);
   }
 
-  // 신선육 관능평가 label
+  // 원육 관능평가 label
   List<List<String>> text = [
     ['Mabling', '마블링 정도', '없음', '', '보통', '', '많음'],
     ['Color', '육색', '없음', '', '보통', '', '어둡고 진함'],

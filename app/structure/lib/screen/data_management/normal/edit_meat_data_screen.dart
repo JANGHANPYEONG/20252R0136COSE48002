@@ -61,7 +61,7 @@ class EditMeatDataScreen extends StatelessWidget {
 
               SizedBox(height: 18.h),
 
-              // 신선육 관능 평가
+              // 원육 관능 평가
               StepCard(
                 mainText: '원육 관능평가',
                 status: editMeatDataViewModel.isNormal

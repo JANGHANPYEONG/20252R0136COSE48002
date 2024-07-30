@@ -20,17 +20,17 @@ class RegistrationMeatImageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    InsertionMeatImageViewModel registrationMeatImageViewModel =
+    InsertionMeatImageViewModel insertionMeatImageViewModel =
         context.watch<InsertionMeatImageViewModel>();
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        title: '육류 단면 촬영',
+        title: insertionMeatImageViewModel.title,
         backButton: true,
         closeButton: false,
         backButtonOnPressed:
-            registrationMeatImageViewModel.backBtnPressed(context),
+            insertionMeatImageViewModel.backBtnPressed(context),
       ),
       body: Stack(
         children: [
@@ -58,7 +58,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(left: 20.w),
                           child: Text(
-                            registrationMeatImageViewModel.date,
+                            insertionMeatImageViewModel.date,
                             style: Palette.h4,
                           ),
                         ),
@@ -84,7 +84,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(left: 20.w),
                           child: Text(
-                            registrationMeatImageViewModel.userName,
+                            insertionMeatImageViewModel.userName,
                             style: Palette.h4,
                           ),
                         ),
@@ -102,15 +102,14 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                   Text('단면 촬영 사진', style: Palette.h4),
                   SizedBox(height: 20.h),
                   // 촬영 사진
-                  registrationMeatImageViewModel.imgPath != null
+                  insertionMeatImageViewModel.imgPath != null
                       // 등록된 이미지가 있음
                       ? Stack(
                           // 삭제 버튼을 이미지 위에 띄우기 위한 'stack' 위젯 사용
                           children: [
                             ImageCard(
                               imagePath:
-                                  registrationMeatImageViewModel.imgPath ??
-                                      '없음',
+                                  insertionMeatImageViewModel.imgPath ?? '없음',
                             ),
                             // 삭제 버튼
                             Positioned(
@@ -122,9 +121,8 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                                 child: IconButton(
-                                    onPressed: () =>
-                                        registrationMeatImageViewModel
-                                            .deleteImage(context),
+                                    onPressed: () => insertionMeatImageViewModel
+                                        .deleteImage(context),
                                     iconSize: 55.h,
                                     icon: const Icon(
                                       Icons.delete_outline_outlined,
@@ -140,7 +138,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                       : InkWell(
                           borderRadius: BorderRadius.circular(16.r),
                           onTap: () =>
-                              registrationMeatImageViewModel.pickImage(context),
+                              insertionMeatImageViewModel.pickImage(context),
                           child: DottedBorder(
                             radius: Radius.circular(20.sp),
                             borderType: BorderType.RRect,
@@ -166,13 +164,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
               Container(
                 margin: EdgeInsets.only(bottom: 40.h),
                 child: MainButton(
-                  onPressed: registrationMeatImageViewModel.imgPath != null
+                  onPressed: insertionMeatImageViewModel.imgPath != null
                       ? () async {
-                          await registrationMeatImageViewModel
+                          await insertionMeatImageViewModel
                               .saveMeatData(context);
                         }
                       : null,
-                  text: registrationMeatImageViewModel.saveBtnText,
+                  text: insertionMeatImageViewModel.saveBtnText,
                   width: 640.w,
                   height: 96.h,
                   mode: 1,

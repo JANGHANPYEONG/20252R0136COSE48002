@@ -24,7 +24,7 @@ class InsertionMeatImageNotEditableScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(
-        title: '육류 단면 촬영',
+        title: '원육 단면 촬영',
         backButton: true,
         closeButton: false,
       ),

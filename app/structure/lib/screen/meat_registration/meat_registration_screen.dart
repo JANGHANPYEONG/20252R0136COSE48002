@@ -74,9 +74,9 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   ),
                   SizedBox(height: 8.h),
 
-                  // STEP 3 : 신선육 관능평가
+                  // STEP 3 : 원육 관능평가
                   StepCard(
-                    mainText: '신선육 관능평가',
+                    mainText: '원육 관능평가',
                     status: widget.meatModel.sensoryCompleted ? 1 : 2,
                     onTap: () =>
                         meatRegistrationViewModel.clickedFreshmeat(context),
