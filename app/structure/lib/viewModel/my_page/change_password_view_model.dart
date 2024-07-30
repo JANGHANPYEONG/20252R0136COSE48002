@@ -135,7 +135,7 @@ class ChangePasswordViewModel with ChangeNotifier {
 
   /// 비밀번호 변경 성공
   void _success() {
-    showSuccessChangeUserInfo(_context);
+    showSuccessChangeUserInfo(_context, null);
     originPW.clear();
     newPW.clear();
     newCPW.clear();

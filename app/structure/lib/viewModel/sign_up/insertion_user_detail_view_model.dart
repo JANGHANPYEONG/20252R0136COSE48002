@@ -4,8 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_pop_up.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class InsertionUserDetailViewModel with ChangeNotifier {
   UserModel userModel;
@@ -46,6 +49,9 @@ class InsertionUserDetailViewModel with ChangeNotifier {
 
     _saveUserData();
     await _sendData(context);
+
+    //
+    await LocalDataSource.deleteLocalData(userModel.userId!);
 
     isLoading = false;
     notifyListeners();

@@ -64,8 +64,11 @@ class UserInfoViewModel with ChangeNotifier {
   }
 
   /// 상세 정보 변경 클릭
-  void clickedEdit(BuildContext context) {
-    context.go('/home/my-page/user-detail');
+  void clickedEdit(BuildContext context) async {
+    await GoRouter.of(context)
+        .push('/home/my-page/user-detail')
+        .then((_) => _initialize());
+    notifyListeners();
   }
 
   /// 비밀번호 변경 클릭
