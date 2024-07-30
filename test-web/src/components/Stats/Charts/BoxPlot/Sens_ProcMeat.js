@@ -53,6 +53,9 @@ export default function Sens_ProcMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '처리육 관능데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart only when chartData is not empty
@@ -65,25 +68,25 @@ export default function Sens_ProcMeat({
               type: 'boxPlot',
               data: [
                 {
-                  x: 'Color',
+                  x: '색(Color)',
                   y: calculateBoxPlotStatistics(chartData.color.values),
                 },
                 {
-                  x: 'Marbling',
+                  x: '마블링(Marbling)',
                   y: calculateBoxPlotStatistics(chartData.marbling.values),
                 },
                 {
-                  x: 'Overall',
+                  x: '기호도(Overall)',
                   y: calculateBoxPlotStatistics(chartData.overall.values),
                 },
                 {
-                  x: 'SurfaceMoisture',
+                  x: '육즙(SurfaceMoisture)',
                   y: calculateBoxPlotStatistics(
                     chartData.surfaceMoisture.values
                   ),
                 },
                 {
-                  x: 'Texture',
+                  x: '조직감(Texture)',
                   y: calculateBoxPlotStatistics(chartData.texture.values),
                 },
               ],
