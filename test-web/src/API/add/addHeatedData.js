@@ -5,6 +5,8 @@ export default async function addHeatedData(
   data, // 가열육 데이터
   i, // 가열육 seqno
   meatId, // 이력번호
+  userId,
+  isPost
 ) {
   const dataset = {
     ['flavor']: parseFloat(data.flavor),
@@ -20,15 +22,17 @@ export default async function addHeatedData(
   req = {
     ...req,
     ['meatId']: meatId,
+    ['userId']: userId,
     ['seqno']: i,
     ['filmedAt']: '2024-07-07T12:12:12',
     ['imgAdded']: false,
   };
+  if (!isPost) delete req['userId'];
 
-  //meat/add/heatedmeat-eval로 수정 API 전송
+  //meat/add/heatedmeat-eval로 가열육 데이터 생성/수정 API 전송
   try {
     const response = await fetch(`http://${apiIP}/meat/add/heatedmeat-eval`, {
-      method: 'PATCH',
+      method: `${isPost ? 'POST' : 'PATCH'}`,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -41,7 +45,7 @@ export default async function addHeatedData(
     }
     // 서버에서 받은 JSON 응답 데이터를 해석
     const responseData = await response.json();
-    return responseData;
+    return { ...responseData, ok: true };
   } catch (err) {
     console.log('error');
     console.error(err);

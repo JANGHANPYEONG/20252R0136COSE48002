@@ -5,6 +5,8 @@ export default async function addProbexptData(
   data, // 실험실 데이터
   i, // 실험실 seqno
   meatId, // 이력번호
+  userId,
+  isPost
 ) {
   const dataset = {
     ['L']: parseFloat(data.L),
@@ -30,13 +32,17 @@ export default async function addProbexptData(
   req = {
     ...req,
     ['meatId']: meatId,
+    ['userId']: userId,
     ['seqno']: i,
     ['isHeated']: false,
   };
-  // /meat/add/probexpt-data로 실험 수정 데이터 전송
+  if (!isPost) delete req['userId'];
+  console.log(req);
+
+  // /meat/add/probexpt-data로 실험실 데이터 생성/수정 API 전송
   try {
     const response = await fetch(`http://${apiIP}/meat/add/probexpt-data`, {
-      method: 'PATCH',
+      method: `${isPost ? 'POST' : 'PATCH'}`,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -49,7 +55,7 @@ export default async function addProbexptData(
     }
     // 서버에서 받은 JSON 응답 데이터를 해석
     const responseData = await response.json();
-    return responseData;
+    return { ...responseData, ok: true };
   } catch (err) {
     console.log('error');
     console.error(err);
