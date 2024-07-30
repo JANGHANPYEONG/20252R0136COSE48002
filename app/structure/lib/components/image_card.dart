@@ -32,11 +32,15 @@ class ImageCard extends StatelessWidget {
                   if (loadingProgress == null) {
                     return child;
                   } else {
-                    return LoadingScreen(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              (loadingProgress.expectedTotalBytes ?? 1)
-                          : null,
+                    return SizedBox(
+                      width: 24.w,
+                      height: 24.h,
+                      child: const LoadingScreen(
+                          // value: loadingProgress.expectedTotalBytes != null
+                          //     ? loadingProgress.cumulativeBytesLoaded /
+                          //         (loadingProgress.expectedTotalBytes ?? 1)
+                          //     : null,
+                          ),
                     );
                   }
                 },

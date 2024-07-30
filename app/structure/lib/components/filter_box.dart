@@ -14,6 +14,9 @@ import 'package:structure/components/main_button.dart';
 import 'package:structure/config/pallete.dart';
 
 class FilterBox extends StatelessWidget {
+  //필터 종류 0:normal, 1: 관리자 추가정보입력, 2 : 관리자 일반데이터 승인
+  final int type;
+
   // 조회기간
   final List<String> dateList;
   final Function? onTapDate;
@@ -52,6 +55,7 @@ class FilterBox extends StatelessWidget {
 
   const FilterBox({
     super.key,
+    required this.type,
     required this.dateList,
     this.onTapDate,
     required this.dateStatus,
@@ -166,16 +170,35 @@ class FilterBox extends StatelessWidget {
                 onTap: onTapSpecies,
                 status: speciesStatus,
               ),
-              SizedBox(height: 24.h),
-              // 상태
-              Text('상태', style: Palette.fieldTitle),
-              SizedBox(height: 16.h),
-              FilterRow(
-                filterList: statusList!,
-                onTap: onTapstatus,
-                status: statusStatus!,
+              // type == 2 ? SizedBox(height: 24.h) : const Text(''),
+              // type == 2
+              //     ?
+              //     // 상태
+              //     Text('상태', style: Palette.fieldTitle)
+              //     : const Text(''),
+              // SizedBox(height: 16.h),
+              // type == 2
+              //     ? FilterRow(
+              //         filterList: statusList!,
+              //         onTap: onTapstatus,
+              //         status: statusStatus!,
+              //       )
+              //     : const Text(''),
+              // type == 2 ? SizedBox(height: 32.h) : const Text(''),
+              Column(
+                children: [
+                  if (type == 2) SizedBox(height: 24.h),
+                  if (type == 2) Text('상태', style: Palette.fieldTitle),
+                  SizedBox(height: 16.h),
+                  if (type == 2)
+                    FilterRow(
+                      filterList: statusList!,
+                      onTap: onTapstatus,
+                      status: statusStatus!,
+                    ),
+                  if (type == 2) SizedBox(height: 32.h),
+                ],
               ),
-              SizedBox(height: 32.h),
 
               // 조회 버튼
               MainButton(
