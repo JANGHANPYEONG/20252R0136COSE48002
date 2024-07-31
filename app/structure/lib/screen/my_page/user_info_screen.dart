@@ -76,7 +76,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                                   // color: Palette.userLevelCardBg,
                                   color: userInfoViewModel.userType == 'Normal'
                                       ? Palette.userNormalCardBg
-                                      : userInfoViewModel.userType ==
+                                      : userInfoViewModel.userType !=
                                               'Researcher'
                                           ? Palette.userResearcherCardBg
                                           : Palette.userManagerCardBg,
