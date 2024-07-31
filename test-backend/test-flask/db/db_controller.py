@@ -362,6 +362,8 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                     new_sensory_eval,
                     "sensory_evals",
                 )
+            else:
+                db_session.add(new_sensory_eval)
             db_session.commit()
             return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
         # PATCH 요청
@@ -391,6 +393,8 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                     new_sensory_eval,
                     "sensory_evals",
                 )
+            else:
+                db_session.merge(new_sensory_eval)
             db_session.commit()
             return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
             
@@ -424,8 +428,9 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
 
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
+            sensory_data["period"] = existed_sensory_data["period"]
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
-            db_session.merge(new_sensory_data)
+            # db_session.merge(new_sensory_data)
 
         else: # 생성
             if not is_post: # 생성인데 PATCH 메서드
@@ -445,6 +450,8 @@ def create_specific_heatedmeat_seonsory_eval(db_session, firestore_conn, s3_conn
                 new_sensory_data,
                 "heatedmeat_sensory_evals",
             )
+        else:
+            db_session.merge(new_sensory_data)
         db_session.commit()
         return ({"msg": f"Success to {'POST' if is_post else 'PATCH'} Heatedmeat Sensory Data {id}-{seqno}", "code": 200})
     except Exception as e:
@@ -484,7 +491,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             if not is_post: # 생성이지만 PATCH 메서드
                 return ({"msg": "Probexpt Data Does NOT Exists", "code": 400})
             probexpt_data["userId"] = data["userId"]
-            probexpt_data["createdAt"] = convert2string(datetime.now(), 1) # updatedAt -> createdAt으로 수정 예정
+            probexpt_data["createdAt"] = convert2string(datetime.now(), 1)
             probexpt_data["period"] = calculate_period(db_session, id)
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.add(new_probexpt_data)
