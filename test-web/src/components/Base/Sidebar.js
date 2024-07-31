@@ -28,6 +28,7 @@ import DeeplantLong from '../../src_assets/Deeplant_long.webp';
 import LOGO from '../../src_assets/LOGO.png';
 import CreateFilterQueryParams from '../../Utils/createFilterQueryParams';
 import pageListItems from '../../Utils/pageListItems';
+import useLogout from '../../Utils/logout';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -97,6 +98,7 @@ function Sidebar() {
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
   //const userEmail = UserInfo.userId;
 
+  const logout = useLogout();
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -190,7 +192,7 @@ function Sidebar() {
               </Typography>
             )}
           </IconButton>
-          <IconButton onClick={<logout />}>
+          <IconButton onClick = {logout}>
             <div
               style={{
                 backgroundColor: '#E8E8E8',
