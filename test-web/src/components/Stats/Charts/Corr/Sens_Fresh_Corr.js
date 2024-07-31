@@ -35,32 +35,42 @@ export default function Sense_Fresh_Corr({
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
+  const axis_labels = {
+    color: '색',
+    marbling: '마블링',
+    overall: '기호도',
+    surfaceMoisture: '육즙',
+    texture: '조직감',
+  };
+
   // Check if prop is an array, otherwise use an empty array
   const propArray = Array.isArray(prop) ? prop : [];
 
-  const ChartSeries = propArray.map((property, rowIndex) => {
-    const uniqueValues1 = chartData[property]?.unique_values || [];
-    const correlation = new Array(prop.length).fill(0);
+  const ChartSeries = propArray
+    .map((property, rowIndex) => {
+      const uniqueValues1 = chartData[property]?.values || [];
+      const correlation = new Array(prop.length).fill(0);
 
-    for (let colIndex = 0; colIndex < prop.length; colIndex++) {
-      if (colIndex === rowIndex) {
-        correlation[colIndex] = 100; // 대각선 위치는 1로 설정
-      } else {
-        const uniqueValues2 = chartData[prop[colIndex]]?.unique_values || [];
-        const correlationCoefficient = calculateCorrelation(
-          uniqueValues1,
-          uniqueValues2
-        );
+      for (let colIndex = 0; colIndex < prop.length; colIndex++) {
+        if (colIndex === rowIndex) {
+          correlation[colIndex] = 100; // 대각선 위치는 1로 설정
+        } else {
+          const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
+          const correlationCoefficient = calculateCorrelation(
+            uniqueValues1,
+            uniqueValues2
+          );
 
-        correlation[colIndex] = correlationCoefficient;
+          correlation[colIndex] = correlationCoefficient;
+        }
       }
-    }
 
-    return {
-      name: property,
-      data: correlation,
-    };
-  });
+      return {
+        name: axis_labels[property] || property,
+        data: correlation.reverse(),
+      };
+    })
+    .reverse();
 
   // 두 배열의 상관 관계 계수 계산
   function calculateCorrelation(arr1, arr2) {
@@ -93,7 +103,10 @@ export default function Sense_Fresh_Corr({
     return parseFloat(correlation.toFixed(3)); // 소수점 세 번째 자리까지 반올림
   }
 
-  const xCategories = prop;
+  const xCategories = prop
+    .slice()
+    .reverse()
+    .map((p) => axis_labels[p] || p);
   const ChartOption = {
     chart: {
       height: 450,
@@ -121,6 +134,15 @@ export default function Sense_Fresh_Corr({
         right: 20,
       },
     },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: function (value) {
+          const decimalValue = value / 100;
+          return decimalValue.toFixed(3);
+        },
+      },
+    },
     plotOptions: {
       heatmap: {
         colorScale: {
@@ -128,62 +150,68 @@ export default function Sense_Fresh_Corr({
             {
               from: -100,
               to: -99,
-              name: '-100% ~',
+              name: '-1 ~',
               color: '#26578B', // 군청색
             },
             {
               from: -99,
               to: -96,
-              name: '-99% ~',
+              name: '-0.99 ~',
               color: '#456F9B', // 덜 진한 군청색
             },
             {
               from: -96,
               to: -93,
-              name: '-96% ~',
+              name: '-0.96 ~',
               color: '#6487AC', // 중간 군청색
             },
             {
               from: -93,
               to: -80,
-              name: '-93% ~',
+              name: '-0.93 ~',
               color: '#839FBC', // 연한 군청색
             },
             {
               from: -80,
               to: -0.00001,
-              name: '-80% ~ 0%',
+              name: '-0.80 ~ 0',
               color: '#A2B7CD', // 아주 연한 군청색
             },
             {
               from: 0,
               to: 80,
-              name: '0% ~ 80%',
+              name: '0 ~ 0.80',
               color: '#C89191', // 아주 연한 진홍색
             },
             {
               from: 80,
               to: 93,
-              name: '~ 93%',
+              name: '~ 0.93',
               color: '#B66D6D', // 연한 진홍색
             },
             {
               from: 93,
               to: 96,
-              name: '~ 96%',
+              name: '~ 0.96',
               color: '#A44848', // 중간 진홍색
             },
             {
               from: 96,
               to: 99,
-              name: '~ 99%',
+              name: '~ 0.99',
               color: '#922424', // 덜 진한 진홍색
             },
             {
               from: 99,
-              to: 100,
-              name: '~ 100%',
+              to: 99.99999,
+              name: '~ 1',
               color: '#800000', // 진한 진홍색
+            },
+            {
+              from: 99.99999,
+              to: 100,
+              name: '1',
+              color: '#000000', // 검정색(자기자신과의 상관계수)
             },
           ],
         },
