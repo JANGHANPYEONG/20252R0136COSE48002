@@ -30,7 +30,6 @@ class _DataManagementHomeResearcherScreenState
     final DataManagementHomeResearcherViewModel
         dataManagementHomeResearcherViewModel =
         context.watch<DataManagementHomeResearcherViewModel>();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -50,35 +49,51 @@ class _DataManagementHomeResearcherScreenState
                   // 필터 버튼
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () => dataManagementHomeResearcherViewModel
-                          .clickedFilter(context),
-                      borderRadius: BorderRadius.circular(20.r),
-                      child: Container(
-                        padding: EdgeInsets.all(8.w),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // 선택된 필터
-                            Text(
-                                dataManagementHomeResearcherViewModel
-                                    .filterdResult,
-                                style: Palette.h4),
-
-                            // 화살표
-                            dataManagementHomeResearcherViewModel.isOpnedFilter
-                                ? const Icon(Icons.arrow_drop_up_outlined)
-                                : const Icon(Icons.arrow_drop_down),
-                          ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        //데이터 개수 텍스트
+                        SizedBox(
+                          child: Text(
+                            '${dataManagementHomeResearcherViewModel.selectedList.length}개의 데이터',
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 15),
+                          ),
                         ),
-                      ),
+                        //필터 버튼
+                        InkWell(
+                          onTap: () => dataManagementHomeResearcherViewModel
+                              .clickedFilter(context),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // 선택된 필터
+                                Text(
+                                    dataManagementHomeResearcherViewModel
+                                        .filterdResult,
+                                    style: Palette.h4),
+
+                                // 화살표
+                                dataManagementHomeResearcherViewModel
+                                        .isOpnedFilter
+                                    ? const Icon(Icons.arrow_drop_up_outlined)
+                                    : const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
                   // 필터 area
                   dataManagementHomeResearcherViewModel.isOpnedFilter
                       ? FilterBox(
+                          type: 1,
                           dateList:
                               dataManagementHomeResearcherViewModel.dateList,
                           onTapDate: (index) =>
@@ -124,6 +139,13 @@ class _DataManagementHomeResearcherScreenState
                           onPressedFilterSave: () =>
                               dataManagementHomeResearcherViewModel
                                   .onPressedFilterSave(),
+                          statusList:
+                              dataManagementHomeResearcherViewModel.statusList,
+                          onTapstatus: (index) =>
+                              dataManagementHomeResearcherViewModel
+                                  .onTapStatus(index),
+                          statusStatus: dataManagementHomeResearcherViewModel
+                              .statusStatus,
                         )
                       : SizedBox(height: 16.h),
 
@@ -185,21 +207,28 @@ class _DataManagementHomeResearcherScreenState
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 40.w),
                     height: 800.h,
-                    child: ListView.separated(
-                      itemCount: dataManagementHomeResearcherViewModel
-                          .selectedList.length,
-                      itemBuilder: (context, index) => ListCardDataManage(
-                        onTap: () async =>
-                            await dataManagementHomeResearcherViewModel.onTap(
-                                index, context),
-                        idx: index + 1,
-                        meatId: dataManagementHomeResearcherViewModel
-                            .selectedList[index]["id"]!,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      controller: dataManagementHomeResearcherViewModel
+                          .scrollController,
+                      child: ListView.separated(
+                        controller: dataManagementHomeResearcherViewModel
+                            .scrollController,
+                        itemCount: dataManagementHomeResearcherViewModel
+                            .selectedList.length,
+                        itemBuilder: (context, index) => ListCardDataManage(
+                          onTap: () async =>
+                              await dataManagementHomeResearcherViewModel.onTap(
+                                  index, context),
+                          idx: index + 1,
+                          meatId: dataManagementHomeResearcherViewModel
+                              .selectedList[index]['meatId']!,
+                        ),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const CustomDivider(),
                       ),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const CustomDivider(),
                     ),
                   ),
                   SizedBox(height: 50.h),

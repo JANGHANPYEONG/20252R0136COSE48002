@@ -48,7 +48,8 @@ class MeatRegistrationViewModel with ChangeNotifier {
         await _showTempDataDialog(response);
       }
     } catch (e) {
-      debugPrint('에러발생: $e');
+      // TODO : 임시저장 에러 메시지
+      debugPrint('Error: $e');
     }
   }
 
@@ -81,16 +82,16 @@ class MeatRegistrationViewModel with ChangeNotifier {
     if (meatModel.basicCompleted) context.go('/home/registration/image');
   }
 
-  /// STEP 3 : 신선육 관능평가
+  /// STEP 3 : 원육 관능평가
   void clickedFreshmeat(BuildContext context) {
-    if (meatModel.rawImageCompleted) context.go('/home/registration/freshmeat');
+    if (meatModel.imageCompleted) context.go('/home/registration/freshmeat');
   }
 
   /// 모든 데이터 입력이 완료됐는지 확인하는 함수
   bool checkAllCompleted() {
     return meatModel.basicCompleted &&
-        meatModel.rawImageCompleted &&
-        meatModel.rawSensoryCompleted;
+        meatModel.imageCompleted &&
+        meatModel.sensoryCompleted;
   }
 
   /// 관리번호 생성 버튼
@@ -109,7 +110,8 @@ class MeatRegistrationViewModel with ChangeNotifier {
       if (response == null) throw Error();
       if (context.mounted) showTemporarySavePopup(context);
     } catch (e) {
-      debugPrint('에러발생: $e');
+      // TODO : 임시저장 에러 메시지 팝업
+      debugPrint('Error: $e');
     }
   }
 }

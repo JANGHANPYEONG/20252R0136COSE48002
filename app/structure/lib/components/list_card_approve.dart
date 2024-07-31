@@ -31,7 +31,7 @@ class ListCardApprove extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20.r),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(8.w),
         height: 72.h,
         child: Row(
           children: [
@@ -67,6 +67,7 @@ class ListCardApprove extends StatelessWidget {
               size: 30.sp,
               color: Colors.grey,
             ),
+            SizedBox(width: 8.w),
           ],
         ),
       ),
