@@ -3,6 +3,33 @@ import numpy as np
 from sklearn.cluster import KMeans
 from skimage.feature import greycomatrix, greycoprops, local_binary_pattern
 import matplotlib.pyplot as plt
+from PIL import Image
+import io
+
+
+## ---------------- 공통: ndarray to image ---------------- ##
+def ndarray_to_image(s3_conn, response, image_name):
+    # Min-Max scaling을 통해 값을 [0, 255] 범위로 조정
+    min_val = response.min()
+    max_val = response.max()
+    scaled_array = (response - min_val) / (max_val - min_val) * 255
+    image = Image.fromarray(scaled_array.astype(np.uint8))
+
+    # 이미지 데이터를 바이트 배열로 변환
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    
+    # AWS S3에 업로드
+    bucket_name = 'test-deeplant-bucket'  # 버킷 이름
+
+    # 업로드
+    s3_conn.upload_fileobj(buffer, bucket_name, image_name)
+
+    # 업로드된 이미지의 URL 생성
+    image_url = f"https://{bucket_name}.s3.amazonaws.com/{image_name}"
+    
+    return image_url
 
 
 ## ---------------- 단면 도출 ---------------- ##
@@ -136,7 +163,7 @@ def create_texture_info(image):
 
 
 ## ---------------- LBP images, Gabor Filter images ---------------- ##
-def lbp_calculate(image, meat_id, seqno):
+def lbp_calculate(s3_conn, image, meat_id, seqno):
     # 이미지가 컬러 이미지인 경우 그레이스케일로 변환
     if len(image.shape) == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -168,10 +195,18 @@ def lbp_calculate(image, meat_id, seqno):
     lbp2 = local_binary_pattern(image, n_points, radius, method='uniform')
     
     # Save the LBP image
-    plt.imshow(lbp2, cmap='gray')
-    plt.savefig(f'openCV_images/{meat_id}-{seqno}-lbp2.png', bbox_inches='tight', pad_inches=0)
+    image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
+    image_name2 = f'openCV_images/{meat_id}-{seqno}-lbp2-{i+1}.png'
+    
+    lbp_image1 = ndarray_to_image(s3_conn, lbp1, image_name1)
+    lbp_image2 = ndarray_to_image(s3_conn, lbp2, image_name2)
+    
+    result = {
+        "lbp1": lbp_image1,
+        "lbp2": lbp_image2
+    }
 
-    return lbp1, lbp2
+    return result
 
 
 def create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations):
@@ -196,11 +231,11 @@ def compute_texture_features(responses):
         mean = np.mean(response)
         std_dev = np.std(response)
         energy = np.sum(response**2)
-        features.append((mean, std_dev, energy))
+        features.append([mean, std_dev, energy])
     return features
 
 
-def gabor_texture_analysis(img_path):
+def gabor_texture_analysis(s3_conn, img_path, id, seqno):
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
     # Gabor 필터 파라미터
@@ -214,5 +249,17 @@ def gabor_texture_analysis(img_path):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
+    
+    result = {}
+    for i, response in enumerate(responses):
+        image_name = f'openCV_images/{id}-{seqno}-garbor-{i+1}.png'
+        image_path = ndarray_to_image(s3_conn, response, image_name)
+        
+        result[i+1] = {
+            "images": image_path,
+            "mean": features[i][0],
+            "std_dev": features[i][1],
+            "energy": features[i][2]
+        }
 
-    return responses
+    return result
