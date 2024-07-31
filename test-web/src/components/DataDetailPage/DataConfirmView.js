@@ -323,7 +323,7 @@ function DataView({ dataProps }) {
                 handleRawInputChange={handleRawInputChange}
               />
             </Tab>
-            <Tab
+            {/* <Tab
               value="proc"
               eventKey="processedMeat"
               title="처리육"
@@ -340,7 +340,7 @@ function DataView({ dataProps }) {
                     }}
                     inputValue={processedToggleValue}
                     onInputChange={(event, newInputValue) => {
-                      setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
+                      setProcessedToggleValue(newInputValue); 
                     }}
                     options={options.slice(1)}
                     size="small"
@@ -365,8 +365,8 @@ function DataView({ dataProps }) {
                   <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
                 </div>
               )}
-            </Tab>
-            <Tab
+            </Tab> */}
+            {/* <Tab
               value="heat"
               eventKey="heatedMeat"
               title="가열육"
@@ -427,7 +427,7 @@ function DataView({ dataProps }) {
                 labToggleValue={labToggleValue}
                 handleInputChange={handleInputChange}
               />
-            </Tab>
+            </Tab> */}
             <Tab
               value="api"
               eventKey="api"

@@ -253,7 +253,7 @@ function DataList({
                               pathname: `/dataPA/${content.meatId}`,
                               search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                             }
-                          : pageProp === 'list' &&
+                          : pageProp === ('list'||'reject') &&
                               (content.statusType === '대기중' ||
                                 content.statusType === '반려')
                             ? {

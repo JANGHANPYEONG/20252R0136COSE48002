@@ -6,6 +6,9 @@ const axios = require('axios');
 const app = express();
 const port = 5001;
 
+const server = '43.201.29.249'; // = 'localost'
+
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -17,7 +20,7 @@ app.get('/ping', (req, res) => {
 // Route to proxy API requests to Flask backend
 app.get('/api/*', (req, res) => {
   const apiEndpoint = req.url.replace(/^\/api/, ''); // Remove '/api' prefix
-  const apiUrl = `http://localhost:5000${apiEndpoint}`; // Adjust as per your Flask backend URL
+  const apiUrl = `http://${server}:5000${apiEndpoint}`; // Adjust as per your Flask backend URL
 
   axios
     .get(apiUrl)
@@ -42,5 +45,5 @@ app.get('/*', (req, res) => {
 
 // Start the server
 http.createServer(app).listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
+  console.log(`App listening at http://${server}:${port}`);
 });

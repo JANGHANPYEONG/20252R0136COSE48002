@@ -206,7 +206,13 @@ function UserRegister({ handleClose }) {
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="formGridAddress1">
-            <Form.Control type="address" placeholder="회사주소" />
+            <Form.Control
+              type="text"
+              placeholder="회사주소"
+              onChange={(event) => {
+                sethomeAddr(event.target.value);
+              }}
+            />
           </Form.Group>
 
           <div className="text-end">
