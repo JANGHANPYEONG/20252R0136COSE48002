@@ -26,6 +26,7 @@ export default function Sens_Heated_Map({
         const data = await response.json();
         setProp(Object.keys(data));
         setChartData(data);
+        console.log(data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -42,25 +43,24 @@ export default function Sens_Heated_Map({
     umami: '감칠맛',
   };
 
-  let ChartSeries = [];
-  if (prop.length > 0) {
-    ChartSeries = prop
-      .map((property) => {
-        const uniqueValues = chartData[property].values;
-        const frequencies = new Array(9).fill(0);
+  let ChartSeries = prop
+    .map((property) => {
+      const uniqueValues = chartData[property].values;
+      const frequencies = new Array(9).fill(0);
 
-        uniqueValues.forEach((value) => {
-          const index = Math.floor(value);
+      uniqueValues.forEach((value) => {
+        const index = Math.floor(value);
+        if (index >= 1 && index <= 9) {
           frequencies[index - 1] += 1;
-        });
+        }
+      });
 
-        return {
-          name: y_axis[property] || property,
-          data: frequencies,
-        };
-      })
-      .reverse();
-  }
+      return {
+        name: y_axis[property] || property,
+        data: frequencies,
+      };
+    })
+    .reverse();
 
   const ChartOption = {
     chart: {
@@ -98,10 +98,8 @@ export default function Sens_Heated_Map({
       x: {
         show: true,
         formatter: function (value, { seriesIndex }) {
-          const total = ChartSeries[seriesIndex]?.data.reduce(
-            (a, b) => a + b,
-            0
-          );
+          const total =
+            ChartSeries[seriesIndex]?.data?.reduce((a, b) => a + b, 0) || 0;
           return `${value} ~ ${value + 1}점 [전체 ${total}개]`;
         },
       },
