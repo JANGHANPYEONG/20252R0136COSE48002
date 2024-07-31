@@ -1,5 +1,6 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
 import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
 
 export default function Sens_Fresh_Map({
@@ -47,11 +48,17 @@ export default function Sens_Fresh_Map({
     ChartSeries = prop
       .map((property) => {
         const uniqueValues = chartData[property].values;
-        const frequencies = new Array(9).fill(0);
+        const frequencies = new Array(11).fill(0);
 
         uniqueValues.forEach((value) => {
-          const index = Math.floor(value);
-          frequencies[index - 1] += 1;
+          if (value > 10) {
+            frequencies[10] += 1;
+          } else if (value < 1) {
+            frequencies[0] += 1;
+          } else {
+            const index = Math.floor(value);
+            frequencies[index] += 1;
+          }
         });
 
         return {
@@ -72,9 +79,9 @@ export default function Sens_Fresh_Map({
     },
     xaxis: {
       type: 'numeric',
-      tickAmount: 9,
-      min: 1,
-      max: 10,
+      tickAmount: 11,
+      min: 0,
+      max: 11,
     },
     title: {
       text: '원육 관능데이터 범위별 분포(빈도수)',
