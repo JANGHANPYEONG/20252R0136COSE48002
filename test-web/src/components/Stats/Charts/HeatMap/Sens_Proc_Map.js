@@ -99,10 +99,8 @@ export default function Sens_Proc_Map({
       x: {
         show: true,
         formatter: function (value, { seriesIndex }) {
-          const total = ChartSeries[seriesIndex]?.data.reduce(
-            (a, b) => a + b,
-            0
-          );
+          const total =
+            ChartSeries[seriesIndex]?.data?.reduce((a, b) => a + b, 0) || 0;
           return `${value} ~ ${value + 1}점 [전체 ${total}개]`;
         },
       },
