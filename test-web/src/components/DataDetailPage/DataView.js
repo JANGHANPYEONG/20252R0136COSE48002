@@ -135,6 +135,7 @@ function DataView({ dataProps }) {
     ];
 
     // 1. 가열육 관능검사 데이터 생성/수정 API POST/PATCH
+    let dict = {};
     for (let i = 0; i < len; i++) {
       const isMethodPost = await isPost(
         [
@@ -154,8 +155,7 @@ function DataView({ dataProps }) {
         isHeatedPosted[i]
       );
       if (isMethodPost === undefined) continue;
-      else if (isMethodPost)
-        setIsHeatedPosted({ ...isHeatedPosted, [i]: isMethodPost });
+      else if (isMethodPost) dict = { ...dict, [i]: isMethodPost };
 
       addHeatedData(heatInput[i], i, meatId, currentUserId, isMethodPost)
         .then((response) => {
@@ -172,7 +172,10 @@ function DataView({ dataProps }) {
           );
         });
     }
+    setIsHeatedPosted({ ...isHeatedPosted, ...dict });
+
     // 2. 실험실 데이터 생성/수정 API POST/PATCH
+    dict = {};
     for (let i = 0; i < len; i++) {
       const isMethodPost = await isPost(
         [
@@ -212,8 +215,7 @@ function DataView({ dataProps }) {
         isLabPosted[i]
       );
       if (isMethodPost === undefined) continue;
-      else if (isMethodPost)
-        setIsLabPosted({ ...isLabPosted, [i]: isMethodPost });
+      else if (isMethodPost) dict = { ...dict, [i]: isMethodPost };
       addProbexptData(labInput[i], i, meatId, currentUserId, isMethodPost)
         .then((response) => {
           if (response.ok)
@@ -229,8 +231,10 @@ function DataView({ dataProps }) {
           );
         });
     }
+    setIsLabPosted({ ...isLabPosted, ...dict });
 
     // 3. 처리육 관능검사 데이터 생성/수정 API POST/PATCH
+    dict = {};
     const pro_len = len === 1 ? len : len - 1;
     for (let i = 0; i < pro_len; i++) {
       const isMethodPost = await isPost(
@@ -248,11 +252,10 @@ function DataView({ dataProps }) {
           processedInput[i]?.surfaceMoisture,
           processedInput[i]?.overall,
         ],
-        isProcessedPosted[i]
+        isProcessedPosted[i + 1]
       );
       if (isMethodPost === undefined) continue;
-      else if (isMethodPost)
-        setIsProcessedPosted({ ...isProcessedPosted, [i]: isMethodPost });
+      else if (isMethodPost) dict = { ...dict, [i + 1]: isMethodPost };
       addSensoryProcessedData(
         processedInput[i],
         i,
@@ -274,6 +277,7 @@ function DataView({ dataProps }) {
           );
         });
     }
+    setIsProcessedPosted({ ...isProcessedPosted, ...dict });
   };
 
   // 처리육 이미지 먼저 업로드 경고 창 필요 여부

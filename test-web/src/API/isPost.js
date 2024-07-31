@@ -4,12 +4,15 @@ export default async function isPost(
   isPosted = false // 같은 세션에서 POST로 등록된 데이터인지 여부 -> 액셀 import 시에는 기본값 false
 ) {
   const newInput = input.map((value) => {
-    if (value === '') return null;
-    else if (value !== null) return Number(value);
+    if (value === '') return undefined;
+    else if (value === null) return null;
+    else if (value !== undefined) return Number(value);
     else return value;
   });
-  const isDataExists = !data.every((value) => value === null);
-  const isInputExists = !newInput.every((value) => value === null);
+  const isDataExists = !data.every((value) => value === undefined);
+  const isInputExists = !newInput.every(
+    (value) => value === undefined || value === null
+  );
 
   let isSame;
   if (!isDataExists) {
