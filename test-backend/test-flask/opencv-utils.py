@@ -71,17 +71,20 @@ def extract_protein_or_fat_palette_from_image(image_path, colors):
     
     # 주어진 색상 리스트를 기준으로 색상 추출
     palette = {}
-    for color in colors:
+    for i, color in enumerate(colors):
         color = np.array(color)
         # 이미지에서 색상 차이를 최소화하는 색상 찾기
         closest_color = find_closest_color(color, image.reshape(-1, 3))
-        palette[color] = closest_color.tolist()
+        palette[i] = closest_color.tolist()
         
     return palette
 
 
 ## ---------------- 전체 컬러팔레트 ---------------- ##
-def create_total_color_palette(image, num_colors=10):
+def create_total_color_palette(img_path, num_colors=10):
+    image = cv2.imread(img_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
     # 이미지를 리쉐이프하여 색상 값을 2차원 배열로 변환
     pixels = image.reshape((-1, 3))
 
@@ -115,24 +118,20 @@ def create_total_color_palette(image, num_colors=10):
         if len(filtered_palette) >= num_colors:
             break
 
-    # 필터링된 팔레트와 비율을 벡터 값으로 출력
-    for i, (color, proportion) in enumerate(zip(filtered_palette, filtered_proportions)):
-        print(f'Color #{i+1}: {color}, Proportion: {proportion*100:.2f}%')
-
     #색상 팔레트와 비율을 벡터 값으로 출력
-    palette_list = {color: color.tolist() for color in filtered_palette}
-    proportion_list = {proportion: float(proportion) for proportion in filtered_proportions}
+    palette_list = {i+1: [{"total_palette": color.tolist()}, {"proportion": filtered_proportions[i]}] 
+                    for i, color in enumerate(filtered_palette)}
     
     total_palette = {
-        "palette": palette_list,
-        "proportion": proportion_list
+        "palette": palette_list
     }
 
     return total_palette
 
 
 ## ---------------- texture 정보 ---------------- ##
-def create_texture_info(image):
+def create_texture_info(img_path):
+    image = cv2.imread(img_path)
     # 이미지 로드
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -163,7 +162,8 @@ def create_texture_info(image):
 
 
 ## ---------------- LBP images, Gabor Filter images ---------------- ##
-def lbp_calculate(s3_conn, image, meat_id, seqno):
+def lbp_calculate(s3_conn, img_path, meat_id, seqno):
+    image = cv2.imread(img_path)
     # 이미지가 컬러 이미지인 경우 그레이스케일로 변환
     if len(image.shape) == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
