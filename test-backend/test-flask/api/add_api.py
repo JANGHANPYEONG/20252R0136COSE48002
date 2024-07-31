@@ -54,7 +54,7 @@ def add_specific_meat_data():
                 return jsonify({"msg": f"Already Confirmed Meat Data"}), 400
 
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}

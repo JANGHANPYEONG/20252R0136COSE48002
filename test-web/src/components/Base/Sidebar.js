@@ -132,12 +132,6 @@ function Sidebar() {
   };
   const logout = async () => {
     try {
-      // const response = await fetch(
-      //   `http://${apiIP}/user/logout?id=${userEmail}`
-      // );
-      // const auth = getAuth();
-      // await signOut(auth);
-      // console.log(response);
       localStorage.setItem('isLoggedIn', 'false');
       navigate('/');
       window.location.reload();
@@ -281,12 +275,20 @@ function Sidebar() {
                 onClick={() => handleListItemClick(item)}
                 selected={location.pathname === item.path}
                 sx={{
+                  margin: '0 auto 16px auto',
+                  width: open ? 245 : 64,
+                  height: 64,
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
                   ...(location.pathname === item.path && {
                     '& .MuiSvgIcon-root, .MuiTypography-root': {
                       color: '#FFFFFF',
                     },
                     '&.Mui-selected': {
                       backgroundColor: '#7BD758',
+                      borderRadius: '16px',
+                      boxShadow:3,
                     },
                   }),
                 }}

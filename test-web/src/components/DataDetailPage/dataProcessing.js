@@ -16,7 +16,7 @@ function convertToApiData(
   statusType,
   traceNum,
   userId,
-  userNamem,
+  userName,
   userType
 ) {
   // JSON 객체
@@ -26,7 +26,7 @@ function convertToApiData(
     company: company,
     createdAt: createdAt,
     farmAddr: farmAddr,
-    farmerNm: farmerName,
+    farmerName: farmerName,
     gradeNm: gradeNum,
     imagePath: imagePath,
     meatId: meatId,
@@ -37,9 +37,10 @@ function convertToApiData(
     statusType: statusType,
     traceNum: traceNum,
     userId: userId,
-    userNamem: userNamem,
+    userName: userName,
     userType: userType,
   };
+  console.log('apidata2 : ', apiData);
   return apiData;
 }
 
@@ -63,14 +64,21 @@ export default function dataProcessing(items) {
     items.statusType,
     items.traceNum,
     items.userId,
-    items.userNamem,
+    items.userName,
     items.userType
   );
+  // Check if deepAgingInfo exists and is an array
+  const deepAgingInfo = Array.isArray(items.deepAgingInfo)
+    ? items.deepAgingInfo
+    : [];
 
   // 3-2. 처리육이 있는 경우 가열육, 실험실 추가 데이터 필요 -> 배열로 관리 , 기본 값은 원육으로
   let processedData = [];
-  let heatedData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_sensory_eval || {} : {}];
-  let labData = [items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].heatedmeat_probexpt_data || {} : {}];
+  let heatedData = [
+    deepAgingInfo[0] ? deepAgingInfo[0].heatedmeat_sensory_eval || {} : {},
+
+  ];
+  let labData = [deepAgingInfo[0] ? deepAgingInfo[0].probexpt_data || {} : {}];
   let processedMinute = [];
 
   // 데이터 처리 횟수 parsing ex) 1회, 2회 ,...
@@ -79,28 +87,19 @@ export default function dataProcessing(items) {
   let processedDataImgPath = [];
 
   // n회차 처리육에 대한 회차별 정보
-  for (let i = 1; i < items.deepAgingInfo.length; i++) {
-    if (items.deepAgingInfo[i] && items.deepAgingInfo[i][i]) {
+  for (let i = 1; i < deepAgingInfo.length; i++) {
+    if (deepAgingInfo[i]) {
       processedDataSeq = [...processedDataSeq, `${i}회`];
-      processedData = [
-        ...processedData,
-        items.deepAgingInfo[i][i].sensory_eval || {},
-      ];
+      processedData = [...processedData, deepAgingInfo[i].sensory_eval || {}];
       heatedData = [
         ...heatedData,
-        items.deepAgingInfo[i][i].heatedmeat_sensory_eval || {},
+        deepAgingInfo[i].heatedmeat_sensory_eval || {},
       ];
-      labData = [
-        ...labData,
-        items.deepAgingInfo[i][i].heatedmeat_probexpt_data || {},
-      ];
-      processedMinute = [
-        ...processedMinute,
-        items.deepAgingInfo[i].minute || 0,
-      ];
+      labData = [...labData, deepAgingInfo[i].probexpt_data || {}];
+      processedMinute = [...processedMinute, deepAgingInfo[i].minute || 0];
       processedDataImgPath = [
         ...processedDataImgPath,
-        items.deepAgingInfo[i][i].imagePath || 'null',
+        deepAgingInfo[i]?.sensory_eval?.imagePath || 'null',
       ];
     }
   }
@@ -111,8 +110,11 @@ export default function dataProcessing(items) {
     userId: items.userId,
     createdAt: items.createdAt ? items.createdAt.replace('T', ' ') : '', // 수정 부분: 기본 값 설정
     qrImagePath: items.imagePath,
-    raw_data: items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].sensory_eval || {} : {},
-    raw_img_path: items.deepAgingInfo[0] && items.deepAgingInfo[0][0] ? items.deepAgingInfo[0][0].sensory_eval?.imagePath || {} : {},
+    raw_data: deepAgingInfo[0] ? deepAgingInfo[0].sensory_eval || {} : {},
+    raw_img_path: deepAgingInfo[0]
+      ? deepAgingInfo[0].sensory_eval?.imagePath || {}
+
+      : {},
     processed_data: processedData,
     heated_data: heatedData,
     lab_data: labData,
@@ -121,5 +123,6 @@ export default function dataProcessing(items) {
     processed_minute: processedMinute,
     processed_img_path: processedDataImgPath,
   };
+
   return data;
 }

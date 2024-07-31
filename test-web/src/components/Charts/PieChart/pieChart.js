@@ -9,7 +9,7 @@ import { fNumber } from './formatNumber';
 import useChart from './usePieChart';
 import { useEffect, useState } from 'react';
 
-import { usePieChartFetch } from '../../../API/listCharts/getPieChartSWR';
+import { useStatisticPieChart } from '../../../API/statistic/statsticPieChartSWR';
 
 const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   const theme = useTheme();
@@ -54,7 +54,7 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   });
 
   // pie chart 데이터 API fetch
-  const { data, isLoading, isError } = usePieChartFetch(startDate, endDate);
+  const { data, isLoading, isError } = useStatisticPieChart(startDate, endDate);
   console.log('pie chart fetch 결과:', data);
 
   // fetch한 JSON 데이터에서 필요한 값 parsing 및 chartSeries에 저장

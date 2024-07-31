@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 // third-party
 import ReactApexChart from 'react-apexcharts';
-import { useStackedBarFetch } from '../../API/listCharts/getStackedBarSWR';
+import { useStatisticStackedBar } from '../../API/statistic/statsticStackedBarSWR';
 
 const StackedBarChart = ({ startDate, endDate }) => {
   const theme = useTheme();
@@ -36,7 +36,7 @@ const StackedBarChart = ({ startDate, endDate }) => {
   const porkCategories = ['삼겹살', '뒷다리'];
 
   // 누적 바 데이터 API fetch
-  const { data, isLoading, isError } = useStackedBarFetch(startDate, endDate);
+  const { data, isLoading, isError } = useStatisticStackedBar(startDate, endDate);
   console.log('stacked bar chart fetch 결과:', data);
 
   // fetch한 JSON 데이터에서 필요한 값 parsing 및 전처리하여 series에 저장

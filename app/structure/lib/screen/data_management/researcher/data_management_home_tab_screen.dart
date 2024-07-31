@@ -5,9 +5,13 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/screen/data_management/researcher/approve_data_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_management_home_researcher_screen.dart';
+import 'package:structure/viewModel/data_management/researcher/approve_data_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 
 class DataManagementHomeTabScreen extends StatefulWidget {
   const DataManagementHomeTabScreen({super.key});
@@ -36,6 +40,9 @@ class _DataManagementHomeTabScreenState
 
   @override
   Widget build(BuildContext context) {
+    DataManagementHomeTabViewModel dataManagementHomeTabViewModel =
+        context.watch<DataManagementHomeTabViewModel>();
+
     return Scaffold(
       appBar: CustomAppBar(
         title: '데이터 관리',
@@ -48,9 +55,21 @@ class _DataManagementHomeTabScreenState
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          DataManagementHomeResearcherScreen(),
-          ApproveDataScreen(),
+        children: [
+          ChangeNotifierProvider(
+            create: (context) => DataManagementHomeResearcherViewModel(
+              dataManagementHomeTabViewModel.meatModel,
+              dataManagementHomeTabViewModel.userModel,
+            ),
+            child: const DataManagementHomeResearcherScreen(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => ApproveDataViewModel(
+              dataManagementHomeTabViewModel.meatModel,
+              dataManagementHomeTabViewModel.userModel,
+            ),
+            child: const ApproveDataScreen(),
+          ),
         ],
       ),
     );

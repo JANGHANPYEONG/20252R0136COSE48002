@@ -3,7 +3,7 @@ import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DataList from './DataList';
 import Pagination from './Pagination';
 import Spinner from 'react-bootstrap/Spinner';
-import { usePredictedMeatListFetch } from '../../API/getPredictedMeatListSWR';
+import {usePredictedMeatList} from '../../API/get/getPredictedMeatListSWR';
 
 // 데이터 예측 페이지 목록 컴포넌트
 const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
@@ -44,7 +44,7 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
   };
 
   // API fetch
-  const { data, isLoading, isError } = usePredictedMeatListFetch(
+  const { data, isLoading, isError } = usePredictedMeatList(
     currentPage - 1,
     count,
     startDate,
