@@ -66,10 +66,8 @@ class UserDetailViewModel with ChangeNotifier {
   ///checkbox 클릭
   void clicked1stCheckBox(bool value) {
     isActivateButton = true;
-    print('체크박스 클릭됨');
     isChecked = value;
     notifyListeners();
-    print('value : $value');
   }
 
   Future<void> clickedSaveButton(BuildContext context) async {
@@ -91,17 +89,23 @@ class UserDetailViewModel with ChangeNotifier {
       // 데이터 전송
       final response = await RemoteDataSource.updateUser(userModel.toJson());
       if (response == 200) {
-        if (context.mounted) showSuccessChangeUserInfo(context);
+        if (context.mounted) {
+          isLoading = false;
+          notifyListeners();
+
+          showSuccessChangeUserInfo(context, () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            // context.go('/home/my-page');
+          });
+        }
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
-      debugPrint('$e');
+      debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context);
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   void _initialize() {

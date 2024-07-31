@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { apiIP } from '../../../../config';
+import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
 
 export default function Taste_Proc_Corr({
   startDate,
@@ -14,8 +14,11 @@ export default function Taste_Proc_Corr({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}&seqno=1`
+        const response = await statisticProbexptProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
         );
 
         if (!response.ok) {
@@ -32,34 +35,43 @@ export default function Taste_Proc_Corr({
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
+  const axis_labels = {
+    bitterness: '진한맛',
+    richness: '후미',
+    sourness: '신맛',
+    umami: '감칠맛',
+  };
+
   // Check if prop is an array, otherwise use an empty array
   const propArray = Array.isArray(prop) ? prop : [];
 
-  const ChartSeries = propArray.map((property, rowIndex) => {
-    const uniqueValues1 = chartData[property]?.unique_values || [];
-    const correlation = new Array(prop.length).fill(0);
+  const ChartSeries = propArray
+    .map((property, rowIndex) => {
+      const uniqueValues1 = chartData[property]?.values || [];
+      const correlation = new Array(prop.length).fill(0);
 
-    for (let colIndex = 0; colIndex < prop.length; colIndex++) {
-      if (colIndex === rowIndex) {
-        correlation[colIndex] = 1; // 대각선 위치는 1로 설정
-      } else {
-        const uniqueValues2 = chartData[prop[colIndex]]?.unique_values || [];
+      for (let colIndex = 0; colIndex < prop.length; colIndex++) {
+        if (colIndex === rowIndex) {
+          correlation[colIndex] = 100; // 대각선 위치는 1로 설정
+        } else {
+          const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
 
-        // 상관 관계 계수 계산
-        const correlationCoefficient = calculateCorrelation(
-          uniqueValues1,
-          uniqueValues2
-        );
+          // 상관 관계 계수 계산
+          const correlationCoefficient = calculateCorrelation(
+            uniqueValues1,
+            uniqueValues2
+          );
 
-        correlation[colIndex] = correlationCoefficient;
+          correlation[colIndex] = correlationCoefficient;
+        }
       }
-    }
 
-    return {
-      name: property,
-      data: correlation,
-    };
-  });
+      return {
+        name: axis_labels[property] || property,
+        data: correlation.reverse(),
+      };
+    })
+    .reverse();
 
   // 두 배열의 상관 관계 계수 계산
   function calculateCorrelation(arr1, arr2) {
@@ -88,10 +100,14 @@ export default function Taste_Proc_Corr({
       return 0;
     }
 
-    return numerator / denominator;
+    const correlation = (numerator / denominator) * 100;
+    return parseFloat(correlation.toFixed(3)); // 소수점 세 번째 자리까지 반올림
   }
 
-  const xCategories = prop;
+  const xCategories = prop
+    .slice()
+    .reverse()
+    .map((p) => axis_labels[p] || p);
   const ChartOption = {
     chart: {
       height: 450,
@@ -112,39 +128,84 @@ export default function Taste_Proc_Corr({
         right: 20,
       },
     },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: function (value) {
+          const decimalValue = value / 100;
+          return decimalValue.toFixed(3);
+        },
+      },
+    },
     plotOptions: {
       heatmap: {
         colorScale: {
           ranges: [
             {
+              from: -100,
+              to: -99,
+              name: '-1 ~',
+              color: '#26578B', // 군청색
+            },
+            {
+              from: -99,
+              to: -96,
+              name: '-0.99 ~',
+              color: '#456F9B', // 덜 진한 군청색
+            },
+            {
+              from: -96,
+              to: -93,
+              name: '-0.96 ~',
+              color: '#6487AC', // 중간 군청색
+            },
+            {
+              from: -93,
+              to: -80,
+              name: '-0.93 ~',
+              color: '#839FBC', // 연한 군청색
+            },
+            {
+              from: -80,
+              to: -0.00001,
+              name: '-0.80 ~ 0',
+              color: '#A2B7CD', // 아주 연한 군청색
+            },
+            {
               from: 0,
-              to: 0.8,
-              name: ' 0 - 80 % ',
-              color: '#CCCCCC', // 연한회색
+              to: 80,
+              name: '0 ~ 0.80',
+              color: '#C89191', // 아주 연한 진홍색
             },
             {
-              from: 0.8,
-              to: 0.93,
-              name: ' 80 - 93 % ',
-              color: '#999999', // 덜연한회색
+              from: 80,
+              to: 93,
+              name: '~ 0.93',
+              color: '#B66D6D', // 연한 진홍색
             },
             {
-              from: 0.93,
-              to: 0.96,
-              name: ' 93 - 96 % ',
-              color: '#777777', // 회색
+              from: 93,
+              to: 96,
+              name: '~ 0.96',
+              color: '#A44848', // 중간 진홍색
             },
             {
-              from: 0.96,
-              to: 0.99,
-              name: ' 96 - 99 % ',
-              color: '#444444', // 될진한회색
+              from: 96,
+              to: 99,
+              name: '~ 0.99',
+              color: '#922424', // 덜 진한 진홍색
             },
             {
-              from: 0.99,
-              to: 1.0,
-              name: ' 99 - 100 % ',
-              color: '#111111', // 진한회색
+              from: 99,
+              to: 99.99999,
+              name: '~ 1',
+              color: '#800000', // 진한 진홍색
+            },
+            {
+              from: 99.99999,
+              to: 100,
+              name: '1',
+              color: '#000000', // 검정색(자기자신과의 상관계수)
             },
           ],
         },

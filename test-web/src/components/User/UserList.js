@@ -18,7 +18,9 @@ import { IoMdPersonAdd } from 'react-icons/io';
 import { getAuth } from 'firebase/auth';
 import { Box } from '@mui/material';
 import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { apiIP } from '../../config';
+import { userList } from '../../API/user/userList';
+import { userUpdate } from '../../API/user/userUpdate';
+import { userDelete } from '../../API/user/userDelete';
 
 function UserList() {
   const [registerShow, setRegisterShow] = useState(false);
@@ -55,16 +57,8 @@ function UserList() {
       }
 
       // If reauthentication is successful, proceed with the account deletion
-      const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${userId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
+      const response = await userDelete(userId);
+      console.log('res', response);
       if (response.ok) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
         setAllUsers((prevUsers) =>
@@ -148,7 +142,7 @@ function UserList() {
     const fetchData = async () => {
       try {
         //유저 리스트 fetch
-        const usersListResponse = await fetch(`http://${apiIP}/user`);
+        const usersListResponse = await userList();
         const usersData = await usersListResponse.json();
 
         const transformType = (type) => {
@@ -217,28 +211,23 @@ function UserList() {
     if (!userToUpdate || userToUpdate[field] === value) {
       return; // Return early if the value is not changed or the user is not found
     }
+    const req = {
+      userId: userToUpdate.userId,
+      createdAt: userToUpdate.createdAt,
+      updatedAt: userToUpdate.updatedAt, // Set the current date as updatedAt
+      loginAt: userToUpdate.loginAt,
+      password: userToUpdate.password,
+      name: userToUpdate.name,
+      company: userToUpdate.company,
+      jobTitle: userToUpdate.jobTitle,
+      homeAddr: userToUpdate.homeAddr,
+      alarm: userToUpdate.alarm,
+      type: value, // The new value for the "type" field
+    };
 
     try {
       // Send a POST request to update the user's information
-      const response = await fetch(`http://${apiIP}/user/update`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userToUpdate.userId,
-          createdAt: userToUpdate.createdAt,
-          updatedAt: userToUpdate.updatedAt, // Set the current date as updatedAt
-          loginAt: userToUpdate.loginAt,
-          password: userToUpdate.password,
-          name: userToUpdate.name,
-          company: userToUpdate.company,
-          jobTitle: userToUpdate.jobTitle,
-          homeAddr: userToUpdate.homeAddr,
-          alarm: userToUpdate.alarm,
-          type: value, // The new value for the "type" field
-        }),
-      });
+      const response = await userUpdate(req);
       if (response.ok) {
         // If the update was successful, update the user's information in the state
         setAllUsers((prevUsers) =>

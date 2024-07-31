@@ -4,11 +4,11 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
+  TextField,
 } from '@mui/material';
 
-const RawTable = ({ data }) => {
+const RawTable = ({ data, edited, handleRawInputChange }) => {
   return (
     <TableContainer
       key="rawmeat"
@@ -16,7 +16,6 @@ const RawTable = ({ data }) => {
       sx={{ width: 'fitContent', overflow: 'auto' }}
     >
       <Table sx={{ minWidth: 300 }} size="small" aria-label="a dense table">
-        <TableHead></TableHead>
         <TableBody>
           {rawField.map((f, idx) => {
             return (
@@ -25,7 +24,17 @@ const RawTable = ({ data }) => {
                   {rawDBFieldToSematicWord[f]}
                 </TableCell>
                 <TableCell key={'raw-' + idx + 'col2'}>
-                  {data[f] ? data[f] : ''}
+                  {edited ? (
+                    <TextField
+                      name={f}
+                      value={data[f] || ''}
+                      onChange={(e) => handleRawInputChange(e, f)}
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    data[f] || ''
+                  )}
                 </TableCell>
               </TableRow>
             );

@@ -1,6 +1,14 @@
+//
+//
+// 일반 데이터 승인 탭 viewModel
+//
+//
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/components/get_qr.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -12,10 +20,10 @@ class ApproveDataViewModel with ChangeNotifier {
   ApproveDataViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
-  late BuildContext _context;
+  bool isLoading = true;
 
   // 초기 리스트
-  List<Map<String, String>> numList = [];
+  List<Map<String, String>> entireList = [];
 
   // 필터링된 리스트
   List<Map<String, String>> filteredList = [];
@@ -27,8 +35,9 @@ class ApproveDataViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
+  //스크롤바
+  final scrollController = ScrollController();
 
-  bool isLoading = true;
   bool isOpnedFilter = false; // 필터가 열린지 확인.
   bool isOpenTable = false; // 날짜 선택이 열린지 확인.
   bool isChecked = false; // 필터 값이 온전한지 확인 (직접 입력에서 날짜가 정확히 골라졌는지 여부)
@@ -41,13 +50,17 @@ class ApproveDataViewModel with ChangeNotifier {
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> dataList = ['나의 데이터', '전체'];
-  List<bool> dataStatus = [false, true];
-  int dataSelectedIdx = 1;
+  List<String> dataList = ['전체', '나의 데이터'];
+  List<bool> dataStatus = [true, false];
+  int dataSelectedIdx = 0;
 
-  List<String> speciesList = ['소', '돼지', '전체'];
-  List<bool> speciesStatus = [false, false, true];
-  int speciesSelectedIdx = 2;
+  List<String> speciesList = ['전체', '소', '돼지'];
+  List<bool> speciesStatus = [true, false, false];
+  int speciesSelectedIdx = 0;
+
+  List<String> statusList = ['전체', '대기중', '승인', '반려'];
+  List<bool> statusStatus = [true, false, false, false];
+  int statusSelectedIdx = 0;
 
   // 날짜 값이 담길 변수
   DateTime? toDay;
@@ -67,15 +80,62 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 초기화 함수.
   Future<void> _initialize() async {
+    isLoading = true;
+    notifyListeners();
+
+    entireList = [];
+    filteredList = [];
+    selectedList = [];
+
     await _fetchData();
     filterlize();
-    print(filteredList);
+
     isLoading = false;
     notifyListeners();
   }
 
+  // 데이터 호출
+  Future<void> _fetchData() async {
+    try {
+      final response = await RemoteDataSource.getALLMeatData();
+      if (response is Map<String, dynamic>) {
+        final jsonData = response['meat_dict'];
+
+        if (jsonData == null) {
+          throw ErrorDescription('Empty list');
+        } else {
+          // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
+
+          jsonData.forEach((key, item) {
+            String meatId = item['meatId'];
+            String userId = item['userId'];
+            String userType = item['userType'];
+            String createdAt = item['createdAt'];
+            String specieValue = item['specieValue'];
+            String statusType = item['statusType'];
+
+            Map<String, String> idStatusPair = {
+              'meatId': meatId,
+              'userId': userId,
+              'userType': userType,
+              'createdAt': createdAt,
+              'specieValue': specieValue,
+              'statusType': statusType,
+            };
+            entireList.add(idStatusPair);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
+  }
+
   // 필터가 활성화 되면 호출.
-  void clickedFilter() {
+  void clickedFilter(BuildContext context) {
+    // 키보드 내리기
+    FocusScope.of(context).unfocus();
+
     // 이전의 필터 값을 받아 필터 초기화.
     dateStatus = List.filled(dateStatus.length, false);
     dateStatus[dateSelectedIdx] = true;
@@ -83,6 +143,8 @@ class ApproveDataViewModel with ChangeNotifier {
     dataStatus[dataSelectedIdx] = true;
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[speciesSelectedIdx] = true;
+    statusStatus = List.filled(statusStatus.length, false);
+    statusStatus[statusSelectedIdx] = true;
 
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {
@@ -115,13 +177,15 @@ class ApproveDataViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
+    setStatus();
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
   void sortUserData() {
     filteredList.sort((a, b) {
-      DateTime dateA = DateTime.parse(a["createdAt"]!);
-      DateTime dateB = DateTime.parse(b["createdAt"]!);
+      DateTime dateA = DateTime.parse(a['createdAt']!);
+      DateTime dateB = DateTime.parse(b['createdAt']!);
+      print('selected() : $selectedList');
       return dateB.compareTo(dateA);
     });
     selectedList = filteredList;
@@ -129,25 +193,45 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터)
   void setData() {
-    if (dataSelectedIdx == 0) {
+    if (dataSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
-        return (data["userId"] == userModel.userId);
+        return (data['userId'] == userModel.userId);
       }).toList();
     } else {}
+    print('setdata호출');
   }
 
   // 육종 별 필터링 진행. (소 / 돼지)
   void setSpecies() {
-    if (speciesSelectedIdx == 0) {
+    print('setspecies호출');
+    if (speciesSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '소');
       }).toList();
-    } else if (speciesSelectedIdx == 1) {
+    } else if (speciesSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '돼지');
       }).toList();
-    } else {}
+    }
 
+    selectedList = filteredList;
+  }
+
+  void setStatus() {
+    print('setStatus 호출');
+    if (statusSelectedIdx == 1) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '대기중');
+      }).toList();
+    } else if (statusSelectedIdx == 2) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '승인');
+      }).toList();
+    } else if (statusSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '반려');
+      }).toList();
+    }
     selectedList = filteredList;
   }
 
@@ -157,10 +241,11 @@ class ApproveDataViewModel with ChangeNotifier {
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
     dataSelectedIdx = dataStatus.indexWhere((element) => element == true);
     speciesSelectedIdx = speciesStatus.indexWhere((element) => element == true);
+    statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
 
     // 필터 텍스트 할당
     filterdResult =
-        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}';
+        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}∙${statusList[statusSelectedIdx]}';
 
     // 필터 창 닫기
     isOpnedFilter = false;
@@ -188,12 +273,19 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 날짜 fomatting
   void formatting() {
+    // 초기화
+    isOpenTable = true;
+    indexDay = 0;
+    firstDayText = '';
+    lastDayText = '';
+
     if (firstDay != null) {
       firstDayText = DateFormat('yyyy.MM.dd').format(firstDay!);
     }
     if (lastDay != null) {
       lastDayText = DateFormat('yyyy.MM.dd').format(lastDay!);
     }
+    notifyListeners();
   }
 
   // 직접 설정 과정에서 범위를 재 지정함. (범위의 앞 보다 뒤가 더 빠른 날짜 일 때, 둘을 뒤 바꿈.)
@@ -247,14 +339,23 @@ class ApproveDataViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  //상태 필터 클릭
+  void onTapStatus(int index) {
+    statusStatus = List.filled(statusList.length, false);
+    statusStatus[index] = true;
+    notifyListeners();
+  }
+
   // TableCalendar 관련 함수
   void onTapTable(int index) {
     // 만일 날짜를 처음 지정할 시 기존 값을 초기화
     if (firstDay == null || lastDay == null) {
       focused = DateTime.now();
     }
-    isOpenTable = !isOpenTable;
+
+    isOpenTable = true;
     indexDay = index;
+
     // 날짜 지정 이후 선택할 시 이전 날짜 호출
     if (index == 0 && temp1 != null) {
       focused = temp1!;
@@ -272,6 +373,7 @@ class ApproveDataViewModel with ChangeNotifier {
     if (indexDay == 0) {
       temp1 = selectedDay;
       firstDayText = DateFormat('yyyy.MM.dd').format(temp1!);
+      indexDay = 1;
     } else {
       temp2 = selectedDay;
       lastDayText = DateFormat('yyyy.MM.dd').format(temp2!);
@@ -292,71 +394,30 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 날짜 필터 입력에 따라 필터링
   void setDay() {
-    filteredList = numList;
+    filteredList = entireList;
     if (dateSelectedIdx == 0) {
-      print('3일');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
-      print('1개월');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
-      print('3개월');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
-      print('직접설정');
       filteredList = filteredList.where((data) {
-        DateTime dateTime = DateTime.parse(data["createdAt"]!);
+        DateTime dateTime = DateTime.parse(data['createdAt']!);
         return dateTime.isAfter(DateTime(
                 firstDay!.year, firstDay!.month, firstDay!.day, 0, 0, 0, 0)) &&
             dateTime.isBefore(DateTime(
                 lastDay!.year, lastDay!.month, lastDay!.day + 1, 0, 0, 0, 0));
       }).toList();
-    }
-  }
-
-  // 데이터 호출
-  Future<void> _fetchData() async {
-    try {
-      // Confirm된 육류 데이터 호출
-      Map<String, dynamic>? jsonData =
-          await RemoteDataSource.getConfirmedMeatData();
-
-      if (jsonData == null) {
-        print('데이터 없음');
-        throw Error();
-      } else {
-        // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
-        jsonData.forEach((key, value) {
-          for (var item in value) {
-            String id = item["id"];
-            String createdAt = item["createdAt"];
-            String userId = item["userId"];
-            String dayTime =
-                DateFormat('yyyy.MM.dd').format(DateTime.parse(createdAt));
-            String specieValue = item['specieValue'];
-            Map<String, String> idStatusPair = {
-              "id": id,
-              "createdAt": createdAt,
-              "userId": userId,
-              "dayTime": dayTime,
-              "specieValue": specieValue,
-            };
-
-            numList.add(idStatusPair);
-          }
-        });
-      }
-    } catch (e) {
-      print("에러발생: $e");
     }
   }
 
@@ -395,27 +456,33 @@ class ApproveDataViewModel with ChangeNotifier {
     onChanged(null);
   }
 
-  // 데이터 필드를 클릭 시에 호출된다.
-  Future<void> onTap(int idx, BuildContext context) async {
-    String id = '';
-
-    id = selectedList[idx]['id']!;
+  /// 육류 선택
+  Future<void> onTapApproveCard(int idx, BuildContext context) async {
+    String meatId = '';
+    isLoading = true;
+    notifyListeners();
 
     try {
-      isLoading = true;
-      notifyListeners();
+      meatId = selectedList[idx]['meatId']!;
 
-      dynamic response = await RemoteDataSource.getMeatData(id);
-      if (response == null) throw Error();
-      meatModel.reset();
-      meatModel.fromJson(response);
-      meatModel.seqno = 0;
-      print(meatModel);
-      _context = context;
-      _movePage();
+      dynamic response = await RemoteDataSource.getMeatData(meatId);
+
+      if (response is Map<String, dynamic>) {
+        meatModel.fromJson(response);
+        meatModel.fromJsonDeepAged(0); // 원육 데이터 저장
+        if (context.mounted) {
+          GoRouter.of(context)
+              .push('/home/data-manage-researcher/approve')
+              .then((_) => _initialize());
+        }
+      } else {
+        throw Error();
+      }
     } catch (e) {
-      print("에러발생: $e");
+      debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
     }
+
     isLoading = false;
     notifyListeners();
   }
@@ -424,18 +491,14 @@ class ApproveDataViewModel with ChangeNotifier {
   void _filterStrings(bool isQr) {
     if (isQr = false) {
       selectedList = filteredList.where((map) {
-        String id = map["id"] ?? "";
+        String id = map['id'] ?? '';
         return id.contains(insertedText);
       }).toList();
     } else {
-      selectedList = numList.where((map) {
-        String id = map["id"] ?? "";
+      selectedList = entireList.where((map) {
+        String id = map['id'] ?? '';
         return id.contains(insertedText);
       }).toList();
     }
-  }
-
-  void _movePage() {
-    _context.go('/home/data-manage-researcher/add');
   }
 }

@@ -75,7 +75,6 @@ function DataList({
       setCheckItems([]);
     }
   };
-
   // 테이블 헤더
   function OrderTableHead({ order, orderBy }) {
     return (
@@ -254,13 +253,15 @@ function DataList({
                               pathname: `/dataPA/${content.meatId}`,
                               search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                             }
-                          : content.statusType === '반려'||'대기중'
+                          : pageProp === 'list' &&
+                              (content.statusType === '대기중' ||
+                                content.statusType === '반려')
                             ? {
-                                pathname: `/dataView/${content.meatId}`,
+                                pathname: `/DataConfirm/${content.meatId}`,
                                 search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                               }
                             : {
-                                pathname: `/DataConfirm/${content.meatId}`,
+                                pathname: `/dataView/${content.meatId}`,
                                 search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
                               }
                       }

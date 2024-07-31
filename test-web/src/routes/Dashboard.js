@@ -20,7 +20,6 @@ import { useLocation } from 'react-router-dom';
 import SearchById from '../components/DataListView/SearchById';
 import DataSingle from '../components/DataListView/DataSingle';
 
-
 const navy = '#0F3659';
 
 function Dashboard() {
@@ -87,6 +86,7 @@ function Dashboard() {
     const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
+
     const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
@@ -200,21 +200,25 @@ function Dashboard() {
             setStartDate={setStartDate}
             setEndDate={setEndDate}
           />
-          <SearchById
-            onDataFetch={handleDataFetch}
-            onValueChange={handleValueChange}
-          />
-          <Select
-            labelId="species"
-            id="species"
-            value={specieValue}
-            onChange={handleSpeciesChange}
-            label="종류"
-          >
-            <MenuItem value="전체">전체</MenuItem>
-            <MenuItem value="소">소</MenuItem>
-            <MenuItem value="돼지">돼지</MenuItem>
-          </Select>
+          {value === 'list' && (
+            <>
+              <SearchById
+                onDataFetch={handleDataFetch}
+                onValueChange={handleValueChange}
+              />
+              <Select
+                labelId="species"
+                id="species"
+                value={specieValue}
+                onChange={handleSpeciesChange}
+                label="종류"
+              >
+                <MenuItem value="전체">전체</MenuItem>
+                <MenuItem value="소">소</MenuItem>
+                <MenuItem value="돼지">돼지</MenuItem>
+              </Select>
+            </>
+          )}
         </Box>
         <div
           style={{
@@ -224,19 +228,27 @@ function Dashboard() {
             paddingRight: '85px',
           }}
         >
-          {(value === 'list' || value === 'single') && <ExcelController startDate = {startDate} endDate = {endDate} specieValue = {specieValue} />}
+          {(value === 'list' || value === 'single') && (
+            <ExcelController
+              startDate={startDate}
+              endDate={endDate}
+              specieValue={specieValue}
+            />
+          )}
           {value === 'stat' && <StatsExport />}
         </div>
       </Box>
 
-      {value === 'single' && <DataSingle data={data} />}
+      {value === 'single' && (
+        <DataSingle startDate={startDate} endDate={endDate} data={data} />
+      )}
 
       {value === 'list' && (
         <DataListComp
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
-          specieValue = {specieValue}
+          specieValue={specieValue}
         />
       )}
       {value === 'stat' && (
@@ -251,7 +263,7 @@ function Dashboard() {
           startDate={startDate}
           endDate={endDate}
           pageOffset={pageOffset}
-          specieValue = {specieValue}
+          specieValue={specieValue}
         />
       )}
     </div>

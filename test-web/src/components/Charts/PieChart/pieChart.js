@@ -6,16 +6,19 @@ import { Card, CardHeader, Button, ButtonGroup, Box } from '@mui/material';
 // utils
 import { fNumber } from './formatNumber';
 // components
-import useChart from './usePieChart';
+import useChart from './helper/usePieChart';
 import { useEffect, useState } from 'react';
 
-import { usePieChartFetch } from '../../../API/listCharts/getPieChartSWR';
+import { useStatisticPieChart } from '../../../API/statistic/statsticPieChartSWR';
+import processPieData from './helper/processPieData';
+
+import handleBtnClick from './helper/handleBtnClick';
+
 
 const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   const theme = useTheme();
   // 전체 또는 소 또는 돼지 중 조회할 데이터의 label
   const [label, setLabel] = useState('total_counts');
-
   // pie chart에 나타낼 chart series 값
   const [chartSeries, setChartSeries] = useState([]);
 
@@ -54,66 +57,15 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
   });
 
   // pie chart 데이터 API fetch
-  const { data, isLoading, isError } = usePieChartFetch(startDate, endDate);
-  console.log('pie chart fetch 결과:', data);
-
-  // fetch한 JSON 데이터에서 필요한 값 parsing 및 chartSeries에 저장
-  // 렌더링 시 데이터 받지 못하면 -1, -1
-  const processPieData = (data) => {
-    if (
-      data &&
-      'total_counts' in data &&
-      'raw' in data.total_counts &&
-      'processed' in data.total_counts
-    ) {
-      const raw = data.total_counts.raw;
-      const processed = data.total_counts.processed;
-
-      setChartSeries([
-        !Number.isNaN(raw) ? raw : -1,
-        !Number.isNaN(processed) ? processed : -1,
-      ]);
-    } else {
-      console.log('Invalid data structure:', data);
-      setChartSeries([-1, -1]); // Default to [-1, -1] if data is invalid
-    }
-  };
+  const { data, isLoading, isError } = useStatisticPieChart(startDate, endDate);
 
   // fetch한 데이터 parsing 함수 호출
   useEffect(() => {
     if (data !== null && data !== undefined) {
-      processPieData(data);
+      processPieData(data, setChartSeries);
     }
     setLabel('total_counts');
   }, [data]);
-
-  // 토글 버튼 handle (전체, 소, 돼지)
-  const handleBtnClick = (e) => {
-    const value = e.target.value;
-    let newChartSeries = [-1, -1]; // 기본값으로 [-1, -1]을 설정
-
-    if (data && data !== null && data !== undefined && value in data) {
-      const categoryData = data[value];
-      if (
-        categoryData &&
-        'raw' in categoryData &&
-        'processed' in categoryData
-      ) {
-        const raw = categoryData.raw;
-        const processed = categoryData.processed;
-
-        newChartSeries = [
-          !Number.isNaN(raw) ? raw : -1,
-          !Number.isNaN(processed) ? processed : -1,
-        ];
-      }
-    } else {
-      console.log('Invalid data structure:', value);
-    }
-
-    setLabel(value);
-    setChartSeries(newChartSeries);
-  };
 
   return (
     <Card {...other}>
@@ -127,21 +79,21 @@ const PieChart = ({ subheader, chartColors, startDate, endDate, ...other }) => {
           <Button
             variant={label === 'total_counts' ? 'contained' : 'outlined'}
             value="total_counts"
-            onClick={(e) => handleBtnClick(e)}
+            onClick={(e) => handleBtnClick(e, setLabel, setChartSeries, data)}
           >
             전체
           </Button>
           <Button
             variant={label === 'cattle_counts' ? 'contained' : 'outlined'}
             value="cattle_counts"
-            onClick={(e) => handleBtnClick(e)}
+            onClick={(e) => handleBtnClick(e, setLabel, setChartSeries, data)}
           >
             소
           </Button>
           <Button
             variant={label === 'pig_counts' ? 'contained' : 'outlined'}
             value="pig_counts"
-            onClick={(e) => handleBtnClick(e)}
+            onClick={(e) => handleBtnClick(e, setLabel, setChartSeries, data)}
           >
             돼지
           </Button>

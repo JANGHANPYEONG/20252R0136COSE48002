@@ -18,14 +18,15 @@ import ApiTable from './tablesComps/apiTable';
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
 // import update APIs
-import updateHeatedData from '../../API/update/updateHeatedData';
-import updateProbexptData from '../../API/update/updateProbexptData';
-import updateProcessedData from '../../API/update/updateProcessedData';
+import addHeatedData from '../../API/add/addHeatedData';
+import addProbexptData from '../../API/add/addProbexptData';
+import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
 import RestrictedModal from './restrictedModal';
 // import card
 import QRInfoCard from './cardComps/QRInfoCard';
 import MeatImgsCard from './cardComps/MeatImgsCard';
 import { computePeriod } from './computePeriod';
+import isPost from '../../API/isPost';
 
 const navy = '#0F3659';
 
@@ -36,7 +37,7 @@ function DataView({ dataProps }) {
   //dataProps로 부터 properties destruct
   const {
     meatId, // 이력번호
-    userId, // 로그인한 사용자 meatI    
+    userId, // 로그인한 사용자
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -50,6 +51,10 @@ function DataView({ dataProps }) {
     processed_img_path, // 처리육 이미지 경로
   } = dataProps;
 
+  // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
+  // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
+  // console.log(`1회차 실험육 데이터: ${JSON.stringify(lab_data[1])}`);
+
   const [processedMinute, setProcessedMinute] = useState(processed_minute);
   //탭 정보
   const tabFields = [rawField, deepAgingField, heatedField, labField, apiField];
@@ -62,7 +67,7 @@ function DataView({ dataProps }) {
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('');
+  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
   const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
@@ -82,6 +87,10 @@ function DataView({ dataProps }) {
     { value: labInput, setter: setLabInput },
     { value: apiInput, setter: setApiInput },
   ];
+
+  const [isProcessedPosted, setIsProcessedPosted] = useState({});
+  const [isLabPosted, setIsLabPosted] = useState({});
+  const [isHeatedPosted, setIsHeatedPosted] = useState({});
 
   // input field별 value prop으로 만들기
   useEffect(() => {
@@ -108,10 +117,10 @@ function DataView({ dataProps }) {
   };
 
   const len = processed_data_seq.length;
-  console.log("pds",processed_data_seq)
+
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
-  // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
+  // 수정 완료 버튼 클릭 시 수정된 data API로 전송
   const onClickSubmitBtn = async () => {
     setIsEdited(false);
     // 수정 시간
@@ -121,54 +130,154 @@ function DataView({ dataProps }) {
     // period 계산
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
-    const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+    const currentUserId = JSON.parse(localStorage.getItem('UserInfo'))[
+      'userId'
+    ];
 
-    // 1. 가열육 관능검사 데이터 수정 API POST
+    // 1. 가열육 관능검사 데이터 생성/수정 API POST/PATCH
+    let dict = {};
     for (let i = 0; i < len; i++) {
-      console.log("여기 ㅡmid?",meatId)
-      updateHeatedData(heatInput[i], i, meatId, createdDate, userId, elapsedHour)
+      const isMethodPost = await isPost(
+        [
+          heated_data[i]?.flavor,
+          heated_data[i]?.juiciness,
+          heated_data[i]?.palatability,
+          heated_data[i]?.tenderness,
+          heated_data[i]?.umami,
+        ],
+        [
+          heatInput[i]?.flavor,
+          heatInput[i]?.juiciness,
+          heatInput[i]?.palatability,
+          heatInput[i]?.tenderness,
+          heatInput[i]?.umami,
+        ],
+        isHeatedPosted[i]
+      );
+      if (isMethodPost === undefined) continue;
+      else if (isMethodPost) dict = { ...dict, [i]: isMethodPost };
+
+      addHeatedData(heatInput[i], i, meatId, currentUserId, isMethodPost)
         .then((response) => {
-          console.log('가열육 수정 POST요청 성공:', response);
+          if (response.ok)
+            console.log(
+              `가열육 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 성공`,
+              response.msg
+            );
         })
         .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('가열육 수정 POST 요청 오류:', error);
+          console.error(
+            `가열육 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 오류`,
+            error
+          );
         });
     }
+    setIsHeatedPosted({ ...isHeatedPosted, ...dict });
 
-    // 2. 실험실 데이터 수정 API POST
+    // 2. 실험실 데이터 생성/수정 API POST/PATCH
+    dict = {};
     for (let i = 0; i < len; i++) {
-      updateProbexptData(labInput[i], i, meatId, createdDate, userId, elapsedHour)
+      const isMethodPost = await isPost(
+        [
+          lab_data[i]?.L,
+          lab_data[i]?.a,
+          lab_data[i]?.b,
+          lab_data[i]?.DL,
+          lab_data[i]?.CL,
+          lab_data[i]?.RW,
+          lab_data[i]?.ph,
+          lab_data[i]?.WBSF,
+          lab_data[i]?.cardepsin_activity,
+          lab_data[i]?.MFI,
+          lab_data[i]?.Collagen,
+          lab_data[i]?.sourness,
+          lab_data[i]?.bitterness,
+          lab_data[i]?.umami,
+          lab_data[i]?.richness,
+        ],
+        [
+          labInput[i]?.L,
+          labInput[i]?.a,
+          labInput[i]?.b,
+          labInput[i]?.DL,
+          labInput[i]?.CL,
+          labInput[i]?.RW,
+          labInput[i]?.ph,
+          labInput[i]?.WBSF,
+          labInput[i]?.cardepsin_activity,
+          labInput[i]?.MFI,
+          labInput[i]?.Collagen,
+          labInput[i]?.sourness,
+          labInput[i]?.bitterness,
+          labInput[i]?.umami,
+          labInput[i]?.richness,
+        ],
+        isLabPosted[i]
+      );
+      if (isMethodPost === undefined) continue;
+      else if (isMethodPost) dict = { ...dict, [i]: isMethodPost };
+      addProbexptData(labInput[i], i, meatId, currentUserId, isMethodPost)
         .then((response) => {
-          console.log('실험실 수정 POST요청 성공:', response);
+          if (response.ok)
+            console.log(
+              `실험실 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 성공`,
+              response.msg
+            );
         })
         .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('실험실 수정 POST 요청 오류:', error);
+          console.error(
+            `실험실 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 오류`,
+            error
+          );
         });
     }
+    setIsLabPosted({ ...isLabPosted, ...dict });
 
-    // 3. 처리육 관능검사 데이터 수정 API POST
+    // 3. 처리육 관능검사 데이터 생성/수정 API POST/PATCH
+    dict = {};
     const pro_len = len === 1 ? len : len - 1;
     for (let i = 0; i < pro_len; i++) {
-      updateProcessedData(
+      const isMethodPost = await isPost(
+        [
+          processed_data[i]?.marbling,
+          processed_data[i]?.color,
+          processed_data[i]?.texture,
+          processed_data[i]?.surfaceMoisture,
+          processed_data[i]?.overall,
+        ],
+        [
+          processedInput[i]?.marbling,
+          processedInput[i]?.color,
+          processedInput[i]?.texture,
+          processedInput[i]?.surfaceMoisture,
+          processedInput[i]?.overall,
+        ],
+        isProcessedPosted[i + 1]
+      );
+      if (isMethodPost === undefined) continue;
+      else if (isMethodPost) dict = { ...dict, [i + 1]: isMethodPost };
+      addSensoryProcessedData(
         processedInput[i],
-        processed_data[i],
-        processedMinute[i],
         i,
         meatId,
-        userId,
-        createdDate,
-        elapsedHour
+        currentUserId,
+        isMethodPost
       )
         .then((response) => {
-          console.log('처리육 수정 POST요청 성공:', response);
+          if (response.ok)
+            console.log(
+              `처리육 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 성공`,
+              response.msg
+            );
         })
         .catch((error) => {
-          // 오류 발생 시의 처리
-          console.error('처리육 수정 POST 요청 오류:', error);
+          console.error(
+            `처리육 ${isMethodPost ? '생성 POST' : '수정 PATCH'} 요청 오류`,
+            error
+          );
         });
     }
+    setIsProcessedPosted({ ...isProcessedPosted, ...dict });
   };
 
   // 처리육 이미지 먼저 업로드 경고 창 필요 여부
@@ -193,11 +302,87 @@ function DataView({ dataProps }) {
     // input 변화가 생기면 수정한 값으로 업데이트
     let temp = setInputFields[idx].value[valueIdx];
     if (!isNaN(+value)) {
-      temp = { ...temp, [e.target.name]: value };
-      setInputFields[idx].setter((currentField) => ({
-        ...currentField,
-        [valueIdx]: temp,
-      }));
+      switch (idx) {
+        case 0:
+          if (value < 0) {
+            temp = {
+              ...temp,
+              [e.target.name]: processed_minute[valueIdx][e.target.name] || '',
+            };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          } else {
+            temp = { ...temp, [e.target.name]: value };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          }
+        case 1:
+          if ((value !== '' && value >= 0 && value < 1) || value > 10) {
+            temp = {
+              ...temp,
+              [e.target.name]: processed_data[valueIdx][e.target.name] || '',
+            };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          } else {
+            temp = { ...temp, [e.target.name]: value };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          }
+          break;
+        case 2:
+          if ((value !== '' && value >= 0 && value < 1) || value > 10) {
+            temp = {
+              ...temp,
+              [e.target.name]: heated_data[valueIdx][e.target.name] || '',
+            };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          } else {
+            temp = { ...temp, [e.target.name]: value };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          }
+          break;
+        case 3:
+          if (
+            (e.target.name === 'DL' ||
+              e.target.name === 'CL' ||
+              e.target.name === 'RW') &&
+            value > 100
+          ) {
+            temp = {
+              ...temp,
+              [e.target.name]: lab_data[valueIdx][e.target.name] || '',
+            };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+          } else {
+            temp = { ...temp, [e.target.name]: value };
+            setInputFields[idx].setter((currentField) => ({
+              ...currentField,
+              [valueIdx]: temp,
+            }));
+            break;
+          }
+          break;
+        default:
+          break;
+      }
       console.log('result', temp, valueIdx);
     }
   };
@@ -219,7 +404,7 @@ function DataView({ dataProps }) {
 
   // 이미지 파일 변경 완료 여부
   const [isUploadingDone, setIsUploadingDone] = useState(true);
-  console.log("here",raw_data)
+
   return (
     <div style={{ width: '100%', marginTop: '40px' }}>
       {!isUploadingDone && (
@@ -289,34 +474,42 @@ function DataView({ dataProps }) {
               title="처리육"
               style={{ backgroundColor: 'white' }}
             >
-              <Autocomplete
-                id={'controllable-states-processed'}
-                label="처리상태"
-                value={processed_toggle}
-                onChange={(event, newValue) => {
-                  setProcessedToggle(newValue);
-                }}
-                inputValue={processedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
-                }}
-                options={options.slice(1)}
-                size="small"
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => <TextField {...params} />}
-              />
-              <ProcessedTable
-                edited={edited}
-                modal={modal}
-                setModal={setModal}
-                processed_img_path={processed_img_path}
-                processedMinute={processedMinute}
-                setProcessedMinute={setProcessedMinute}
-                processedInput={processedInput}
-                processed_data={processed_data}
-                processedToggleValue={processedToggleValue}
-                handleInputChange={handleInputChange}
-              />
+              {processed_data.length !== 0 ? (
+                <>
+                  <Autocomplete
+                    id={'controllable-states-processed'}
+                    label="처리상태"
+                    value={processed_toggle}
+                    onChange={(event, newValue) => {
+                      setProcessedToggle(newValue);
+                    }}
+                    inputValue={processedToggleValue}
+                    onInputChange={(event, newInputValue) => {
+                      setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
+                    }}
+                    options={options.slice(1)}
+                    size="small"
+                    sx={{ width: 'fit-content', marginBottom: '10px' }}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  <ProcessedTable
+                    edited={edited}
+                    modal={modal}
+                    setModal={setModal}
+                    processed_img_path={processed_img_path}
+                    processedMinute={processedMinute}
+                    setProcessedMinute={setProcessedMinute}
+                    processedInput={processedInput}
+                    processed_data={processed_data}
+                    processedToggleValue={processedToggleValue}
+                    handleInputChange={handleInputChange}
+                  />
+                </>
+              ) : (
+                <div style={divStyle.errorContainer}>
+                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
+                </div>
+              )}
             </Tab>
             <Tab
               value="heat"
@@ -449,12 +642,13 @@ const labField = [
   'bitterness',
   'umami',
   'richness',
+  'Collagen',
 ];
 const apiField = [
   'birthYmd',
   'butcheryYmd',
   'farmAddr',
-  'farmerNm',
+  'farmerName',
   'gradeNm',
   'primalValue',
   'secondaryValue',
@@ -554,6 +748,18 @@ const divStyle = {
   },
   loadingText: {
     fontSize: '25px',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    height: '65vh',
+    minHeight: '500px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: '16px',
     textAlign: 'center',
   },
 };

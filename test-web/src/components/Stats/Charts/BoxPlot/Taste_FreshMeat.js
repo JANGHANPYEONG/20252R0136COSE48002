@@ -1,7 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import { apiIP } from '../../../../config';
+import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
 
 export default function Taste_FreshMeat({
   startDate,
@@ -13,8 +13,11 @@ export default function Taste_FreshMeat({
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+      const response = await statisticProbexptFresh(
+        startDate,
+        endDate,
+        animalType,
+        grade
       );
 
       if (!response.ok) {
@@ -50,40 +53,35 @@ export default function Taste_FreshMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '원육 맛데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart or CircularProgress based on chartData
   return (
     <div>
-      {chartData &&
-      chartData.bitterness &&
-      chartData.bitterness.unique_values ? (
+      {chartData && chartData.bitterness && chartData.bitterness.values ? (
         <ApexCharts
           series={[
             {
               type: 'boxPlot',
               data: [
                 {
-                  x: 'bitterness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.bitterness.unique_values
-                  ),
+                  x: '진한맛(bitterness)',
+                  y: calculateBoxPlotStatistics(chartData.bitterness.values),
                 },
                 {
-                  x: 'richness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.richness.unique_values
-                  ),
+                  x: '후미(richness)',
+                  y: calculateBoxPlotStatistics(chartData.richness.values),
                 },
                 {
-                  x: 'sourness',
-                  y: calculateBoxPlotStatistics(
-                    chartData.sourness.unique_values
-                  ),
+                  x: '신맛(sourness)',
+                  y: calculateBoxPlotStatistics(chartData.sourness.values),
                 },
                 {
-                  x: 'umami',
-                  y: calculateBoxPlotStatistics(chartData.umami.unique_values),
+                  x: '감칠맛(umami)',
+                  y: calculateBoxPlotStatistics(chartData.umami.values),
                 },
               ],
             },

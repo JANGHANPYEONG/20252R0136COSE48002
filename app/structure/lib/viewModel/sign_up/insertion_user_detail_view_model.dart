@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_pop_up.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -47,6 +48,9 @@ class InsertionUserDetailViewModel with ChangeNotifier {
     _saveUserData();
     await _sendData(context);
 
+    //
+    await LocalDataSource.deleteLocalData(userModel.userId!);
+
     isLoading = false;
     notifyListeners();
   }
@@ -80,13 +84,13 @@ class InsertionUserDetailViewModel with ChangeNotifier {
           await credential.user!.sendEmailVerification();
           emailcheck = true;
         } else {
-          throw Error();
+          throw ErrorDescription('User does not exist');
         }
 
         userModel.password = null; // 계정 생성 완료 후 userModel에서 비밀번호 초기화
         if (context.mounted) context.go('/sign-in/complete-sign-up');
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -100,7 +104,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
           debugPrint('Error: ${e.code}');
       }
     } catch (e) {
-      debugPrint('$e');
+      debugPrint('Error: $e');
       // DB 생성 오류시 오류 메시지 띄우고 반환
       if (context.mounted) showErrorPopup(context);
     }

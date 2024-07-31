@@ -1,7 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import { apiIP } from '../../../../config';
+import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
 
 export default function Sens_ProcMeat({
   startDate,
@@ -13,8 +13,11 @@ export default function Sens_ProcMeat({
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
+      const response = await statisticSensoryProcessed(
+        startDate,
+        endDate,
+        animalType,
+        grade
       );
 
       if (!response.ok) {
@@ -50,44 +53,41 @@ export default function Sens_ProcMeat({
       type: 'boxPlot',
       height: 350,
     },
+    title: {
+      text: '처리육 관능데이터 박스 플롯(Box Plot) 분포',
+    },
   };
 
   // Conditionally render the chart only when chartData is not empty
   return (
     <div>
-      {chartData && chartData.color && chartData.color.unique_values ? (
+      {chartData && chartData.color && chartData.color.values ? (
         <ApexCharts
           series={[
             {
               type: 'boxPlot',
               data: [
                 {
-                  x: 'Color',
-                  y: calculateBoxPlotStatistics(chartData.color.unique_values),
+                  x: '색(Color)',
+                  y: calculateBoxPlotStatistics(chartData.color.values),
                 },
                 {
-                  x: 'Marbling',
+                  x: '마블링(Marbling)',
+                  y: calculateBoxPlotStatistics(chartData.marbling.values),
+                },
+                {
+                  x: '기호도(Overall)',
+                  y: calculateBoxPlotStatistics(chartData.overall.values),
+                },
+                {
+                  x: '육즙(SurfaceMoisture)',
                   y: calculateBoxPlotStatistics(
-                    chartData.marbling.unique_values
+                    chartData.surfaceMoisture.values
                   ),
                 },
                 {
-                  x: 'Overall',
-                  y: calculateBoxPlotStatistics(
-                    chartData.overall.unique_values
-                  ),
-                },
-                {
-                  x: 'SurfaceMoisture',
-                  y: calculateBoxPlotStatistics(
-                    chartData.surfaceMoisture.unique_values
-                  ),
-                },
-                {
-                  x: 'Texture',
-                  y: calculateBoxPlotStatistics(
-                    chartData.texture.unique_values
-                  ),
+                  x: '조직감(Texture)',
+                  y: calculateBoxPlotStatistics(chartData.texture.values),
                 },
               ],
             },
