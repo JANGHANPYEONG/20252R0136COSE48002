@@ -21,7 +21,7 @@ def ndarray_to_image(s3_conn, response, image_name):
     buffer.seek(0)
     
     # AWS S3에 업로드
-    bucket_name = 'test-deeplant-bucket'  # 버킷 이름
+    bucket_name = s3_conn.bucket  # 버킷 이름
 
     # 업로드
     s3_conn.upload_fileobj(buffer, bucket_name, image_name)
