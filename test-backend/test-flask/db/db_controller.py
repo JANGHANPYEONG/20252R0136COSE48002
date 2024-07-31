@@ -1702,12 +1702,16 @@ def get_sensory_of_meat(db_session, start, end, species, grade, is_raw):
                 value_query.filter(Meat.gradeNum == grade)
                 if grade < 5 else value_query
             )
-            values = [value[0] for value in value_query.all()]
+            values = [value[0] for value in value_query.all() if value[0] is not None]
 
-            stats[field] = {
-                "values": sorted(values),
-            }
-
+            if values:
+                stats[field] = {
+                    "values": sorted(values),
+                }
+            else:
+                stats[field] = {
+                    "values": [],
+                }
         return stats
     except Exception as e:
         raise Exception("Something Wrong with DB" + str(e))
@@ -1872,17 +1876,16 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 value_query.filter(Meat.gradeNum == grade)
                 if grade < 5 else value_query
             )
-            values = [value[0] for value in value_query.all()]
+            values = [value[0] for value in value_query.all() if value[0] is not None]
 
-            stats[field] = {
-                "values": sorted(values),
-            }
-            stats[field] = {
-                "avg": average,
-                "max": maximum,
-                "min": minimum,
-                "unique_values": sorted(uniques),
-            }
+            if values:
+                stats[field] = {
+                    "values": sorted(values),
+                }
+            else:
+                stats[field] = {
+                    "values": [],
+                }
 
         return stats
     except Exception as e:
