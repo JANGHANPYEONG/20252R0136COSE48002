@@ -51,8 +51,8 @@ class _DataFieldState extends State<DataField> {
               builder: (context) {
                 final isFocused = Focus.of(context).hasFocus;
                 return TextFormField(
-                   textInputAction:
-                            isFinal != null ? null : TextInputAction.next,
+                  textInputAction:
+                      widget.isFinal != null ? null : TextInputAction.next,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor:
