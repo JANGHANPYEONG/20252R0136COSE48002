@@ -112,6 +112,20 @@ export default function Sense_Fresh_Corr({
       height: 450,
       width: '100%',
       type: 'heatmap',
+      // events: {
+      //   mounted: function(chart) {
+      //     const styleTag = document.createElement('style');
+      //     styleTag.innerHTML = `
+      //       .custom-tooltip {
+      //         background: #fff;
+      //         border: 1px solid #ccc;
+      //         padding: 5px 10px;
+      //         font-size: 12px;
+      //       }
+      //     `;
+      //     document.head.appendChild(styleTag);
+      //   }
+      // }
     },
     grid: {
       padding: {
@@ -134,12 +148,40 @@ export default function Sense_Fresh_Corr({
         right: 20,
       },
     },
+    // tooltip: {
+    //   enabled: true,
+    //   y: {
+    //     formatter: function (value) {
+    //       const decimalValue = value / 100;
+    //       return decimalValue.toFixed(3);
+    //     },
+    //   },
+    // },
+    // tooltip: {
+    //   enabled: true,
+    //   custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+    //     const xLabel = w.globals.labels[dataPointIndex];
+    //     const yLabel = w.config.series[seriesIndex].name;
+    //     const value = series[seriesIndex][dataPointIndex];
+    //     const decimalValue = (value / 100).toFixed(3);
+    //     return `<div class="custom-tooltip">
+    //       <span>${yLabel} - ${xLabel}: ${decimalValue}</span>
+    //     </div>`;
+    //   },
+    // },
     tooltip: {
       enabled: true,
       y: {
+        title: {
+          formatter: function (value, { seriesIndex, dataPointIndex, w }) {
+            const xLabel = w.globals.labels[dataPointIndex];
+            const yLabel = w.config.series[seriesIndex].name;
+            return `${yLabel} - ${xLabel}:`;
+          },
+        },
         formatter: function (value) {
-          const decimalValue = value / 100;
-          return decimalValue.toFixed(3);
+          const decimalValue = (value / 100).toFixed(3);
+          return `${decimalValue}`;
         },
       },
     },

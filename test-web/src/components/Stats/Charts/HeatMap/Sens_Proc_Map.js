@@ -105,6 +105,15 @@ export default function Sens_Proc_Map({
     tooltip: {
       enabled: true,
       y: {
+        title: {
+          formatter: function (value, { seriesIndex }) {
+            const axisName = ChartSeries[seriesIndex].name;
+            const originalProperty = Object.keys(y_axis).find(
+              (key) => y_axis[key] === axisName
+            );
+            return `${axisName}(${originalProperty}):`;
+          },
+        },
         formatter: function (value, { seriesIndex, dataPointIndex }) {
           const count = ChartSeries[seriesIndex].data[dataPointIndex] || 0;
           const total =

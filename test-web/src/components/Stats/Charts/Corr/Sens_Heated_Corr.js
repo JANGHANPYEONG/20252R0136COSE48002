@@ -132,9 +132,16 @@ export default function Sense_Heated_Corr({
     tooltip: {
       enabled: true,
       y: {
+        title: {
+          formatter: function (value, { seriesIndex, dataPointIndex, w }) {
+            const xLabel = w.globals.labels[dataPointIndex];
+            const yLabel = w.config.series[seriesIndex].name;
+            return `${yLabel} - ${xLabel}:`;
+          },
+        },
         formatter: function (value) {
-          const decimalValue = value / 100;
-          return decimalValue.toFixed(3);
+          const decimalValue = (value / 100).toFixed(3);
+          return `${decimalValue}`;
         },
       },
     },
