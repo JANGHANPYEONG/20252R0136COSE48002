@@ -43,6 +43,12 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
     dayjs(searchParams.get('end') || null)
   );
 
+  const [initialDuration, setInitialDuration] = useState(duration);
+  const [initialCalenderStart, setInitialCalenderStart] =
+    useState(calenderStart);
+  const [initialCalenderEnd, setInitialCalenderEnd] = useState(calenderEnd);
+  const [initialIsDur, setInitialIsDur] = useState(isDur);
+
   console.log(duration);
 
   // 탭으로 클릭시 조회기간 변경
@@ -100,6 +106,10 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
       setStartDate(start);
       setEndDate(end);
     }
+    setInitialDuration(duration);
+    setInitialCalenderStart(calenderStart);
+    setInitialCalenderEnd(calenderEnd);
+    setInitialIsDur(isDur);
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
@@ -127,6 +137,10 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setDuration(initialDuration);
+    setCalenderStart(initialCalenderStart);
+    setCalenderEnd(initialCalenderEnd);
+    setIsDur(initialIsDur);
   };
 
   const open = Boolean(anchorEl);
