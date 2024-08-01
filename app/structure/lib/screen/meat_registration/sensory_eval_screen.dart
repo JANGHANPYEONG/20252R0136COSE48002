@@ -79,9 +79,9 @@ class _SensoryEvalScreenState extends State<SensoryEvalScreen>
                         Tab(child: Text('육즙')),
                         Tab(child: Text('기호도')),
                       ],
-                      labelColor: Palette.dataMngBtndBg,
-                      labelStyle: Palette.h5Bold,
-                      unselectedLabelStyle: Palette.h5,
+                      labelColor: Pallete.dataMngBtndBg,
+                      labelStyle: Pallete.h5Bold,
+                      unselectedLabelStyle: Pallete.h5,
                       indicator: ShapeDecoration(
                         shape: Border(
                           bottom: BorderSide(

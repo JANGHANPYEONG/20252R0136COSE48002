@@ -109,7 +109,7 @@ class _GetQrState extends State<GetQr> {
                       height: 90.h,
                       padding: EdgeInsets.all(5.w),
                       decoration: BoxDecoration(
-                        color: Palette.confirmCardBg,
+                        color: Pallete.confirmCardBg,
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Container(

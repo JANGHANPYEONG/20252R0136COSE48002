@@ -51,7 +51,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                         // 성공 텍스트
                         Container(
                           margin: EdgeInsets.only(left: 46.w, top: 182.h),
-                          child: Text('관리번호가\n생성되었습니다!', style: Palette.h2),
+                          child: Text('관리번호가\n생성되었습니다!', style: Pallete.h2),
                         ),
                       ],
                     ),
@@ -63,13 +63,13 @@ class CreationManagementNumScreen extends StatelessWidget {
                     height: 141.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Palette.fieldEmptyBg,
+                      color: Pallete.fieldEmptyBg,
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Text(
                       creationManagementNumViewModel.managementNum,
                       textAlign: TextAlign.center,
-                      style: Palette.h1,
+                      style: Pallete.h1,
                     ),
                   ),
                   SizedBox(height: 35.h),
@@ -81,14 +81,14 @@ class CreationManagementNumScreen extends StatelessWidget {
                     padding:
                         EdgeInsets.symmetric(horizontal: 44.w, vertical: 55.h),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Palette.fieldBorder),
+                      border: Border.all(color: Pallete.fieldBorder),
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Column(children: [
                       Row(
                         children: [
                           // 기본 정보
-                          Text('기본 정보', style: Palette.h5Grey),
+                          Text('기본 정보', style: Pallete.h5Grey),
                           const Spacer(),
                           ClipOval(
                             child: Image.file(
@@ -102,7 +102,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                           SizedBox(width: 25.w),
                           Text(
                             '${creationManagementNumViewModel.meatModel.speciesValue}•${creationManagementNumViewModel.meatModel.primalValue}•${creationManagementNumViewModel.meatModel.secondaryValue}',
-                            style: Palette.h5,
+                            style: Pallete.h5,
                           )
                         ],
                       ),
@@ -110,11 +110,11 @@ class CreationManagementNumScreen extends StatelessWidget {
 
                       // 이력 번호
                       Row(children: [
-                        Text('이력번호', style: Palette.h5Grey),
+                        Text('이력번호', style: Pallete.h5Grey),
                         const Spacer(),
                         Text(
                           "${creationManagementNumViewModel.meatModel.traceNum}",
-                          style: Palette.h5,
+                          style: Pallete.h5,
                         )
                       ]),
                       const Spacer(),
@@ -122,11 +122,11 @@ class CreationManagementNumScreen extends StatelessWidget {
                       // 날짜
                       Row(
                         children: [
-                          Text('날짜', style: Palette.h5Grey),
+                          Text('날짜', style: Pallete.h5Grey),
                           const Spacer(),
                           Text(
                             Usefuls.parseDate(Usefuls.getCurrentDate()),
-                            style: Palette.h5,
+                            style: Pallete.h5,
                           )
                         ],
                       )

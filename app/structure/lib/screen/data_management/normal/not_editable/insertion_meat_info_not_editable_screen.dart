@@ -42,7 +42,7 @@ class _InsertionMeatInfoNotEditableScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 56.h),
-                  Text('종류', style: Palette.h4),
+                  Text('종류', style: Pallete.h4),
                   SizedBox(height: 12.h),
                   Row(
                     children: [
@@ -54,8 +54,8 @@ class _InsertionMeatInfoNotEditableScreenState
                           color: context
                                   .read<InsertionMeatInfoNotEditableViewModel>()
                                   .speciesCheck()
-                              ? Palette.basicSpeciesColor
-                              : Palette.checkSpeciesNotEditableColor,
+                              ? Pallete.basicSpeciesColor
+                              : Pallete.checkSpeciesNotEditableColor,
                           borderRadius: BorderRadius.all(Radius.circular(50.r)),
                         ),
                         child: Center(
@@ -69,8 +69,8 @@ class _InsertionMeatInfoNotEditableScreenState
                                       .read<
                                           InsertionMeatInfoNotEditableViewModel>()
                                       .speciesCheck()
-                                  ? Palette.basicSpeciesTextColor
-                                  : Palette.checkSpeciesTextColor,
+                                  ? Pallete.basicSpeciesTextColor
+                                  : Pallete.checkSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -85,8 +85,8 @@ class _InsertionMeatInfoNotEditableScreenState
                           color: context
                                   .read<InsertionMeatInfoNotEditableViewModel>()
                                   .speciesCheck()
-                              ? Palette.checkSpeciesNotEditableColor
-                              : Palette.basicSpeciesColor,
+                              ? Pallete.checkSpeciesNotEditableColor
+                              : Pallete.basicSpeciesColor,
                           borderRadius: BorderRadius.all(Radius.circular(50.r)),
                         ),
                         child: Center(
@@ -100,8 +100,8 @@ class _InsertionMeatInfoNotEditableScreenState
                                       .read<
                                           InsertionMeatInfoNotEditableViewModel>()
                                       .speciesCheck()
-                                  ? Palette.checkSpeciesTextColor
-                                  : Palette.basicSpeciesTextColor,
+                                  ? Pallete.checkSpeciesTextColor
+                                  : Pallete.basicSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -110,7 +110,7 @@ class _InsertionMeatInfoNotEditableScreenState
                   ),
                   SizedBox(height: 30.h),
 
-                  Text('부위', style: Palette.h4),
+                  Text('부위', style: Pallete.h4),
                   SizedBox(height: 12.h),
 
                   // 대분류
@@ -119,7 +119,7 @@ class _InsertionMeatInfoNotEditableScreenState
                         context
                             .read<InsertionMeatInfoNotEditableViewModel>()
                             .primalValue,
-                        style: Palette.h4),
+                        style: Pallete.h4),
                     value: null,
                     itemList: const [],
                     onChanged: null,
@@ -133,7 +133,7 @@ class _InsertionMeatInfoNotEditableScreenState
                         context
                             .read<InsertionMeatInfoNotEditableViewModel>()
                             .secondaryValue,
-                        style: Palette.h4),
+                        style: Pallete.h4),
                     value: null,
                     itemList: const [],
                     onChanged: null,

@@ -26,17 +26,17 @@ class DateContainer extends StatelessWidget {
         width: 282.w,
         height: 64.h,
         decoration: BoxDecoration(
-          color: dateStatus ? Palette.fieldEmptyBg : Palette.dataMngCardBg,
+          color: dateStatus ? Pallete.fieldEmptyBg : Pallete.dataMngCardBg,
           borderRadius: BorderRadius.circular(20.r),
           border: showDecoration
-              ? Border.all(color: Palette.checkSpeciesColor)
+              ? Border.all(color: Pallete.checkSpeciesColor)
               : null,
         ),
         alignment: Alignment.centerLeft,
         padding: EdgeInsets.only(left: 16.w),
         child: Text(
           dateString,
-          style: dateStatus ? Palette.h5 : Palette.h5LightGrey,
+          style: dateStatus ? Pallete.h5 : Pallete.h5LightGrey,
         ),
       ),
     );

@@ -44,19 +44,19 @@ class FilterRow extends StatelessWidget {
               alignment: Alignment.center,
               padding: EdgeInsets.symmetric(horizontal: 32.w),
               decoration: BoxDecoration(
-                color: status[index] ? Colors.white : Palette.fieldEmptyBg,
+                color: status[index] ? Colors.white : Pallete.fieldEmptyBg,
                 borderRadius: BorderRadius.all(Radius.circular(50.r)),
                 border: Border.all(
                   color:
-                      status[index] ? Palette.editableBg : Colors.transparent,
+                      status[index] ? Pallete.editableBg : Colors.transparent,
                 ),
               ),
               child: Text(
                 filterList[index],
                 style: TextStyle(
                   color: status[index]
-                      ? Palette.editableBg
-                      : Palette.waitingCardBg,
+                      ? Pallete.editableBg
+                      : Pallete.waitingCardBg,
                 ),
               ),
             ),

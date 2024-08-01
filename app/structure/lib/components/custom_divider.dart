@@ -10,7 +10,7 @@ class CustomDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Divider(
       height: height,
-      color: Palette.fieldBorder,
+      color: Pallete.fieldBorder,
     );
   }
 }

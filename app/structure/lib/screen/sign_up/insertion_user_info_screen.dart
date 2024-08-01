@@ -64,7 +64,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             '이름',
-                            style: Palette.fieldTitle,
+                            style: Pallete.fieldTitle,
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -83,7 +83,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             '이메일',
-                            style: Palette.fieldTitle,
+                            style: Pallete.fieldTitle,
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -129,11 +129,11 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                                         .isUnique
                                     ? const Icon(
                                         Icons.check,
-                                        color: Palette.mainBtnAtvBg,
+                                        color: Pallete.mainBtnAtvBg,
                                       )
                                     : Text(
                                         '중복확인',
-                                        style: Palette.fieldContent
+                                        style: Pallete.fieldContent
                                             .copyWith(color: Colors.black),
                                       ),
                               ),
@@ -148,7 +148,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             '비밀번호',
-                            style: Palette.fieldTitle,
+                            style: Pallete.fieldTitle,
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -195,7 +195,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                     Container(
                       decoration: BoxDecoration(
                           border: Border.all(
-                            color: Palette.fieldBorder,
+                            color: Pallete.fieldBorder,
                           ),
                           borderRadius: BorderRadius.circular(15.sp)),
                       width: 640.h,
@@ -212,12 +212,12 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              activeColor: Palette.mainBtnAtvBg,
+                              activeColor: Pallete.mainBtnAtvBg,
                               checkColor: Colors.white,
                             ),
                             Text(
                               '약관 전체 동의',
-                              style: Palette.h5,
+                              style: Pallete.h5,
                             ),
                           ],
                         ),
@@ -239,12 +239,12 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              activeColor: Palette.mainBtnAtvBg,
+                              activeColor: Pallete.mainBtnAtvBg,
                               checkColor: Colors.white,
                             ),
                             Text(
                               '(필수) 개인정보 수집/제공 동의',
-                              style: Palette.h5,
+                              style: Pallete.h5,
                             ),
                             const Spacer(),
                             InkWell(
@@ -271,12 +271,12 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              activeColor: Palette.mainBtnAtvBg,
+                              activeColor: Pallete.mainBtnAtvBg,
                               checkColor: Colors.white,
                             ),
                             Text(
                               '(필수) 제 3자 정보 제공 동의',
-                              style: Palette.h5,
+                              style: Pallete.h5,
                             ),
                             const Spacer(),
                             InkWell(
@@ -303,12 +303,12 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              activeColor: Palette.mainBtnAtvBg,
+                              activeColor: Pallete.mainBtnAtvBg,
                               checkColor: Colors.white,
                             ),
                             Text(
                               '(선택) 알림받기',
-                              style: Palette.h5,
+                              style: Pallete.h5,
                             ),
                           ],
                         ),

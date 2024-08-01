@@ -48,7 +48,7 @@ class PartEval extends StatelessWidget {
               for (int i = 2; i < 7; i++)
                 Text(
                   selectedText![i],
-                  style: Palette.h5,
+                  style: Pallete.h5,
                   textAlign: TextAlign.center,
                 ),
             ],
@@ -58,7 +58,7 @@ class PartEval extends StatelessWidget {
           // 슬라이더
           SfSliderTheme(
             data: SfSliderThemeData(
-              tooltipBackgroundColor: Palette.meatRegiBtnBg,
+              tooltipBackgroundColor: Pallete.meatRegiBtnBg,
               activeTrackHeight: 12.h,
               inactiveTrackHeight: 12.h,
               overlayRadius: 0,
@@ -70,8 +70,8 @@ class PartEval extends StatelessWidget {
               interval: 1,
               showTicks: true,
               showLabels: false,
-              activeColor: Palette.meatRegiBtnBg,
-              inactiveColor: Palette.notEditableBg,
+              activeColor: Pallete.meatRegiBtnBg,
+              inactiveColor: Pallete.notEditableBg,
               enableTooltip: true,
               onChanged: onChanged,
               tooltipTextFormatterCallback:

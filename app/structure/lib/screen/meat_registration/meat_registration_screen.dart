@@ -88,9 +88,9 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                   if (meatRegistrationViewModel.checkAllCompleted())
                     Column(
                       children: [
-                        Text('육류 등록 완료!', style: Palette.h1),
+                        Text('육류 등록 완료!', style: Pallete.h1),
                         SizedBox(height: 12.h),
-                        Text('등록한 정보로 관리번호를 생성할 수 있어요.', style: Palette.h5Grey),
+                        Text('등록한 정보로 관리번호를 생성할 수 있어요.', style: Pallete.h5Grey),
                         SizedBox(height: 50.h),
 
                         // 관리번호 생성 버튼
@@ -101,7 +101,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                           width: 282.w,
                           height: 96.h,
                           mode: 1,
-                          style: Palette.fieldPlaceHolderWhite,
+                          style: Pallete.fieldPlaceHolderWhite,
                         ),
                         SizedBox(height: 22.h),
 

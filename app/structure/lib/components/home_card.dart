@@ -70,7 +70,7 @@ class HomeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(mainText, style: Palette.h3),
+                      Text(mainText, style: Pallete.h3),
                       SizedBox(height: 10.h),
                       Text(subText, style: subTextStyle),
                     ],

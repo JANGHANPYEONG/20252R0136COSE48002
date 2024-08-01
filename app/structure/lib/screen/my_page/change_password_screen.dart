@@ -41,7 +41,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('현재 비밀번호', style: Palette.fieldTitle)),
+                        child: Text('현재 비밀번호', style: Pallete.fieldTitle)),
                     SizedBox(height: 8.h),
 
                     // 현재 비밀번호 Input Field
@@ -62,7 +62,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('새 비밀번호', style: Palette.fieldTitle)),
+                        child: Text('새 비밀번호', style: Pallete.fieldTitle)),
                     SizedBox(height: 8.h),
 
                     // 새 비밀번호 Input Field

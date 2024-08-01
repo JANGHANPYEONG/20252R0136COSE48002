@@ -178,14 +178,14 @@ void showCustomDialog(
                 SizedBox(height: 25.h),
                 Text(
                   titleText,
-                  style: Palette.dialogContentBold,
+                  style: Pallete.dialogContentBold,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 14.h),
                 Text(
                   contentText,
                   textAlign: TextAlign.center,
-                  style: Palette.dialogContentSmall,
+                  style: Pallete.dialogContentSmall,
                 ),
                 iconPath != null
                     ? SizedBox(height: 74.h)
@@ -243,9 +243,9 @@ class DialogButton extends StatelessWidget {
         onPressed: buttonFunc,
         style: ButtonStyle(
           backgroundColor: isLeft
-              ? WidgetStateProperty.all<Color>(Palette.popupLeftBtnBg)
+              ? WidgetStateProperty.all<Color>(Pallete.popupLeftBtnBg)
               : WidgetStateProperty.all<Color>(
-                  Palette.popupRightBtnBg,
+                  Pallete.popupRightBtnBg,
                 ),
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
@@ -256,8 +256,8 @@ class DialogButton extends StatelessWidget {
         ),
         child: Text(buttonText,
             style: isLeft
-                ? Palette.dialogLeftBtnTitle
-                : Palette.dialogRightBtnTitle),
+                ? Pallete.dialogLeftBtnTitle
+                : Pallete.dialogRightBtnTitle),
       ),
     );
   }
@@ -282,11 +282,11 @@ void showSaveImageDialog(BuildContext context, String imgPath,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('사진 저장', style: Palette.dialogContentBold),
+                Text('사진 저장', style: Pallete.dialogContentBold),
                 SizedBox(height: 16.h),
                 Text(
                   '사진을 저장할까요? 마음에 안드신다면 재촬영이 가능해요.\n재촬영시 아래 사진은 삭제됩니다.',
-                  style: Palette.dialogContentSmall,
+                  style: Pallete.dialogContentSmall,
                 ),
                 SizedBox(height: 16.h),
 

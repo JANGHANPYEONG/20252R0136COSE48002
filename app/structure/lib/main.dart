@@ -71,7 +71,10 @@ class DeepPlantApp extends StatelessWidget {
     return ScreenUtilInit(
       designSize: const Size(720, 1280),
       child: MaterialApp.router(
-        theme: ThemeData(fontFamily: 'Pretendard'),
+        theme: ThemeData(
+          fontFamily: 'Pretendard',
+          scaffoldBackgroundColor: Colors.white,
+        ),
         debugShowCheckedModeBanner: false,
         title: 'DeepPlant-demo',
         routerConfig: _router,

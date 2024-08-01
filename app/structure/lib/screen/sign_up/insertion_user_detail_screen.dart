@@ -41,7 +41,7 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
                       Container(
                           margin: EdgeInsets.only(left: 38.w),
                           alignment: Alignment.centerLeft,
-                          child: Text('자택주소', style: Palette.fieldTitle)),
+                          child: Text('자택주소', style: Pallete.fieldTitle)),
                       SizedBox(
                         height: 8.h,
                       ),
@@ -66,7 +66,7 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
                                   .clickedSearchButton(context),
                               child: Text(
                                 '검색',
-                                style: Palette.fieldContent
+                                style: Pallete.fieldContent
                                     .copyWith(color: Colors.black),
                               ),
                             ),
@@ -97,7 +97,7 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
                       Container(
                           margin: EdgeInsets.only(left: 38.w),
                           alignment: Alignment.centerLeft,
-                          child: Text('회사 정보', style: Palette.fieldTitle)),
+                          child: Text('회사 정보', style: Pallete.fieldTitle)),
                       SizedBox(
                         height: 8.h,
                       ),

@@ -96,7 +96,7 @@ void showTermsPopup(BuildContext context) {
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: SingleChildScrollView(
-                child: Text(terms, style: Palette.popupContent),
+                child: Text(terms, style: Pallete.popupContent),
               ),
             ),
           ],
@@ -129,7 +129,7 @@ void showPopup(BuildContext context, String contentText, String btnText,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(contentText, style: Palette.popupContent),
+                      Text(contentText, style: Pallete.popupContent),
                     ],
                   ),
                   const Spacer(),
@@ -145,7 +145,7 @@ void showPopup(BuildContext context, String contentText, String btnText,
                                 // context.pop();
                                 // Navigator.pop(context);
                               },
-                          child: Text(btnText, style: Palette.popupBtn)),
+                          child: Text(btnText, style: Pallete.popupBtn)),
                     ],
                   ),
                 ],

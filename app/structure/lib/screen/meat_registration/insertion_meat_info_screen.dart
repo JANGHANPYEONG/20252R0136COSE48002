@@ -47,7 +47,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 56.h),
-                  Text('종류', style: Palette.h4),
+                  Text('종류', style: Pallete.h4),
                   SizedBox(height: 12.h),
                   Row(
                     children: [
@@ -57,8 +57,8 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         height: 72.h,
                         decoration: BoxDecoration(
                           color: insertionMeatInfoViewModel.speciesCheckFunc()
-                              ? Palette.basicSpeciesColor
-                              : Palette.checkSpeciesColor,
+                              ? Pallete.basicSpeciesColor
+                              : Pallete.checkSpeciesColor,
                           borderRadius: BorderRadius.all(Radius.circular(50.r)),
                         ),
                         child: Center(
@@ -70,8 +70,8 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                               fontWeight: FontWeight.w700,
                               color:
                                   insertionMeatInfoViewModel.speciesCheckFunc()
-                                      ? Palette.basicSpeciesTextColor
-                                      : Palette.checkSpeciesTextColor,
+                                      ? Pallete.basicSpeciesTextColor
+                                      : Pallete.checkSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -84,8 +84,8 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         height: 72.h,
                         decoration: BoxDecoration(
                           color: insertionMeatInfoViewModel.speciesCheckFunc()
-                              ? Palette.checkSpeciesColor
-                              : Palette.basicSpeciesColor,
+                              ? Pallete.checkSpeciesColor
+                              : Pallete.basicSpeciesColor,
                           borderRadius: BorderRadius.circular(35.r),
                         ),
                         child: Center(
@@ -97,8 +97,8 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                               fontWeight: FontWeight.w700,
                               color:
                                   insertionMeatInfoViewModel.speciesCheckFunc()
-                                      ? Palette.checkSpeciesTextColor
-                                      : Palette.basicSpeciesTextColor,
+                                      ? Pallete.checkSpeciesTextColor
+                                      : Pallete.basicSpeciesTextColor,
                             ),
                           ),
                         ),
@@ -106,13 +106,13 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                     ],
                   ),
                   SizedBox(height: 30.h),
-                  Text('부위', style: Palette.h4),
+                  Text('부위', style: Pallete.h4),
                   SizedBox(height: 12.h),
 
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
                   // 대분류
                   CustomDropdown(
-                    hintText: Text('대분할', style: Palette.dropDownTitleStyle),
+                    hintText: Text('대분할', style: Pallete.dropDownTitleStyle),
                     value: insertionMeatInfoViewModel.primalValue,
                     itemList: insertionMeatInfoViewModel.largeDiv,
                     onChanged: insertionMeatInfoViewModel.isSelectedSpecies
@@ -128,7 +128,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                   // 'CustomDropdown' 컴포넌트를 사용하여 분류 지정
                   // 소분류
                   CustomDropdown(
-                    hintText: Text('소분할', style: Palette.dropDownTitleStyle),
+                    hintText: Text('소분할', style: Pallete.dropDownTitleStyle),
                     value: insertionMeatInfoViewModel.secondaryValue,
                     itemList: insertionMeatInfoViewModel.litteDiv,
                     onChanged: insertionMeatInfoViewModel.isSelectedPrimal

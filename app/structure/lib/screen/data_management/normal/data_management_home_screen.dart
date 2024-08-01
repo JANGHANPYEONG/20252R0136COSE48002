@@ -73,7 +73,7 @@ class _DataManagementHomeScreenState extends State<DataManagementHomeScreen> {
                                 children: [
                                   Text(
                                     dataManagementHomeViewModel.filterdResult,
-                                    style: Palette.h4,
+                                    style: Pallete.h4,
                                   ),
                                   dataManagementHomeViewModel.isOpnedFilter
                                       ? const Icon(Icons.arrow_drop_up_outlined)

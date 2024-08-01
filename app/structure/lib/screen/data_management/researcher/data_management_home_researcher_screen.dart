@@ -75,7 +75,7 @@ class _DataManagementHomeResearcherScreenState
                                 Text(
                                     dataManagementHomeResearcherViewModel
                                         .filterdResult,
-                                    style: Palette.h4),
+                                    style: Pallete.h4),
 
                                 // 화살표
                                 dataManagementHomeResearcherViewModel
@@ -183,7 +183,7 @@ class _DataManagementHomeResearcherScreenState
                                 },
                                 icon: const Icon(
                                   Icons.cancel,
-                                  color: Palette.meatRegiCardBg,
+                                  color: Pallete.meatRegiCardBg,
                                 ),
                               )
                             : null,
@@ -196,7 +196,7 @@ class _DataManagementHomeResearcherScreenState
                                 .clickedQr(context),
                         icon: const Icon(
                           Icons.qr_code_scanner_rounded,
-                          color: Palette.meatRegiBtnBg,
+                          color: Pallete.meatRegiBtnBg,
                         ),
                       ),
                     ],

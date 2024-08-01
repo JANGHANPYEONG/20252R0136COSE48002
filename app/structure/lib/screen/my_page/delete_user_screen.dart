@@ -41,7 +41,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
                     Container(
                         margin: EdgeInsets.only(left: 40.w),
                         alignment: Alignment.centerLeft,
-                        child: Text('비밀번호', style: Palette.fieldTitle)),
+                        child: Text('비밀번호', style: Pallete.fieldTitle)),
                     SizedBox(height: 8.h),
 
                     // 비밀번호 Input Field

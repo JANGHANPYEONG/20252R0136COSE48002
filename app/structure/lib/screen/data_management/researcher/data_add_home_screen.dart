@@ -47,12 +47,12 @@ class _DataAddHomeState extends State<DataAddHome> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('원육', style: Palette.h3),
+                  Text('원육', style: Pallete.h3),
 
                   // 등록자
                   Text(
                     dataAddHomeViewModel.userName,
-                    style: Palette.h5,
+                    style: Pallete.h5,
                   ),
                 ],
               ),
@@ -74,9 +74,9 @@ class _DataAddHomeState extends State<DataAddHome> {
               SizedBox(height: 16.h),
 
               // 처리육, 딥에이징 데이터 텍스트
-              Text('처리육', style: Palette.h3),
+              Text('처리육', style: Pallete.h3),
               SizedBox(height: 16.h),
-              Text('딥에이징 데이터', style: Palette.h4),
+              Text('딥에이징 데이터', style: Pallete.h4),
               SizedBox(height: 16.h),
 
               // 딥에이징 리스트
@@ -133,7 +133,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                       child: DottedBorder(
                         radius: Radius.circular(20.r),
                         borderType: BorderType.RRect,
-                        color: Palette.notEditableBg,
+                        color: Pallete.notEditableBg,
                         strokeWidth: 2.sp,
                         dashPattern: [10.w, 10.w],
                         child: Center(
@@ -156,13 +156,13 @@ class _DataAddHomeState extends State<DataAddHome> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('총 처리 횟수 및 시간', style: Palette.h4),
+                  Text('총 처리 횟수 및 시간', style: Pallete.h4),
 
                   // 처리 횟수 / 처리 시간
                   Text(
                     dataAddHomeViewModel.total,
                     textAlign: TextAlign.center,
-                    style: Palette.h3Green,
+                    style: Pallete.h3Green,
                   ),
                 ],
               ),

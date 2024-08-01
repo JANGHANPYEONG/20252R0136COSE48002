@@ -84,8 +84,8 @@ class EditMeatDataScreen extends StatelessWidget {
                       onPress: () {
                         editMeatDataViewModel.rejectMeatData(context);
                       },
-                      text: Text('반려', style: Palette.fieldPlaceHolderWhite),
-                      bgColor: Palette.alertColor,
+                      text: Text('반려', style: Pallete.fieldPlaceHolderWhite),
+                      bgColor: Pallete.alertColor,
                       width: 310.w,
                       height: 96.h,
                     ),
@@ -94,8 +94,8 @@ class EditMeatDataScreen extends StatelessWidget {
                       onPress: () {
                         editMeatDataViewModel.acceptMeatData(context);
                       },
-                      text: Text('승인', style: Palette.fieldPlaceHolderWhite),
-                      bgColor: Palette.checkSpeciesColor,
+                      text: Text('승인', style: Pallete.fieldPlaceHolderWhite),
+                      bgColor: Pallete.checkSpeciesColor,
                       width: 310.w,
                       height: 96.h,
                     ),

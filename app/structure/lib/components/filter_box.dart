@@ -100,7 +100,7 @@ class FilterBox extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 조회 기간
-              Text('조회 기간', style: Palette.fieldTitle),
+              Text('조회 기간', style: Pallete.fieldTitle),
               SizedBox(height: 16.h),
 
               // 조회기간 filterRow
@@ -162,7 +162,7 @@ class FilterBox extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // 데이터
-                        Text('데이터', style: Palette.fieldTitle),
+                        Text('데이터', style: Pallete.fieldTitle),
                         SizedBox(height: 16.h),
                         // 데이터 filterrow
                         // FilterRow 컴포넌트를 이용하여 Filter list 표현
@@ -183,7 +183,7 @@ class FilterBox extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // 육종
-                        Text('육종', style: Palette.fieldTitle),
+                        Text('육종', style: Pallete.fieldTitle),
                         SizedBox(height: 16.h),
                         // 육종 filterRow
                         FilterRow(
@@ -196,7 +196,7 @@ class FilterBox extends StatelessWidget {
               //상태 필터 (관리자/데이터 승인만 사용)
 
               SizedBox(height: 24.h),
-              Text('상태', style: Palette.fieldTitle),
+              Text('상태', style: Pallete.fieldTitle),
               SizedBox(height: 16.h),
               FilterRow(
                 filterList: statusList ?? [],
@@ -213,7 +213,7 @@ class FilterBox extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // SizedBox(height: 24.h),
-                        Text('정렬 순서', style: Palette.fieldTitle),
+                        Text('정렬 순서', style: Pallete.fieldTitle),
                         SizedBox(height: 16.h),
                         FilterRow(
                             filterList: sortList ?? [],

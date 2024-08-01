@@ -52,7 +52,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 딥에이징 일자
-                          Text('딥에이징 일자', style: Palette.h4),
+                          Text('딥에이징 일자', style: Pallete.h4),
                           SizedBox(height: 25.h),
 
                           // 딥에이징 일자 container
@@ -63,7 +63,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                             child: Container(
                               height: 88.h,
                               decoration: BoxDecoration(
-                                color: Palette.fieldEmptyBg,
+                                color: Pallete.fieldEmptyBg,
                                 borderRadius: BorderRadius.circular(20.w),
                               ),
                               alignment: Alignment.centerLeft,
@@ -71,7 +71,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                               child: Text(
                                 addDeepAgingDataViewModel.selectedDate,
                                 textAlign: TextAlign.center,
-                                style: Palette.h5,
+                                style: Pallete.h5,
                               ),
                             ),
                           ),
@@ -88,7 +88,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                           SizedBox(height: 50.h),
 
                           // 초음파 처리 시간
-                          Text('초음파 처리 시간', style: Palette.h4),
+                          Text('초음파 처리 시간', style: Pallete.h4),
                           SizedBox(height: 25.h),
 
                           // 초음파 처리 시간 입력
@@ -122,7 +122,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                                 flex: 2,
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 12.0),
-                                  child: Text('분', style: Palette.h4),
+                                  child: Text('분', style: Pallete.h4),
                                 ),
                               ),
                               const Expanded(

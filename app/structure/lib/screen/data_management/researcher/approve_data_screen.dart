@@ -73,7 +73,7 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                                 // 선택된 필터
                                 Text(
                                   approveDataViewModel.filterdResult,
-                                  style: Palette.h4,
+                                  style: Pallete.h4,
                                 ),
 
                                 // 화살표
@@ -155,7 +155,7 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                                 },
                                 icon: const Icon(
                                   Icons.cancel,
-                                  color: Palette.meatRegiCardBg,
+                                  color: Pallete.meatRegiCardBg,
                                 ),
                               )
                             : null,
@@ -167,7 +167,7 @@ class _ApproveDataScreenState extends State<ApproveDataScreen> {
                             approveDataViewModel.clickedQr(context),
                         icon: const Icon(
                           Icons.qr_code_scanner_rounded,
-                          color: Palette.meatRegiBtnBg,
+                          color: Pallete.meatRegiBtnBg,
                         ),
                       ),
                     ],

@@ -40,12 +40,12 @@ class ListCardDataManage extends StatelessWidget {
             // idx
             SizedBox(
               width: 60.w,
-              child: Text(idx.toString(), style: Palette.filterContent),
+              child: Text(idx.toString(), style: Pallete.filterContent),
             ),
 
             // 관리번호
             Text(meatId,
-                style: Palette.meatNumStyle, textAlign: TextAlign.left),
+                style: Pallete.meatNumStyle, textAlign: TextAlign.left),
             const Spacer(),
 
             // 오른쪽 화살표

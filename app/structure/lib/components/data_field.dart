@@ -71,14 +71,14 @@ class _DataFieldState extends State<DataField> {
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.r),
                       borderSide:
-                          const BorderSide(color: Palette.fieldAlertBorder),
+                          const BorderSide(color: Pallete.fieldAlertBorder),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.r),
                       borderSide:
-                          const BorderSide(color: Palette.fieldAlertBorder),
+                          const BorderSide(color: Pallete.fieldAlertBorder),
                     ),
-                    errorStyle: Palette.fieldAlert,
+                    errorStyle: Pallete.fieldAlert,
                     suffixIcon: widget.unit != null
                         ? Container(
                             width: 20.w, // 필요한 너비로 조정

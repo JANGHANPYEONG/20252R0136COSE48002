@@ -71,35 +71,35 @@ class _SensoryEvalNotEditableScreenState
                   Icon(
                     Icons.check,
                     color: sensoryEvalNotEditableViewModel.marbling > 0
-                        ? Palette.mainButtonColor
+                        ? Pallete.mainButtonColor
                         : Colors.transparent,
                   ),
                   const Spacer(),
                   Icon(
                     Icons.check,
                     color: sensoryEvalNotEditableViewModel.color > 0
-                        ? Palette.mainButtonColor
+                        ? Pallete.mainButtonColor
                         : Colors.transparent,
                   ),
                   const Spacer(),
                   Icon(
                     Icons.check,
                     color: sensoryEvalNotEditableViewModel.texture > 0
-                        ? Palette.mainButtonColor
+                        ? Pallete.mainButtonColor
                         : Colors.transparent,
                   ),
                   const Spacer(),
                   Icon(
                     Icons.check,
                     color: sensoryEvalNotEditableViewModel.surface > 0
-                        ? Palette.mainButtonColor
+                        ? Pallete.mainButtonColor
                         : Colors.transparent,
                   ),
                   const Spacer(),
                   Icon(
                     Icons.check,
                     color: sensoryEvalNotEditableViewModel.overall > 0
-                        ? Palette.mainButtonColor
+                        ? Pallete.mainButtonColor
                         : Colors.transparent,
                   ),
                   SizedBox(width: 70.w),
@@ -116,9 +116,9 @@ class _SensoryEvalNotEditableScreenState
                     Tab(child: Text('육즙')),
                     Tab(child: Text('기호도')),
                   ],
-                  labelColor: Palette.dataMngBtndBg,
-                  labelStyle: Palette.h5BoldGray,
-                  unselectedLabelStyle: Palette.h5LightGrey,
+                  labelColor: Pallete.dataMngBtndBg,
+                  labelStyle: Pallete.h5BoldGray,
+                  unselectedLabelStyle: Pallete.h5LightGrey,
                   indicator: ShapeDecoration(
                     shape: Border(
                       bottom: BorderSide(

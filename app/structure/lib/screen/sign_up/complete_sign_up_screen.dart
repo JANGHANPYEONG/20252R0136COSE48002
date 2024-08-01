@@ -26,19 +26,19 @@ class CompleteSignUpScreen extends StatelessWidget {
                           bottom: 0,
                           child: const Icon(
                             Icons.auto_awesome,
-                            color: Palette.starIcon,
+                            color: Pallete.starIcon,
                           ),
                         ),
                         Icon(
                           Icons.check_circle,
                           size: 120.w,
-                          color: Palette.mainBtnAtvBg,
+                          color: Pallete.mainBtnAtvBg,
                         ),
                         const Positioned(
                           right: 0,
                           child: Icon(
                             Icons.auto_awesome,
-                            color: Palette.starIcon,
+                            color: Pallete.starIcon,
                           ),
                         ),
                       ],
@@ -50,11 +50,11 @@ class CompleteSignUpScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('회원가입이\n완료되었습니다 !', style: Palette.h2),
+                      Text('회원가입이\n완료되었습니다 !', style: Pallete.h2),
                       SizedBox(
                         height: 13.h,
                       ),
-                      Text('이메일 인증을 완료해주세요.', style: Palette.h5Grey),
+                      Text('이메일 인증을 완료해주세요.', style: Pallete.h5Grey),
                     ],
                   ),
                 ),

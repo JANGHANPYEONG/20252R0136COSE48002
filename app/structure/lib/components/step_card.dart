@@ -33,11 +33,11 @@ class StepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Color> statusColor = [
-      Palette.notEditableBg,
-      Palette.completeBg,
-      Palette.notCompleteBg,
-      Palette.editableBg,
-      Palette.notEditableBg,
+      Pallete.notEditableBg,
+      Pallete.completeBg,
+      Pallete.notCompleteBg,
+      Pallete.editableBg,
+      Pallete.notEditableBg,
     ];
     final List<String> statusString = [
       '미진행',
@@ -47,11 +47,11 @@ class StepCard extends StatelessWidget {
       '수정 불가',
     ];
     final List<TextStyle> statusTextStyle = [
-      Palette.notEditableText,
-      Palette.completeText,
-      Palette.notCompleteText,
-      Palette.editableText,
-      Palette.notEditableText,
+      Pallete.notEditableText,
+      Pallete.completeText,
+      Pallete.notCompleteText,
+      Pallete.editableText,
+      Pallete.notEditableText,
     ];
 
     return Container(
@@ -70,7 +70,7 @@ class StepCard extends StatelessWidget {
               SizedBox(width: 32.w),
 
               // 메인 텍스트
-              Text(mainText, style: Palette.h4),
+              Text(mainText, style: Pallete.h4),
               const Spacer(),
 
               // status 상자 - null이면 표시하지 않음

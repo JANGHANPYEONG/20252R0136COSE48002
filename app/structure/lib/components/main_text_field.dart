@@ -103,12 +103,12 @@ class MainTextField extends StatelessWidget {
             floatingLabelBehavior:
                 hideFloatingLabel ? FloatingLabelBehavior.never : null,
             label: isCenter != null && isCenter == true
-                ? Center(child: Text(mainText, style: Palette.h4Grey))
-                : Text(mainText, style: Palette.mainTextFieldTextStyle),
+                ? Center(child: Text(mainText, style: Pallete.h4Grey))
+                : Text(mainText, style: Pallete.mainTextFieldTextStyle),
             filled: true,
-            fillColor: Palette.fieldEmptyBg,
+            fillColor: Pallete.fieldEmptyBg,
             hintText: hintText,
-            hintStyle: Palette.h4,
+            hintStyle: Pallete.h4,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15.r),
@@ -118,14 +118,14 @@ class MainTextField extends StatelessWidget {
                 ? OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.r),
                     borderSide:
-                        const BorderSide(color: Palette.fieldAlertBorder),
+                        const BorderSide(color: Pallete.fieldAlertBorder),
                   )
                 : null,
             focusedErrorBorder: canAlert
                 ? OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.r),
                     borderSide:
-                        const BorderSide(color: Palette.fieldAlertBorder),
+                        const BorderSide(color: Pallete.fieldAlertBorder),
                   )
                 : null,
             enabledBorder: canAlert
@@ -138,7 +138,7 @@ class MainTextField extends StatelessWidget {
                 ? OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15.r),
                     borderSide: const BorderSide(
-                      color: Palette.fieldAtvBorder,
+                      color: Pallete.fieldAtvBorder,
                     ),
                   )
                 : null,

@@ -221,7 +221,7 @@ class ListTable extends StatelessWidget {
                 fit: FlexFit.tight,
                 child: InnerBox(
                   text: baseData[index],
-                  style: Palette.listIndexGrey,
+                  style: Pallete.listIndexGrey,
                 ),
               ),
               // tableData를 이용하여 table data list를 출력.
@@ -232,12 +232,12 @@ class ListTable extends StatelessWidget {
                     // 데이터가 '소'이며, '사육지'일 때, 주소가 길어질 수 있으니 스크롤 형태로 출력.
                     ? InnerBox(
                         text: tableData[index],
-                        style: Palette.listStyle,
+                        style: Pallete.listStyle,
                       )
                     : InnerBox(
                         text:
                             (tableData[index] != null) ? tableData[index] : "",
-                        style: Palette.listStyle,
+                        style: Pallete.listStyle,
                       ),
               ),
             ],

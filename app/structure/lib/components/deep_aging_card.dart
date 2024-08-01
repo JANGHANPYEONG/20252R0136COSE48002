@@ -82,7 +82,7 @@ class DeepAgingCard extends StatelessWidget {
 
                             // 도축/등록 날짜
                             Text(Usefuls.butcheryDateToDateShort(butcheryDate),
-                                style: Palette.h5Grey),
+                                style: Pallete.h5Grey),
                           ],
                         ),
                         SizedBox(height: 16.h),
@@ -108,7 +108,7 @@ class DeepAgingCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('추가정보 입력', style: Palette.h5LightGrey),
+                        Text('추가정보 입력', style: Pallete.h5LightGrey),
                         SizedBox(height: 16.h),
 
                         // 데이터 입력 확인
@@ -141,7 +141,7 @@ class DeepAgingCard extends StatelessWidget {
               icon: Icon(
                 Icons.delete,
                 size: 30.sp,
-                color: Palette.greyTextColor,
+                color: Pallete.greyTextColor,
               ),
             ),
           )

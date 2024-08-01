@@ -29,8 +29,6 @@ class SignInViewModel with ChangeNotifier {
   // firbase authentic
   final _authentication = FirebaseAuth.instance;
 
-  late BuildContext _context;
-
   // 자동로그인 버튼 클릭 시
   void clickedAutoLogin(bool value) {
     isAutoLogin = value;
@@ -82,8 +80,7 @@ class SignInViewModel with ChangeNotifier {
           notifyListeners();
 
           // 페이지 이동
-          _context = context;
-          _movePage();
+          if (context.mounted) context.go('/home');
         } else {
           throw Error();
         }
@@ -116,7 +113,7 @@ class SignInViewModel with ChangeNotifier {
           SnackBar(
             duration: const Duration(seconds: 1),
             content: Text(errorMessage),
-            backgroundColor: Palette.alertBg,
+            backgroundColor: Pallete.alertBg,
           ),
         );
       }
@@ -164,8 +161,16 @@ class SignInViewModel with ChangeNotifier {
     }
   }
 
-  void _movePage() {
-    _context.go('/home');
+  /// 비밀번호 변경 페이지 이동
+  void resetPassword(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (context.mounted) context.go('/sign-in/password_reset');
+  }
+
+  /// 회원가입 변경 페이지 이동
+  void signUp(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (context.mounted) context.go('/sign-in/sign-up');
   }
 }
 

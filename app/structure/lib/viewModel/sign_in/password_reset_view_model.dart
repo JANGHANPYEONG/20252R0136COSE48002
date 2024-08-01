@@ -70,7 +70,7 @@ class PasswordResetViewModel with ChangeNotifier {
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
-        backgroundColor: Palette.alertBg,
+        backgroundColor: Pallete.alertBg,
       ),
     );
   }

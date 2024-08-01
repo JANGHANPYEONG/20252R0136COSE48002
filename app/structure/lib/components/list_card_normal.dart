@@ -42,7 +42,7 @@ class ListCardNormal extends StatelessWidget {
         height: 72.w,
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Palette.fieldBorder, width: 1.sp),
+            bottom: BorderSide(color: Pallete.fieldBorder, width: 1.sp),
           ),
         ),
         child: Row(
@@ -51,7 +51,7 @@ class ListCardNormal extends StatelessWidget {
               width: 200.w,
               child: Text(
                 num,
-                style: Palette.h5,
+                style: Pallete.h5,
               ),
             ),
             // const Spacer(),
@@ -62,7 +62,7 @@ class ListCardNormal extends StatelessWidget {
               width: 150.w,
               child: Text(
                 dayTime,
-                style: Palette.filterContent,
+                style: Pallete.filterContent,
               ),
             ),
             const Spacer(),
@@ -80,7 +80,7 @@ class ListCardNormal extends StatelessWidget {
                           width: 36.w,
                           height: 16.h,
                           decoration: BoxDecoration(
-                            color: Palette.starIcon,
+                            color: Pallete.starIcon,
                             borderRadius: BorderRadius.all(
                               Radius.circular(28.5.sp),
                             ),

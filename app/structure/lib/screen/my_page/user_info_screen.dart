@@ -39,7 +39,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
                   '기본정보',
-                  style: Palette.userInfoIndex,
+                  style: Pallete.userInfoIndex,
                 ),
               ),
             ),
@@ -54,7 +54,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       width: 82.w,
                       child: Text(
                         '이름',
-                        style: Palette.userInfoTitle,
+                        style: Pallete.userInfoTitle,
                       ),
                     ),
                     SizedBox(
@@ -65,7 +65,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                           children: [
                             Text(
                               userInfoViewModel.userName,
-                              style: Palette.userInfoContent,
+                              style: Pallete.userInfoContent,
                             ),
                             SizedBox(width: 8.w),
                             Container(
@@ -75,16 +75,16 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                               decoration: BoxDecoration(
                                   // color: Palette.userLevelCardBg,
                                   color: userInfoViewModel.userType == 'Normal'
-                                      ? Palette.userNormalCardBg
+                                      ? Pallete.userNormalCardBg
                                       : userInfoViewModel.userType !=
                                               'Researcher'
-                                          ? Palette.userResearcherCardBg
-                                          : Palette.userManagerCardBg,
+                                          ? Pallete.userResearcherCardBg
+                                          : Pallete.userManagerCardBg,
                                   borderRadius: BorderRadius.all(
                                       Radius.circular(28.5.sp))),
                               child: Text(
                                 userInfoViewModel.userType,
-                                style: Palette.userLevelText,
+                                style: Pallete.userLevelText,
                               ),
                             ),
                           ],
@@ -99,12 +99,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                             width: 100.w,
                             child: Text(
                               "가입날짜",
-                              style: Palette.userInfoTitle,
+                              style: Pallete.userInfoTitle,
                             ),
                           ),
                           Text(
                             userInfoViewModel.createdAt,
-                            style: Palette.userInfoContent,
+                            style: Pallete.userInfoContent,
                           ),
                         ],
                       ),
@@ -124,11 +124,11 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         width: 82.w,
                         child: Text(
                           '이메일',
-                          style: Palette.userInfoTitle,
+                          style: Pallete.userInfoTitle,
                         )),
                     Text(
                       userInfoViewModel.userId,
-                      style: Palette.userInfoContent,
+                      style: Pallete.userInfoContent,
                     ),
                   ],
                 ),
@@ -156,12 +156,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                     children: [
                       Text(
                         '상세정보',
-                        style: Palette.userInfoIndex,
+                        style: Pallete.userInfoIndex,
                       ),
                       const Spacer(),
                       Icon(
                         Icons.arrow_forward_ios,
-                        color: Palette.appBarIcon,
+                        color: Pallete.appBarIcon,
                         size: 24.h,
                       )
                     ],
@@ -175,7 +175,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 children: [
                   SizedBox(
                     width: 82.w,
-                    child: Text('주소', style: Palette.userInfoTitle),
+                    child: Text('주소', style: Pallete.userInfoTitle),
                   ),
                   SizedBox(
                     width: 447.w,
@@ -183,7 +183,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Text(
                         userInfoViewModel.homeAdress,
-                        style: Palette.userInfoContent,
+                        style: Pallete.userInfoContent,
                       ),
                     ),
                   ),
@@ -201,11 +201,11 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         width: 82.w,
                         child: Text(
                           '회사명',
-                          style: Palette.userInfoTitle,
+                          style: Pallete.userInfoTitle,
                         )),
                     Text(
                       userInfoViewModel.company,
-                      style: Palette.userInfoContent,
+                      style: Pallete.userInfoContent,
                     ),
                   ],
                 ),
@@ -222,14 +222,14 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       width: 82.w,
                       child: Text(
                         '부서명',
-                        style: Palette.userInfoTitle,
+                        style: Pallete.userInfoTitle,
                       ),
                     ),
                     SizedBox(
                       width: 255.w,
                       child: Text(
                         userInfoViewModel.department,
-                        style: Palette.userInfoContent,
+                        style: Pallete.userInfoContent,
                       ),
                     ),
                     SizedBox(
@@ -237,12 +237,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       child: Text(
                         "직위",
                         textAlign: TextAlign.center,
-                        style: Palette.userInfoTitle,
+                        style: Pallete.userInfoTitle,
                       ),
                     ),
                     Text(
                       context.read<UserInfoViewModel>().jobTitle,
-                      style: Palette.userInfoContent,
+                      style: Pallete.userInfoContent,
                     ),
                   ],
                 ),
@@ -271,12 +271,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       children: [
                         Text(
                           '비밀번호 변경',
-                          style: Palette.userInfoIndex,
+                          style: Pallete.userInfoIndex,
                         ),
                         const Spacer(),
                         Icon(
                           Icons.arrow_forward_ios,
-                          color: Palette.appBarIcon,
+                          color: Pallete.appBarIcon,
                           size: 24.h,
                         )
                       ],
@@ -307,12 +307,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       children: [
                         Text(
                           '회원 탈퇴',
-                          style: Palette.userInfoIndex,
+                          style: Pallete.userInfoIndex,
                         ),
                         const Spacer(),
                         Icon(
                           Icons.arrow_forward_ios,
-                          color: Palette.appBarIcon,
+                          color: Pallete.appBarIcon,
                           size: 24.h,
                         )
                       ],

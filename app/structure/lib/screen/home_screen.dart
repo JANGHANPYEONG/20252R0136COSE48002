@@ -57,8 +57,8 @@ class HomeScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('환영합니다.', style: Palette.h1),
-                    Text('원하시는 작업을 선택해주세요.', style: Palette.h2),
+                    Text('환영합니다.', style: Pallete.h1),
+                    Text('원하시는 작업을 선택해주세요.', style: Pallete.h2),
                   ],
                 ),
               ],
@@ -73,9 +73,9 @@ class HomeScreen extends StatelessWidget {
                   mainText: '육류등록',
                   subText: '\n데이터를 전송합니다',
                   imageUrl: 'assets/images/pig.png',
-                  mainColor: Palette.meatRegiCardBg,
-                  btnColor: Palette.meatRegiBtnBg,
-                  subTextStyle: Palette.h5White,
+                  mainColor: Pallete.meatRegiCardBg,
+                  btnColor: Pallete.meatRegiBtnBg,
+                  subTextStyle: Pallete.h5White,
                   imageWidth: 180.w,
                   imageHeight: 158.h,
                   onTap: () =>
@@ -88,9 +88,9 @@ class HomeScreen extends StatelessWidget {
                   mainText: '데이터 관리',
                   subText: '등록된 데이터를\n열람/수정합니다',
                   imageUrl: 'assets/images/chart.png',
-                  mainColor: Palette.dataMngCardBg,
-                  btnColor: Palette.dataMngBtndBg,
-                  subTextStyle: Palette.h5Grey,
+                  mainColor: Pallete.dataMngCardBg,
+                  btnColor: Pallete.dataMngBtndBg,
+                  subTextStyle: Pallete.h5Grey,
                   imageWidth: 200.w,
                   imageHeight: 200.h,
                   onTap: () =>

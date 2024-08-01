@@ -22,9 +22,9 @@ class ListCardApprove extends StatelessWidget {
   Widget build(BuildContext context) {
     final Map<String, int> statusToInt = {'대기중': 0, '승인': 1, '반려': 2};
     final List<Color> colors = [
-      Palette.waitingCardBg,
-      Palette.confirmCardBg,
-      Palette.rejectCardBg,
+      Pallete.waitingCardBg,
+      Pallete.confirmCardBg,
+      Pallete.rejectCardBg,
     ];
 
     return InkWell(
@@ -40,12 +40,12 @@ class ListCardApprove extends StatelessWidget {
               width: 240.w,
               child: Text(
                 meatId,
-                style: Palette.h5,
+                style: Pallete.h5,
               ),
             ),
 
             // 날짜
-            Text(dayTime, style: Palette.h5, textAlign: TextAlign.left),
+            Text(dayTime, style: Pallete.h5, textAlign: TextAlign.left),
             const Spacer(),
 
             // 상태
@@ -56,7 +56,7 @@ class ListCardApprove extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.r),
                 color: colors[statusToInt[statusType]!],
               ),
-              child: Center(child: Text(statusType, style: Palette.h5White)),
+              child: Center(child: Text(statusType, style: Pallete.h5White)),
             ),
 
             SizedBox(width: 24.w),

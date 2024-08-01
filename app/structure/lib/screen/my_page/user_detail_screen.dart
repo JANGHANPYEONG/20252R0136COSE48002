@@ -34,7 +34,7 @@ class UserDetailScreen extends StatelessWidget {
                   Container(
                       margin: EdgeInsets.only(left: 38.w),
                       alignment: Alignment.centerLeft,
-                      child: Text('주소', style: Palette.fieldTitle)),
+                      child: Text('주소', style: Pallete.fieldTitle)),
                   SizedBox(
                     height: 8.h,
                   ),
@@ -58,7 +58,7 @@ class UserDetailScreen extends StatelessWidget {
                               .clickedSearchButton(context),
                           child: Text(
                             '검색',
-                            style: Palette.fieldContent
+                            style: Pallete.fieldContent
                                 .copyWith(color: Colors.black),
                           ),
                         ),
@@ -90,7 +90,7 @@ class UserDetailScreen extends StatelessWidget {
                   Container(
                       margin: EdgeInsets.only(left: 38.w),
                       alignment: Alignment.centerLeft,
-                      child: Text('회사정보', style: Palette.fieldTitle)),
+                      child: Text('회사정보', style: Pallete.fieldTitle)),
                   SizedBox(
                     height: 8.h,
                   ),
@@ -149,12 +149,12 @@ class UserDetailScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        activeColor: Palette.mainBtnAtvBg,
+                        activeColor: Pallete.mainBtnAtvBg,
                         checkColor: Colors.white,
                       ),
                       Text(
                         '(선택) 알림받기',
-                        style: Palette.h5,
+                        style: Pallete.h5,
                       ),
                     ],
                   ),

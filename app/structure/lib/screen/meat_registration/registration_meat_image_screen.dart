@@ -50,13 +50,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('촬영 날짜', style: Palette.h4),
+                        Text('촬영 날짜', style: Pallete.h4),
                         SizedBox(height: 16.h),
                         Container(
                           width: 316.w,
                           height: 88.h,
                           decoration: BoxDecoration(
-                            color: Palette.fieldEmptyBg,
+                            color: Pallete.fieldEmptyBg,
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           alignment: Alignment.centerLeft,
@@ -64,7 +64,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             padding: EdgeInsets.only(left: 16.w),
                             child: Text(
                               insertionMeatImageViewModel.date,
-                              style: Palette.h4,
+                              style: Pallete.h4,
                             ),
                           ),
                         ),
@@ -76,13 +76,13 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('촬영자', style: Palette.h4),
+                        Text('촬영자', style: Pallete.h4),
                         SizedBox(height: 16.h),
                         Container(
                           width: 316.w,
                           height: 88.h,
                           decoration: BoxDecoration(
-                            color: Palette.fieldEmptyBg,
+                            color: Pallete.fieldEmptyBg,
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           alignment: Alignment.centerLeft,
@@ -90,7 +90,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                             padding: EdgeInsets.only(left: 16.w),
                             child: Text(
                               insertionMeatImageViewModel.userName,
-                              style: Palette.h4,
+                              style: Pallete.h4,
                             ),
                           ),
                         ),
@@ -104,7 +104,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
               Container(
                 alignment: Alignment.centerLeft,
                 margin: EdgeInsets.symmetric(horizontal: 40.w),
-                child: Text('단면 촬영 사진', style: Palette.h4),
+                child: Text('단면 촬영 사진', style: Pallete.h4),
               ),
               SizedBox(height: 16.h),
 
@@ -152,7 +152,7 @@ class RegistrationMeatImageScreen extends StatelessWidget {
                         child: DottedBorder(
                           radius: Radius.circular(20.r),
                           borderType: BorderType.RRect,
-                          color: Palette.notEditableBg,
+                          color: Pallete.notEditableBg,
                           strokeWidth: 2.sp,
                           dashPattern: [12.w, 12.w],
                           child: Center(

@@ -13,11 +13,11 @@ class CreationManagementNumLoadingScreen extends StatelessWidget {
       children: [
         Container(
           margin: EdgeInsets.only(left: 46.w, top: 182.h),
-          child: Text('관리 번호를\n생성 중 입니다.', style: Palette.h2),
+          child: Text('관리 번호를\n생성 중 입니다.', style: Pallete.h2),
         ),
         SizedBox(height: 80.h),
         const SpinKitThreeBounce(
-          color: Palette.mainBtnAtvBg,
+          color: Pallete.mainBtnAtvBg,
           size: 50.0,
         ),
         SizedBox(height: 90.h),
