@@ -41,7 +41,7 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
     };
 
     fetchData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, meatValue]);
 
   const [series, setSeries] = useState([
     {
