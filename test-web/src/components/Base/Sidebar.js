@@ -26,7 +26,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 
 import DeeplantLong from '../../src_assets/Deeplant_long.webp';
 import LOGO from '../../src_assets/LOGO.png';
-import CreateFilterQueryParams from '../../Utils/createFilterQueryParams';
 import pageListItems from '../../Utils/pageListItems';
 import useLogout from '../../Utils/logout';
 
@@ -102,7 +101,7 @@ function Sidebar() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  
+
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
@@ -112,10 +111,11 @@ function Sidebar() {
       setSnackbarMessage('권한이 없습니다');
       setSnackbarOpen(true);
     } else {
-      navigate(item.path);
+      const queryParams = new URLSearchParams(location.search).toString();
       if (item.label !== '홈' && item.label !== '사용자 관리') {
-        const queryParams = <CreateFilterQueryParams />;
         navigate(`${item.path}?${queryParams}`);
+      } else {
+        navigate(item.path);
       }
     }
   };
@@ -192,7 +192,7 @@ function Sidebar() {
               </Typography>
             )}
           </IconButton>
-          <IconButton onClick = {logout}>
+          <IconButton onClick={logout}>
             <div
               style={{
                 backgroundColor: '#E8E8E8',

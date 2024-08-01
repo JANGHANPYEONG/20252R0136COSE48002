@@ -31,7 +31,9 @@ export default function Taste_FreshMeat({
   };
 
   useEffect(() => {
-    fetchData();
+    if (startDate && endDate) {
+      fetchData();
+    }
   }, [startDate, endDate, animalType, grade]);
 
   const calculateBoxPlotStatistics = (data) => {
