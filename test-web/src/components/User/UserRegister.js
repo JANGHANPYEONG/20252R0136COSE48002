@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { userRegister } from '../../API/user/userRegister';
 import { userDuplicateCheck } from '../../API/user/userDuplicateCheck';
-import RegisterCompletionModal from './helper/RegisterCompletionModal'; // 경로는 실제 파일 위치에 맞게 조정하세요
+import RegisterCompletionModal from './helper/RegisterCompletionModal';
 
 function UserRegister({ handleClose }) {
   const [userId, setuserId] = useState('');
