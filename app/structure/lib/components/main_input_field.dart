@@ -123,11 +123,11 @@ class _MainInputFieldState extends State<MainInputField> {
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15.sp),
+            borderRadius: BorderRadius.circular(20.r),
             borderSide: const BorderSide(color: Pallete.fieldAtvBorder),
           ),
           contentPadding:
-              widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 30.w),
+              widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 24.w),
         ),
       ),
     );

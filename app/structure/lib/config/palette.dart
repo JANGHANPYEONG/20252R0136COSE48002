@@ -16,6 +16,9 @@ class Palette {
 
   static const Color error = Color(0xFFFF4949);
 
+  // 기타 색
+  static const Color starYellow = Color(0xFFFFE871);
+
   /* TextStyle */
   /* h1 */
   /// Font size: 50.sp
@@ -64,6 +67,14 @@ class Palette {
   static TextStyle h4 = TextStyle(
     fontSize: 30.sp,
     fontWeight: FontWeight.w600,
+    color: Colors.black,
+  );
+
+  /// Font size: 30.sp
+  /// <br /> Font weight: w400
+  static TextStyle h4Regular = TextStyle(
+    fontSize: 30.sp,
+    fontWeight: FontWeight.w400,
     color: Colors.black,
   );
 
