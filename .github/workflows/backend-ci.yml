@@ -1,0 +1,203 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "test-backend/test-flask/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "test-backend/test-flask/**"
+
+jobs:
+  test-on-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: develop
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.4"
+
+      - name: Set environment variables
+        run: |
+          cd test-backend/test-flask
+          echo "SECRET_KEY=${{ secrets.DB_URI }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_REGION_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+          cd ../../
+
+      - name: Set serviceAccountKey JSON
+        run: |
+          cd test-backend/test-flask
+          echo '{
+            "type": "${{secrets.type}}",
+            "project_id": "${{secrets.project_id}}",
+            "private_key_id": "${{secrets.private_key_id}}",
+            "private_key": "${{secrets.private_key}}",
+            "client_email": "${{secrets.client_email}}",
+            "client_id": "${{secrets.client_id}}",
+            "auth_uri": "${{secrets.auth_uri}}",
+            "token_uri": "${{secrets.token_uri}}",
+            "auth_provider_x509_cert_url": "${{secrets.auth_provider_x509_cert_url}}",
+            "client_x509_cert_url": "${{secrets.client_x509_cert_url}}",
+            "universe_domain": "${{universe_domain}}"
+          }' >> serviceAccountKey.json
+          cd ../../
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r test-backend/test-flask/requirements.txt
+
+      # - name: Run tests
+      #  run: |
+      #    source venv/bin/activate
+      #    pytest test-backend/test-flask/tests
+
+  test-on-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.4"
+
+      - name: Set environment variables
+        run: |
+          cd test-backend/test-flask
+          echo "SECRET_KEY=${{ secrets.DB_URI }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_REGION_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+          cd ../../
+
+      - name: Set serviceAccountKey JSON
+        run: |
+          cd test-backend/test-flask
+          echo '{
+            "type": "${{secrets.type}}",
+            "project_id": "${{secrets.project_id}}",
+            "private_key_id": "${{secrets.private_key_id}}",
+            "private_key": "${{secrets.private_key}}",
+            "client_email": "${{secrets.client_email}}",
+            "client_id": "${{secrets.client_id}}",
+            "auth_uri": "${{secrets.auth_uri}}",
+            "token_uri": "${{secrets.token_uri}}",
+            "auth_provider_x509_cert_url": "${{secrets.auth_provider_x509_cert_url}}",
+            "client_x509_cert_url": "${{secrets.client_x509_cert_url}}",
+            "universe_domain": "${{universe_domain}}"
+          }' >> serviceAccountKey.json
+          cd ../../
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r test-backend/test-flask/requirements.txt
+
+    #   - name: Run tests
+    #     run: |
+    #       source venv/bin/activate
+    #       pytest test-backend/test-flask/tests
+    #       continue-on-error: false
+
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.4"
+
+      - name: Set environment variables
+        run: |
+          cd test-backend/test-flask
+          echo "SECRET_KEY=${{ secrets.DB_URI }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.S3_REGION_NAME }}" >> .env
+          echo "SECRET_KEY=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+          cd ../../
+
+      - name: Set serviceAccountKey JSON
+        run: |
+          cd test-backend/test-flask
+          echo '{
+            "type": "${{secrets.type}}",
+            "project_id": "${{secrets.project_id}}",
+            "private_key_id": "${{secrets.private_key_id}}",
+            "private_key": "${{secrets.private_key}}",
+            "client_email": "${{secrets.client_email}}",
+            "client_id": "${{secrets.client_id}}",
+            "auth_uri": "${{secrets.auth_uri}}",
+            "token_uri": "${{secrets.token_uri}}",
+            "auth_provider_x509_cert_url": "${{secrets.auth_provider_x509_cert_url}}",
+            "client_x509_cert_url": "${{secrets.client_x509_cert_url}}",
+            "universe_domain": "${{universe_domain}}"
+          }' >> serviceAccountKey.json
+          cd ../../
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r test-backend/test-flask/requirements.txt
+
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r test-backend/test-flask/* deploy/
+          cp test-backend/appspec.yml deploy/
+          cd deploy
+          zip -r ../deploy.zip .
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.S3_REGION_NAME }}
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy.zip
+
+      - name: Deploy to CodeDeploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ secrets.APPLICATION_NAME }} \
+            --deployment-group-name ${{ secrets.DEPLOYMENT_GROUP }} \
+            --s3-location bucket=${{ secrets.S3_BUCKET }},bundleType=zip,key=deploy.zip
