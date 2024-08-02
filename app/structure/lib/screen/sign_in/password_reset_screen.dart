@@ -34,48 +34,44 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
           children: [
             Form(
               key: passwordResetViewModel.formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 24.h),
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 40.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 24.h),
 
-                  // 이메일
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: Text('이메일', style: Palette.h5SemiBoldSecondary),
-                  ),
-                  SizedBox(height: 16.h),
+                    // 이메일
+                    Text('이메일', style: Palette.h5SemiBoldSecondary),
+                    SizedBox(height: 16.h),
 
-                  // 이메일 입력 input field
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: MainInputField(
+                    // 이메일 입력 input field
+                    MainInputField(
                       width: double.infinity,
                       formKey: passwordResetViewModel.formKey,
                       controller: passwordResetViewModel.email,
                       validateFunc: (value) =>
                           passwordResetViewModel.emailValidate(value),
                     ),
-                  ),
-                  const Spacer(),
+                    const Spacer(),
 
-                  // 재설정 버튼
-                  Container(
-                    margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 40.h),
-                    alignment: Alignment.bottomCenter,
-                    child: MainButton(
-                      width: double.infinity,
-                      height: 96.h,
-                      onPressed: passwordResetViewModel.isValid()
-                          ? () async =>
-                              passwordResetViewModel.sendResetPassword(context)
-                          : null,
-                      text: '비밀번호 재설정',
+                    // 재설정 버튼
+                    Container(
+                      margin: EdgeInsets.only(bottom: 40.h),
+                      child: MainButton(
+                        width: double.infinity,
+                        height: 96.h,
+                        onPressed: passwordResetViewModel.isValid()
+                            ? () async => passwordResetViewModel
+                                .sendResetPassword(context)
+                            : null,
+                        text: '비밀번호 재설정',
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             passwordResetViewModel.isLoading

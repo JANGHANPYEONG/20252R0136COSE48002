@@ -38,52 +38,45 @@ class _SignInScreenState extends State<SignInScreen> {
               child: SingleChildScrollView(
                 child: Form(
                   key: signInViewModel.formKey,
-                  child: Column(
-                    children: [
-                      // 딥에이징 로고
-                      SvgPicture.asset(
-                        'assets/images/deepplant_logo.svg',
-                        width: 240.w,
-                      ),
-                      SvgPicture.asset(
-                        'assets/images/deepaging_logo.svg',
-                        width: 380.w,
-                      ),
-
-                      SizedBox(height: 95.h),
-
-                      // 아이디 입력 필드
-                      Container(
-                        margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 10.h),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '이메일',
-                          style: Palette.h5SemiBoldSecondary,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 40.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 딥에이징 로고
+                        Center(
+                          child: Column(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/images/deepplant_logo.svg',
+                                width: 240.w,
+                              ),
+                              SvgPicture.asset(
+                                'assets/images/deepaging_logo.svg',
+                                width: 380.w,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 40.w),
-                        child: MainInputField(
+                        SizedBox(height: 96.h),
+
+                        // 아이디 입력 필드
+                        Text('이메일', style: Palette.h5SemiBoldSecondary),
+                        SizedBox(height: 16.h),
+
+                        MainInputField(
                           mode: 0,
                           width: double.infinity,
                           onChangeFunc: (value) =>
                               signInViewModel.userId = value,
                         ),
-                      ),
-                      SizedBox(height: 32.h),
+                        SizedBox(height: 16.h),
 
-                      // 비밀번호 입력 필드
-                      Container(
-                        margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 10.h),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '비밀번호',
-                          style: Palette.h5SemiBoldSecondary,
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 40.w),
-                        child: MainInputField(
+                        // 비밀번호 입력 필드
+                        Text('비밀번호', style: Palette.h5SemiBoldSecondary),
+                        SizedBox(height: 16.h),
+
+                        MainInputField(
                           mode: 0,
                           width: double.infinity,
                           formKey: signInViewModel.formKey,
@@ -91,13 +84,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           onChangeFunc: (value) =>
                               signInViewModel.userPw = value,
                         ),
-                      ),
-                      SizedBox(height: 86.h),
+                        SizedBox(height: 88.h),
 
-                      // 로그인 버튼
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 40.w),
-                        child: MainButton(
+                        // 로그인 버튼
+                        MainButton(
                           mode: 0,
                           width: double.infinity,
                           height: 96.h,
@@ -105,14 +95,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           onPressed: () async => await signInViewModel
                               .clickedSignInButton(context),
                         ),
-                      ),
-                      SizedBox(height: 32.h),
+                        SizedBox(height: 32.h),
 
-                      // 자동로그인 체크박스
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 40.w),
-                        width: double.infinity,
-                        child: Row(
+                        // 자동로그인 체크박스
+                        Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SizedBox(
@@ -156,8 +142,8 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
