@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
+import calculateChartSeries from './calculatechartSeries';
 
 export default function Sense_Fresh_Corr({
   startDate,
@@ -10,7 +11,7 @@ export default function Sense_Fresh_Corr({
 }) {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
-  
+
   const fetchData = async () => {
     try {
       const response = await statisticSensoryFresh(
@@ -43,65 +44,7 @@ export default function Sense_Fresh_Corr({
     texture: '조직감',
   };
 
-  // Check if prop is an array, otherwise use an empty array
-  const propArray = Array.isArray(prop) ? prop : [];
-
-  const ChartSeries = propArray
-    .map((property, rowIndex) => {
-      const uniqueValues1 = chartData[property]?.values || [];
-      const correlation = new Array(prop.length).fill(0);
-
-      for (let colIndex = 0; colIndex < prop.length; colIndex++) {
-        if (colIndex === rowIndex) {
-          correlation[colIndex] = 100; // 대각선 위치는 1로 설정
-        } else {
-          const uniqueValues2 = chartData[prop[colIndex]]?.values || [];
-          const correlationCoefficient = calculateCorrelation(
-            uniqueValues1,
-            uniqueValues2
-          );
-
-          correlation[colIndex] = correlationCoefficient;
-        }
-      }
-
-      return {
-        name: axis_labels[property] || property,
-        data: correlation.reverse(),
-      };
-    })
-    .reverse();
-
-  // 두 배열의 상관 관계 계수 계산
-  function calculateCorrelation(arr1, arr2) {
-    if (arr1.length !== arr2.length) {
-      return 0;
-    }
-
-    const n = arr1.length;
-
-    const sum1 = arr1.reduce((acc, value) => acc + value, 0);
-    const sum2 = arr2.reduce((acc, value) => acc + value, 0);
-
-    const sum1Squared = arr1.reduce((acc, value) => acc + value * value, 0);
-    const sum2Squared = arr2.reduce((acc, value) => acc + value * value, 0);
-
-    const productSum = arr1
-      .map((value, index) => value * arr2[index])
-      .reduce((acc, value) => acc + value, 0);
-
-    const numerator = n * productSum - sum1 * sum2;
-    const denominator = Math.sqrt(
-      (n * sum1Squared - sum1 ** 2) * (n * sum2Squared - sum2 ** 2)
-    );
-
-    if (denominator === 0) {
-      return 0;
-    }
-
-    const correlation = (numerator / denominator) * 100;
-    return parseFloat(correlation.toFixed(3)); // 소수점 세 번째 자리까지 반올림
-  }
+  const ChartSeries = calculateChartSeries(prop, chartData, axis_labels);
 
   const xCategories = prop
     .slice()
