@@ -33,7 +33,6 @@ function UserList() {
   const [searchedUsers, setSearchedUsers] = useState([]);
   const handleRegisterClose = () => {
     setRegisterShow(false);
-    window.location.reload();
   };
   const handleRegisterShow = () => setRegisterShow(true);
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
@@ -74,7 +73,7 @@ function UserList() {
       showSnackbar('사용자 삭제 중 오류가 발생했습니다.', 'error');
     }
   };
-  ///////////
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');

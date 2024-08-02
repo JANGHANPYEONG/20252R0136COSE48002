@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { auth } from '../../firebase-config';
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { userRegister } from '../../API/user/userRegister';
 import { userDuplicateCheck } from '../../API/user/userDuplicateCheck';
+import RegisterCompletionModal from './helper/RegisterCompletionModal'; // 경로는 실제 파일 위치에 맞게 조정하세요
 
 function UserRegister({ handleClose }) {
   const [userId, setuserId] = useState('');
@@ -28,6 +28,9 @@ function UserRegister({ handleClose }) {
   const [alarm, setalarm] = useState('');
   const [type, settype] = useState('');
   const [validated, setValidated] = useState(false);
+
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isEmailValid = (userId) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -61,9 +64,12 @@ function UserRegister({ handleClose }) {
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.stopPropagation();
+      setValidated(true);
+      return;
     }
 
     if (isFormValid()) {
+      setIsLoading(true);
       try {
         setCreatedAt(new Date().toISOString().slice(0, -5));
         const req = {
@@ -76,9 +82,7 @@ function UserRegister({ handleClose }) {
           type: type,
         };
 
-        // Check registrationResponse.ok before calling createUserWithEmailAndPassword
-
-        const registrationResponse = await userRegister(req); // userRegister api 호출
+        const registrationResponse = await userRegister(req);
         if (registrationResponse.ok) {
           const tempPassword = generateTempPassword();
           const { user } = await createUserWithEmailAndPassword(
@@ -86,19 +90,20 @@ function UserRegister({ handleClose }) {
             userId,
             tempPassword
           );
-          await sendEmailVerification(user);
+          // await sendEmailVerification(user);
           await sendPasswordResetEmail(auth, userId);
 
-          // Now you can handle the successful registration
           console.log('User registered successfully');
-          handleClose(); // Close the registration form
+          setShowCompletionModal(true);
         } else {
-          // Handle registration failure
           console.error('User registration failed');
+          // 에러 처리를 위한 모달 또는 알림을 추가할 수 있습니다.
         }
       } catch (error) {
-        // Handle error during Firebase authentication and registration
         console.error('Error during registration:', error);
+        // 에러 처리를 위한 모달 또는 알림을 추가할 수 있습니다.
+      } finally {
+        setIsLoading(false);
       }
     }
     setValidated(true);
@@ -122,6 +127,12 @@ function UserRegister({ handleClose }) {
       console.log('NO');
     }
     setShowifduplicate(true);
+  };
+
+  const handleCompletionModalClose = () => {
+    setShowCompletionModal(false);
+    handleClose();
+    window.location.reload();
   };
 
   return (
@@ -226,15 +237,31 @@ function UserRegister({ handleClose }) {
                 background: '#0F3659',
                 width: '150px',
               }}
-              disabled={!isFormValid() || !isEmailAvailable}
+              disabled={!isFormValid() || !isEmailAvailable || isLoading}
             >
-              회원 등록
+              {isLoading ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                '회원 등록'
+              )}
             </Button>
           </div>
         </Form>
       </div>
+      {showCompletionModal && (
+        <div
+          className="modal-backdrop"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            zIndex: 1040,
+          }}
+        />
+      )}
+      <RegisterCompletionModal
+        show={showCompletionModal}
+        onHide={handleCompletionModalClose}
+      />
     </div>
   );
 }
-
 export default UserRegister;
