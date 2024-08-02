@@ -119,6 +119,14 @@ function Sidebar() {
       }
     }
   };
+  let typeColor = ''
+  if (UserInfo.type === 'Manager') {
+     typeColor = '#70E391';
+  } else if (UserInfo.type === 'Researcher') {
+     typeColor = '#D9C2FF';
+  } else {
+     typeColor = '#FFF856';
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -150,7 +158,8 @@ function Sidebar() {
           <IconButton onClick={() => navigate('/profile')}>
             <div
               style={{
-                backgroundColor: '#E8E8E8',
+                //backgroundColor: '#E8E8E8',
+                backgroundColor : typeColor,
                 width: '40px',
                 height: '40px',
                 borderRadius: '12px',
@@ -171,17 +180,17 @@ function Sidebar() {
               >
                 <Typography
                   component="h1"
-                  variant="h6"
+                  variant="h3"
                   noWrap
                   sx={{ flexGrow: 1, color: 'black', fontSize: '21px' }}
                 >
                   {UserInfo.name}
                 </Typography>
                 <Typography
-                  component="h1"
-                  variant="h6"
+                  component="h2"
+                  variant="h3"
                   noWrap
-                  sx={{ flexGrow: 1, fontSize: '11px' }}
+                  sx={{ flexGrow: 1, fontSize: '12px'}}
                 >
                   {UserInfo.type}
                 </Typography>
