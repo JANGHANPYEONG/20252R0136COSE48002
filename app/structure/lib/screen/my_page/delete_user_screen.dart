@@ -5,7 +5,7 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_input_field.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/my_page/delete_user_view_model.dart';
 
 class DeleteUserScreen extends StatefulWidget {
@@ -20,65 +20,62 @@ class DeleteUserScreen extends StatefulWidget {
 class _DeleteUserScreenState extends State<DeleteUserScreen> {
   @override
   Widget build(BuildContext context) {
+    DeleteUserViewModel deleteUserViewModel =
+        context.watch<DeleteUserViewModel>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
-          title: '회원 탈퇴', backButton: true, closeButton: false),
+        title: '회원 탈퇴',
+        backButton: true,
+        closeButton: false,
+      ),
       body: Stack(
         children: [
           GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              child: Form(
-                key: context.read<DeleteUserViewModel>().formKey,
+            child: Form(
+              key: deleteUserViewModel.formKey,
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 40.w),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(),
-                    SizedBox(height: 72.h),
+                    SizedBox(height: 24.h),
 
                     // 비밀번호 입력
-                    Container(
-                        margin: EdgeInsets.only(left: 40.w),
-                        alignment: Alignment.centerLeft,
-                        child: Text('비밀번호', style: Pallete.fieldTitle)),
-                    SizedBox(height: 8.h),
+                    Text('비밀번호', style: Palette.h5SemiBoldSecondary),
+                    SizedBox(height: 16.h),
 
                     // 비밀번호 Input Field
                     MainInputField(
-                      mode: 1,
-                      width: 640.w,
-                      formKey: context.read<DeleteUserViewModel>().formKey,
-                      controller: context.read<DeleteUserViewModel>().password,
+                      width: double.infinity,
+                      formKey: deleteUserViewModel.formKey,
+                      controller: deleteUserViewModel.password,
                       obscureText: true,
                       validateFunc: (value) =>
-                          context.read<DeleteUserViewModel>().pwValidate(value),
+                          deleteUserViewModel.pwValidate(value),
                     ),
-
-                    SizedBox(height: 820.h),
+                    const Spacer(),
 
                     // 회원 탈퇴 버튼
-                    MainButton(
-                      onPressed: context.watch<DeleteUserViewModel>().isValid()
-                          // &&
-                          // context
-                          //     .watch<DeleteUserViewModel>()
-                          //     .isActivateButton
-                          ? () async => context
-                              .read<DeleteUserViewModel>()
-                              .deleteUser(context)
-                          : null,
-                      text: '회원 탈퇴',
-                      width: 658.w,
-                      height: 96.h,
-                      mode: 1,
+                    Container(
+                      margin: EdgeInsets.only(bottom: 40.h),
+                      child: MainButton(
+                        width: double.infinity,
+                        height: 96.h,
+                        text: '회원 탈퇴',
+                        onPressed: deleteUserViewModel.isValid()
+                            ? () async =>
+                                deleteUserViewModel.deleteUser(context)
+                            : null,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          context.watch<DeleteUserViewModel>().isLoading
+          deleteUserViewModel.isLoading
               ? const Center(child: LoadingScreen())
               : Container(),
         ],

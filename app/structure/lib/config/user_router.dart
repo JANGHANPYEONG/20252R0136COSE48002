@@ -29,7 +29,7 @@ import 'package:structure/screen/meat_registration/registration_meat_image_scree
 import 'package:structure/screen/my_page/change_password_screen.dart';
 import 'package:structure/screen/my_page/delete_user_screen.dart';
 import 'package:structure/screen/my_page/user_detail_screen.dart';
-import 'package:structure/screen/my_page/user_info_screen.dart';
+import 'package:structure/screen/my_page/my_page_screen.dart';
 import 'package:structure/screen/sign_in/password_reset_screen.dart';
 import 'package:structure/screen/sign_in/complete_reset_screen.dart';
 import 'package:structure/screen/sign_up/complete_sign_up_screen.dart';
@@ -204,7 +204,7 @@ class UserRouter {
               path: 'my-page',
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) => UserInfoViewModel(userModel),
-                child: const UserInfoScreen(),
+                child: const MyPageScreen(),
               ),
               routes: [
                 // 유저 상세 정보

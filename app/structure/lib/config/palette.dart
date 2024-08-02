@@ -12,7 +12,7 @@ class Palette {
 
   // Secondary 색 (회색)
   static const Color secondary = Color(0xFF515151);
-  static Color secondary50 = const Color(0xFF515151).withOpacity(0.5);
+  static const Color onSecondary = Color(0xFF9F9F9F);
 
   static const Color error = Color(0xFFFF4949);
 
@@ -134,10 +134,37 @@ class Palette {
 
   /// Font size: 24.sp
   /// <br /> Font weight: w400
-  /// <br /> Color: secondary50
-  static TextStyle h5Secondary50 = TextStyle(
+  /// <br /> Color: onSecondary
+  static TextStyle h5OnSecondary = TextStyle(
     fontSize: 24.sp,
     fontWeight: FontWeight.w400,
-    color: secondary50,
+    color: onSecondary,
+  );
+
+  /* h6 */
+  /// Font size: 20.sp
+  /// <br /> Font weight: w400
+  static TextStyle h6 = TextStyle(
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
+  /// Font size: 20.sp
+  /// <br /> Font weight: w600
+  /// <br /> Color: onSecondary
+  static TextStyle h6SemiBoldOnSecondary = TextStyle(
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w600,
+    color: onSecondary,
+  );
+
+  /* h7 */
+  /// Font size: 16.sp
+  /// <br /> Font weight: w600
+  static TextStyle h7 = TextStyle(
+    fontSize: 16.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
   );
 }
