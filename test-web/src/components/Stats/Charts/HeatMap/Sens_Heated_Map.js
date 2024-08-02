@@ -11,27 +11,27 @@ export default function Sens_Heated_Map({
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await statisticSensoryHeated(
-          startDate,
-          endDate,
-          animalType,
-          grade
-        );
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setProp(Object.keys(data));
-        setChartData(data);
-        console.log(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+  const fetchData = async () => {
+    try {
+      const response = await statisticSensoryHeated(
+        startDate,
+        endDate,
+        animalType,
+        grade
+      );
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-    };
+      const data = await response.json();
+      setProp(Object.keys(data));
+      setChartData(data);
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 

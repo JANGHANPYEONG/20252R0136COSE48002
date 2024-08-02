@@ -2,7 +2,7 @@ import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
-
+import calculateBoxPlotStatistics from './calculateBoxPlotStat';
 export default function Taste_FreshMeat({
   startDate,
   endDate,
@@ -35,20 +35,6 @@ export default function Taste_FreshMeat({
       fetchData();
     }
   }, [startDate, endDate, animalType, grade]);
-
-  const calculateBoxPlotStatistics = (data) => {
-    const sortedData = data.sort((a, b) => a - b);
-    const q1Index = Math.floor(sortedData.length / 4);
-    const medianIndex = Math.floor(sortedData.length / 2);
-    const q3Index = Math.floor((3 * sortedData.length) / 4);
-
-    const q1 = sortedData[q1Index];
-    const median = sortedData[medianIndex];
-    const q3 = sortedData[q3Index];
-    const min = sortedData[0];
-    const max = sortedData[sortedData.length - 1];
-    return [min, q1, median, q3, max];
-  };
 
   const chartOptions = {
     chart: {

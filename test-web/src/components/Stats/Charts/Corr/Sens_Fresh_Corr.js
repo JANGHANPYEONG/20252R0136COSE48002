@@ -10,28 +10,28 @@ export default function Sense_Fresh_Corr({
 }) {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
+  
+  const fetchData = async () => {
+    try {
+      const response = await statisticSensoryFresh(
+        startDate,
+        endDate,
+        animalType,
+        grade
+      );
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setProp(Object.keys(data));
+      setChartData(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await statisticSensoryFresh(
-          startDate,
-          endDate,
-          animalType,
-          grade
-        );
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setProp(Object.keys(data));
-        setChartData(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 

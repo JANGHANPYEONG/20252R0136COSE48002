@@ -3,43 +3,43 @@ import React, { useEffect, useState } from 'react';
 import { statisticTime } from '../../../../API/statistic/statisticTime';
 
 export default function Taste_Time({ startDate, endDate, meatValue }) {
+  const fetchData = async () => {
+    try {
+      const response = await statisticTime(startDate, endDate, meatValue); //시계열 api 호출
+      const data = await response.json();
+
+      // Extract the necessary data from the response
+      const deepAgingData = [
+        parseFloat(data[1].toFixed(2)), // 3일
+        parseFloat(data[2].toFixed(2)), // 7일
+        parseFloat(data[3].toFixed(2)), // 14일
+        parseFloat(data[4].toFixed(2)), // 21일
+      ];
+
+      const rawMeatData = [
+        parseFloat(data[0].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
+        parseFloat(data[0].toFixed(2)),
+        parseFloat(data[0].toFixed(2)),
+        parseFloat(data[0].toFixed(2)),
+      ];
+
+      // Update the chart data
+      setSeries([
+        {
+          name: 'Deep Aging',
+          data: deepAgingData,
+        },
+        {
+          name: 'Raw Meat',
+          data: rawMeatData,
+        },
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await statisticTime(startDate, endDate, meatValue); //시계열 api 호출
-        const data = await response.json();
-
-        // Extract the necessary data from the response
-        const deepAgingData = [
-          parseFloat(data[1].toFixed(2)), // 3일
-          parseFloat(data[2].toFixed(2)), // 7일
-          parseFloat(data[3].toFixed(2)), // 14일
-          parseFloat(data[4].toFixed(2)), // 21일
-        ];
-
-        const rawMeatData = [
-          parseFloat(data[0].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
-          parseFloat(data[0].toFixed(2)),
-          parseFloat(data[0].toFixed(2)),
-          parseFloat(data[0].toFixed(2)),
-        ];
-
-        // Update the chart data
-        setSeries([
-          {
-            name: 'Deep Aging',
-            data: deepAgingData,
-          },
-          {
-            name: 'Raw Meat',
-            data: rawMeatData,
-          },
-        ]);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
   }, [startDate, endDate, meatValue]);
 
