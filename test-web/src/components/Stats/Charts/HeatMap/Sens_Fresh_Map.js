@@ -1,6 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
+import calculateHeatMapChartSeries from './calculateHeatMapChartSeries';
 
 export default function Sens_Fresh_Map({
   startDate,
@@ -11,26 +12,27 @@ export default function Sens_Fresh_Map({
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await statisticSensoryFresh(
-          startDate,
-          endDate,
-          animalType,
-          grade
-        );
+  const fetchData = async () => {
+    try {
+      const response = await statisticSensoryFresh(
+        startDate,
+        endDate,
+        animalType,
+        grade
+      );
 
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setProp(Object.keys(data));
-        setChartData(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-    };
+      const data = await response.json();
+      setProp(Object.keys(data));
+      setChartData(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
@@ -42,31 +44,7 @@ export default function Sens_Fresh_Map({
     texture: '조직감',
   };
 
-  let ChartSeries = [];
-  if (prop.length > 0) {
-    ChartSeries = prop
-      .map((property) => {
-        const uniqueValues = chartData[property].values;
-        const frequencies = new Array(11).fill(0);
-
-        uniqueValues.forEach((value) => {
-          if (value > 10) {
-            frequencies[10] += 1;
-          } else if (value < 1) {
-            frequencies[0] += 1;
-          } else {
-            const index = Math.floor(value);
-            frequencies[index] += 1;
-          }
-        });
-
-        return {
-          name: y_axis[property] || property,
-          data: frequencies,
-        };
-      })
-      .reverse();
-  }
+  const ChartSeries = calculateHeatMapChartSeries(prop, chartData, y_axis);
 
   const ChartOption = {
     chart: {
