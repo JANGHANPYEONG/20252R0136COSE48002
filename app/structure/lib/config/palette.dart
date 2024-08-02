@@ -5,15 +5,18 @@ class Palette {
   /* 색 관련 변수 */
   // Primary 색 (초록)
   static const Color primary = Color(0xFF38C55F);
-  static Color primary50 = const Color(0xFF38C55F).withOpacity(0.5);
 
   // Primary 색 위에 올라가는 텍스트 색상
   static const Color onPrimary = Color(0xFFE8E8E8);
+
+  // Primary continaer 색 (연초록)
+  static const Color primaryContainer = Color(0xFF87E980);
 
   // Secondary 색 (회색)
   static const Color secondary = Color(0xFF515151);
   static const Color onSecondary = Color(0xFF9F9F9F);
 
+  // Error 색 (빨강)
   static const Color error = Color(0xFFFF4949);
 
   // 기타 색
