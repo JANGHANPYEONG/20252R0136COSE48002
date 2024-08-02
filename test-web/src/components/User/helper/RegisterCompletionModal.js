@@ -49,7 +49,7 @@ function RegisterCompletionModal({ show, onHide }) {
         <Button
           onClick={onHide}
           style={{
-            background: '#0F3659',
+            background: navy,
             width: '150px',
           }}
         >

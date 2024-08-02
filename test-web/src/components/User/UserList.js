@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Modal from 'react-bootstrap/Modal';
+import DeleteConfirmationModal from './helper/DeleteConfirmationModal';
 import UserRegister from './UserRegister';
 import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
@@ -24,6 +25,8 @@ import { userDelete } from '../../API/user/userDelete';
 
 function UserList() {
   const [registerShow, setRegisterShow] = useState(false);
+  const [deleteConfirmShow, setDeleteConfirmShow] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editShow, setEditShow] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -31,10 +34,28 @@ function UserList() {
   const [allUsers, setAllUsers] = useState([]);
   const [usersData, setUsersData] = useState({});
   const [searchedUsers, setSearchedUsers] = useState([]);
+
   const handleRegisterClose = () => {
     setRegisterShow(false);
   };
   const handleRegisterShow = () => setRegisterShow(true);
+
+  const handleDeleteConfirmClose = () => {
+    setDeleteConfirmShow(false);
+    setUserToDelete(null);
+  };
+
+  const handleDeleteConfirmShow = (user) => {
+    setUserToDelete(user);
+    setDeleteConfirmShow(true);
+  };
+
+  const handleUserDeleteConfirmed = async () => {
+    if (userToDelete) {
+      await handleUserDelete(userToDelete?.userId);
+      handleDeleteConfirmClose();
+    }
+  };
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
   const handleUserDelete = async (userId) => {
@@ -130,7 +151,7 @@ function UserList() {
       width: 120,
       renderCell: (params) => (
         <div>
-          <IconButton onClick={() => handleUserDelete(params.row.userId)}>
+          <IconButton onClick={() => handleDeleteConfirmShow(params.row)}>
             <DeleteIcon />
           </IconButton>
         </div>
@@ -315,6 +336,13 @@ function UserList() {
           <UserRegister handleClose={handleRegisterClose} />
         </Modal.Body>
       </Modal>
+      <DeleteConfirmationModal
+        show={deleteConfirmShow}
+        onHide={handleDeleteConfirmClose}
+        onConfirm={handleUserDeleteConfirmed}
+        userName={userToDelete?.name}
+        userId={userToDelete?.userId}
+      />
       <div
         style={{
           display: 'flex',
