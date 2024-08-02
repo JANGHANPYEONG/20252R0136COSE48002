@@ -1,4 +1,4 @@
-import LogInField from '../components/Log/LogInField';
+import LogInField from '../components/LogIn/LogInField';
 import { UserProvider } from '../components/User/UserContext';
 
 function LogIn() {
