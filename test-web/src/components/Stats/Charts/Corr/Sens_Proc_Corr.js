@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
-import calculateChartSeries from './calculatechartSeries';
+import calculateChartSeries from './calculateChartSeries';
 
 export default function Sense_Proc_Corr({
   startDate,

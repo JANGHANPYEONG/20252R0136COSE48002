@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
-import calculateChartSeries from './calculatechartSeries';
+import calculateChartSeries from './calculateChartSeries';
 
 export default function Taste_Proc_Corr({
   startDate,

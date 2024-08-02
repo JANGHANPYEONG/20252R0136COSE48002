@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticSensoryHeated } from '../../../../API/statistic/statisticSensoryHeated';
-import calculateChartSeries from './calculatechartSeries';
+import calculateChartSeries from './calculateChartSeries';
 
 export default function Sense_Heated_Corr({
   startDate,

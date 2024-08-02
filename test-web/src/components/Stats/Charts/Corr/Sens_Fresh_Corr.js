@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
-import calculateChartSeries from './calculatechartSeries';
+import calculateChartSeries from './calculateChartSeries';
 
 export default function Sense_Fresh_Corr({
   startDate,

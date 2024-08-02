@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
 import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
-import calculateChartSeries from './calculatechartSeries';
+import calculateChartSeries from './calculateChartSeries';
 
 export default function Taste_Fresh_Corr({
   startDate,
