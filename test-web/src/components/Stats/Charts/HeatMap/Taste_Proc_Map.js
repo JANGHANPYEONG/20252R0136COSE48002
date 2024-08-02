@@ -1,6 +1,7 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
+import calculateHeatMapChartSeries from './calculateHeatMapChartSeries';
 
 export default function Taste_Proc_Map({
   startDate,
@@ -42,31 +43,7 @@ export default function Taste_Proc_Map({
     umami: '감칠맛',
   };
 
-  let ChartSeries = [];
-  if (prop.length > 0) {
-    ChartSeries = prop
-      .map((property) => {
-        const uniqueValues = chartData[property].values;
-        const frequencies = new Array(11).fill(0);
-
-        uniqueValues.forEach((value) => {
-          if (value > 10) {
-            frequencies[10] += 1;
-          } else if (value < 1) {
-            frequencies[0] += 1;
-          } else {
-            const index = Math.floor(value);
-            frequencies[index] += 1;
-          }
-        });
-
-        return {
-          name: y_axis[property] || property,
-          data: frequencies,
-        };
-      })
-      .reverse();
-  }
+  const ChartSeries = calculateHeatMapChartSeries(prop, chartData, y_axis);
 
   const ChartOption = {
     chart: {
