@@ -94,7 +94,7 @@ def login_user():
         )
 
     except Exception as e:
-        logger.exception("Exception: %s", e)
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -209,7 +209,7 @@ def update_user_data():
             200,
         )
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -230,7 +230,7 @@ def check_duplicate():
         else:
             return jsonify({"isDuplicated": True}), 200
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -254,13 +254,14 @@ def delete_user_data():
                         "userId": user_id,
                     }
                 ),
-                401,
+                400,
             )
+        delete_user(db_session, user)
+        
         # Firebase에서 유저 삭제
         user_record = firebase_auth.get_user_by_email(user_id)
         firebase_auth.delete_user(user_record.uid)
         
-        delete_user(db_session, user)
         return (
             jsonify(
                 {
@@ -271,7 +272,7 @@ def delete_user_data():
             200,
         )
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
