@@ -1,13 +1,13 @@
 import { apiIP } from '../../config';
 
 // 가열육 수정 POST API
-export default async function addHeatedData(
+export const addHeatedData = async (
   data, // 가열육 데이터
   i, // 가열육 seqno
   meatId, // 이력번호
   userId,
   isPost
-) {
+) => {
   const dataset = {
     ['flavor']: parseFloat(data.flavor),
     ['juiciness']: parseFloat(data.juiciness),
@@ -50,4 +50,5 @@ export default async function addHeatedData(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addHeatedData

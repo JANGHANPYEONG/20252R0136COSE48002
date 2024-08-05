@@ -10,3 +10,5 @@ export const getByMeatId = async (meatId) => {
   }
   return response;
 };
+
+export default getByMeatId;

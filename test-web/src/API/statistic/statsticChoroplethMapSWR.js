@@ -19,3 +19,5 @@ export const useStatisticChoroplethMap = (startDate, endDate) => {
     isError: error,
   };
 };
+
+export default useStatisticChoroplethMap

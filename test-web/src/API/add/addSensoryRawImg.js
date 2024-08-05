@@ -1,13 +1,13 @@
 import { apiIP } from '../../config';
 
 // 원육 수정 POST API (이미지 수정)
-export default async function addSensoryRawImg(
+export const addSensoryRawImg = async (
   raw_data, // 원육 데이터
   id, // 이력번호
   userId, // 로그인한 사용자 id
   createdDate, // 생성 시간
   elapsedHour // 경과 시간
-) {
+) => {
   //request body에 보낼 데이터 전처리
   let req = {
     ...raw_data,
@@ -35,4 +35,5 @@ export default async function addSensoryRawImg(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryRawImg;

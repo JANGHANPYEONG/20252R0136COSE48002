@@ -1,6 +1,6 @@
 import { apiIP } from '../config';
 
-function PredictData(elapsedHour, len, id) {
+export const PredictData = (elapsedHour, len, id) => {
   //로그인한 유저 정보
   const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
@@ -27,6 +27,6 @@ function PredictData(elapsedHour, len, id) {
       console.error(err);
     }
   }
-}
+};
 
 export default PredictData;

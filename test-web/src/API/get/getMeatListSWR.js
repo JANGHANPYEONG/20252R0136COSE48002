@@ -20,3 +20,5 @@ export const useMeatList = (offset, count, startDate, endDate, specieValue) => {
     error,
   };
 };
+
+export default useMeatList;

@@ -9,5 +9,7 @@ export const statisticProbexptProcessed = async (
   const response = await fetch(
     `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
   );
-  return response
+  return response;
 };
+
+export default statisticProbexptProcessed;

@@ -4,8 +4,13 @@ import { apiIP } from '../../config';
 import fetcher from '../fetcher';
 
 //custom Hook인 getRejectedMeatListSWR를 export
-export const useRejectedMeatList = (offset, count, startDate, endDate, specieValue) => {
-  
+export const useRejectedMeatList = (
+  offset,
+  count,
+  startDate,
+  endDate,
+  specieValue
+) => {
   //육류 반려 데이터 리스트를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : offset, count, startDate, endDate
@@ -20,3 +25,5 @@ export const useRejectedMeatList = (offset, count, startDate, endDate, specieVal
     error,
   };
 };
+
+export default useRejectedMeatList;

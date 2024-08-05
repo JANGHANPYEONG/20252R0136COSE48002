@@ -24,3 +24,4 @@ export const usePredictedMeatList = (
     error,
   };
 };
+export default usePredictedMeatList;

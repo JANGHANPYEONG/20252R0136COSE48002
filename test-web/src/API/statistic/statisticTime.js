@@ -10,3 +10,4 @@ export const statisticTime = async (startDate, endDate, meatValue) => {
   }
   return response;
 };
+export default statisticTime;

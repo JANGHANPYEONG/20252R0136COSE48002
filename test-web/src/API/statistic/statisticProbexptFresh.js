@@ -11,3 +11,4 @@ export const statisticProbexptFresh = async (
   );
   return response;
 };
+export default statisticProbexptFresh;
