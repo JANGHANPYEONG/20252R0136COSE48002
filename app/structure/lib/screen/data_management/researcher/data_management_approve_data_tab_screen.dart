@@ -7,7 +7,6 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_divider.dart';
@@ -62,7 +61,9 @@ class _DataManagementApproveDataTabScreenState
                           '${approveDataViewModel.selectedList.length}개의 데이터',
                           textAlign: TextAlign.left,
                           style: Palette.h5Secondary,
-                        ), // 필터 버튼
+                        ),
+
+                        // 필터 버튼
                         InkWell(
                           onTap: () =>
                               approveDataViewModel.clickedFilter(context),
@@ -137,13 +138,13 @@ class _DataManagementApproveDataTabScreenState
                           child: MainTextField(
                             width: double.infinity,
                             height: 80.h,
+                            mainText: '관리번호 입력',
                             validateFunc: null,
                             onSaveFunc: null,
                             controller: approveDataViewModel.controller,
                             focusNode: approveDataViewModel.focusNode,
                             onChangeFunc: (value) =>
                                 approveDataViewModel.onChanged(value),
-                            mainText: '관리번호 입력',
                             hideFloatingLabel: true,
                             canAlert: true,
                             prefixIcon: const Icon(

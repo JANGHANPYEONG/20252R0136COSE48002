@@ -13,16 +13,16 @@ import 'package:structure/viewModel/data_management/researcher/approve_data_view
 import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
 
-class DataManagementHomeTabScreen extends StatefulWidget {
-  const DataManagementHomeTabScreen({super.key});
+class DataManagementResearcherTabScreen extends StatefulWidget {
+  const DataManagementResearcherTabScreen({super.key});
 
   @override
-  State<DataManagementHomeTabScreen> createState() =>
-      _DataManagementHomeTabScreenState();
+  State<DataManagementResearcherTabScreen> createState() =>
+      _DataManagementResearcherTabScreenState();
 }
 
-class _DataManagementHomeTabScreenState
-    extends State<DataManagementHomeTabScreen>
+class _DataManagementResearcherTabScreenState
+    extends State<DataManagementResearcherTabScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 

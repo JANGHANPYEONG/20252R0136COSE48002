@@ -15,8 +15,8 @@ import 'package:structure/screen/data_management/normal/not_editable/meat_info_n
 import 'package:structure/screen/data_management/researcher/data_add_processed_meat_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_raw_meat_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_screen.dart';
-import 'package:structure/screen/data_management/normal/data_management_home_screen.dart';
-import 'package:structure/screen/data_management/researcher/data_management_home_tab_screen.dart';
+import 'package:structure/screen/data_management/normal/data_management_normal_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_management_researcher_tab_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_heated_sensory_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_lab_data_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
@@ -240,7 +240,7 @@ class UserRouter {
               path: 'data-manage-normal',
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) => DataManagementHomeViewModel(userModel),
-                child: const DataManagementHomeScreen(),
+                child: const DataManagementNormalScreen(),
               ),
               routes: [
                 // 데이터 수정
@@ -312,7 +312,7 @@ class UserRouter {
               builder: (context, state) => ChangeNotifierProvider(
                 create: (context) =>
                     DataManagementHomeTabViewModel(meatModel, userModel),
-                child: const DataManagementHomeTabScreen(),
+                child: const DataManagementResearcherTabScreen(),
               ),
               routes: [
                 GoRoute(

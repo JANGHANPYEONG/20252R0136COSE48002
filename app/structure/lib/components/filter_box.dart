@@ -90,151 +90,147 @@ class FilterBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40.w),
-      child: Column(
-        children: [
-          const CustomDivider(height: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 조회 기간
-              Text('조회 기간', style: Pallete.fieldTitle),
-              SizedBox(height: 16.h),
+    return Column(
+      children: [
+        const CustomDivider(height: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 조회 기간
+            Text('조회 기간', style: Pallete.fieldTitle),
+            SizedBox(height: 16.h),
 
-              // 조회기간 filterRow
-              // FilterRow 컴포넌트를 이용하여 Filter list 표현
-              FilterRow(
-                filterList: dateList,
-                onTap: onTapDate,
-                status: dateStatus,
-              ),
+            // 조회기간 filterRow
+            // FilterRow 컴포넌트를 이용하여 Filter list 표현
+            FilterRow(
+              filterList: dateList,
+              onTap: onTapDate,
+              status: dateStatus,
+            ),
 
-              // 직접입력일때만 height 생성
-              dateStatus[3] ? SizedBox(height: 16.h) : Container(),
+            // 직접입력일때만 height 생성
+            dateStatus[3] ? SizedBox(height: 16.h) : Container(),
 
-              // 날짜 컨테이너
-              dateStatus[3]
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                        // 시작 날짜
-                        DateContainer(
-                          dateString: firstDayText,
-                          dateStatus: dateStatus[3],
-                          showDecoration: indexDay == 0,
-                          onTap:
-                              dateStatus[3] ? () => firstDayOnTapTable : null,
-                        ),
-                        SizedBox(width: 16.w),
-                        const Text('-'),
-                        SizedBox(width: 16.w),
+            // 날짜 컨테이너
+            dateStatus[3]
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                      // 시작 날짜
+                      DateContainer(
+                        dateString: firstDayText,
+                        dateStatus: dateStatus[3],
+                        showDecoration: indexDay == 0,
+                        onTap: dateStatus[3] ? () => firstDayOnTapTable : null,
+                      ),
+                      SizedBox(width: 16.w),
+                      const Text('-'),
+                      SizedBox(width: 16.w),
 
-                        // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
-                        // 끝 날짜
-                        DateContainer(
-                          dateString: lastDayText,
-                          dateStatus: dateStatus[3],
-                          showDecoration: indexDay == 1,
-                          onTap: dateStatus[3] ? () => lastDayOnTapTable : null,
-                        ),
-                      ],
-                    )
-                  : Container(),
+                      // 날짜를 '직접설정'으로 지정할 때, 사용되는 날짜 선택 기능
+                      // 끝 날짜
+                      DateContainer(
+                        dateString: lastDayText,
+                        dateStatus: dateStatus[3],
+                        showDecoration: indexDay == 1,
+                        onTap: dateStatus[3] ? () => lastDayOnTapTable : null,
+                      ),
+                    ],
+                  )
+                : Container(),
 
-              // 달력
-              // '직접설정'이 선택되었을 때, 표현되는 'CustomTableCalendar' 위젯 (날짜 선택 달력 위젯)
-              isOpenTable
-                  ? CustomTableCalendar(
-                      focusedDay: focused,
-                      selectedDay: focused,
-                      onDaySelected: onDaySelected,
-                    )
-                  : Container(),
-              SizedBox(height: 24.h),
-              //데이터 필터 (나의 데이터)
-              type == 0
-                  ? Container()
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 데이터
-                        Text('데이터', style: Pallete.fieldTitle),
-                        SizedBox(height: 16.h),
-                        // 데이터 filterrow
-                        // FilterRow 컴포넌트를 이용하여 Filter list 표현
-                        FilterRow(
-                          filterList: dataList ?? [],
-                          onTap: onTapData,
-                          status: dataStatus ?? [],
-                        ),
-                        SizedBox(height: 24.h),
-                      ],
-                    ),
+            // 달력
+            // '직접설정'이 선택되었을 때, 표현되는 'CustomTableCalendar' 위젯 (날짜 선택 달력 위젯)
+            isOpenTable
+                ? CustomTableCalendar(
+                    focusedDay: focused,
+                    selectedDay: focused,
+                    onDaySelected: onDaySelected,
+                  )
+                : Container(),
+            SizedBox(height: 24.h),
+            //데이터 필터 (나의 데이터)
+            type == 0
+                ? Container()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 데이터
+                      Text('데이터', style: Pallete.fieldTitle),
+                      SizedBox(height: 16.h),
+                      // 데이터 filterrow
+                      // FilterRow 컴포넌트를 이용하여 Filter list 표현
+                      FilterRow(
+                        filterList: dataList ?? [],
+                        onTap: onTapData,
+                        status: dataStatus ?? [],
+                      ),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
 
-              //육종 필터
-              type == 0
-                  ? Container()
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 육종
-                        Text('육종', style: Pallete.fieldTitle),
-                        SizedBox(height: 16.h),
-                        // 육종 filterRow
-                        FilterRow(
-                          filterList: speciesList ?? [],
-                          onTap: onTapSpecies,
-                          status: speciesStatus ?? [],
-                        ),
-                      ],
-                    ),
-              //상태 필터 (관리자/데이터 승인만 사용)
+            //육종 필터
+            type == 0
+                ? Container()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 육종
+                      Text('육종', style: Pallete.fieldTitle),
+                      SizedBox(height: 16.h),
+                      // 육종 filterRow
+                      FilterRow(
+                        filterList: speciesList ?? [],
+                        onTap: onTapSpecies,
+                        status: speciesStatus ?? [],
+                      ),
+                    ],
+                  ),
+            //상태 필터 (관리자/데이터 승인만 사용)
 
-              SizedBox(height: 24.h),
-              Text('상태', style: Pallete.fieldTitle),
-              SizedBox(height: 16.h),
-              FilterRow(
-                filterList: statusList ?? [],
-                onTap: onTapstatus,
-                status: statusStatus ?? [],
-              ),
-              SizedBox(height: 32.h),
+            SizedBox(height: 24.h),
+            Text('상태', style: Pallete.fieldTitle),
+            SizedBox(height: 16.h),
+            FilterRow(
+              filterList: statusList ?? [],
+              onTap: onTapstatus,
+              status: statusStatus ?? [],
+            ),
+            SizedBox(height: 32.h),
 
-              //정렬 순서 필터 (normal만 사용)
-              type != 0
-                  ? Container()
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // SizedBox(height: 24.h),
-                        Text('정렬 순서', style: Pallete.fieldTitle),
-                        SizedBox(height: 16.h),
-                        FilterRow(
-                            filterList: sortList ?? [],
-                            onTap: onTapSort,
-                            status: sortStatus ?? []),
-                      ],
-                    ),
-              SizedBox(height: 16.h),
-              // 조회 버튼
-              MainButton(
-                text: '조회',
-                width: 640.w,
-                height: 72.h,
-                mode: 1,
-                onPressed: checkedFilter ? onPressedFilterSave : null,
-              ),
-            ],
-          ),
-          const CustomDivider(height: 16),
-        ],
-      ),
+            //정렬 순서 필터 (normal만 사용)
+            type != 0
+                ? Container()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // SizedBox(height: 24.h),
+                      Text('정렬 순서', style: Pallete.fieldTitle),
+                      SizedBox(height: 16.h),
+                      FilterRow(
+                          filterList: sortList ?? [],
+                          onTap: onTapSort,
+                          status: sortStatus ?? []),
+                    ],
+                  ),
+            SizedBox(height: 16.h),
+            // 조회 버튼
+            MainButton(
+              text: '조회',
+              width: 640.w,
+              height: 72.h,
+              mode: 1,
+              onPressed: checkedFilter ? onPressedFilterSave : null,
+            ),
+          ],
+        ),
+        const CustomDivider(height: 16),
+      ],
     );
   }
 }
