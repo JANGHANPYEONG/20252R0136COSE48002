@@ -121,7 +121,7 @@ function PA() {
             minWidth: '720px', //720보다 좀 더 작아도 됨
           }}
         >
-          Data prediction
+          Data Prediction
         </span>
       </Box>
       {/**이동 탭 (목록, 통계 , 반려) */}
@@ -152,7 +152,7 @@ function PA() {
             onDataFetch={handleDataFetch}
             onValueChange={handleValueChange}
           />
-           <Select
+          <Select
             labelId="species"
             id="species"
             value={specieValue}

@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { userRegister } from '../../API/user/userRegister';
 import { userDuplicateCheck } from '../../API/user/userDuplicateCheck';
-import RegisterCompletionModal from './helper/RegisterCompletionModal';
+import RegisterCompletionModal from './Modal/RegisterCompletionModal';
 
 function UserRegister({ handleClose }) {
   const [userId, setuserId] = useState('');

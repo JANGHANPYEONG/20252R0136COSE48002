@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import DeleteConfirmationModal from './helper/DeleteConfirmationModal';
+import DeleteConfirmationModal from './Modal/DeleteConfirmationModal';
 import UserRegister from './UserRegister';
 import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
