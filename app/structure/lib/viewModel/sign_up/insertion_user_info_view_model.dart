@@ -13,7 +13,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     userModel.reset();
   }
 
-  bool isDupActivateButton = false; //중복확인 버튼 활성화
+  bool isDupActivateButton = false; // 중복확인 버튼 활성화
 
   // form
   final formKey = GlobalKey<FormState>();
@@ -38,20 +38,13 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   bool isChecked4 = false;
   bool isRequiredChecked = false;
 
-  //이메일 중복 확인 로딩 여부 확인 변수
+  // 이메일 중복 확인 로딩 여부 확인 변수
   bool emailCheckLoading = false;
 
   late BuildContext _context;
 
-  ///이름 입력 여부 검사
-  // void nameCheck() {
-  //   print('이름 입력');
-  //   // if (name.text.isNotEmpty) {
-  //   isName = true;
-  //   // }
-  // }
+  /// 이름 입력 여부 검사
   void nameCheck(String? value) {
-    print('이름 입력');
     isName = true;
     notifyListeners();
   }
@@ -59,7 +52,6 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   /// 아이디 유효성 검사
   /// 비어있지 않고 이메일 형식에 맞지 않을 때, 빨간 예외 메시지를 띄움
   String? idValidate(String? value) {
-    print('idValidate함수 호출');
     final bool isValid = EmailValidator.validate(value!);
     if (value.isNotEmpty && !isValid) {
       isValidId = false;
@@ -74,10 +66,8 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   }
 
   void onChangeEmail(String? value) {
-    print('change 함수 호출');
-    isUnique = false; //이메일 입력된 값이 바뀌면 isUnique는 다시 false로 세팅
+    isUnique = false; // 이메일 입력된 값이 바뀌면 isUnique는 다시 false로 세팅
     notifyListeners();
-    print('idValidate함수 호출');
     final bool isValid = EmailValidator.validate(value!);
     if (value.isNotEmpty && !isValid) {
       isValidId = false;
@@ -119,15 +109,6 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     }
   }
 
-  /// 유효성 검사 함수
-  // void tryValidation() {
-  //   final isValid = formKey.currentState!.validate();
-  //   if (isValid) {
-  //     formKey.currentState!.save();
-  //   }
-  //   notifyListeners();
-  // }
-
   /// 비밀번호 유효성 검사 (정규식)
   /// 조건: 영문 대/소문자, 숫자, 특수문자 10자 이상
   bool validatePassword(String password) {
@@ -139,7 +120,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   /// 이메일 중복 검사
   Future<void> dupliCheck(BuildContext context) async {
-    //이메일 중복 검사 로딩중인 상태
+    // 이메일 중복 검사 로딩중인 상태
     emailCheckLoading = true;
     notifyListeners();
 

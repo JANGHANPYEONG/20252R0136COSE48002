@@ -38,8 +38,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
   // 'Togglebutton'에 사용될 위젯 변수
   List<Widget> speciesValues = [
-    Text('소', style: Palette.h4Grey),
-    Text('돼지', style: Palette.h4Grey),
+    Text('소', style: Pallete.h4Grey),
+    Text('돼지', style: Pallete.h4Grey),
   ];
 
   // 선택된 species

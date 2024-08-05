@@ -44,13 +44,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: const Icon(Icons.arrow_back_ios),
             )
           : null,
-      foregroundColor: Palette.appBarIcon,
+      foregroundColor: Pallete.appBarIcon,
       centerTitle: centerTitle,
       title: Transform.translate(
         offset: Offset(-50.w, 0), // 왼쪽으로 이동시킬 픽셀 값
         child: Text(
           title,
-          style: Palette.appBarTitle,
+          style: Pallete.appBarTitle,
         ),
       ),
       actions: closeButton
@@ -76,7 +76,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null,
       bottom: tabController != null
           ? TabBar(
-              indicatorColor: Palette.mainBtnAtvBg,
+              indicatorColor: Pallete.mainBtnAtvBg,
               labelColor: Colors.black,
               controller: tabController,
               tabs: tabs ?? [],

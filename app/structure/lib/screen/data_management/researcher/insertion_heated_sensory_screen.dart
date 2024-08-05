@@ -38,7 +38,6 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
         context.watch<InsertionHeatedSensoryViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: '가열육 관능평가',
         backButton: true,
@@ -47,72 +46,86 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
       body: SingleChildScrollView(
         child: Stack(
           children: [
-            Column(
-              children: [
-                // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
-                const DataTitle(korText: '풍미', engText: 'Flavor'),
-                PartEval(
-                  idx: 4,
-                  selectedText: text[0],
-                  value: insertionHeatedSensoryViewModel.flavor,
-                  onChanged: (value) =>
-                      insertionHeatedSensoryViewModel.onChangedFlavor(value),
-                ),
-                SizedBox(height: 32.h),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
+              child: Column(
+                children: [
+                  SizedBox(height: 24.h),
 
-                const DataTitle(korText: '다즙성', engText: 'Juiciness'),
-                PartEval(
-                  idx: 4,
-                  selectedText: text[1],
-                  value: insertionHeatedSensoryViewModel.juiciness,
-                  onChanged: (value) =>
-                      insertionHeatedSensoryViewModel.onChangedJuiciness(value),
-                ),
-                SizedBox(height: 32.h),
+                  // 'PartEval' 컴포넌트를 이용하여 관능평가 항목을 정의.
+                  const DataTitle(korText: '풍미', engText: 'Flavor'),
+                  SizedBox(height: 16.h),
 
-                const DataTitle(korText: '연도', engText: 'Tenderness'),
-                PartEval(
-                  idx: 4,
-                  selectedText: text[2],
-                  value: insertionHeatedSensoryViewModel.tenderness,
-                  onChanged: (value) => insertionHeatedSensoryViewModel
-                      .onChangedTenderness(value),
-                ),
-                SizedBox(height: 32.h),
-
-                const DataTitle(korText: '표면육즙', engText: 'Umami'),
-                PartEval(
-                  idx: 4,
-                  selectedText: text[3],
-                  value: insertionHeatedSensoryViewModel.umami,
-                  onChanged: (value) =>
-                      insertionHeatedSensoryViewModel.onChangedUmami(value),
-                ),
-                SizedBox(height: 32.h),
-
-                const DataTitle(korText: '기호도', engText: 'Palatability'),
-                PartEval(
-                  idx: 4,
-                  selectedText: text[4],
-                  value: insertionHeatedSensoryViewModel.palatability,
-                  onChanged: (value) => insertionHeatedSensoryViewModel
-                      .onChangedPalatability(value),
-                ),
-                SizedBox(height: 64.h),
-
-                // 데이터 저장 버튼
-                Container(
-                  margin: EdgeInsets.only(bottom: 40.h),
-                  child: MainButton(
-                    onPressed: () =>
-                        insertionHeatedSensoryViewModel.saveData(context),
-                    text: '저장',
-                    width: 658.w,
-                    height: 104.h,
-                    mode: 1,
+                  PartEval(
+                    idx: 4,
+                    selectedText: text[0],
+                    value: insertionHeatedSensoryViewModel.flavor,
+                    onChanged: (value) =>
+                        insertionHeatedSensoryViewModel.onChangedFlavor(value),
                   ),
-                ),
-              ],
+                  SizedBox(height: 32.h),
+
+                  const DataTitle(korText: '다즙성', engText: 'Juiciness'),
+                  SizedBox(height: 16.h),
+
+                  PartEval(
+                    idx: 4,
+                    selectedText: text[1],
+                    value: insertionHeatedSensoryViewModel.juiciness,
+                    onChanged: (value) => insertionHeatedSensoryViewModel
+                        .onChangedJuiciness(value),
+                  ),
+                  SizedBox(height: 32.h),
+
+                  const DataTitle(korText: '연도', engText: 'Tenderness'),
+                  SizedBox(height: 16.h),
+
+                  PartEval(
+                    idx: 4,
+                    selectedText: text[2],
+                    value: insertionHeatedSensoryViewModel.tenderness,
+                    onChanged: (value) => insertionHeatedSensoryViewModel
+                        .onChangedTenderness(value),
+                  ),
+                  SizedBox(height: 32.h),
+
+                  const DataTitle(korText: '표면육즙', engText: 'Umami'),
+                  SizedBox(height: 16.h),
+
+                  PartEval(
+                    idx: 4,
+                    selectedText: text[3],
+                    value: insertionHeatedSensoryViewModel.umami,
+                    onChanged: (value) =>
+                        insertionHeatedSensoryViewModel.onChangedUmami(value),
+                  ),
+                  SizedBox(height: 32.h),
+
+                  const DataTitle(korText: '기호도', engText: 'Palatability'),
+                  SizedBox(height: 16.h),
+
+                  PartEval(
+                    idx: 4,
+                    selectedText: text[4],
+                    value: insertionHeatedSensoryViewModel.palatability,
+                    onChanged: (value) => insertionHeatedSensoryViewModel
+                        .onChangedPalatability(value),
+                  ),
+                  SizedBox(height: 64.h),
+
+                  // 데이터 저장 버튼
+                  Container(
+                    margin: EdgeInsets.only(bottom: 40.h),
+                    child: MainButton(
+                      width: double.infinity,
+                      height: 96.h,
+                      text: '저장',
+                      onPressed: () =>
+                          insertionHeatedSensoryViewModel.saveData(context),
+                    ),
+                  ),
+                ],
+              ),
             ),
             insertionHeatedSensoryViewModel.isLoading
                 ? const Center(child: LoadingScreen())

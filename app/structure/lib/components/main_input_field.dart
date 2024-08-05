@@ -26,7 +26,7 @@ class MainInputField extends StatefulWidget {
   const MainInputField({
     super.key,
     this.formKey,
-    required this.mode,
+    this.mode = 1,
     this.obscureText,
     this.readonly,
     this.enable,
@@ -84,7 +84,7 @@ class _MainInputFieldState extends State<MainInputField> {
 
   @override
   Widget build(BuildContext context) {
-    Color fillColor = widget.mode == 0 ? Colors.white : Palette.fieldEmptyBg;
+    Color fillColor = widget.mode == 0 ? Colors.white : Pallete.fieldEmptyBg;
 
     if (_isFocused) {
       fillColor = Colors.white;
@@ -95,10 +95,10 @@ class _MainInputFieldState extends State<MainInputField> {
       child: TextFormField(
         controller: widget.controller,
         focusNode: _focusNode,
-        cursorColor: Palette.fieldAtvBorder,
+        cursorColor: Pallete.fieldAtvBorder,
         validator: widget.validateFunc,
         onChanged: widget.onChangeFunc,
-        style: Palette.fieldContent,
+        style: Pallete.fieldContent,
         obscureText: widget.obscureText ?? false,
         readOnly: widget.readonly ?? false,
         enabled: widget.enable,
@@ -108,26 +108,26 @@ class _MainInputFieldState extends State<MainInputField> {
           hintText: widget.hintText,
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.sp),
-            borderSide: const BorderSide(color: Palette.fieldAlertBorder),
+            borderSide: const BorderSide(color: Pallete.fieldAlertBorder),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.sp),
-            borderSide: const BorderSide(color: Palette.fieldAlertBorder),
+            borderSide: const BorderSide(color: Pallete.fieldAlertBorder),
           ),
-          errorStyle: Palette.fieldAlert,
+          errorStyle: Pallete.fieldAlert,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.sp),
             borderSide: BorderSide(
               color:
-                  widget.mode == 0 ? Palette.fieldBorder : Palette.fieldEmptyBg,
+                  widget.mode == 0 ? Pallete.fieldBorder : Pallete.fieldEmptyBg,
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15.sp),
-            borderSide: const BorderSide(color: Palette.fieldAtvBorder),
+            borderRadius: BorderRadius.circular(20.r),
+            borderSide: const BorderSide(color: Pallete.fieldAtvBorder),
           ),
           contentPadding:
-              widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 30.w),
+              widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 24.w),
         ),
       ),
     );

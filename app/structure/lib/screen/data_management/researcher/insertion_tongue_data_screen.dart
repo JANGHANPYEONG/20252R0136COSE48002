@@ -31,19 +31,21 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
       // 키보드 unfocus
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: CustomAppBar(
           title: insertionTongueDataViewModel.title,
           backButton: true,
           closeButton: false,
         ),
-        body: SingleChildScrollView(
-          child: Stack(
-            children: [
-              Column(
-                // 'datafield' 컴포넌트를 이용하여 전자혀 데이터 측정
-                // 신맛
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
+              child: Column(
                 children: [
+                  SizedBox(height: 24.h),
+
+                  // 신맛
                   DataField(
                     mainText: 'Sourness',
                     subText: '신맛',
@@ -73,34 +75,34 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
 
                   // 후미
                   DataField(
-                      isFinal: 1,    
+                      isFinal: 1,
                       mainText: 'Richness',
                       subText: '후미',
                       controller: insertionTongueDataViewModel.richness,
                       onChangeFunc: (_) =>
                           insertionTongueDataViewModel.inputCheck()),
-                  SizedBox(height: 352.w),
+                  const Spacer(),
+
                   // 데이터 저장 버튼
                   Container(
-                    margin: EdgeInsets.fromLTRB(40.w, 0, 40.w, 40.w),
+                    margin: EdgeInsets.only(bottom: 40.h),
                     child: MainButton(
+                      width: double.infinity,
+                      height: 96.h,
+                      text: '저장',
                       onPressed: insertionTongueDataViewModel.inputComplete
                           ? () async =>
                               insertionTongueDataViewModel.saveData(context)
                           : null,
-                      text: '저장',
-                      width: double.infinity,
-                      height: 96.h,
-                      mode: 1,
                     ),
                   ),
                 ],
               ),
-              insertionTongueDataViewModel.isLoading
-                  ? const LoadingScreen()
-                  : Container()
-            ],
-          ),
+            ),
+            insertionTongueDataViewModel.isLoading
+                ? const LoadingScreen()
+                : Container()
+          ],
         ),
       ),
     );

@@ -68,7 +68,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15.sp),
                 border: Border.all(
-                  color: Palette.meatRegiCardBg,
+                  color: Pallete.meatRegiCardBg,
                 ),
               ),
               constraints: BoxConstraints(maxHeight: 400.h),
@@ -80,7 +80,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                   physics: const ClampingScrollPhysics(),
                   children: widget.itemList.map((String item) {
                     return ListTile(
-                      title: Text(item, style: Palette.dropDownTextStyle),
+                      title: Text(item, style: Pallete.dropDownTextStyle),
                       onTap: () {
                         widget.onChanged!(item);
                         _toggleDropdown();
@@ -104,12 +104,12 @@ class _CustomDropdownState extends State<CustomDropdown> {
         onTap: _toggleDropdown,
         child: Container(
           decoration: BoxDecoration(
-            color: Palette.fieldEmptyBg,
+            color: Pallete.fieldEmptyBg,
             borderRadius: BorderRadius.circular(15.sp),
             border: Border.all(
               color: widget.value != null
-                  ? Palette.meatRegiCardBg
-                  : Palette.fieldEmptyBg,
+                  ? Pallete.meatRegiCardBg
+                  : Pallete.fieldEmptyBg,
               width: 1.0,
             ),
           ),
@@ -121,7 +121,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                 child: widget.value != null
                     ? Text(
                         widget.value!,
-                        style: Palette.dropDownTextStyle,
+                        style: Pallete.dropDownTextStyle,
                       )
                     : widget.hintText,
               ),

@@ -21,13 +21,13 @@ class CamShutter extends StatelessWidget {
           'assets/images/cam-shutter-out.png',
           width: 130.w,
           height: 130.w,
-          color: isReady ? Palette.fieldAtvBorder : Palette.alertColor,
+          color: isReady ? Pallete.fieldAtvBorder : Pallete.alertColor,
         ),
         Image.asset(
           'assets/images/cam-shutter-in.png',
           width: 42.w,
           height: 42.w,
-          color: isReady ? Palette.fieldAtvBorder : Palette.alertColor,
+          color: isReady ? Pallete.fieldAtvBorder : Pallete.alertColor,
         ),
       ],
     );

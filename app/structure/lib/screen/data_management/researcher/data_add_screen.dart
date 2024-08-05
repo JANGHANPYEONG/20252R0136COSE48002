@@ -12,24 +12,23 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/deep_aging_card.dart';
 import 'package:structure/components/loading_screen.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
 
-class DataAddHome extends StatefulWidget {
-  const DataAddHome({super.key});
+class DataAddScreen extends StatefulWidget {
+  const DataAddScreen({super.key});
 
   @override
-  State<DataAddHome> createState() => _DataAddHomeState();
+  State<DataAddScreen> createState() => _DataAddScreenState();
 }
 
-class _DataAddHomeState extends State<DataAddHome> {
+class _DataAddScreenState extends State<DataAddScreen> {
   @override
   Widget build(BuildContext context) {
     DataAddHomeViewModel dataAddHomeViewModel =
         context.watch<DataAddHomeViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: dataAddHomeViewModel.meatModel.meatId!,
         backButton: true,
@@ -50,10 +49,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                   Text('원육', style: Palette.h3),
 
                   // 등록자
-                  Text(
-                    dataAddHomeViewModel.userName,
-                    style: Palette.h5,
-                  ),
+                  Text(dataAddHomeViewModel.userName, style: Palette.h5),
                 ],
               ),
               SizedBox(height: 16.h),
@@ -88,14 +84,13 @@ class _DataAddHomeState extends State<DataAddHome> {
                     ? const Center(child: LoadingScreen())
                     : Scrollbar(
                         thumbVisibility: true,
-                        // controller: ,
                         child: ListView.builder(
                           itemCount: dataAddHomeViewModel
                                   .meatModel.deepAgingInfo!.length -
                               1,
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.h),
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
                               child: DeepAgingCard(
                                 deepAgingNum:
                                     '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회',
@@ -117,36 +112,30 @@ class _DataAddHomeState extends State<DataAddHome> {
                         ),
                       ),
               ),
-              SizedBox(height: 36.h),
+              SizedBox(height: 32.h),
 
               // 딥에이징 데이터 추가 버튼
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: 136.h,
-                    width: double.infinity,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16.r),
-                      onTap: () =>
-                          dataAddHomeViewModel.addDeepAgingData(context),
-                      child: DottedBorder(
-                        radius: Radius.circular(20.r),
-                        borderType: BorderType.RRect,
-                        color: Palette.notEditableBg,
-                        strokeWidth: 2.sp,
-                        dashPattern: [10.w, 10.w],
-                        child: Center(
-                          child: Image.asset(
-                            'assets/images/add_circle.png',
-                            cacheWidth: 42,
-                            cacheHeight: 42,
-                          ),
-                        ),
+              SizedBox(
+                width: double.infinity,
+                height: 136.h,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20.r),
+                  onTap: () => dataAddHomeViewModel.addDeepAgingData(context),
+                  child: DottedBorder(
+                    radius: Radius.circular(20.r),
+                    borderType: BorderType.RRect,
+                    color: Palette.onPrimary,
+                    strokeWidth: 2.sp,
+                    dashPattern: [12.w, 12.w],
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/add_circle.png',
+                        cacheWidth: 40,
+                        cacheHeight: 40,
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
               SizedBox(height: 16.h),
 
@@ -162,7 +151,7 @@ class _DataAddHomeState extends State<DataAddHome> {
                   Text(
                     dataAddHomeViewModel.total,
                     textAlign: TextAlign.center,
-                    style: Palette.h3Green,
+                    style: Palette.h3.copyWith(color: Palette.primary),
                   ),
                 ],
               ),

@@ -27,62 +27,60 @@ class PartEval extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 기준 이미지
-          Image.asset(
-            imagePath[idx],
-            width: double.infinity,
-            height: 68.h,
-            fit: BoxFit.fitWidth,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 기준 이미지
+        Image.asset(
+          imagePath[idx],
+          width: double.infinity,
+          height: 68.h,
+          fit: BoxFit.fitWidth,
+        ),
 
-          // 기준 텍스트
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (int i = 2; i < 7; i++)
-                Text(
-                  selectedText![i],
-                  style: Palette.h5,
-                  textAlign: TextAlign.center,
-                ),
-            ],
-          ),
-          SizedBox(height: 16.h),
+        // 기준 텍스트
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (int i = 2; i < 7; i++)
+              Text(
+                selectedText![i],
+                style: Pallete.h5,
+                textAlign: TextAlign.center,
+              ),
+          ],
+        ),
+        SizedBox(height: 16.h),
 
-          // 슬라이더
-          SfSliderTheme(
-            data: SfSliderThemeData(
-              tooltipBackgroundColor: Palette.meatRegiBtnBg,
-              activeTrackHeight: 12.h,
-              inactiveTrackHeight: 12.h,
-              overlayRadius: 0,
-            ),
-            child: SfSlider(
-              min: 1.0,
-              max: 10.0,
-              value: value,
-              interval: 1,
-              showTicks: true,
-              showLabels: false,
-              activeColor: Palette.meatRegiBtnBg,
-              inactiveColor: Palette.notEditableBg,
-              enableTooltip: true,
-              onChanged: onChanged,
-              tooltipTextFormatterCallback:
-                  (dynamic actualValue, String formattedText) {
-                final double newValue = actualValue;
-                return newValue.toStringAsFixed(1);
-              },
-            ),
+        // 슬라이더
+        SfSliderTheme(
+          data: SfSliderThemeData(
+            tooltipBackgroundColor: Pallete.meatRegiBtnBg,
+            activeTrackHeight: 12.h,
+            inactiveTrackHeight: 12.h,
+            overlayRadius: 0,
           ),
-        ],
-      ),
+          child: SfSlider(
+            min: 1.0,
+            max: 10.0,
+            value: value,
+            interval: 1,
+            showTicks: true,
+            showLabels: false,
+            activeColor: Pallete.meatRegiBtnBg,
+            inactiveColor: Pallete.notEditableBg,
+            enableTooltip: true,
+            onChanged: onChanged,
+            tooltipTextFormatterCallback:
+                (dynamic actualValue, String formattedText) {
+              final double newValue = actualValue;
+              return newValue.toStringAsFixed(1);
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -8,7 +8,7 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircularProgressIndicator(
-      color: Palette.loadingIcon,
+      color: Pallete.loadingIcon,
       value: value,
     );
   }

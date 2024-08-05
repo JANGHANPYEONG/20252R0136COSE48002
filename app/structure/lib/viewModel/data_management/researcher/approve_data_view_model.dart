@@ -5,7 +5,6 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:structure/components/custom_pop_up.dart';
@@ -203,7 +202,6 @@ class ApproveDataViewModel with ChangeNotifier {
 
   // 육종 별 필터링 진행. (소 / 돼지)
   void setSpecies() {
-    print('setspecies호출');
     if (speciesSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['specieValue'] == '소');

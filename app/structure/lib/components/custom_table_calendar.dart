@@ -55,7 +55,7 @@ class CustomTableCalendar extends StatelessWidget {
         isTodayHighlighted: false,
         outsideDaysVisible: false,
         selectedDecoration: const BoxDecoration(
-          color: Palette.checkSpeciesColor,
+          color: Pallete.checkSpeciesColor,
           shape: BoxShape.circle,
         ),
         selectedTextStyle: TextStyle(
