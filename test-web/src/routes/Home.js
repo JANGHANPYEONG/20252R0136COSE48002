@@ -62,19 +62,19 @@ const cards = [
 
 function Home() {
   const navigate = useNavigate();
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleCardClick = (link) => {
     const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
     if (link === '/UserManagement' && UserInfo.type !== 'Manager') {
-      setOpenSnackbar(true);
+      setSnackbarOpen(true);
     } else {
       navigate(link);
     }
   };
 
   const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
+    setSnackbarOpen(false);
   };
 
   return (
@@ -158,7 +158,7 @@ function Home() {
           ))}
         </Grid>
         <CustomSnackbar
-          open={openSnackbar}
+          open={snackbarOpen}
           message={'권한이 없습니다'}
           severity={'error'}
           onClose={handleSnackbarClose}

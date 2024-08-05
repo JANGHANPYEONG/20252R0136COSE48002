@@ -15,6 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import { apiIP } from '../config';
 import { format } from 'date-fns';
+import { userDelete } from '../API/user/userDelete';
+
+const navy = '#0F3659';
 
 const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
@@ -53,6 +56,20 @@ export default function Profile() {
     setPassword(e.target.value);
   };
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const handleShowSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   const reauthenticate = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -64,21 +81,13 @@ export default function Profile() {
       handleOpenConfirmModal();
     } catch (error) {
       console.error('Error reauthenticating:', error);
-      showSnackbar('비밀번호가 틀렸습니다.', 'error');
+      handleShowSnackbar('비밀번호가 틀렸습니다.', 'error');
     }
   };
 
   const deleteself = async () => {
     try {
-      const response = await fetch(
-        `http://${apiIP}/user/delete?userId=${UserInfo.userId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await userDelete(UserInfo.userId);
 
       if (response.ok) {
         localStorage.setItem('isLoggedIn', 'false');
@@ -142,13 +151,13 @@ export default function Profile() {
         setUpdatedUserInfo(updatedData);
         localStorage.setItem('UserInfo', updatedData);
         window.location.reload();
-        showSnackbar('회원정보가 수정되었습니다.', 'success');
+        handleShowSnackbar('회원정보가 수정되었습니다.', 'success');
       } else {
-        showSnackbar('회원정보 수정에 실패했습니다.', 'error');
+        handleShowSnackbar('회원정보 수정에 실패했습니다.', 'error');
       }
     } catch (error) {
       console.log('Error updating user information:', error);
-      showSnackbar('서버와 통신 중 오류가 발생했습니다.', 'error');
+      handleShowSnackbar('서버와 통신 중 오류가 발생했습니다.', 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -166,20 +175,6 @@ export default function Profile() {
     } else if (name === 'homeAddr') {
       setHomeAddr(value);
     }
-  };
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  const showSnackbar = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
-
-  const closeSnackbar = () => {
-    setSnackbarOpen(false);
   };
 
   return (
@@ -248,7 +243,7 @@ export default function Profile() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <Button
-            style={{ margin: '0.5rem' }}
+            style={{ backgroundColor: navy, margin: '0.5rem' }}
             variant="contained"
             onClick={updateUserInfo}
             disabled={isUpdating}
@@ -258,7 +253,11 @@ export default function Profile() {
           <Button
             variant="contained"
             onClick={handleOpenPasswordModal}
-            style={{ backgroundColor: 'red', color: 'white', margin: '0.5rem' }}
+            style={{
+              backgroundColor: 'grey',
+              color: 'white',
+              margin: '0.5rem',
+            }}
           >
             회원 탈퇴
           </Button>
@@ -295,13 +294,21 @@ export default function Profile() {
               sx={{ mt: 2, mb: 2 }}
               fullWidth
             />
-            <Button variant="contained" onClick={reauthenticate}>
+            <Button
+              variant="contained"
+              onClick={reauthenticate}
+              style={{ backgroundColor: navy, margin: '0.5rem' }}
+            >
               확인
             </Button>
             <Button
               variant="contained"
               onClick={handleClosePasswordModal}
-              style={{ marginLeft: '1rem' }}
+              style={{
+                backgroundColor: 'grey',
+                color: 'white',
+                margin: '0.5rem',
+              }}
             >
               취소
             </Button>
@@ -351,7 +358,7 @@ export default function Profile() {
           open={snackbarOpen}
           message={snackbarMessage}
           severity={snackbarSeverity}
-          onClose={closeSnackbar}
+          onClose={handleSnackbarClose}
         />
       </Paper>
     </div>
