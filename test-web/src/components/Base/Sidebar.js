@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import CustomSnackbar from '../Base/CustomSnackbar';
 import PropTypes from 'prop-types';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 // import mui component
@@ -13,7 +14,6 @@ import {
   IconButton,
   Toolbar,
   Tooltip,
-  Snackbar,
   Alert as MuiAlert,
 } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
@@ -119,13 +119,13 @@ function Sidebar() {
       }
     }
   };
-  let typeColor = ''
+  let typeColor = '';
   if (UserInfo.type === 'Manager') {
-     typeColor = '#70E391';
+    typeColor = '#70E391';
   } else if (UserInfo.type === 'Researcher') {
-     typeColor = '#D9C2FF';
+    typeColor = '#D9C2FF';
   } else {
-     typeColor = '#FFF856';
+    typeColor = '#FFF856';
   }
 
   return (
@@ -159,7 +159,7 @@ function Sidebar() {
             <div
               style={{
                 //backgroundColor: '#E8E8E8',
-                backgroundColor : typeColor,
+                backgroundColor: typeColor,
                 width: '40px',
                 height: '40px',
                 borderRadius: '12px',
@@ -190,7 +190,7 @@ function Sidebar() {
                   component="h2"
                   variant="h3"
                   noWrap
-                  sx={{ flexGrow: 1, fontSize: '12px'}}
+                  sx={{ flexGrow: 1, fontSize: '12px' }}
                 >
                   {UserInfo.type}
                 </Typography>
@@ -280,15 +280,12 @@ function Sidebar() {
           </IconButton>
         </Toolbar>
       </Drawer>
-      <Snackbar
+      <CustomSnackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        message={snackbarMessage}
+        severity={'error'}
         onClose={handleSnackbarClose}
-      >
-        <Alert onClose={handleSnackbarClose} severity="error">
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      />
     </ThemeProvider>
   );
 }

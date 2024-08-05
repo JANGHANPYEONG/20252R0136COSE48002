@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 import Container from '@mui/material/Container';
-import Snackbar from '@mui/material/Snackbar';
+import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 
@@ -73,10 +73,7 @@ function Home() {
     }
   };
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };
 
@@ -94,7 +91,7 @@ function Home() {
       }}
     >
       <Container maxWidth="md">
-      <Typography
+        <Typography
           variant="h4" // Typography의 variant를 조정하여 원하는 스타일과 크기를 선택할 수 있습니다.
           sx={{
             color: '#151D48',
@@ -160,15 +157,12 @@ function Home() {
             </Grid>
           ))}
         </Grid>
-        <Snackbar
+        <CustomSnackbar
           open={openSnackbar}
-          autoHideDuration={3000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert onClose={handleCloseSnackbar} severity="error">
-            권한이 없습니다
-          </Alert>
-        </Snackbar>
+          message={'권한이 없습니다'}
+          severity={'error'}
+          onClose={handleSnackbarClose}
+        />
       </Container>
     </div>
   );
