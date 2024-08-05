@@ -1,0 +1,52 @@
+name: Web CI
+
+on:
+  pull_request:
+    branches:
+      - feature/web
+    paths:
+      - "test-web/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create .env file with secrets
+      run: |
+        cd test-web
+        echo "DB_URI=${{ secrets.DB_URI }}" >> .env
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+        echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
+        echo "S3_REGION_NAME=${{ secrets.S3_REGION_NAME }}" >> .env
+        echo "FIREBASE_BUCKET_ADDRESS=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+        cd ../
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "18"
+
+    - name: Install Dependency by Caching node modules
+      uses: actions/cache@v3
+      with:
+        path: test-web/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('test-web/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Run tests
+      run: |
+        cd test-web
+        npm test
+        echo 'Test Success!'
+
+    - name: Build
+      run: |
+        cd test-web
+        npm run build
+        echo 'Build Success!'

@@ -906,7 +906,8 @@ def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
         start = convert2datetime(start, 0)
         end = convert2datetime(end, 0)
         meats = (
-            db_session.query(Meat)
+            db_session.query(Meat, CategoryInfo.speciesId)
+            .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
             .filter(
                 Meat.userId == userId,
                 Meat.createdAt.between(start, end)
@@ -922,7 +923,8 @@ def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
                 result.append({
                     "meatId": meat.id,
                     "createdAt": convert2string(meat.createdAt, 1),
-                    "statusType": statusType[meat.statusType]
+                    "statusType": statusType[meat.statusType],
+                    "specieValue": species[meat.speciesId]
                 })
                 
         db_session.close()    
