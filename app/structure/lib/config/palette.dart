@@ -192,9 +192,18 @@ class Palette {
 
   /* h7 */
   /// Font size: 16.sp
-  /// <br /> Font weight: w600
+  /// <br /> Font weight: w400
   static TextStyle h7 = TextStyle(
     fontSize: 16.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
+  /* h8 */
+  /// Font size: 12.sp
+  /// <br /> Font weight: w400
+  static TextStyle h8 = TextStyle(
+    fontSize: 12.sp,
     fontWeight: FontWeight.w400,
     color: Colors.black,
   );

@@ -10,12 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/filter_box.dart';
-import 'package:structure/components/list_card_normal.dart';
+import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
 import 'package:structure/config/userfuls.dart';
-import 'package:structure/viewModel/data_management/normal/data_management_view_model.dart';
+import 'package:structure/viewModel/data_management/normal/data_management_normal_view_model.dart';
 
 class DataManagementNormalScreen extends StatefulWidget {
   const DataManagementNormalScreen({super.key});
@@ -29,8 +29,8 @@ class _DataManagementNormalScreenState
     extends State<DataManagementNormalScreen> {
   @override
   Widget build(BuildContext context) {
-    DataManagementHomeViewModel dataManagementHomeViewModel =
-        context.watch<DataManagementHomeViewModel>();
+    DataManagementNormalViewModel dataManagementNormalViewModel =
+        context.watch<DataManagementNormalViewModel>();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -60,7 +60,7 @@ class _DataManagementNormalScreenState
                         // 데이터 개수 텍스트
                         SizedBox(
                           child: Text(
-                            '${dataManagementHomeViewModel.selectedList.length}개의 데이터',
+                            '${dataManagementNormalViewModel.selectedList.length}개의 데이터',
                             textAlign: TextAlign.left,
                             style: Palette.h5Secondary,
                           ),
@@ -68,19 +68,19 @@ class _DataManagementNormalScreenState
 
                         // 필터 버튼
                         InkWell(
-                          // 필터 버튼을 누르면 'clickedFilter'함수를 참조한다.
                           onTap: () =>
-                              dataManagementHomeViewModel.clickedFilter(),
+                              dataManagementNormalViewModel.clickedFilter(),
+                          borderRadius: BorderRadius.circular(20.r),
                           child: Container(
                             padding: EdgeInsets.all(16.w),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  dataManagementHomeViewModel.filterdResult,
+                                  dataManagementNormalViewModel.filterdResult,
                                   style: Palette.h4,
                                 ),
-                                dataManagementHomeViewModel.isOpnedFilter
+                                dataManagementNormalViewModel.isOpnedFilter
                                     ? const Icon(Icons.arrow_drop_up_outlined)
                                     : const Icon(Icons.arrow_drop_down),
                               ],
@@ -91,45 +91,61 @@ class _DataManagementNormalScreenState
                     ),
 
                     // 'isOpendFilter'변수를 참조하여 filter를 표출한다.
-                    dataManagementHomeViewModel.isOpnedFilter
+                    dataManagementNormalViewModel.isOpnedFilter
                         ? FilterBox(
                             type: 0,
-                            dateList: dataManagementHomeViewModel.dateList,
-                            onTapDate: (index) =>
-                                dataManagementHomeViewModel.onTapDate(index),
-                            dateStatus: dataManagementHomeViewModel.dateStatus,
-                            firstDayText:
-                                dataManagementHomeViewModel.firstDayText,
-                            indexDay: dataManagementHomeViewModel.indexDay,
-                            firstDayOnTapTable: () =>
-                                dataManagementHomeViewModel.onTapTable(0),
-                            lastDayText:
-                                dataManagementHomeViewModel.lastDayText,
-                            lastDayOnTapTable: () =>
-                                dataManagementHomeViewModel.onTapTable(1),
-                            isOpenTable:
-                                dataManagementHomeViewModel.isOpenTable,
-                            focused: dataManagementHomeViewModel.focused,
-                            onDaySelected: (selectedDay, focusedDay) =>
-                                dataManagementHomeViewModel.onDaySelected(
-                                    selectedDay, focusedDay),
                             checkedFilter:
-                                dataManagementHomeViewModel.checkedFilter(),
+                                dataManagementNormalViewModel.checkedFilter(),
                             onPressedFilterSave: () =>
-                                dataManagementHomeViewModel
+                                dataManagementNormalViewModel
                                     .onPressedFilterSave(),
-                            statusList: dataManagementHomeViewModel.statusList,
-                            onTapstatus: (index) =>
-                                dataManagementHomeViewModel.onTapStatus(index),
-                            statusStatus:
-                                dataManagementHomeViewModel.statusStatus,
-                            sortList: dataManagementHomeViewModel.sortList,
+                            /* 조회 기간 */
+                            dateList: dataManagementNormalViewModel.dateList,
+                            onTapDate: (index) =>
+                                dataManagementNormalViewModel.onTapDate(index),
+                            dateStatus:
+                                dataManagementNormalViewModel.dateStatus,
+                            firstDayText:
+                                dataManagementNormalViewModel.firstDayText,
+                            indexDay: dataManagementNormalViewModel.indexDay,
+                            firstDayOnTapTable: () =>
+                                dataManagementNormalViewModel.onTapTable(0),
+                            lastDayText:
+                                dataManagementNormalViewModel.lastDayText,
+                            lastDayOnTapTable: () =>
+                                dataManagementNormalViewModel.onTapTable(1),
+                            isOpenTable:
+                                dataManagementNormalViewModel.isOpenTable,
+                            focused: dataManagementNormalViewModel.focused,
+                            onDaySelected: (selectedDay, focusedDay) =>
+                                dataManagementNormalViewModel.onDaySelected(
+                                    selectedDay, focusedDay),
+                            /* 축종 */
+                            speciesList:
+                                dataManagementNormalViewModel.speciesList,
+                            onTapSpecies: (index) =>
+                                dataManagementNormalViewModel
+                                    .onTapSpecies(index),
+                            speciesStatus:
+                                dataManagementNormalViewModel.speciesStatus,
+                            /* 정렬 순서 */
+                            sortList: dataManagementNormalViewModel.sortList,
                             onTapSort: (index) =>
-                                dataManagementHomeViewModel.onTapSort(index),
-                            sortStatus: dataManagementHomeViewModel.sortStatus)
+                                dataManagementNormalViewModel.onTapSort(index),
+                            sortStatus:
+                                dataManagementNormalViewModel.sortStatus,
+                            /* 상태 */
+                            statusList:
+                                dataManagementNormalViewModel.statusList,
+                            onTapstatus: (index) =>
+                                dataManagementNormalViewModel
+                                    .onTapStatus(index),
+                            statusStatus:
+                                dataManagementNormalViewModel.statusStatus,
+                          )
                         : SizedBox(height: 16.h),
 
-                    //
+                    // 육류 리스트
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -142,17 +158,18 @@ class _DataManagementNormalScreenState
                             mainText: '관리번호 입력',
                             validateFunc: null,
                             onSaveFunc: null,
-                            controller: dataManagementHomeViewModel.controller,
+                            controller:
+                                dataManagementNormalViewModel.controller,
                             onChangeFunc: (value) =>
-                                dataManagementHomeViewModel.onChanged(value),
-                            focusNode: dataManagementHomeViewModel.focusNode,
+                                dataManagementNormalViewModel.onChanged(value),
+                            focusNode: dataManagementNormalViewModel.focusNode,
                             canAlert: false,
                             prefixIcon: const Icon(Icons.search),
                             suffixIcon:
-                                dataManagementHomeViewModel.focusNode.hasFocus
+                                dataManagementNormalViewModel.focusNode.hasFocus
                                     ? IconButton(
                                         onPressed: () {
-                                          dataManagementHomeViewModel
+                                          dataManagementNormalViewModel
                                               .textClear(context);
                                         },
                                         icon: const Icon(
@@ -169,15 +186,14 @@ class _DataManagementNormalScreenState
                           // QR 코드 확인 기능을 정의한다.
                           iconSize: 48.w,
                           onPressed: () async =>
-                              dataManagementHomeViewModel.clickedQr(context),
+                              dataManagementNormalViewModel.clickedQr(context),
                           icon: const Icon(Icons.qr_code_scanner_rounded),
                         ),
                       ],
                     ),
                     SizedBox(height: 16.h),
 
-                    // TODO : 통일
-                    const CustomTableNormalBar(isNormal: true),
+                    const CustomTableBar(),
                     SizedBox(height: 16.h),
 
                     SizedBox(
@@ -186,20 +202,21 @@ class _DataManagementNormalScreenState
                         thumbVisibility: true,
                         child: ListView.builder(
                           itemCount:
-                              dataManagementHomeViewModel.selectedList.length,
-                          itemBuilder: (context, index) => ListCardNormal(
-                            onTap: () async => await dataManagementHomeViewModel
-                                .onTap(index, context),
-                            num: dataManagementHomeViewModel.selectedList[index]
-                                ["meatId"]!,
-                            dayTime: dataManagementHomeViewModel
+                              dataManagementNormalViewModel.selectedList.length,
+                          itemBuilder: (context, index) => ListCard(
+                            onTap: () async =>
+                                await dataManagementNormalViewModel.onTap(
+                                    index, context),
+                            meatId: dataManagementNormalViewModel
+                                .selectedList[index]["meatId"]!,
+                            dayTime: dataManagementNormalViewModel
                                 .selectedList[index]["createdAt"]!,
-                            statusType: dataManagementHomeViewModel
+                            statusType: dataManagementNormalViewModel
                                 .selectedList[index]["statusType"]!,
                             dDay: 3 -
                                 Usefuls.calculateDateDifference(
                                   Usefuls.dateShortToDateLong(
-                                      dataManagementHomeViewModel
+                                      dataManagementNormalViewModel
                                           .selectedList[index]["createdAt"]!),
                                 ),
                           ),
@@ -211,7 +228,7 @@ class _DataManagementNormalScreenState
                 ),
               ),
             ),
-            dataManagementHomeViewModel.isLoading
+            dataManagementNormalViewModel.isLoading
                 ? const Center(child: LoadingScreen())
                 : Container(),
           ],

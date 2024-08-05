@@ -8,9 +8,9 @@ import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/main.dart';
 import 'package:structure/model/user_model.dart';
 
-class DataManagementHomeViewModel with ChangeNotifier {
+class DataManagementNormalViewModel with ChangeNotifier {
   UserModel userModel;
-  DataManagementHomeViewModel(this.userModel) {
+  DataManagementNormalViewModel(this.userModel) {
     _initialize();
   }
   // 초기 리스트
@@ -33,20 +33,24 @@ class DataManagementHomeViewModel with ChangeNotifier {
   bool isChecked = false; // 필터 값이 온전한지 확인 (직접 입력에서 날짜가 정확히 골라졌는지 여부)
 
   // 필터 값을 지칭
-  String filterdResult = '3일∙최신순';
+  String filterdResult = '3일∙전체∙전체∙최신순';
 
   // 필터에 필요한 변수
   List<String> dateList = ['3일', '1개월', '3개월', '직접입력'];
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> sortList = ['최신순', '과거순'];
-  List<bool> sortStatus = [true, false];
-  int sortSelectedIdx = 0;
+  List<String> speciesList = ['전체', '소', '돼지'];
+  List<bool> speciesStatus = [true, false, false];
+  int speciesSelectedIdx = 0;
 
   List<String> statusList = ['전체', '대기중', '승인', '반려'];
   List<bool> statusStatus = [true, false, false, false];
   int statusSelectedIdx = 0;
+
+  List<String> sortList = ['최신순', '과거순'];
+  List<bool> sortStatus = [true, false];
+  int sortSelectedIdx = 0;
 
   // 날짜 값이 담길 변수
   DateTime? toDay;
@@ -96,12 +100,14 @@ class DataManagementHomeViewModel with ChangeNotifier {
           for (Map<String, dynamic> item in jsonData) {
             String meatId = item['meatId'];
             String statusType = item['statusType'];
+            // String specieValue = item['specieValue'];
             String createdAt = Usefuls.parseDate(item['createdAt']);
 
             Map<String, String> idStatusPair = {
               'meatId': meatId,
               'statusType': statusType,
               'createdAt': createdAt,
+              // 'specieValue': specieValue,
             };
 
             entireList.add(idStatusPair);
@@ -119,6 +125,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
     setDay();
     sortUserData();
     setStatus();
+    setSpecies();
   }
 
   // 직접 설정 필터가 적용된 후, 날짜 선택이 완료 되었는지 판단
@@ -134,11 +141,12 @@ class DataManagementHomeViewModel with ChangeNotifier {
   void onPressedFilterSave() {
     // 필터 값 기억
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
+    speciesSelectedIdx = speciesStatus.indexWhere((element) => element == true);
     sortSelectedIdx = sortStatus.indexWhere((element) => element == true);
     statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
     // 필터 텍스트 할당
     filterdResult =
-        '${dateList[dateSelectedIdx]}∙${statusList[statusSelectedIdx]}∙${sortList[sortSelectedIdx]}';
+        '${dateList[dateSelectedIdx]}∙${speciesList[speciesSelectedIdx]}∙${statusList[statusSelectedIdx]}∙${sortList[sortSelectedIdx]}';
 
     // 필터 창 닫기
     isOpnedFilter = false;
@@ -188,10 +196,13 @@ class DataManagementHomeViewModel with ChangeNotifier {
     // 이전의 필터 값을 받아 필터 초기화.
     dateStatus = List.filled(dateStatus.length, false);
     dateStatus[dateSelectedIdx] = true;
+    speciesStatus = List.filled(speciesStatus.length, false);
+    speciesStatus[speciesSelectedIdx] = true;
     sortStatus = List.filled(sortStatus.length, false);
     sortStatus[sortSelectedIdx] = true;
     statusStatus = List.filled(statusStatus.length, false);
     statusStatus[statusSelectedIdx] = true;
+
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {
       firstDayText = '';
@@ -208,6 +219,7 @@ class DataManagementHomeViewModel with ChangeNotifier {
       temp1 = null;
       temp2 = null;
     }
+
     // 필터 on/off 조절
     isOpnedFilter = !isOpnedFilter;
     if (isOpenTable) {
@@ -263,10 +275,17 @@ class DataManagementHomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  //상태 필터 클릭
+  // 상태 필터 클릭
   void onTapStatus(int index) {
     statusStatus = List.filled(statusList.length, false);
     statusStatus[index] = true;
+    notifyListeners();
+  }
+
+  // 데이터 종 분류
+  void onTapSpecies(int index) {
+    speciesStatus = List.filled(speciesStatus.length, false);
+    speciesStatus[index] = true;
     notifyListeners();
   }
 
@@ -332,7 +351,6 @@ class DataManagementHomeViewModel with ChangeNotifier {
       }).toList();
     } else {
       filteredList = filteredList.where((data) {
-        print(data['createdAt']);
         DateTime dateTime = DateFormat('yyyy.MM.dd').parse(data['createdAt']!);
 
         return dateTime.isAfter(DateTime(firstDay!.year, firstDay!.month,
@@ -343,8 +361,22 @@ class DataManagementHomeViewModel with ChangeNotifier {
     }
   }
 
+  // 육종 별 필터링 진행. (소 / 돼지)
+  void setSpecies() {
+    if (speciesSelectedIdx == 1) {
+      filteredList = filteredList.where((data) {
+        return (data['specieValue'] == '소');
+      }).toList();
+    } else if (speciesSelectedIdx == 2) {
+      filteredList = filteredList.where((data) {
+        return (data['specieValue'] == '돼지');
+      }).toList();
+    }
+
+    selectedList = filteredList;
+  }
+
   void setStatus() {
-    print('setStatus 호출');
     if (statusSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['statusType'] == '대기중');

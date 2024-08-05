@@ -41,7 +41,7 @@ import 'package:structure/screen/sign_in/sign_in_screen.dart';
 import 'package:structure/viewModel/data_management/researcher/add_processed_meat_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
-import 'package:structure/viewModel/data_management/normal/data_management_view_model.dart';
+import 'package:structure/viewModel/data_management/normal/data_management_normal_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/sensory_eval_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
@@ -239,7 +239,7 @@ class UserRouter {
             GoRoute(
               path: 'data-manage-normal',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => DataManagementHomeViewModel(userModel),
+                create: (context) => DataManagementNormalViewModel(userModel),
                 child: const DataManagementNormalScreen(),
               ),
               routes: [

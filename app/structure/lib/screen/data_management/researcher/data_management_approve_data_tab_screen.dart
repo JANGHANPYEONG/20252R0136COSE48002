@@ -10,9 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_divider.dart';
-import 'package:structure/components/custom_table_bar_approve.dart';
+import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/filter_box.dart';
-import 'package:structure/components/list_card_approve.dart';
+import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
@@ -181,7 +181,7 @@ class _DataManagementApproveDataTabScreenState
                     SizedBox(height: 16.h),
 
                     // 육류 리스트 상단바
-                    const CustomTableBarApprove(),
+                    const CustomTableBar(),
                     SizedBox(height: 16.h),
 
                     // 육류 리스트
@@ -193,10 +193,9 @@ class _DataManagementApproveDataTabScreenState
                         child: ListView.separated(
                           controller: approveDataViewModel.scrollController,
                           itemCount: approveDataViewModel.selectedList.length,
-                          itemBuilder: (context, index) => ListCardApprove(
+                          itemBuilder: (context, index) => ListCard(
                             onTap: () async => await approveDataViewModel
                                 .onTapApproveCard(index, context),
-                            idx: index + 1,
                             meatId: approveDataViewModel.selectedList[index]
                                 ['meatId']!,
                             dayTime: Usefuls.parseDate(approveDataViewModel
