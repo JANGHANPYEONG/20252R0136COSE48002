@@ -7,8 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
-import 'package:structure/screen/data_management/researcher/approve_data_screen.dart';
-import 'package:structure/screen/data_management/researcher/data_management_home_researcher_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_management_approve_data_tab_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_management_add_additional_info_tab_screen.dart';
 import 'package:structure/viewModel/data_management/researcher/approve_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
@@ -61,14 +61,14 @@ class _DataManagementHomeTabScreenState
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
             ),
-            child: const DataManagementHomeResearcherScreen(),
+            child: const DataManagementAddAdditionalInfoTabScreen(),
           ),
           ChangeNotifierProvider(
             create: (context) => ApproveDataViewModel(
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
             ),
-            child: const ApproveDataScreen(),
+            child: const DataManagementApproveDataTabScreen(),
           ),
         ],
       ),

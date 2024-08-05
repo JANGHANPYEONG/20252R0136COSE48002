@@ -64,9 +64,10 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                         "소",
                         textAlign: TextAlign.center,
                         style: Palette.h4.copyWith(
-                            color: insertionMeatInfoViewModel.speciesCheckFunc()
-                                ? Palette.onSecondary
-                                : Palette.onPrimaryContainer),
+                          color: insertionMeatInfoViewModel.speciesCheckFunc()
+                              ? Palette.onSecondary
+                              : Palette.onPrimaryContainer,
+                        ),
                       ),
                     ),
                   ),

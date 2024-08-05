@@ -10,11 +10,11 @@ import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 import 'package:structure/screen/data_management/normal/edit_meat_data_screen.dart';
 import 'package:structure/screen/data_management/normal/not_editable/sensory_eval_not_editable_sceen.dart';
-import 'package:structure/screen/data_management/normal/not_editable/insertion_meat_image_not_editable_screen.dart';
-import 'package:structure/screen/data_management/normal/not_editable/insertion_meat_info_not_editable_screen.dart';
+import 'package:structure/screen/data_management/normal/not_editable/meat_image_not_editable_screen.dart';
+import 'package:structure/screen/data_management/normal/not_editable/meat_info_not_editable_screen.dart';
 import 'package:structure/screen/data_management/researcher/add_processed_meat_main_screen.dart';
-import 'package:structure/screen/data_management/researcher/add_raw_meat_screen.dart';
-import 'package:structure/screen/data_management/researcher/data_add_home_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_add_raw_meat_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_add_screen.dart';
 import 'package:structure/screen/data_management/normal/data_management_home_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_management_home_tab_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_heated_sensory_screen.dart';
@@ -43,7 +43,7 @@ import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view
 import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/data_management_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
-import 'package:structure/viewModel/data_management/normal/not_editable/sensoty_eval_not_editable_view_model.dart';
+import 'package:structure/viewModel/data_management/normal/not_editable/sensory_eval_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_info_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
@@ -258,7 +258,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             InsertionMeatInfoNotEditableViewModel(meatModel),
-                        child: const InsertionMeatInfoNotEditableScreen(),
+                        child: const MeatInfoNotEditableScreen(),
                       ),
                     ),
                     GoRoute(
@@ -266,7 +266,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             InsertionMeatImageNotEditableViewModel(meatModel),
-                        child: const InsertionMeatImageNotEditableScreen(),
+                        child: const MeatImageNotEditableScreen(),
                       ),
                     ),
                     GoRoute(
@@ -319,14 +319,14 @@ class UserRouter {
                   path: 'add',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) => DataAddHomeViewModel(meatModel),
-                    child: const DataAddHome(),
+                    child: const DataAddScreen(),
                   ),
                   routes: [
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) => AddRawMeatViewModel(),
-                        child: AddRawMeatScreen(meatModel: meatModel),
+                        child: DataAddRawMeatScreen(meatModel: meatModel),
                       ),
                       routes: [
                         // 수정 불가 원육 기본정보
@@ -336,7 +336,7 @@ class UserRouter {
                             create: (context) =>
                                 InsertionMeatInfoNotEditableViewModel(
                                     meatModel),
-                            child: const InsertionMeatInfoNotEditableScreen(),
+                            child: const MeatInfoNotEditableScreen(),
                           ),
                         ),
                         // 수정 불가 원육 단면 촬영
@@ -346,7 +346,7 @@ class UserRouter {
                             create: (context) =>
                                 InsertionMeatImageNotEditableViewModel(
                                     meatModel),
-                            child: const InsertionMeatImageNotEditableScreen(),
+                            child: const MeatImageNotEditableScreen(),
                           ),
                         ),
                         // 수정 불가 원육 관능평가
@@ -505,7 +505,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             InsertionMeatInfoNotEditableViewModel(meatModel),
-                        child: const InsertionMeatInfoNotEditableScreen(),
+                        child: const MeatInfoNotEditableScreen(),
                       ),
                     ),
                     GoRoute(
@@ -513,7 +513,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             InsertionMeatImageNotEditableViewModel(meatModel),
-                        child: const InsertionMeatImageNotEditableScreen(),
+                        child: const MeatImageNotEditableScreen(),
                       ),
                     ),
                     GoRoute(

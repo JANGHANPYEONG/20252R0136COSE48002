@@ -15,7 +15,7 @@ class CustomTableBarApprove extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 64.h,
-      padding: EdgeInsets.symmetric(horizontal: 56.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       color: Colors.grey[50],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
