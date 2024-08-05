@@ -54,48 +54,44 @@ class StepCard extends StatelessWidget {
       Pallete.notEditableText,
     ];
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40.w),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20.r),
-        onTap: () => onTap(),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          height: 108.w,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 이미지 지정
-              Image.asset(imageUrl, width: 62.w, height: 62.h),
-              SizedBox(width: 32.w),
+    return InkWell(
+      borderRadius: BorderRadius.circular(20.r),
+      onTap: () => onTap(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 108.w,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 이미지 지정
+            Image.asset(imageUrl, width: 62.w, height: 62.h),
+            SizedBox(width: 32.w),
 
-              // 메인 텍스트
-              Text(mainText, style: Pallete.h4),
-              const Spacer(),
+            // 메인 텍스트
+            Text(mainText, style: Pallete.h4),
+            const Spacer(),
 
-              // status 상자 - null이면 표시하지 않음
-              if (status != null)
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.sp),
-                    color: statusColor[status!],
-                  ),
-                  width: 108.w,
-                  height: 48.h,
-                  child: Center(
-                    child: Text(
-                      statusString[status!],
-                      style: statusTextStyle[status!],
-                    ),
+            // status 상자 - null이면 표시하지 않음
+            if (status != null)
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.sp),
+                  color: statusColor[status!],
+                ),
+                width: 108.w,
+                height: 48.h,
+                child: Center(
+                  child: Text(
+                    statusString[status!],
+                    style: statusTextStyle[status!],
                   ),
                 ),
-              SizedBox(width: 20.w),
+              ),
+            SizedBox(width: 20.w),
 
-              // 오른쪽 화살표
-              Image.asset('assets/images/arrow-r.png',
-                  width: 32.w, height: 32.h),
-            ],
-          ),
+            // 오른쪽 화살표
+            Image.asset('assets/images/arrow-r.png', width: 32.w, height: 32.h),
+          ],
         ),
       ),
     );

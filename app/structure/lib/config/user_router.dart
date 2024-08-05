@@ -25,7 +25,7 @@ import 'package:structure/screen/meat_registration/camera_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_meat_info_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_trace_num_screen.dart';
-import 'package:structure/screen/meat_registration/registration_meat_image_screen.dart';
+import 'package:structure/screen/meat_registration/insertion_meat_image_screen.dart';
 import 'package:structure/screen/my_page/change_password_screen.dart';
 import 'package:structure/screen/my_page/delete_user_screen.dart';
 import 'package:structure/screen/my_page/user_detail_screen.dart';
@@ -33,7 +33,7 @@ import 'package:structure/screen/my_page/my_page_screen.dart';
 import 'package:structure/screen/sign_in/password_reset_screen.dart';
 import 'package:structure/screen/sign_in/complete_reset_screen.dart';
 import 'package:structure/screen/sign_up/complete_sign_up_screen.dart';
-import 'package:structure/screen/meat_registration/sensory_eval_screen.dart';
+import 'package:structure/screen/meat_registration/insertion_sensory_eval_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_detail_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_info_screen.dart';
 import 'package:structure/screen/meat_registration/meat_registration_screen.dart';
@@ -166,7 +166,7 @@ class UserRouter {
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
                         InsertionMeatImageViewModel(meatModel, userModel, true),
-                    child: const RegistrationMeatImageScreen(),
+                    child: const InsertionMeatImageScreen(),
                   ),
                   routes: [
                     // 사진 촬영 카메라
@@ -185,7 +185,7 @@ class UserRouter {
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
                         InsertionSensoryEvalViewModel(meatModel, userModel),
-                    child: const SensoryEvalScreen(),
+                    child: const InsertionSensoryEvalScreen(),
                   ),
                 ),
               ],
@@ -291,7 +291,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) => InsertionMeatImageViewModel(
                             meatModel, userModel, true),
-                        child: const RegistrationMeatImageScreen(),
+                        child: const InsertionMeatImageScreen(),
                       ),
                     ),
                     GoRoute(
@@ -299,7 +299,7 @@ class UserRouter {
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             InsertionSensoryEvalViewModel(meatModel, userModel),
-                        child: const SensoryEvalScreen(),
+                        child: const InsertionSensoryEvalScreen(),
                       ),
                     ),
                   ],
@@ -383,7 +383,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
                                 meatModel, userModel, false),
-                            child: const RegistrationMeatImageScreen(),
+                            child: const InsertionMeatImageScreen(),
                           ),
                         ),
                         // 가열육 관능평가 데이터
@@ -427,7 +427,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
                                 meatModel, userModel, true),
-                            child: const RegistrationMeatImageScreen(),
+                            child: const InsertionMeatImageScreen(),
                           ),
                         ),
                         GoRoute(
@@ -435,7 +435,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionSensoryEvalViewModel(
                                 meatModel, userModel),
-                            child: const SensoryEvalScreen(),
+                            child: const InsertionSensoryEvalScreen(),
                           ),
                         ),
                         GoRoute(
@@ -459,7 +459,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
                                 meatModel, userModel, false),
-                            child: const RegistrationMeatImageScreen(),
+                            child: const InsertionMeatImageScreen(),
                           ),
                         ),
                         GoRoute(

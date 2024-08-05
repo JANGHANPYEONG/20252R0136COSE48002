@@ -16,8 +16,7 @@ class ImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40.w),
+    return SizedBox(
       width: 640.w,
       height: 640.w,
       child: ClipRRect(

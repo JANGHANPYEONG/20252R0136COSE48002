@@ -9,7 +9,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:structure/components/inner_box.dart';
 import 'package:structure/components/main_text_field.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:flutter/material.dart';
@@ -55,133 +55,130 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: false,
         appBar: const CustomAppBar(
           title: '육류 기본정보',
           backButton: true,
           closeButton: false,
         ),
-        body: Column(
-          children: [
-            SizedBox(height: 56.h),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(width: 40.h),
+        resizeToAvoidBottomInset: false,
+        body: Container(
+          margin: EdgeInsets.symmetric(horizontal: 40.w),
+          child: Column(
+            children: [
+              SizedBox(height: 24.h),
 
-                // 육류번호 입력 form
-                Form(
-                  key: insertionTraceNumViewModel.formKey,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 육류번호 입력 form
+                  Expanded(
+                    child: Form(
+                      key: insertionTraceNumViewModel.formKey,
 
-                  // MainTextField 컴포넌트를 이용하여, textfield를 구현.
-                  child: MainTextField(
-                    controller:
-                        insertionTraceNumViewModel.textEditingController,
-                    action: TextInputAction.search,
-                    formatter: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9L]'))
-                    ],
+                      // MainTextField 컴포넌트를 이용하여, textfield를 구현.
+                      child: MainTextField(
+                        width: double.infinity,
+                        height: 80.h,
+                        maxLength: 15,
+                        controller:
+                            insertionTraceNumViewModel.textEditingController,
+                        action: TextInputAction.search,
+                        formatter: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9L]'))
+                        ],
 
-                    // 유효성 검사
-                    validateFunc: (value) {
-                      if (value!.isEmpty || value.length < 12) {
-                        return "유효하지 않습니다!";
-                      } else {
-                        return null;
-                      }
-                    },
+                        // 유효성 검사
+                        validateFunc: (value) {
+                          if (value!.isEmpty || value.length < 12) {
+                            return "유효하지 않습니다!";
+                          } else {
+                            return null;
+                          }
+                        },
 
-                    // 입력된 텍스트 값(value)을 저장할 때 사용.
-                    onSaveFunc: (value) {
-                      insertionTraceNumViewModel.traceNum = value!;
-                    },
+                        // 입력된 텍스트 값(value)을 저장할 때 사용.
+                        onSaveFunc: (value) {
+                          insertionTraceNumViewModel.traceNum = value!;
+                        },
 
-                    // 입력된 텍스트 값(value)이 변경될 때 사용.
-                    onChangeFunc: (value) {
-                      insertionTraceNumViewModel.traceNum = value;
-                    },
+                        // 입력된 텍스트 값(value)이 변경될 때 사용.
+                        onChangeFunc: (value) {
+                          insertionTraceNumViewModel.traceNum = value;
+                        },
 
-                    // field에서 완료 버튼을 누를 때 호출.
-                    onFieldFunc: (value) {
-                      insertionTraceNumViewModel.traceNum = value;
-                      insertionTraceNumViewModel.start(context);
-                    },
+                        // field에서 완료 버튼을 누를 때 호출.
+                        onFieldFunc: (value) {
+                          insertionTraceNumViewModel.traceNum = value;
+                          insertionTraceNumViewModel.start(context);
+                        },
 
-                    mainText: '이력번호 입력',
-                    prefixIcon: GestureDetector(
-                      onTap: () => insertionTraceNumViewModel.start(context),
-                      child: Icon(Icons.search, size: 36.sp),
-                    ),
-                    canAlert: true,
-                    width: 546.w,
-                    height: 72.h,
-                    maxLength: 15,
-                  ),
-                ),
-
-                // 취소 버튼
-                SizedBox(
-                  width: 50,
-                  child: TextButton(
-                    onPressed: () {
-                      insertionTraceNumViewModel.clearText();
-                      FocusScope.of(context).unfocus();
-                    },
-                    child: const Text(
-                      '취소',
-                      style: TextStyle(color: Colors.black, fontSize: 14),
+                        mainText: '이력번호 입력',
+                        prefixIcon: GestureDetector(
+                          onTap: () =>
+                              insertionTraceNumViewModel.start(context),
+                          child: Icon(Icons.search, size: 36.sp),
+                        ),
+                        canAlert: true,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 48.h),
 
-            // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
-            if (insertionTraceNumViewModel.isAllInserted == 1)
-              Expanded(
-                child: Container(
-                  width: 642.w,
-                  decoration:
-                      BoxDecoration(borderRadius: BorderRadius.circular(50.r)),
+                  SizedBox(width: 16.w),
+
+                  // 취소 버튼
+                  SizedBox(
+                    width: 50,
+                    child: TextButton(
+                      onPressed: () {
+                        insertionTraceNumViewModel.clearText();
+                        FocusScope.of(context).unfocus();
+                      },
+                      child: const Text(
+                        '취소',
+                        style: TextStyle(color: Colors.black, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 48.h),
+
+              // ListTable 위젯을 표현. (모든 데이터가 입력된 상황)
+              if (insertionTraceNumViewModel.isAllInserted == 1)
+                Expanded(
                   child: ListTable(
                       tableData: insertionTraceNumViewModel.tableData),
-                ),
-              )
-            // 검색 결과가 존재하지 않음을 출력. (이력 번호가 잘못된 상황)
-            else if (insertionTraceNumViewModel.isAllInserted == 2)
-              const Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 45.0),
+                )
+              // 검색 결과가 존재하지 않음을 출력. (이력 번호가 잘못된 상황)
+              else if (insertionTraceNumViewModel.isAllInserted == 2)
+                Expanded(
+                  child: Center(
                     child: Text(
                       '검색결과가 없습니다',
-                      style: TextStyle(fontSize: 17.0),
+                      style: Palette.h3Regular,
                     ),
                   ),
-                ),
-              )
-            // 빈 화면을 표현. (이력 번호 입력이 되지 않은 초기 상태)
-            else if (insertionTraceNumViewModel.isAllInserted == 0)
-              const Spacer(flex: 2),
+                )
+              // 빈 화면을 표현. (이력 번호 입력이 되지 않은 초기 상태)
+              else if (insertionTraceNumViewModel.isAllInserted == 0)
+                const Spacer(),
 
-            // 다음 버튼
-            Container(
-              margin: EdgeInsets.only(bottom: 28.h),
-              child: MainButton(
-                mode: 1,
-                text: '다음',
-                width: 640.w,
-                height: 96.h,
-                // 모든 데이터가 입력된 상황에서 '다음' 버튼을 활성화.
-                onPressed: (insertionTraceNumViewModel.isAllInserted == 1)
-                    ? () =>
-                        insertionTraceNumViewModel.clickedNextbutton(context)
-                    : null,
+              // 다음 버튼
+              Container(
+                margin: EdgeInsets.only(bottom: 40.h),
+                child: MainButton(
+                  width: double.infinity,
+                  height: 96.h,
+                  text: '다음',
+                  // 모든 데이터가 입력된 상황에서 '다음' 버튼을 활성화.
+                  onPressed: (insertionTraceNumViewModel.isAllInserted == 1)
+                      ? () =>
+                          insertionTraceNumViewModel.clickedNextbutton(context)
+                      : null,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -221,9 +218,10 @@ class ListTable extends StatelessWidget {
                 fit: FlexFit.tight,
                 child: InnerBox(
                   text: baseData[index],
-                  style: Pallete.listIndexGrey,
+                  style: Palette.h5SemiBoldSecondary,
                 ),
               ),
+
               // tableData를 이용하여 table data list를 출력.
               Flexible(
                 flex: 2,
@@ -232,12 +230,12 @@ class ListTable extends StatelessWidget {
                     // 데이터가 '소'이며, '사육지'일 때, 주소가 길어질 수 있으니 스크롤 형태로 출력.
                     ? InnerBox(
                         text: tableData[index],
-                        style: Pallete.listStyle,
+                        style: Palette.h4Secondary,
                       )
                     : InnerBox(
                         text:
                             (tableData[index] != null) ? tableData[index] : "",
-                        style: Pallete.listStyle,
+                        style: Palette.h4Secondary,
                       ),
               ),
             ],

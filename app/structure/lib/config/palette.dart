@@ -12,6 +12,8 @@ class Palette {
   // Primary continaer 색 (연초록)
   static const Color primaryContainer = Color(0xFF87E980);
 
+  static const Color onPrimaryContainer = Color(0xFFF9F9F9);
+
   // Secondary 색 (회색)
   static const Color secondary = Color(0xFF515151);
   static const Color onSecondary = Color(0xFF9F9F9F);
@@ -64,6 +66,14 @@ class Palette {
     color: onPrimary,
   );
 
+  /// Font size: 36.sp
+  /// <br /> Font weight: w400
+  static TextStyle h3Regular = TextStyle(
+    fontSize: 36.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
   /* h4 */
   /// Font size: 30.sp
   /// <br /> Font weight: w600
@@ -88,6 +98,15 @@ class Palette {
     fontSize: 30.sp,
     fontWeight: FontWeight.w600,
     color: secondary,
+  );
+
+  /// Font size: 30.sp
+  /// <br /> Font weight: w600
+  ///   /// <br /> Color: onSecondary
+  static TextStyle h4OnSecondary = TextStyle(
+    fontSize: 30.sp,
+    fontWeight: FontWeight.w600,
+    color: onSecondary,
   );
 
   /* h5 */
@@ -141,6 +160,15 @@ class Palette {
   static TextStyle h5OnSecondary = TextStyle(
     fontSize: 24.sp,
     fontWeight: FontWeight.w400,
+    color: onSecondary,
+  );
+
+  /// Font size: 24.sp
+  /// <br /> Font weight: w600
+  /// <br /> Color: onSecondary
+  static TextStyle h5SemiBoldOnSecondary = TextStyle(
+    fontSize: 24.sp,
+    fontWeight: FontWeight.w600,
     color: onSecondary,
   );
 
