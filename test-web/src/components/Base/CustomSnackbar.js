@@ -16,6 +16,7 @@ function CustomSnackbar({ open, message, severity, onClose }) {
       autoHideDuration={6000}
       onClose={handleSnackbarClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Set the anchorOrigin to top-right
+      style={{ marginTop: '70px' }} // margin for toolbar
     >
       <MuiAlert
         elevation={6}

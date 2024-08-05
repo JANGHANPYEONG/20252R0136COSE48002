@@ -105,7 +105,7 @@ function UserList() {
     setSnackbarOpen(true);
   };
 
-  const closeSnackbar = () => {
+  const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
@@ -446,7 +446,7 @@ function UserList() {
         open={snackbarOpen}
         message={snackbarMessage}
         severity={snackbarSeverity}
-        onClose={closeSnackbar}
+        onClose={handleSnackbarClose}
       />
     </div>
   );
