@@ -12,7 +12,7 @@ import 'package:structure/screen/data_management/normal/edit_meat_data_screen.da
 import 'package:structure/screen/data_management/normal/not_editable/sensory_eval_not_editable_sceen.dart';
 import 'package:structure/screen/data_management/normal/not_editable/meat_image_not_editable_screen.dart';
 import 'package:structure/screen/data_management/normal/not_editable/meat_info_not_editable_screen.dart';
-import 'package:structure/screen/data_management/researcher/add_processed_meat_main_screen.dart';
+import 'package:structure/screen/data_management/researcher/data_add_processed_meat_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_raw_meat_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_add_screen.dart';
 import 'package:structure/screen/data_management/normal/data_management_home_screen.dart';
@@ -419,7 +419,7 @@ class UserRouter {
                       path: 'processed-meat',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) => AddProcessedMeatViewModel(),
-                        child: AddProcessedMeatMainScreen(meatModel: meatModel),
+                        child: DataAddProcessedMeatScreen(meatModel: meatModel),
                       ),
                       routes: [
                         GoRoute(

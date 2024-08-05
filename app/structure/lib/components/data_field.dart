@@ -39,8 +39,7 @@ class _DataFieldState extends State<DataField> {
         SizedBox(height: 12.h),
 
         // 입력 textfield
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: 40.w),
+        SizedBox(
           height: 88.h,
           child: Focus(
             onFocusChange: (hasFocus) {
