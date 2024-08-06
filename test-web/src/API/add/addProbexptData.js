@@ -1,13 +1,13 @@
 import { apiIP } from '../../config';
 
 // 실험실 데이터 수정 POST API
-export default async function addProbexptData(
+export const addProbexptData = async (
   data, // 실험실 데이터
   i, // 실험실 seqno
   meatId, // 이력번호
   userId,
   isPost
-) {
+) => {
   const dataset = {
     ['L']: parseFloat(data.L),
     ['a']: parseFloat(data.a),
@@ -59,4 +59,5 @@ export default async function addProbexptData(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addProbexptData;

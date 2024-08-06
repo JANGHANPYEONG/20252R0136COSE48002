@@ -1,4 +1,4 @@
-const fetcher = (...args) =>
+export const fetcher = (...args) =>
   fetch(...args).then((res) => {
     switch (res.status) {
       //response status가 200 (OK)인 경우, JSON을 파싱한 후 data 반환
@@ -13,4 +13,4 @@ const fetcher = (...args) =>
     }
   });
 
-  export default fetcher
+export default fetcher;

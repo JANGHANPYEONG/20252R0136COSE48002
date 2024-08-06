@@ -1,7 +1,7 @@
 //대쉬보드 현황 페이지 통계자료 표출
 import PieChart from './PieChart/pieChart';
 import StackedBarChart from './StackedBarChart/StackedBarChart';
-import Map from './choroplethMap/Map';
+import Map from './ChoroplethMap/Map';
 import { Box } from '@mui/material';
 const DataStat = ({ startDate, endDate }) => {
   return (

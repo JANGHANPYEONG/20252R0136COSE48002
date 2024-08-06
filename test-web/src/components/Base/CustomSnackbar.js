@@ -2,7 +2,7 @@ import React from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 
-function CustomSnackbar({ open, message, severity, onClose }) {
+const CustomSnackbar = ({ open, message, severity, onClose }) => {
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -28,6 +28,6 @@ function CustomSnackbar({ open, message, severity, onClose }) {
       </MuiAlert>
     </Snackbar>
   );
-}
+};
 
 export default CustomSnackbar;

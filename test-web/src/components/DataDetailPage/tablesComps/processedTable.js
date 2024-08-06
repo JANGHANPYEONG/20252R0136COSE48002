@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@mui/material';
 // modal component
-import InputTransitionsModal from '../InputWarningComp';
+import InputTransitionsModal from '../InputTransitionsModal';
 
 const ProcessedTable = ({
   edited,

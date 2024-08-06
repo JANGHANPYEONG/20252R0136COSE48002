@@ -5,7 +5,7 @@ import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import { Box, Button, SvgIcon, CircularProgress } from '@mui/material';
 import { getDataListJSON, downloadExcel } from './ExcelExport';
 import { apiIP } from '../../config';
-import ExcelImportAlertModal from '../DataDetailPage/excelImportAlertModal';
+import ExcelImportAlertModal from '../DataDetailPage/ExcelImportAlertModal';
 
 const navy = '#0F3659';
 

@@ -1,5 +1,5 @@
 // 축산물 이력 데이터를 json 객체로 변환하는 함수
-function convertToApiData(
+const convertToApiData = (
   birthYmd,
   butcheryYmd,
   company,
@@ -18,7 +18,7 @@ function convertToApiData(
   userId,
   userName,
   userType
-) {
+) => {
   // JSON 객체
   const apiData = {
     birthYmd: birthYmd,
@@ -42,10 +42,10 @@ function convertToApiData(
   };
   console.log('apidata2 : ', apiData);
   return apiData;
-}
+};
 
 // 데이터 전처리
-export default function dataProcessing(items) {
+const dataProcessing = (items) => {
   // 3-1. 축산물 이력 데이터 json 객체로 만들기
   const apiData = convertToApiData(
     items.birthYmd,
@@ -76,7 +76,6 @@ export default function dataProcessing(items) {
   let processedData = [];
   let heatedData = [
     deepAgingInfo[0] ? deepAgingInfo[0].heatedmeat_sensory_eval || {} : {},
-
   ];
   let labData = [deepAgingInfo[0] ? deepAgingInfo[0].probexpt_data || {} : {}];
   let processedMinute = [];
@@ -113,7 +112,6 @@ export default function dataProcessing(items) {
     raw_data: deepAgingInfo[0] ? deepAgingInfo[0].sensory_eval || {} : {},
     raw_img_path: deepAgingInfo[0]
       ? deepAgingInfo[0].sensory_eval?.imagePath || {}
-
       : {},
     processed_data: processedData,
     heated_data: heatedData,
@@ -125,4 +123,5 @@ export default function dataProcessing(items) {
   };
 
   return data;
-}
+};
+export default dataProcessing;
