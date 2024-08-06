@@ -253,7 +253,7 @@ void showSaveImageDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
         child: Container(
-          height: 896.h,
+          height: 960.h,
           width: 648.w,
           margin: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(

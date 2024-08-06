@@ -28,12 +28,15 @@ class CameraViewModel with ChangeNotifier {
     await controller.initialize().catchError((e) {
       if (e is CameraException && e.code == 'CameraAccessDenied') {
         // 카메라 권한 설정
-        print('Camera access denied');
+        debugPrint('Camera access denied');
       } else {
         // 카메라 오류
-        print('Camera error: $e');
+        debugPrint('Camera error: $e');
       }
     });
+
+    // controller initialize 후 초기 값 설정
+    controller.setFlashMode(FlashMode.off); // 플래시 끄기
 
     // 카메라 설정 완료
     isLoaded = controller.value.isInitialized;
