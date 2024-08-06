@@ -920,11 +920,12 @@ def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
         result = []
         if meats:
             for meat in meats:
+                meat_obj, specie_id = meat
                 result.append({
-                    "meatId": meat.id,
-                    "createdAt": convert2string(meat.createdAt, 1),
-                    "statusType": statusType[meat.statusType],
-                    "specieValue": species[meat.speciesId]
+                    "meatId": meat_obj.id,
+                    "createdAt": convert2string(meat_obj.createdAt, 1),
+                    "statusType": statusType[meat_obj.statusType],
+                    "specieValue": species[specie_id]
                 })
                 
         db_session.close()    
