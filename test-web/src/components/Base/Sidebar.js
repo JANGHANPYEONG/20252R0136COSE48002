@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../Base/CustomSnackbar';
 import PropTypes from 'prop-types';
@@ -88,14 +88,32 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const Sidebar = ()  => {
+const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
-  //const userEmail = UserInfo.userId;
+  const [userInfo, setUserInfo] = useState(
+    JSON.parse(localStorage.getItem('UserInfo'))
+  );
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedUserInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      setUserInfo(updatedUserInfo);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // 같은 탭 내에서의 변경을 감지하기 위한 커스텀 이벤트 리스너
+    window.addEventListener('userInfoUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userInfoUpdated', handleStorageChange);
+    };
+  }, []);
 
   const logout = useLogout();
   const toggleDrawer = () => {
@@ -107,7 +125,7 @@ const Sidebar = ()  => {
   };
 
   const handleListItemClick = (item) => {
-    if (item.label === '사용자 관리' && UserInfo.type !== 'Manager') {
+    if (item.label === '사용자 관리' && userInfo.type !== 'Manager') {
       setSnackbarMessage('권한이 없습니다');
       setSnackbarOpen(true);
     } else {
@@ -119,14 +137,16 @@ const Sidebar = ()  => {
       }
     }
   };
-  let typeColor = '';
-  if (UserInfo.type === 'Manager') {
-    typeColor = '#70E391';
-  } else if (UserInfo.type === 'Researcher') {
-    typeColor = '#D9C2FF';
-  } else {
-    typeColor = '#FFF856';
-  }
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'Manager':
+        return '#70E391';
+      case 'Researcher':
+        return '#D9C2FF';
+      default:
+        return '#FFF856';
+    }
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -158,8 +178,7 @@ const Sidebar = ()  => {
           <IconButton onClick={() => navigate('/profile')}>
             <div
               style={{
-                //backgroundColor: '#E8E8E8',
-                backgroundColor: typeColor,
+                backgroundColor: getTypeColor(userInfo.type),
                 width: '40px',
                 height: '40px',
                 borderRadius: '12px',
@@ -170,7 +189,7 @@ const Sidebar = ()  => {
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
-            {UserInfo && UserInfo.name ? (
+            {userInfo && userInfo.name ? (
               <div
                 style={{
                   display: 'flex',
@@ -184,7 +203,7 @@ const Sidebar = ()  => {
                   noWrap
                   sx={{ flexGrow: 1, color: 'black', fontSize: '21px' }}
                 >
-                  {UserInfo.name}
+                  {userInfo.name}
                 </Typography>
                 <Typography
                   component="h2"
@@ -192,7 +211,7 @@ const Sidebar = ()  => {
                   noWrap
                   sx={{ flexGrow: 1, fontSize: '12px' }}
                 >
-                  {UserInfo.type}
+                  {userInfo.type}
                 </Typography>
               </div>
             ) : (
@@ -288,7 +307,7 @@ const Sidebar = ()  => {
       />
     </ThemeProvider>
   );
-}
+};
 
 Sidebar.propTypes = {
   width: PropTypes.number,
