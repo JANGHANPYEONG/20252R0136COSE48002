@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
+import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/custom_table_bar.dart';
 import 'package:structure/components/filter_box.dart';
 import 'package:structure/components/list_card.dart';
@@ -200,7 +201,11 @@ class _DataManagementNormalScreenState
                       height: 800.h,
                       child: Scrollbar(
                         thumbVisibility: true,
-                        child: ListView.builder(
+                        controller:
+                            dataManagementNormalViewModel.scrollController,
+                        child: ListView.separated(
+                          controller:
+                              dataManagementNormalViewModel.scrollController,
                           itemCount:
                               dataManagementNormalViewModel.selectedList.length,
                           itemBuilder: (context, index) => ListCard(
@@ -220,6 +225,10 @@ class _DataManagementNormalScreenState
                                           .selectedList[index]["createdAt"]!),
                                 ),
                           ),
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          separatorBuilder: (BuildContext context, int index) =>
+                              const CustomDivider(),
                         ),
                       ),
                     ),

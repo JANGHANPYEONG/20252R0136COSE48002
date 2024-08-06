@@ -12,7 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CustomTableCalendar extends StatelessWidget {
@@ -45,30 +45,27 @@ class CustomTableCalendar extends StatelessWidget {
       headerStyle: HeaderStyle(
         formatButtonVisible: false,
         titleCentered: true,
-        titleTextStyle: TextStyle(
-          fontSize: 24.sp,
-          fontWeight: FontWeight.bold,
-        ),
+        titleTextStyle: Palette.h5SemiBold,
         headerMargin: EdgeInsets.only(bottom: 36.h),
       ),
       calendarStyle: CalendarStyle(
         isTodayHighlighted: false,
         outsideDaysVisible: false,
         selectedDecoration: const BoxDecoration(
-          color: Pallete.checkSpeciesColor,
+          color: Palette.primary,
           shape: BoxShape.circle,
         ),
         selectedTextStyle: TextStyle(
           color: Colors.white,
-          fontSize: 26.sp,
+          fontSize: 24.sp,
         ),
         defaultTextStyle: TextStyle(
           color: Colors.black,
-          fontSize: 26.sp,
+          fontSize: 24.sp,
         ),
         todayTextStyle: TextStyle(
           color: Colors.black,
-          fontSize: 26.sp,
+          fontSize: 24.sp,
         ),
       ),
     );

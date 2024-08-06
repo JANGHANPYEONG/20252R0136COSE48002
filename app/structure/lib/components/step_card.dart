@@ -14,7 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class StepCard extends StatelessWidget {
   final String mainText;
@@ -33,11 +33,11 @@ class StepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Color> statusColor = [
-      Pallete.notEditableBg,
-      Pallete.completeBg,
-      Pallete.notCompleteBg,
-      Pallete.editableBg,
-      Pallete.notEditableBg,
+      Palette.onPrimary,
+      Palette.stepCardComplete,
+      Palette.stepCardNotComplete,
+      Palette.primary,
+      Palette.onPrimary,
     ];
     final List<String> statusString = [
       '미진행',
@@ -47,11 +47,11 @@ class StepCard extends StatelessWidget {
       '수정 불가',
     ];
     final List<TextStyle> statusTextStyle = [
-      Pallete.notEditableText,
-      Pallete.completeText,
-      Pallete.notCompleteText,
-      Pallete.editableText,
-      Pallete.notEditableText,
+      Palette.h6SemiBoldOnSecondary,
+      Palette.h6SemiBold.copyWith(color: Palette.primary),
+      Palette.h6SemiBold.copyWith(color: Palette.error),
+      Palette.h6SemiBold.copyWith(color: Palette.onPrimaryContainer),
+      Palette.h6SemiBoldOnSecondary,
     ];
 
     return InkWell(
@@ -64,18 +64,18 @@ class StepCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // 이미지 지정
-            Image.asset(imageUrl, width: 62.w, height: 62.h),
+            Image.asset(imageUrl, width: 64.w, height: 64.h),
             SizedBox(width: 32.w),
 
             // 메인 텍스트
-            Text(mainText, style: Pallete.h4),
+            Text(mainText, style: Palette.h4),
             const Spacer(),
 
             // status 상자 - null이면 표시하지 않음
             if (status != null)
               Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.sp),
+                  borderRadius: BorderRadius.circular(20.r),
                   color: statusColor[status!],
                 ),
                 width: 108.w,
@@ -87,7 +87,7 @@ class StepCard extends StatelessWidget {
                   ),
                 ),
               ),
-            SizedBox(width: 20.w),
+            SizedBox(width: 16.w),
 
             // 오른쪽 화살표
             Image.asset('assets/images/arrow-r.png', width: 32.w, height: 32.h),

@@ -11,7 +11,7 @@
 //
 //
 
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -66,9 +66,9 @@ class _CustomDropdownState extends State<CustomDropdown> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15.sp),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: Pallete.meatRegiCardBg,
+                  color: Palette.primary,
                 ),
               ),
               constraints: BoxConstraints(maxHeight: 400.h),
@@ -80,7 +80,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                   physics: const ClampingScrollPhysics(),
                   children: widget.itemList.map((String item) {
                     return ListTile(
-                      title: Text(item, style: Pallete.dropDownTextStyle),
+                      title: Text(item, style: Palette.h4),
                       onTap: () {
                         widget.onChanged!(item);
                         _toggleDropdown();
@@ -104,25 +104,22 @@ class _CustomDropdownState extends State<CustomDropdown> {
         onTap: _toggleDropdown,
         child: Container(
           decoration: BoxDecoration(
-            color: Pallete.fieldEmptyBg,
-            borderRadius: BorderRadius.circular(15.sp),
+            color: Palette.onPrimaryContainer,
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: widget.value != null
-                  ? Pallete.meatRegiCardBg
-                  : Pallete.fieldEmptyBg,
+                  ? Palette.primary
+                  : Palette.onPrimaryContainer,
               width: 1.0,
             ),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 16.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: widget.value != null
-                    ? Text(
-                        widget.value!,
-                        style: Pallete.dropDownTextStyle,
-                      )
+                    ? Text(widget.value!, style: Palette.h4)
                     : widget.hintText,
               ),
               widget.hasDropdown

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class HomeCard extends StatelessWidget {
   final String mainText;
@@ -35,8 +35,8 @@ class HomeCard extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.all(8.w),
-            width: 300.w,
-            height: 538.h,
+            width: 304.w,
+            height: 544.h,
             decoration: BoxDecoration(
                 color: mainColor, borderRadius: BorderRadius.circular(150.r)),
             child: Column(
@@ -47,8 +47,8 @@ class HomeCard extends StatelessWidget {
 
                 // 아이콘 원
                 Container(
-                  width: 238.w,
-                  height: 238.w,
+                  width: 240.w,
+                  height: 240.w,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.7),
                     shape: BoxShape.circle,
@@ -61,17 +61,17 @@ class HomeCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 22.h),
+                SizedBox(height: 24.h),
 
-                //
+                // 제목, 설명
                 Container(
                   margin: EdgeInsets.only(left: 32.w),
                   alignment: Alignment.centerLeft,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(mainText, style: Pallete.h3),
-                      SizedBox(height: 10.h),
+                      Text(mainText, style: Palette.h3),
+                      SizedBox(height: 16.h),
                       Text(subText, style: subTextStyle),
                     ],
                   ),
@@ -82,9 +82,9 @@ class HomeCard extends StatelessWidget {
 
           // 하단 화살표
           Transform.translate(
-            offset: Offset(148.w, 425.h),
+            offset: Offset(144.w, 432.h),
             child: Container(
-              width: 164.w,
+              width: 160.w,
               height: 80.h,
               padding: EdgeInsets.only(right: 20.w),
               alignment: Alignment.centerRight,

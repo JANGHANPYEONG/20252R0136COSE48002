@@ -12,7 +12,6 @@ import 'package:structure/components/date_container.dart';
 import 'package:structure/components/filter_row.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 
 /// 데이터 관리 페이지에서 사용되는 필터 area
 ///
@@ -230,7 +229,7 @@ class FilterBox extends StatelessWidget {
 
         // 정렬 순서
         // 모든 필터에서 사용
-        Text('정렬 순서', style: Pallete.fieldTitle),
+        Text('정렬 순서', style: Palette.h5SemiBoldSecondary),
         SizedBox(height: 16.h),
 
         FilterRow(

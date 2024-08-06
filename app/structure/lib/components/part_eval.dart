@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 
@@ -47,7 +47,7 @@ class PartEval extends StatelessWidget {
             for (int i = 2; i < 7; i++)
               Text(
                 selectedText![i],
-                style: Pallete.h5,
+                style: Palette.h5,
                 textAlign: TextAlign.center,
               ),
           ],
@@ -57,7 +57,7 @@ class PartEval extends StatelessWidget {
         // 슬라이더
         SfSliderTheme(
           data: SfSliderThemeData(
-            tooltipBackgroundColor: Pallete.meatRegiBtnBg,
+            tooltipBackgroundColor: Palette.primary,
             activeTrackHeight: 12.h,
             inactiveTrackHeight: 12.h,
             overlayRadius: 0,
@@ -69,8 +69,8 @@ class PartEval extends StatelessWidget {
             interval: 1,
             showTicks: true,
             showLabels: false,
-            activeColor: Pallete.meatRegiBtnBg,
-            inactiveColor: Pallete.notEditableBg,
+            activeColor: Palette.primary,
+            inactiveColor: Palette.onPrimary,
             enableTooltip: true,
             onChanged: onChanged,
             tooltipTextFormatterCallback:

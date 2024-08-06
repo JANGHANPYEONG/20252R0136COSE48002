@@ -4,7 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/components/loading_screen.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class ImageCard extends StatelessWidget {
   final String? imagePath;
@@ -61,24 +61,24 @@ class ImageError extends StatelessWidget {
       child: DottedBorder(
         radius: Radius.circular(20.r),
         borderType: BorderType.RRect,
-        color: Pallete.imageErrorColor,
+        color: Palette.onSecondary,
         strokeWidth: 2.sp,
         dashPattern: [12.w, 12.w],
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Center(
+            Center(
               child: Icon(
                 Icons.error_outline,
-                color: Pallete.imageErrorColor,
-                size: 48,
+                color: Palette.onSecondary,
+                size: 80.w,
               ),
             ),
             SizedBox(height: 16.h),
             Text(
               isError ? '이미지 로드에 실패하였습니다' : '이미지가 존재하지 않습니다',
-              style: const TextStyle(color: Pallete.imageErrorColor),
+              style: const TextStyle(color: Palette.onSecondary),
             ),
           ],
         ),

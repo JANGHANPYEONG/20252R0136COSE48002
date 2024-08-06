@@ -10,7 +10,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class FilterRow extends StatelessWidget {
   const FilterRow({
@@ -40,23 +40,21 @@ class FilterRow extends StatelessWidget {
             highlightColor: Colors.transparent,
             child: Container(
               height: 48.h,
-              margin: EdgeInsets.only(right: 12.w),
+              margin: EdgeInsets.only(right: 16.w),
               alignment: Alignment.center,
               padding: EdgeInsets.symmetric(horizontal: 32.w),
               decoration: BoxDecoration(
-                color: status[index] ? Colors.white : Pallete.fieldEmptyBg,
+                color:
+                    status[index] ? Colors.white : Palette.onPrimaryContainer,
                 borderRadius: BorderRadius.all(Radius.circular(50.r)),
                 border: Border.all(
-                  color:
-                      status[index] ? Pallete.editableBg : Colors.transparent,
+                  color: status[index] ? Palette.primary : Colors.transparent,
                 ),
               ),
               child: Text(
                 filterList[index],
                 style: TextStyle(
-                  color: status[index]
-                      ? Pallete.editableBg
-                      : Pallete.waitingCardBg,
+                  color: status[index] ? Palette.primary : Palette.onSecondary,
                 ),
               ),
             ),

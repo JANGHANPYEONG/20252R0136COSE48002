@@ -13,7 +13,7 @@ import 'package:structure/components/list_card_data_manage.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_add_additional_info_tab_view_model.dart';
 
 class DataManagementAddAdditionalInfoTabScreen extends StatefulWidget {
   const DataManagementAddAdditionalInfoTabScreen({super.key});
@@ -27,9 +27,9 @@ class _DataManagementAddAdditionalInfoTabScreenState
     extends State<DataManagementAddAdditionalInfoTabScreen> {
   @override
   Widget build(BuildContext context) {
-    final DataManagementHomeResearcherViewModel
-        dataManagementHomeResearcherViewModel =
-        context.watch<DataManagementHomeResearcherViewModel>();
+    final DataManagementAddAdditionalInfoTabViewModel
+        dataManagementAddAdditionalInfoTabViewModel =
+        context.watch<DataManagementAddAdditionalInfoTabViewModel>();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -54,15 +54,16 @@ class _DataManagementAddAdditionalInfoTabScreenState
                       children: [
                         // 데이터 개수 텍스트
                         Text(
-                          '${dataManagementHomeResearcherViewModel.selectedList.length}개의 데이터',
+                          '${dataManagementAddAdditionalInfoTabViewModel.selectedList.length}개의 데이터',
                           textAlign: TextAlign.left,
                           style: Palette.h5Secondary,
                         ),
 
                         // 필터 버튼
                         InkWell(
-                          onTap: () => dataManagementHomeResearcherViewModel
-                              .clickedFilter(context),
+                          onTap: () =>
+                              dataManagementAddAdditionalInfoTabViewModel
+                                  .clickedFilter(context),
                           borderRadius: BorderRadius.circular(20.r),
                           child: Container(
                             padding: EdgeInsets.all(16.w),
@@ -71,13 +72,13 @@ class _DataManagementAddAdditionalInfoTabScreenState
                               children: [
                                 // 선택된 필터
                                 Text(
-                                  dataManagementHomeResearcherViewModel
+                                  dataManagementAddAdditionalInfoTabViewModel
                                       .filterdResult,
                                   style: Palette.h4,
                                 ),
 
                                 // 화살표
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                         .isOpnedFilter
                                     ? const Icon(Icons.arrow_drop_up_outlined)
                                     : const Icon(Icons.arrow_drop_down),
@@ -89,61 +90,83 @@ class _DataManagementAddAdditionalInfoTabScreenState
                     ),
 
                     // 필터 area
-                    dataManagementHomeResearcherViewModel.isOpnedFilter
+                    dataManagementAddAdditionalInfoTabViewModel.isOpnedFilter
                         ? FilterBox(
                             type: 1,
                             dateList:
-                                dataManagementHomeResearcherViewModel.dateList,
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .dateList,
                             onTapDate: (index) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapDate(index),
-                            dateStatus: dataManagementHomeResearcherViewModel
-                                .dateStatus,
-                            firstDayText: dataManagementHomeResearcherViewModel
-                                .firstDayText,
+                            dateStatus:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .dateStatus,
+                            firstDayText:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .firstDayText,
                             indexDay:
-                                dataManagementHomeResearcherViewModel.indexDay,
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .indexDay,
                             firstDayOnTapTable: () =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapTable(0),
-                            lastDayText: dataManagementHomeResearcherViewModel
-                                .lastDayText,
+                            lastDayText:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .lastDayText,
                             lastDayOnTapTable: () =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapTable(1),
-                            isOpenTable: dataManagementHomeResearcherViewModel
-                                .isOpenTable,
-                            focused:
-                                dataManagementHomeResearcherViewModel.focused,
+                            isOpenTable:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .isOpenTable,
+                            focused: dataManagementAddAdditionalInfoTabViewModel
+                                .focused,
                             onDaySelected: (selectedDay, focusedDay) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onDaySelected(selectedDay, focusedDay),
                             dataList:
-                                dataManagementHomeResearcherViewModel.dataList,
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .dataList,
                             onTapData: (index) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapData(index),
-                            dataStatus: dataManagementHomeResearcherViewModel
-                                .dataStatus,
-                            speciesList: dataManagementHomeResearcherViewModel
-                                .speciesList,
+                            dataStatus:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .dataStatus,
+                            speciesList:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .speciesList,
                             onTapSpecies: (index) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapSpecies(index),
-                            speciesStatus: dataManagementHomeResearcherViewModel
-                                .speciesStatus,
-                            checkedFilter: dataManagementHomeResearcherViewModel
-                                .checkedFilter(),
+                            speciesStatus:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .speciesStatus,
+                            checkedFilter:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .checkedFilter(),
                             onPressedFilterSave: () =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onPressedFilterSave(),
-                            statusList: dataManagementHomeResearcherViewModel
-                                .statusList,
+                            statusList:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .statusList,
                             onTapstatus: (index) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onTapStatus(index),
-                            statusStatus: dataManagementHomeResearcherViewModel
-                                .statusStatus,
+                            statusStatus:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .statusStatus,
+                            sortList:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .sortList,
+                            onTapSort: (index) =>
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .onTapSort(index),
+                            sortStatus:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .sortStatus,
                           )
                         : SizedBox(height: 16.h),
 
@@ -159,12 +182,14 @@ class _DataManagementAddAdditionalInfoTabScreenState
                             height: 80.h,
                             validateFunc: null,
                             onSaveFunc: null,
-                            controller: dataManagementHomeResearcherViewModel
-                                .controller,
+                            controller:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .controller,
                             focusNode:
-                                dataManagementHomeResearcherViewModel.focusNode,
+                                dataManagementAddAdditionalInfoTabViewModel
+                                    .focusNode,
                             onChangeFunc: (value) =>
-                                dataManagementHomeResearcherViewModel
+                                dataManagementAddAdditionalInfoTabViewModel
                                     .onChanged(value),
                             mainText: '관리번호 입력',
                             hideFloatingLabel: true,
@@ -173,19 +198,20 @@ class _DataManagementAddAdditionalInfoTabScreenState
                               Icons.search,
                               color: Colors.black,
                             ),
-                            suffixIcon: dataManagementHomeResearcherViewModel
-                                    .focusNode.hasFocus
-                                ? IconButton(
-                                    onPressed: () {
-                                      dataManagementHomeResearcherViewModel
-                                          .textClear(context);
-                                    },
-                                    icon: const Icon(
-                                      Icons.cancel,
-                                      color: Palette.primaryContainer,
-                                    ),
-                                  )
-                                : null,
+                            suffixIcon:
+                                dataManagementAddAdditionalInfoTabViewModel
+                                        .focusNode.hasFocus
+                                    ? IconButton(
+                                        onPressed: () {
+                                          dataManagementAddAdditionalInfoTabViewModel
+                                              .textClear(context);
+                                        },
+                                        icon: const Icon(
+                                          Icons.cancel,
+                                          color: Palette.primaryContainer,
+                                        ),
+                                      )
+                                    : null,
                           ),
                         ),
                         SizedBox(width: 16.w),
@@ -194,7 +220,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                         IconButton(
                           iconSize: 48.w,
                           onPressed: () async =>
-                              dataManagementHomeResearcherViewModel
+                              dataManagementAddAdditionalInfoTabViewModel
                                   .clickedQr(context),
                           icon: const Icon(
                             Icons.qr_code_scanner_rounded,
@@ -210,19 +236,20 @@ class _DataManagementAddAdditionalInfoTabScreenState
                       height: 800.h,
                       child: Scrollbar(
                         thumbVisibility: true,
-                        controller: dataManagementHomeResearcherViewModel
+                        controller: dataManagementAddAdditionalInfoTabViewModel
                             .scrollController,
                         child: ListView.separated(
-                          controller: dataManagementHomeResearcherViewModel
-                              .scrollController,
-                          itemCount: dataManagementHomeResearcherViewModel
+                          controller:
+                              dataManagementAddAdditionalInfoTabViewModel
+                                  .scrollController,
+                          itemCount: dataManagementAddAdditionalInfoTabViewModel
                               .selectedList.length,
                           itemBuilder: (context, index) => ListCardDataManage(
                             onTap: () async =>
-                                await dataManagementHomeResearcherViewModel
+                                await dataManagementAddAdditionalInfoTabViewModel
                                     .onTap(index, context),
                             idx: index + 1,
-                            meatId: dataManagementHomeResearcherViewModel
+                            meatId: dataManagementAddAdditionalInfoTabViewModel
                                 .selectedList[index]['meatId']!,
                           ),
                           keyboardDismissBehavior:
@@ -237,7 +264,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                 ),
               ),
             ),
-            dataManagementHomeResearcherViewModel.isLoading
+            dataManagementAddAdditionalInfoTabViewModel.isLoading
                 ? const Center(child: LoadingScreen())
                 : Container(),
           ],

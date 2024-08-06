@@ -50,6 +50,7 @@ class ListCard extends StatelessWidget {
 
             // 상태
             Stack(
+              clipBehavior: Clip.none,
               children: [
                 Container(
                   width: 104.w,
@@ -65,23 +66,23 @@ class ListCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // TODO : Dday 표시
                 if (dDay != null && statusType != '승인')
                   Positioned(
-                    left: 72.w,
-                    bottom: 32.h,
+                    left: 68.w,
+                    bottom: 28.h,
                     child: Container(
-                      width: 40.w,
-                      height: 16.h,
+                      width: 48.w,
+                      height: 24.h,
                       decoration: BoxDecoration(
                         color: Palette.starYellow,
                         borderRadius: BorderRadius.circular(20.r),
                       ),
-                      child: Text(
-                        'D-$dDay',
-                        style: Palette.h8,
-                        textAlign: TextAlign.center,
+                      child: Center(
+                        child: Text(
+                          'D-$dDay',
+                          style: Palette.h7,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   )

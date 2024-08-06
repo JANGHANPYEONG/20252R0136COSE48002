@@ -14,7 +14,6 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/researcher/add_deep_aging_data_view_model.dart';
 
 class AddDeepAgingDataScreen extends StatefulWidget {
@@ -53,7 +52,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                       SizedBox(height: 24.h),
 
                       // 딥에이징 일자
-                      Text('딥에이징 일자', style: Pallete.h4),
+                      Text('딥에이징 일자', style: Palette.h4),
                       SizedBox(height: 16.h),
 
                       // 딥에이징 일자 container
@@ -123,7 +122,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                           // 분 text
                           Expanded(
                             flex: 2,
-                            child: Text('분', style: Pallete.h4),
+                            child: Text('분', style: Palette.h4),
                           ),
                           const Expanded(
                             flex: 3,

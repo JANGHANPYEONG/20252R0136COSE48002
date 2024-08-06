@@ -28,7 +28,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class MainTextField extends StatelessWidget {
   final String? Function(String?)? validateFunc;
@@ -103,47 +103,43 @@ class MainTextField extends StatelessWidget {
             floatingLabelBehavior:
                 hideFloatingLabel ? FloatingLabelBehavior.never : null,
             label: isCenter != null && isCenter == true
-                ? Center(child: Text(mainText, style: Pallete.h4Grey))
-                : Text(mainText, style: Pallete.mainTextFieldTextStyle),
+                ? Center(child: Text(mainText, style: Palette.h4Secondary))
+                : Text(mainText, style: Palette.h3OnSecondary),
             filled: true,
-            fillColor: Pallete.fieldEmptyBg,
+            fillColor: Palette.onPrimaryContainer,
             hintText: hintText,
-            hintStyle: Pallete.h4,
+            hintStyle: Palette.h4,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15.r),
+              borderRadius: BorderRadius.circular(20.r),
               borderSide: BorderSide.none,
             ),
             errorBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.r),
-                    borderSide:
-                        const BorderSide(color: Pallete.fieldAlertBorder),
+                    borderRadius: BorderRadius.circular(20.r),
+                    borderSide: const BorderSide(color: Palette.error),
                   )
                 : null,
             focusedErrorBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.r),
-                    borderSide:
-                        const BorderSide(color: Pallete.fieldAlertBorder),
+                    borderRadius: BorderRadius.circular(20.r),
+                    borderSide: const BorderSide(color: Palette.error),
                   )
                 : null,
             enabledBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.r),
+                    borderRadius: BorderRadius.circular(20.r),
                     borderSide: BorderSide.none,
                   )
                 : null,
             focusedBorder: canAlert
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.r),
-                    borderSide: const BorderSide(
-                      color: Pallete.fieldAtvBorder,
-                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                    borderSide: const BorderSide(color: Palette.primary),
                   )
                 : null,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h)),
         keyboardType: isNum == 1 ? TextInputType.number : TextInputType.text,
       ),
     );

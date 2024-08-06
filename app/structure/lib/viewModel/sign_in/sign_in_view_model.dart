@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -113,7 +113,7 @@ class SignInViewModel with ChangeNotifier {
           SnackBar(
             duration: const Duration(seconds: 1),
             content: Text(errorMessage),
-            backgroundColor: Pallete.alertBg,
+            backgroundColor: Palette.error,
           ),
         );
       }

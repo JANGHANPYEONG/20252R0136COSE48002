@@ -5,7 +5,6 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/my_page/user_info_view_model.dart';
 
 class MyPageScreen extends StatefulWidget {
@@ -62,10 +61,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         decoration: BoxDecoration(
                           color: userInfoViewModel.userType == 'Normal'
-                              ? Pallete.userNormalCardBg
+                              ? Palette.userNormalCardBg
                               : userInfoViewModel.userType != 'Researcher'
-                                  ? Pallete.userResearcherCardBg
-                                  : Pallete.userManagerCardBg,
+                                  ? Palette.userManagerCardBg
+                                  : Palette.userResearcherCardBg,
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(

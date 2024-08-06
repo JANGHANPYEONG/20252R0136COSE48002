@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 
 class CreationManagementNumLoadingScreen extends StatelessWidget {
   const CreationManagementNumLoadingScreen({super.key});
@@ -16,7 +15,7 @@ class CreationManagementNumLoadingScreen extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.only(top: 188.h),
-            child: Text('관리 번호를\n생성 중 입니다', style: Pallete.h2),
+            child: Text('관리 번호를\n생성 중 입니다', style: Palette.h2),
           ),
           Expanded(
             child: Column(

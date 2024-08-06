@@ -119,8 +119,8 @@ class InsertionMeatImageScreen extends StatelessWidget {
                           ),
                           // 삭제 버튼
                           Positioned(
-                            right: 56.w,
-                            top: 16.h,
+                            right: 16.w,
+                            top: 16.w,
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20.r),

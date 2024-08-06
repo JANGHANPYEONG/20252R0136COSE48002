@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -44,20 +42,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: const Icon(Icons.arrow_back_ios),
             )
           : null,
-      foregroundColor: Pallete.appBarIcon,
+      foregroundColor: Palette.secondary,
       centerTitle: centerTitle,
       title: Transform.translate(
-        offset: Offset(-50.w, 0), // 왼쪽으로 이동시킬 픽셀 값
+        offset: Offset(-48.w, 0), // 왼쪽으로 이동시킬 픽셀 값
         child: Text(
           title,
-          style: Pallete.appBarTitle,
+          style: Palette.h4Secondary,
         ),
       ),
       actions: closeButton
           ? [
               Container(
                 margin: EdgeInsets.only(
-                  right: 45.w,
+                  right: 48.w,
                   top: top ?? 40.h,
                 ),
                 child: Row(
@@ -76,7 +74,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null,
       bottom: tabController != null
           ? TabBar(
-              indicatorColor: Pallete.mainBtnAtvBg,
+              indicatorColor: Palette.primary,
               labelColor: Colors.black,
               controller: tabController,
               tabs: tabs ?? [],
