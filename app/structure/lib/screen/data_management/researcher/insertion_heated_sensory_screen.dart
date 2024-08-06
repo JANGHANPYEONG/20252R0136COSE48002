@@ -89,7 +89,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                   ),
                   SizedBox(height: 32.h),
 
-                  const DataTitle(korText: '표면육즙', engText: 'Umami'),
+                  const DataTitle(korText: '감칠맛', engText: 'Umami'),
                   SizedBox(height: 16.h),
 
                   PartEval(

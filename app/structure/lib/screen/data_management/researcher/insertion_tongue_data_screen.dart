@@ -75,7 +75,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
 
                   // 후미
                   DataField(
-                      isFinal: 1,
+                      isFinal: true,
                       mainText: 'Richness',
                       subText: '후미',
                       controller: insertionTongueDataViewModel.richness,

@@ -129,8 +129,8 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                     SizedBox(height: 32.h),
 
                     DataField(
-                      mainText: '카텝신활성도',
-                      subText: '',
+                      mainText: 'Cathepsin',
+                      subText: '카텝신활성도',
                       controller: insertionLabDataViewModel.ct,
                       onChangeFunc: (_) =>
                           insertionLabDataViewModel.inputCheck(),
@@ -150,6 +150,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                       mainText: 'Collagen ',
                       subText: '콜라겐',
                       controller: insertionLabDataViewModel.collagen,
+                      isFinal: true,
                       onChangeFunc: (_) =>
                           insertionLabDataViewModel.inputCheck(),
                     ),
