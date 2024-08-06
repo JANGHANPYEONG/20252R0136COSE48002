@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
+import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { CircularProgress } from '@mui/material';
 import { userUpdate } from '../../API/user/userUpdate';
@@ -64,7 +65,7 @@ const ProfileEditForm = ({
   };
 
   return (
-    <>
+    <Paper sx={{ p: 2 }}>
       <div style={{ marginBottom: '1rem' }}>
         <TextField
           label="회원가입일"
@@ -149,7 +150,7 @@ const ProfileEditForm = ({
           회원 탈퇴
         </Button>
       </div>
-    </>
+    </Paper>
   );
 };
 

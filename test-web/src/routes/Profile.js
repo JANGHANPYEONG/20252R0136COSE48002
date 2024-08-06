@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
@@ -73,14 +72,13 @@ const Profile = () => {
       >
         Profile
       </Typography>
-      <Paper sx={{ p: 2 }}>
-        <ProfileEditForm
-          userInfo={userInfo}
-          onUpdate={handleUpdate}
-          onDeleteRequest={handleDeleteRequest}
-          handleShowSnackbar={handleShowSnackbar}
-        />
-      </Paper>
+
+      <ProfileEditForm
+        userInfo={userInfo}
+        onUpdate={handleUpdate}
+        onDeleteRequest={handleDeleteRequest}
+        handleShowSnackbar={handleShowSnackbar}
+      />
 
       <PasswordCheckModal
         isOpen={isPasswordModalOpen}
