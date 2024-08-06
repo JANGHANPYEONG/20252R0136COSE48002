@@ -9,7 +9,7 @@ import DataStat from '../components/Charts/DataStat';
 import RejectedDataListComp from '../components/DataListView/RejectedDataListComp';
 // 엑셀 파일 export/ import 컴포넌트
 import ExcelController from '../components/DataListView/ExcelController';
-import StatsExport from '../components/DataListView/StatsExport';
+import StatsExport from '../components/DataListView/StatsExport_';
 // mui
 import { Box, Button, Select, MenuItem } from '@mui/material';
 // import timezone
