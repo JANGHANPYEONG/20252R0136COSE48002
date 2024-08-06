@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useStatisticChoroplethMap } from '../../../API/statistic/statsticChoroplethMapSWR';
-import { processMapData } from './Helper/processMapData'; // processMapData 함수를 import
-import getColor from './Helper/getColor';
-import onEachFeature from './Helper/onEachFeature';
+import { processMapData } from './helper/processMapData'; // processMapData 함수를 import
+import getColor from './helper/getColor';
+import onEachFeature from './helper/onEachFeature';
 
 const ChoroplethMap = ({ mapData, startDate, endDate }) => {
   const [keyIdx, setKeyIdx] = useState(0);
@@ -55,8 +55,6 @@ const ChoroplethMap = ({ mapData, startDate, endDate }) => {
   );
 };
 
-export default ChoroplethMap;
-
 const styles = {
   customTileLayer: {
     border: '5px solid #ccc',
@@ -64,3 +62,6 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
 };
+
+export default ChoroplethMap;
+
