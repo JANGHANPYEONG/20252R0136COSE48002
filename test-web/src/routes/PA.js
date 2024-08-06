@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import SearchFilterBar from '../components/Utils/SearchFilterBar';
+import SearchFilterBar from '../components/Search/SearchFilterBar';
 // 데이터 목록
 import PADataListComp from '../components/DataListView/PADataListComp';
 // mui
@@ -13,7 +13,7 @@ import PASingle from '../components/DataListView/PASingle';
 const navy = '#0F3659';
 
 // 예측 목록 페이지
-function PA() {
+const PA = () => {
   const handleDataFetch = (fetchedData) => {
     setData(fetchedData);
   };
@@ -177,7 +177,7 @@ function PA() {
       )}
     </div>
   );
-}
+};
 export default PA;
 
 const styles = {

@@ -27,9 +27,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import DeeplantLong from '../../src_assets/Deeplant_long.webp';
 import LOGO from '../../src_assets/LOGO.png';
 import pageListItems from '../../Utils/pageListItems';
-import useLogout from '../../Utils/logout';
+import useLogout from '../../Utils/useLogout';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 

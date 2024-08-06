@@ -22,7 +22,7 @@ import DataSingle from '../components/DataListView/DataSingle';
 
 const navy = '#0F3659';
 
-function Dashboard() {
+const Dashboard = () => {
   const [data, setData] = useState(null);
   const [value, setValue] = useState('list');
   const s = new Date();
@@ -268,7 +268,7 @@ function Dashboard() {
       )}
     </div>
   );
-}
+};
 
 export default Dashboard;
 

@@ -17,7 +17,7 @@ import home4 from '../src_assets/home4.png';
 import home5 from '../src_assets/home5.png';
 import home6 from '../src_assets/home6.png';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -60,7 +60,7 @@ const cards = [
   },
 ];
 
-function Home() {
+const Home = () => {
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -166,6 +166,6 @@ function Home() {
       </Container>
     </div>
   );
-}
+};
 
 export default Home;

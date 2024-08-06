@@ -6,7 +6,7 @@ import DataLoad from '../components/DataDetailPage/DetailDataController';
 
 const navy = '#0F3659';
 
-function DataEdit() {
+const DataEdit = () => {
   // 쿼리스트링 추출
   const searchParams = useLocation().search;
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
@@ -67,7 +67,7 @@ function DataEdit() {
       <DataLoad id={idParam.id} page={'수정및조회'} />
     </Box>
   );
-}
+};
 export default DataEdit;
 
 const style = {

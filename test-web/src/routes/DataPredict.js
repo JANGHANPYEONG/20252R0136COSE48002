@@ -6,7 +6,7 @@ import DataLoad from '../components/DataDetailPage/DetailDataController';
 
 const navy = '#0F3659';
 
-function DataPredict() {
+const DataPredict = () => {
   //관리번호
   const idParam = useParams();
   // 쿼리스트링 추출
@@ -60,7 +60,7 @@ function DataPredict() {
       <DataLoad id={idParam.id} page={'예측'} />
     </Box>
   );
-}
+};
 export default DataPredict;
 
 const style = {

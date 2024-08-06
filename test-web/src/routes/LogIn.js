@@ -1,7 +1,7 @@
 import LogInField from '../components/LogIn/LogInField';
 import { UserProvider } from '../components/User/UserContext';
 
-function LogIn() {
+const LogIn = () => {
   return (
     // Wrap the LogIn component with the UserProvider
     <UserProvider>
@@ -10,6 +10,6 @@ function LogIn() {
       </div>
     </UserProvider>
   );
-}
+};
 
 export default LogIn;

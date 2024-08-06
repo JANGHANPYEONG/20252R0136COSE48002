@@ -5,7 +5,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 
 const navy = '#0F3659';
 
-function DataConfirm() {
+const DataConfirm = () => {
   const idParam = useParams();
   // 쿼리스트링 추출
   const searchParams = useLocation().search;
@@ -65,7 +65,7 @@ function DataConfirm() {
       <DataLoad id={idParam.id} page={'검토'} />
     </Box>
   );
-}
+};
 
 export default DataConfirm;
 
