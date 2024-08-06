@@ -1,14 +1,27 @@
 #!/bin/bash
 set -e
 
-# Activate virtual environment
-source /home/ubuntu/deeplant-admin/test-backend/venv
+# Define log file
+LOG_FILE="/home/ubuntu/deeplant-admin/logs/after_install.log"
 
-# Navigate to application directory
-cd /home/ubuntu/deeplant-admin/test-backend/test-flask
+{
+    echo "Starting AfterInstall phase..."
 
-# Install dependencies
-pip install -r requirements.txt
+    # Activate virtual environment
+    echo "Activating virtual environment..."
+    source /home/ubuntu/deeplant-admin/venv/bin/activate
 
-# Deactivate virtual environment
-deactivate
+    # Navigate to application directory
+    echo "Navigating to application directory..."
+    cd /home/ubuntu/deeplant-admin
+
+    # Install dependencies
+    echo "Installing dependencies..."
+    pip install -r requirements.txt
+
+    # Deactivate virtual environment
+    echo "Deactivating virtual environment..."
+    deactivate
+
+    echo "AfterInstall phase completed."
+} >> "$LOG_FILE" 2>&1
