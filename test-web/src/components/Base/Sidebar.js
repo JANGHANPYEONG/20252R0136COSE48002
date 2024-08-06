@@ -88,7 +88,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-function Sidebar() {
+const Sidebar = ()  => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();

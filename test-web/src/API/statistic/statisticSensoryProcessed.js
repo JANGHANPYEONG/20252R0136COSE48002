@@ -11,3 +11,5 @@ export const statisticSensoryProcessed = async (
   );
   return response;
 };
+
+export default statisticSensoryProcessed;

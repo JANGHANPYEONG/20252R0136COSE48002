@@ -5,15 +5,15 @@ import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 // modal component
-import InputTransitionsModal from './InputWarningComp';
+import InputTransitionsModal from './InputTransitionsModal';
 // mui
 // import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from './tablesComps/rawTable';
-import ProcessedTable from './tablesComps/processedTable';
-import HeatTable from './tablesComps/heatTable';
-import LabTable from './tablesComps/labTable';
-import ApiTable from './tablesComps/apiTable';
+import RawTable from './TablesComps/RawTable';
+import ProcessedTable from './TablesComps/ProcessedTable';
+import HeatTable from './TablesComps/HeatTable';
+import LabTable from './TablesComps/LabTable';
+import ApiTable from './TablesComps/ApiTable';
 // import timezone
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
@@ -22,15 +22,15 @@ import addHeatedData from '../../API/add/addHeatedData';
 import addProbexptData from '../../API/add/addProbexptData';
 import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
 import addSensoryRawData from '../../API/add/addSensoryRawData';
-import RestrictedModal from './restrictedModal';
+import RestrictedModal from './RestrictedModal';
 // import card
-import QRInfoCard from './cardComps/QRInfoCard';
-import MeatImgsCard from './cardComps/MeatImgsCard';
-import { computePeriod } from './computePeriod';
+import QRInfoCard from './CardComps/QRInfoCard';
+import MeatImgsCard from './CardComps/MeatImgsCard';
+import { computePeriod } from './computeTime';
 
 // modal component
-import AcceptModal from './acceptModal';
-import RejectModal from './rejectModal';
+import AcceptModal from './AcceptModal';
+import RejectModal from './RejectModal';
 // icons
 import { FaRegCheckCircle, FaRegTimesCircle } from 'react-icons/fa';
 // mui
@@ -38,19 +38,19 @@ import { IconButton, TextField, Autocomplete } from '@mui/material';
 
 // import tables
 // import RawTable from './tablesComps/rawTable';
-import ProcessedTableStatic from './tablesComps/processedTableStatic';
-import HeatTableStatic from './tablesComps/heatTableStatic';
-import LabTableStatic from './tablesComps/labTableStatic';
+import ProcessedTableStatic from './TablesComps/ProcessedTableStatic';
+import HeatTableStatic from './TablesComps/HeatTableStatic';
+import LabTableStatic from './TablesComps/LabTableStatic';
 // import ApiTable from './tablesComps/apiTable';
 
 // import card
 // import QRInfoCard from './cardComps/QRInfoCard';
 // import MeatImgsCard from './cardComps/MeatImgsCard';
-import MeatImgsCardStatic from './cardComps/MeatImgsCardStatic';
+import MeatImgsCardStatic from './CardComps/MeatImgsCardStatic';
 
 const navy = '#0F3659';
 
-function DataView({ dataProps }) {
+const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageOffset = searchParams.get('pageOffset');
 
@@ -323,111 +323,7 @@ function DataView({ dataProps }) {
                 handleRawInputChange={handleRawInputChange}
               />
             </Tab>
-            {/* <Tab
-              value="proc"
-              eventKey="processedMeat"
-              title="처리육"
-              style={{ backgroundColor: 'white' }}
-            >
-              {processed_data.length !== 0 ? (
-                <>
-                  <Autocomplete
-                    id={'controllable-states-processed'}
-                    label="처리상태"
-                    value={processed_toggle}
-                    onChange={(event, newValue) => {
-                      setProcessedToggle(newValue);
-                    }}
-                    inputValue={processedToggleValue}
-                    onInputChange={(event, newInputValue) => {
-                      setProcessedToggleValue(newInputValue); 
-                    }}
-                    options={options.slice(1)}
-                    size="small"
-                    sx={{ width: 'fit-content', marginBottom: '10px' }}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                  <ProcessedTable
-                    edited={edited}
-                    modal={modal}
-                    setModal={setModal}
-                    processed_img_path={processed_img_path}
-                    processedMinute={processedMinute}
-                    setProcessedMinute={setProcessedMinute}
-                    processedInput={processedInput}
-                    processed_data={processed_data}
-                    processedToggleValue={processedToggleValue}
-                    handleInputChange={handleInputChange}
-                  />
-                </>
-              ) : (
-                <div style={divStyle.errorContainer}>
-                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
-                </div>
-              )}
-            </Tab> */}
-            {/* <Tab
-              value="heat"
-              eventKey="heatedMeat"
-              title="가열육"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={heatedToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setHeatedToggle(newValue);
-                }}
-                inputValue={heatedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setHeatedToggleValue(newInputValue);
-                }}
-                id={'controllable-states-heated'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <HeatTable
-                edited={edited}
-                heatInput={heatInput}
-                heated_data={heated_data}
-                heatedToggleValue={heatedToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab>
-            <Tab
-              value="lab"
-              eventKey="labData"
-              title="실험실"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={labToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setLabToggle(newValue);
-                }}
-                inputValue={labToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setLabToggleValue(newInputValue);
-                }}
-                id={'controllable-states-api'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <LabTable
-                edited={edited}
-                labInput={labInput}
-                lab_data={lab_data}
-                labToggleValue={labToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab> */}
+
             <Tab
               value="api"
               eventKey="api"
@@ -456,7 +352,7 @@ function DataView({ dataProps }) {
       </div>
     </div>
   );
-}
+};
 
 export default DataView;
 

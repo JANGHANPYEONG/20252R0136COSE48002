@@ -1,16 +1,13 @@
-import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
 import { apiIP } from '../../config';
 
 // 처리육 수정 POST API
-export default async function addSensoryProcessedData(
+export const addSensoryProcessedData = async (
   processedInput, // 처리육 데이터 (수정값)
   i, // 처리육 seqno
   meatId, // 이력번호
   userId,
   isPost
-) {
-  //const [yy, mm, dd] = computeCurrentDate();
-  //console.log("CHECK",processedInput)
+) => {
   const dataSet = {
     ['marbling']: parseFloat(processedInput.marbling),
     ['color']: parseFloat(processedInput.color),
@@ -54,4 +51,5 @@ export default async function addSensoryProcessedData(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryProcessedData;

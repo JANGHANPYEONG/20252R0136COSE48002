@@ -19,3 +19,5 @@ export const useStatisticStackedBar = (startDate, endDate) => {
     isError: error,
   };
 };
+
+export default useStatisticStackedBar;

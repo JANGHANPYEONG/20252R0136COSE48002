@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 const navy = '#0F3659';
 
 //승인/반려 변경 후 최종 확인 안내 모달
-export default function StateChangedModal({
+const StateChangedModal = ({
   confirmVal,
   setStateChanged,
   handleParentClose,
-}) {
+}) => {
   //화면 창 닫기
   const navigate = useNavigate();
   const [open, setOpen] = useState(true);
@@ -100,7 +100,9 @@ export default function StateChangedModal({
       </Modal>
     </div>
   );
-}
+};
+
+export default StateChangedModal;
 
 const style = {
   position: 'absolute',

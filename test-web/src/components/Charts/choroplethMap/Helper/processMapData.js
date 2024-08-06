@@ -58,3 +58,4 @@ export const processMapData = (data, mapData, setGeoJSONData, setKeyIdx) => {
   addProperties(cattleCnt, porkCnt, totalCnt);
   setKeyIdx((prev) => prev + 1);
 };
+export default processMapData;

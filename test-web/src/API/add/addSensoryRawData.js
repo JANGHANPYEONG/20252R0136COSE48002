@@ -1,6 +1,7 @@
 import { apiIP } from '../../config';
-import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
-export default async function addSensoryRawData(rawInput, i, meatId) {
+import { computeCurrentDate } from '../../components/DataDetailPage/computeTime';
+
+export const addSensoryRawData = async (rawInput, i, meatId) => {
   const [yy, mm, dd] = computeCurrentDate();
   const dataSet = {
     marbling: parseFloat(rawInput.marbling),
@@ -38,4 +39,5 @@ export default async function addSensoryRawData(rawInput, i, meatId) {
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryRawData

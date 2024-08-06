@@ -19,3 +19,5 @@ export const useStatisticPieChart = (startDate, endDate) => {
     isError: error,
   };
 };
+
+export default useStatisticPieChart

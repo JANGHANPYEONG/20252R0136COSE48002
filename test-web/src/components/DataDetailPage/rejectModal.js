@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegTimesCircle } from 'react-icons/fa';
-import StateChangedModal from './stateChangedModal';
+import StateChangedModal from './StateChangedModal';
 import updateDataStatus from '../../API/updateDataStatus';
 
 const navy = '#0F3659';
 
 // 반려 여부 확인 모달
-export default function RejectModal({ meatId, setConfirmVal, confirmVal }) {
+const RejectModal = ({ meatId, setConfirmVal, confirmVal }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -135,7 +135,8 @@ export default function RejectModal({ meatId, setConfirmVal, confirmVal }) {
       </Modal>
     </div>
   );
-}
+};
+export default RejectModal;
 
 const style = {
   position: 'absolute',
