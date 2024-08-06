@@ -36,6 +36,8 @@ class MainInputField extends StatefulWidget {
     this.onChangeFunc,
     this.hintText,
     this.contentPadding,
+    this.enableNext = false,
+    this.keyboardType,
   });
   final GlobalKey<FormState>? formKey;
   final int mode; // mode0: sign-in, mode1: other else
@@ -48,6 +50,8 @@ class MainInputField extends StatefulWidget {
   final void Function(String)? onChangeFunc;
   final String? hintText;
   final EdgeInsetsGeometry? contentPadding;
+  final bool enableNext;
+  final TextInputType? keyboardType;
 
   @override
   State<MainInputField> createState() => _MainInputFieldState();
@@ -56,12 +60,14 @@ class MainInputField extends StatefulWidget {
 class _MainInputFieldState extends State<MainInputField> {
   late FocusNode _focusNode;
   bool _isFocused = false;
+  bool _isObscure = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
+    _isObscure = widget.obscureText ?? false;
   }
 
   void _handleFocusChange() {
@@ -100,37 +106,52 @@ class _MainInputFieldState extends State<MainInputField> {
         validator: widget.validateFunc,
         onChanged: widget.onChangeFunc,
         style: Palette.h4Regular,
-        obscureText: widget.obscureText ?? false,
+        obscureText: _isObscure,
         readOnly: widget.readonly ?? false,
         enabled: widget.enable,
+        textInputAction: widget.enableNext ? TextInputAction.next : null,
+        keyboardType: widget.keyboardType,
         decoration: InputDecoration(
-          filled: true,
-          fillColor: fillColor,
-          hintText: widget.hintText,
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
-            borderSide: const BorderSide(color: Palette.error),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
-            borderSide: const BorderSide(color: Palette.error),
-          ),
-          errorStyle: Palette.h6.copyWith(color: Palette.error),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
-            borderSide: BorderSide(
-              color: widget.mode == 0
-                  ? Palette.onPrimary
-                  : Palette.onPrimaryContainer,
+            filled: true,
+            fillColor: fillColor,
+            hintText: widget.hintText,
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
             ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
-            borderSide: const BorderSide(color: Palette.primary),
-          ),
-          contentPadding:
-              widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 24.w),
-        ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
+            ),
+            errorStyle: Palette.h6.copyWith(color: Palette.error),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: BorderSide(
+                color: widget.mode == 0
+                    ? Palette.onPrimary
+                    : Palette.onPrimaryContainer,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.primary),
+            ),
+            contentPadding:
+                widget.contentPadding ?? EdgeInsets.symmetric(horizontal: 24.w),
+            suffixIcon: widget.obscureText == true
+                ? IconButton(
+                    icon: _isObscure
+                        ? const Icon(Icons.visibility)
+                        : const Icon(Icons.visibility_off),
+                    color: Palette.onSecondary,
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  )
+                : null),
       ),
     );
   }

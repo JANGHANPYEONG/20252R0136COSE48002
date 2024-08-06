@@ -83,6 +83,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                           // 이메일 입력 필드
                           MainInputField(
                             width: double.infinity,
+                            keyboardType: TextInputType.emailAddress,
                             formKey: context
                                 .read<InsertionUserInfoViewModel>()
                                 .formKey,
@@ -135,6 +136,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                       // 비밀번호 입력 필드
                       MainInputField(
                         width: double.infinity,
+                        keyboardType: TextInputType.visiblePassword,
                         formKey:
                             context.read<InsertionUserInfoViewModel>().formKey,
                         obscureText: true,
@@ -150,6 +152,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                       // 비밀번호 확인
                       MainInputField(
                         width: double.infinity,
+                        keyboardType: TextInputType.visiblePassword,
                         formKey:
                             context.read<InsertionUserInfoViewModel>().formKey,
                         obscureText: true,

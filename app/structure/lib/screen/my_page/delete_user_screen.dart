@@ -49,6 +49,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
                     // 비밀번호 Input Field
                     MainInputField(
                       width: double.infinity,
+                      keyboardType: TextInputType.visiblePassword,
                       formKey: deleteUserViewModel.formKey,
                       controller: deleteUserViewModel.password,
                       obscureText: true,

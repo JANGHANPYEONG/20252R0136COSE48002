@@ -50,6 +50,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     // 현재 비밀번호 Input Field
                     MainInputField(
                       width: double.infinity,
+                      keyboardType: TextInputType.visiblePassword,
                       formKey: changePasswordViewModel.formKey,
                       controller: changePasswordViewModel.originPW,
                       obscureText: true,
@@ -65,6 +66,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     // 새 비밀번호 Input Field
                     MainInputField(
                       width: double.infinity,
+                      keyboardType: TextInputType.visiblePassword,
                       formKey: changePasswordViewModel.formKey,
                       controller: changePasswordViewModel.newPW,
                       obscureText: true,
@@ -77,6 +79,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     // 비밀번호 확인 Input Field
                     MainInputField(
                       width: double.infinity,
+                      keyboardType: TextInputType.visiblePassword,
                       formKey: changePasswordViewModel.formKey,
                       controller: changePasswordViewModel.newCPW,
                       obscureText: true,

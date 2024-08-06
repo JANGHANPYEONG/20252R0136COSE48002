@@ -66,6 +66,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         MainInputField(
                           mode: 0,
                           width: double.infinity,
+                          enableNext: true,
+                          keyboardType: TextInputType.emailAddress,
                           onChangeFunc: (value) =>
                               signInViewModel.userId = value,
                         ),
@@ -78,8 +80,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         MainInputField(
                           mode: 0,
                           width: double.infinity,
-                          formKey: signInViewModel.formKey,
                           obscureText: true,
+                          keyboardType: TextInputType.visiblePassword,
                           onChangeFunc: (value) =>
                               signInViewModel.userPw = value,
                         ),
