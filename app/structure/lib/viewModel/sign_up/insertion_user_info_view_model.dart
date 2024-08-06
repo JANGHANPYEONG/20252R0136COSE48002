@@ -213,11 +213,11 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   }
 
   void saveUserInfo() {
-    userModel.userId = email.text;
-    userModel.name = name.text;
+    userModel.userId = email.text.trim();
+    userModel.name = name.text.trim();
     userModel.type = 'Normal';
     userModel.alarm = isChecked4;
-    userModel.password = password.text;
+    userModel.password = password.text.trim();
   }
 
   void clickedNextButton(BuildContext context) {
