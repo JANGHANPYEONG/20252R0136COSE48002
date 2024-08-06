@@ -3,20 +3,20 @@ import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Spinner from 'react-bootstrap/Spinner';
-import QRInfoCard from './cardComps/QRInfoCard';
+import QRInfoCard from './CardComps/QRInfoCard';
 //mui
 import './imgRot.css';
 import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from './tablesComps/rawTable';
-import PredictedRawTable from './tablesComps/predictedRawTable';
-import ProcessedTableStatic from './tablesComps/processedTableStatic';
-import PredictedProcessedTablePA from './tablesComps/predictedProcessedTablePA';
+import RawTable from './TablesComps/RawTable';
+import PredictedRawTable from './TablesComps/PredictedRawTable';
+import ProcessedTableStatic from './TablesComps/ProcessedTableStatic';
+import PredictedProcessedTablePA from './TablesComps/PredictedProcessedTablePA';
 
-import { computePeriod } from './computePeriod';
+import { computePeriod } from './computeTime';
 import { apiIP } from '../../config';
 
-function DataPAView({ dataProps }) {
+const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
   const {
     id, // 이력번호
@@ -286,7 +286,7 @@ function DataPAView({ dataProps }) {
       </div>
     </div>
   );
-}
+};
 
 export default DataPAView;
 

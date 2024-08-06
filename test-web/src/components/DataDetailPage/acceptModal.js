@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegCheckCircle } from 'react-icons/fa';
-import StateChangedModal from './stateChangedModal';
+import StateChangedModal from './StateChangedModal';
 import updateDataStatus from '../../API/updateDataStatus';
 
 const navy = '#0F3659';
 
 // 승인 여부 확인 모달
-export default function AcceptModal({ meatId, setConfirmVal, confirmVal }) {
+export const AcceptModal = ({ meatId, setConfirmVal, confirmVal }) => {
   const navigate = useNavigate();
   const location = useLocation();
   //화면 창 닫기
@@ -134,7 +134,8 @@ export default function AcceptModal({ meatId, setConfirmVal, confirmVal }) {
       </Modal>
     </div>
   );
-}
+};
+export default AcceptModal;
 
 const style = {
   position: 'absolute',

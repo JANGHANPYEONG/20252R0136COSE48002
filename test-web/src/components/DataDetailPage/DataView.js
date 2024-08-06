@@ -5,15 +5,15 @@ import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 // modal component
-import InputTransitionsModal from './InputWarningComp';
+import InputTransitionsModal from './InputTransitionsModal';
 // mui
 import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from './tablesComps/rawTable';
-import ProcessedTable from './tablesComps/processedTable';
-import HeatTable from './tablesComps/heatTable';
-import LabTable from './tablesComps/labTable';
-import ApiTable from './tablesComps/apiTable';
+import RawTable from './TablesComps/RawTable';
+import ProcessedTable from './TablesComps/ProcessedTable';
+import HeatTable from './TablesComps/HeatTable';
+import LabTable from './TablesComps/LabTable';
+import ApiTable from './TablesComps/ApiTable';
 // import timezone
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
@@ -21,16 +21,16 @@ import Spinner from 'react-bootstrap/Spinner';
 import addHeatedData from '../../API/add/addHeatedData';
 import addProbexptData from '../../API/add/addProbexptData';
 import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
-import RestrictedModal from './restrictedModal';
+import RestrictedModal from './RestrictedModal';
 // import card
-import QRInfoCard from './cardComps/QRInfoCard';
-import MeatImgsCard from './cardComps/MeatImgsCard';
-import { computePeriod } from './computePeriod';
+import QRInfoCard from './CardComps/QRInfoCard';
+import MeatImgsCard from './CardComps/MeatImgsCard';
+import { computePeriod } from './computeTime';
 import isPost from '../../API/isPost';
 
 const navy = '#0F3659';
 
-function DataView({ dataProps }) {
+const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageOffset = searchParams.get('pageOffset');
 
@@ -601,7 +601,7 @@ function DataView({ dataProps }) {
       </div>
     </div>
   );
-}
+};
 
 export default DataView;
 

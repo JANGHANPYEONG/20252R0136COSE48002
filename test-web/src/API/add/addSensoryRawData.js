@@ -1,5 +1,5 @@
 import { apiIP } from '../../config';
-import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
+import { computeCurrentDate } from '../../components/DataDetailPage/computeTime';
 
 export const addSensoryRawData = async (rawInput, i, meatId) => {
   const [yy, mm, dd] = computeCurrentDate();

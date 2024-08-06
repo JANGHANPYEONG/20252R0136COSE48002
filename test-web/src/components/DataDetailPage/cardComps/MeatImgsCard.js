@@ -11,7 +11,7 @@ import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
 import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
 
 import { TIME_ZONE } from '../../../config';
-import { computePeriod } from '../computePeriod';
+import { computePeriod } from '../computeTime';
 
 const navy = '#0F3659';
 
@@ -34,11 +34,6 @@ const MeatImgsCard = ({
   useEffect(() => {
     setImgArr([...imgArr, ...processed_img_path]);
 
-    // processed_img_path.length !== 0
-    //   ? //{}이 아닌 경우
-    //     setImgArr([...imgArr, ...processed_img_path])
-    //   : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
-    //     setImgArr([...imgArr, null]);
   }, []);
 
   // 이미지 배열 페이지네이션
