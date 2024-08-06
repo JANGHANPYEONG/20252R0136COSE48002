@@ -14,6 +14,7 @@ const DataLoad = ({ id, page }) => {
   // 육류 상세 데이터 API fetch
   const { data, isLoading, isError } = useDetailMeatData(id);
 
+
   //데이터 전처리
   useEffect(() => {
     if (data !== null && data !== undefined) {
