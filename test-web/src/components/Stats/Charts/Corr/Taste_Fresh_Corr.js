@@ -3,12 +3,7 @@ import ApexCharts from 'react-apexcharts';
 import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
 import calculateChartSeries from './calculateChartSeries';
 
-export default function Taste_Fresh_Corr({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+const Taste_Fresh_Corr = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
@@ -82,13 +77,13 @@ export default function Taste_Fresh_Corr({
       enabled: true,
       y: {
         title: {
-          formatter: function (value, { seriesIndex, dataPointIndex, w }) {
+          formatter: (value, { seriesIndex, dataPointIndex, w }) => {
             const xLabel = w.globals.labels[dataPointIndex];
             const yLabel = w.config.series[seriesIndex].name;
             return `${yLabel} - ${xLabel}:`;
           },
         },
-        formatter: function (value) {
+        formatter: (value) => {
           const decimalValue = (value / 100).toFixed(3);
           return `${decimalValue}`;
         },
@@ -179,4 +174,6 @@ export default function Taste_Fresh_Corr({
       height={350}
     />
   );
-}
+};
+
+export default Taste_Fresh_Corr;

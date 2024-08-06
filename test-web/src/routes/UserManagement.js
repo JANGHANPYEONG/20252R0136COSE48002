@@ -4,11 +4,11 @@ import UserList from '../components/User/UserList';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-function UserManagement() {
+const UserManagement = () => {
   const navigate = useNavigate();
   const [hasPermission, setHasPermission] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -42,6 +42,6 @@ function UserManagement() {
   }
 
   return <UserList />;
-}
+};
 
 export default UserManagement;

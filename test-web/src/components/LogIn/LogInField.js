@@ -13,8 +13,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
-import Layer_1 from '../../src_assets/Layer_1.png';
-import BackGround from '../../src_assets/BackGround.png';
+import layer_1 from '../../src_assets/layer_1.png';
+import background from '../../src_assets/background.png';
 import { userIsLogin } from '../../API/user/userIsLogin';
 
 const defaultTheme = createTheme();
@@ -154,14 +154,14 @@ const LogInField = () => {
           justifyContent: 'center',
           height: '100vh',
           minWidth: '100vw', // 전체 화면 너비
-          backgroundImage: `url(${BackGround})`, // 경로를 실제 파일 경로로 변경
+          backgroundImage: `url(${background})`, // 경로를 실제 파일 경로로 변경
           backgroundSize: 'cover', // 배경 이미지 크기 조절 (cover는 화면 전체를 채우도록 설정)
           backgroundRepeat: 'no-repeat', // 배경 이미지 반복 방지
         }}
       >
         <CssBaseline />
         <img
-          src={Layer_1}
+          src={layer_1}
           style={{
             width: `${(323 / 1920) * 100}vw`,
             marginBottom: `${(48 / 1080) * 100}vh`,

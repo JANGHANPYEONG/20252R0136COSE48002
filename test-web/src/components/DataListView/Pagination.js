@@ -9,12 +9,12 @@ import {
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 // 페이지네이션 컴포넌트
-function Pagination({
+const Pagination = ({
   count, // 한 페이지 당 보여줄 데이터 개수
   totalDatas, // 전체 데이터 개수
   currentPage, // 현재 페이지
   setCurrentPage, // 현재 페이지 setState 함수
-}) {
+}) => {
   const totalPages = Math.ceil(totalDatas / count);
   const pageArr = Array.from({ length: totalPages }, (undefined, i) => i + 1);
   // 이전 버튼 클릭
@@ -94,6 +94,6 @@ function Pagination({
       </Box>
     </Box>
   );
-}
+};
 
 export default Pagination;

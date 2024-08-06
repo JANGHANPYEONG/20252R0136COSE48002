@@ -8,8 +8,8 @@ import DataStat from '../components/Charts/DataStat';
 // 반려 데이터 목록 컴포넌트
 import RejectedDataListComp from '../components/DataListView/RejectedDataListComp';
 // 엑셀 파일 export/ import 컴포넌트
-import ExcelController from '../components/DataListView/excelContr';
-import StatsExport from '../components/DataListView/statsExport';
+import ExcelController from '../components/DataListView/ExcelController';
+import StatsExport from '../components/DataListView/StatsExport';
 // mui
 import { Box, Button, Select, MenuItem } from '@mui/material';
 // import timezone
@@ -22,7 +22,7 @@ import DataSingle from '../components/DataListView/DataSingle';
 
 const navy = '#0F3659';
 
-function Dashboard() {
+const Dashboard = () => {
   const [data, setData] = useState(null);
   const [value, setValue] = useState('list');
   const s = new Date();
@@ -268,7 +268,7 @@ function Dashboard() {
       )}
     </div>
   );
-}
+};
 
 export default Dashboard;
 
@@ -302,4 +302,5 @@ const styles = {
     border: `1px solid ${navy}`,
     color: navy,
   },
+  titleFont: {},
 };

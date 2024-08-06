@@ -24,12 +24,12 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-import DeeplantLong from '../../src_assets/Deeplant_long.webp';
-import LOGO from '../../src_assets/LOGO.png';
+import deeplant_long from '../../src_assets/deeplant_long.webp';
+import logo from '../../src_assets/logo.png';
 import pageListItems from '../../Utils/pageListItems';
-import useLogout from '../../Utils/logout';
+import useLogout from '../../Utils/useLogout';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -146,12 +146,12 @@ const Sidebar = ()  => {
               ...(open && { display: 'none' }),
             }}
           >
-            <img src={LOGO} alt="LOGO" />
+            <img src={logo} alt="LOGO" />
           </IconButton>
           <Typography sx={{ flexGrow: 1 }}>
             {open && (
               <Link to="/Home">
-                <img src={DeeplantLong} alt="Deeplant Logo" />
+                <img src={deeplant_long} alt="Deeplant Logo" />
               </Link>
             )}
           </Typography>

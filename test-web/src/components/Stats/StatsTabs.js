@@ -21,7 +21,7 @@ import Sense_Heated_Corr from './Charts/Corr/Sens_Heated_Corr';
 import Sense_Fresh_Corr from './Charts/Corr/Sens_Fresh_Corr';
 import Taste_Proc_Corr from './Charts/Corr/Taste_Proc_Corr';
 
-function CustomTabPanel(props) {
+const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -36,7 +36,7 @@ function CustomTabPanel(props) {
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
-}
+};
 
 CustomTabPanel.propTypes = {
   children: PropTypes.node,
@@ -44,14 +44,13 @@ CustomTabPanel.propTypes = {
   value: PropTypes.number.isRequired,
 };
 
-function a11yProps(index) {
+const a11yProps = (index) => {
   return {
     id: `simple-tab-${index}`,
     'aria-controls': `simple-tabpanel-${index}`,
   };
-}
-
-export default function StatsTabs({ startDate, endDate }) {
+};
+const StatsTabs = ({ startDate, endDate }) => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
@@ -65,7 +64,7 @@ export default function StatsTabs({ startDate, endDate }) {
   const [meatValue, setMeatValue] = useState('등심');
 
   useEffect(() => {
-    console.log('stat tab' + startDate, '-', endDate);
+    // console.log('stat tab' + startDate, '-', endDate);
   }, [startDate, endDate]);
   const theme = useTheme();
   const handleChange = (event, newValue) => {
@@ -351,4 +350,6 @@ export default function StatsTabs({ startDate, endDate }) {
       </CustomTabPanel>
     </Box>
   );
-}
+};
+
+export default StatsTabs;

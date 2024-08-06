@@ -4,12 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
 import calculateBoxPlotStatistics from './calculateBoxPlotStat';
 
-export default function Taste_ProcMeat({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+const Taste_ProcMeat = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState([]);
 
   const fetchData = async () => {
@@ -82,4 +77,6 @@ export default function Taste_ProcMeat({
       )}
     </div>
   );
-}
+};
+
+export default Taste_ProcMeat;

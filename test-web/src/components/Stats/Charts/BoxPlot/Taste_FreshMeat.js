@@ -3,12 +3,8 @@ import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
 import calculateBoxPlotStatistics from './calculateBoxPlotStat';
-export default function Taste_FreshMeat({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+
+const Taste_FreshMeat = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState([]); // Change initial state to null
 
   const fetchData = async () => {
@@ -83,4 +79,6 @@ export default function Taste_FreshMeat({
       )}
     </div>
   );
-}
+};
+
+export default Taste_FreshMeat;

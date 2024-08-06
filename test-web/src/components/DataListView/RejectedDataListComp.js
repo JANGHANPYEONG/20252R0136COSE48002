@@ -33,7 +33,7 @@ const RejectedDataListComp = ({
   };
 
   //API fetch
-  const { data, isLoading, isError } = useRejectedMeatList (
+  const { data, isLoading, isError } = useRejectedMeatList(
     currentPage - 1,
     count,
     startDate,
@@ -128,6 +128,7 @@ const RejectedDataListComp = ({
 };
 
 export default RejectedDataListComp;
+
 const style = {
   listContainer: {
     textAlign: 'center',

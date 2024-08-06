@@ -21,7 +21,7 @@ const navy = '#0F3659';
 
 const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
-export default function Profile() {
+const Profile = () => {
   const [updatedUserInfo, setUpdatedUserInfo] = useState(UserInfo);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -363,4 +363,6 @@ export default function Profile() {
       </Paper>
     </div>
   );
-}
+};
+
+export default Profile;

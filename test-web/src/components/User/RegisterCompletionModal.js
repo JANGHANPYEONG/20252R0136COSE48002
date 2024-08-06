@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 const navy = '#0F3659';
 
-function RegisterCompletionModal({ show, onHide }) {
+const RegisterCompletionModal = ({ show, onHide }) => {
   return (
     <Modal
       show={show}
@@ -58,6 +58,6 @@ function RegisterCompletionModal({ show, onHide }) {
       </Modal.Footer>
     </Modal>
   );
-}
+};
 
 export default RegisterCompletionModal;

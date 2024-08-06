@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 import { TIME_ZONE } from '../config';
 import { Typography } from '@mui/material';
 
-function Stats() {
+const Stats = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
@@ -102,6 +102,6 @@ function Stats() {
       </Box>
     </Container>
   );
-}
+};
 
 export default Stats;

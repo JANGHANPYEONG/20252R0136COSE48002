@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import DeleteConfirmationModal from './Modal/DeleteConfirmationModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 import UserRegister from './UserRegister';
 import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
@@ -23,7 +23,7 @@ import { userList } from '../../API/user/userList';
 import { userUpdate } from '../../API/user/userUpdate';
 import { userDelete } from '../../API/user/userDelete';
 
-function UserList() {
+const UserList = () => {
   const [registerShow, setRegisterShow] = useState(false);
   const [deleteConfirmShow, setDeleteConfirmShow] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -61,8 +61,6 @@ function UserList() {
   const handleUserDelete = async (userId) => {
     try {
       const auth = getAuth();
-      console.log(UserInfo.userId);
-      console.log(userId);
       if (!UserInfo.userId) {
         showSnackbar('로그인이 필요합니다.', 'error');
         return;
@@ -78,7 +76,6 @@ function UserList() {
 
       // If reauthentication is successful, proceed with the account deletion
       const response = await userDelete(userId);
-      console.log('res', response);
       if (response.ok) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
         setAllUsers((prevUsers) =>
@@ -450,6 +447,6 @@ function UserList() {
       />
     </div>
   );
-}
+};
 
 export default UserList;
