@@ -21,6 +21,7 @@ const ProcessedTable = ({
   processedToggleValue,
   handleInputChange,
   processed_data,
+  processed_date,
 }) => {
   // 처리육 딥에이징 시간 (분) input 핸들링
   const handleMinuteInputChange = (e, index) => {
@@ -97,9 +98,15 @@ const ProcessedTable = ({
                       ''
                     )
                   ) : // createdAt seqno period 수정 X (자동 수정됨)
-                  f === 'createdAt' || f === 'seqno' || f === 'period' ? (
+                  f === 'seqno' || f === 'period' ? (
                     processedInput[0]?.[f] ? (
                       processedInput[0]?.[f]
+                    ) : (
+                      ''
+                    )
+                  ) : f === 'createdAt' ? (
+                    processed_date[0] ? (
+                      processed_date[0]
                     ) : (
                       ''
                     )
@@ -162,9 +169,15 @@ const ProcessedTable = ({
                           ''
                         )
                       ) : // createdAt seqno period 수정 X (자동 수정됨)
-                      f === 'createdAt' || f === 'seqno' || f === 'period' ? (
+                      f === 'seqno' || f === 'period' ? (
                         processedInput[arr_idx + 1]?.[f] ? (
                           processedInput[arr_idx + 1]?.[f]
+                        ) : (
+                          ''
+                        )
+                      ) : f === 'createdAt' ? (
+                        processed_date[arr_idx + 1] ? (
+                          processed_date[arr_idx + 1]
                         ) : (
                           ''
                         )
@@ -214,7 +227,7 @@ const deepAgingField = [
   'surfaceMoisture',
   'overall',
   'createdAt',
-  'seqno',
+  //'seqno',
   'minute',
   'period',
 ];
@@ -225,7 +238,7 @@ const deepAgingDBFieldToSemanticWord = {
   surfaceMoisture: '표면육즙',
   overall: '기호도',
   createdAt: '생성일자',
-  seqno: '딥에이징 회차',
+  //seqno: '딥에이징 회차',
   minute: '딥에이징 시간(분)',
   period: 'period',
 };

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import Button from 'react-bootstrap/Button';
 // modal component
 import InputTransitionsModal from './InputTransitionsModal';
 // mui
@@ -27,6 +28,8 @@ import QRInfoCard from './CardComps/QRInfoCard';
 import MeatImgsCard from './CardComps/MeatImgsCard';
 import { computePeriod } from './computeTime';
 import isPost from '../../API/isPost';
+import { Modal } from 'react-bootstrap';
+import AgingInfoRegister from './AgingInfoRegister';
 
 const navy = '#0F3659';
 
@@ -49,7 +52,9 @@ const DataView = ({ dataProps }) => {
     processed_data_seq, // 처리(딥에이징) 회차
     processed_minute, // 처리 시간(분)
     processed_img_path, // 처리육 이미지 경로
+    processed_date,
   } = dataProps;
+  console.log("ddd:",dataProps)
 
   // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
   // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
@@ -87,10 +92,14 @@ const DataView = ({ dataProps }) => {
     { value: labInput, setter: setLabInput },
     { value: apiInput, setter: setApiInput },
   ];
+  const [infoRegisterShow, setInfoRegisterShow] = useState(false);
 
   const [isProcessedPosted, setIsProcessedPosted] = useState({});
   const [isLabPosted, setIsLabPosted] = useState({});
   const [isHeatedPosted, setIsHeatedPosted] = useState({});
+
+  const handleInfoRegisterShow = () => setInfoRegisterShow(true);
+  const handleInfoRegisterClose = () => setInfoRegisterShow(false);
 
   // input field별 value prop으로 만들기
   useEffect(() => {
@@ -406,200 +415,255 @@ const DataView = ({ dataProps }) => {
   const [isUploadingDone, setIsUploadingDone] = useState(true);
 
   return (
-    <div style={{ width: '100%', marginTop: '40px' }}>
-      {!isUploadingDone && (
-        <div style={divStyle.loadingBackground}>
-          <Spinner />
-          <span style={divStyle.loadingText}>이미지를 업로드 중 입니다..</span>
-        </div>
-      )}
-      {
-        // 이미지 수정 불가능 팝업 - 일반 사용자임을 알리거나 서버를 확인하라는 경고 메시지
-        isLimitedToChangeImage && (
-          <RestrictedModal
-            setIsLimitedToChangeImage={setIsLimitedToChangeImage}
-          />
-        )
-      }
-      <div style={style.singleDataWrapper}>
-        {/* 1. 관리번호 육류에 대한 사진*/}
-        <MeatImgsCard
-          edited={edited}
-          page={'수정및조회'}
-          raw_img_path={raw_img_path}
-          processed_img_path={processed_img_path}
-          setIsUploadingDone={setIsUploadingDone}
-          id={meatId}
-          raw_data={raw_data}
-          setIsLimitedToChangeImage={setIsLimitedToChangeImage}
-          butcheryYmd={api_data['butcheryYmd']}
-          processedInput={processedInput}
-          processed_data={processed_data}
-          processedMinute={processedMinute}
-        />
-        {/* 2. QR코드와 데이터에 대한 기본 정보*/}
-        <QRInfoCard
-          qrImagePath={qrImagePath}
-          id={meatId}
-          userId={userId}
-          createdAt={createdAt}
-        />
-        {/* 3. 세부 데이터 정보*/}
-        <Card
+    <>
+      <Modal
+        show={infoRegisterShow}
+        onHide={handleInfoRegisterClose}
+        backdrop="true"
+        keyboard={false}
+        centered
+      >
+        <Modal.Body>
+        <Modal.Title
+            style={{
+              color: '#151D48',
+              fontFamily: 'Poppins',
+              fontSize: `24px`,
+              fontWeight: 600,
+            }}
+          >
+            딥에이징 회차 추가
+          </Modal.Title>
+          <AgingInfoRegister handleClose = {handleInfoRegisterClose} maxSeqno = {len} meatId = {meatId}/>
+        </Modal.Body>
+      </Modal>
+      <div style={{ width: '100%', position: 'relative' }}>
+        <Button
+          className="mb-3"
+          onClick={handleInfoRegisterShow}
           style={{
-            width: '27vw',
-            margin: '0px 10px',
-            boxShadow: 24,
-            minWidth: '360px',
-            height: '65vh',
-            minHeight: '500px',
-            // display: 'flex',
-            // flexDirection: 'column',
+            position: 'absolute',
+            top: 0,
+            right: 10,
+            display: 'inline-flex',
+            paddingX: `${(12 / 1920) * 100}vw`,
+            paddingY: `${(16 / 1080) * 100}vh`,
+            alignItems: 'center',
+            gap: `${(8 / 1920) * 100}vw`,
+            borderRadius: `${(10 / 1920) * 100}vw`,
+            background: '#32CD32',
+            borderColor: '#32CD32',
           }}
         >
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            defaultActiveKey="rawMeat"
-            aria-label="tabs"
-            className="mb-3"
-            style={{ backgroundColor: 'white', width: '100%' }}
-          >
-            <Tab value="raw" eventKey="rawMeat" title="원육">
-              <RawTable data={rawInput} />
-            </Tab>
-            <Tab
-              value="proc"
-              eventKey="processedMeat"
-              title="처리육"
-              style={{ backgroundColor: 'white' }}
-            >
-              {processed_data.length !== 0 ? (
-                <>
-                  <Autocomplete
-                    id={'controllable-states-processed'}
-                    label="처리상태"
-                    value={processed_toggle}
-                    onChange={(event, newValue) => {
-                      setProcessedToggle(newValue);
-                    }}
-                    inputValue={processedToggleValue}
-                    onInputChange={(event, newInputValue) => {
-                      setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
-                    }}
-                    options={options.slice(1)}
-                    size="small"
-                    sx={{ width: 'fit-content', marginBottom: '10px' }}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                  <ProcessedTable
-                    edited={edited}
-                    modal={modal}
-                    setModal={setModal}
-                    processed_img_path={processed_img_path}
-                    processedMinute={processedMinute}
-                    setProcessedMinute={setProcessedMinute}
-                    processedInput={processedInput}
-                    processed_data={processed_data}
-                    processedToggleValue={processedToggleValue}
-                    handleInputChange={handleInputChange}
-                  />
-                </>
-              ) : (
-                <div style={divStyle.errorContainer}>
-                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              value="heat"
-              eventKey="heatedMeat"
-              title="가열육"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={heatedToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setHeatedToggle(newValue);
-                }}
-                inputValue={heatedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setHeatedToggleValue(newInputValue);
-                }}
-                id={'controllable-states-heated'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <HeatTable
-                edited={edited}
-                heatInput={heatInput}
-                heated_data={heated_data}
-                heatedToggleValue={heatedToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab>
-            <Tab
-              value="lab"
-              eventKey="labData"
-              title="실험실"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={labToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setLabToggle(newValue);
-                }}
-                inputValue={labToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setLabToggleValue(newInputValue);
-                }}
-                id={'controllable-states-api'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <LabTable
-                edited={edited}
-                labInput={labInput}
-                lab_data={lab_data}
-                labToggleValue={labToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab>
-            <Tab
-              value="api"
-              eventKey="api"
-              title="축산물 이력"
-              style={{ backgroundColor: 'white' }}
-            >
-              <ApiTable api_data={api_data} />
-            </Tab>
-          </Tabs>
-        </Card>
+          딥에이징 회차 추가
+        </Button>
       </div>
-      <div style={style.editBtnWrapper}>
-        {edited ? (
-          <button
-            type="button"
-            style={style.completeBtn}
-            onClick={onClickSubmitBtn}
-          >
-            완료
-          </button>
-        ) : (
-          <button type="button" style={style.editBtn} onClick={onClickEditBtn}>
-            수정
-          </button>
+      <div style={{ width: '100%', marginTop: '40px' }}>
+        {!isUploadingDone && (
+          <div style={divStyle.loadingBackground}>
+            <Spinner />
+            <span style={divStyle.loadingText}>
+              이미지를 업로드 중 입니다..
+            </span>
+          </div>
         )}
+        {
+          // 이미지 수정 불가능 팝업 - 일반 사용자임을 알리거나 서버를 확인하라는 경고 메시지
+          isLimitedToChangeImage && (
+            <RestrictedModal
+              setIsLimitedToChangeImage={setIsLimitedToChangeImage}
+            />
+          )
+        }
+        <div style={style.singleDataWrapper}>
+          {/* 1. 관리번호 육류에 대한 사진*/}
+          <MeatImgsCard
+            edited={edited}
+            page={'수정및조회'}
+            raw_img_path={raw_img_path}
+            processed_img_path={processed_img_path}
+            setIsUploadingDone={setIsUploadingDone}
+            id={meatId}
+            raw_data={raw_data}
+            setIsLimitedToChangeImage={setIsLimitedToChangeImage}
+            butcheryYmd={api_data['butcheryYmd']}
+            processedInput={processedInput}
+            processed_data={processed_data}
+            processedMinute={processedMinute}
+          />
+          {/* 2. QR코드와 데이터에 대한 기본 정보*/}
+          <QRInfoCard
+            qrImagePath={qrImagePath}
+            id={meatId}
+            userId={userId}
+            createdAt={createdAt}
+          />
+          {/* 3. 세부 데이터 정보*/}
+          <Card
+            style={{
+              width: '27vw',
+              margin: '0px 10px',
+              boxShadow: 24,
+              minWidth: '360px',
+              height: '65vh',
+              minHeight: '500px',
+              // display: 'flex',
+              // flexDirection: 'column',
+            }}
+          >
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              defaultActiveKey="rawMeat"
+              aria-label="tabs"
+              className="mb-3"
+              style={{ backgroundColor: 'white', width: '100%' }}
+            >
+              <Tab value="raw" eventKey="rawMeat" title="원육">
+                <RawTable data={rawInput} />
+              </Tab>
+              <Tab
+                value="proc"
+                eventKey="processedMeat"
+                title="처리육"
+                style={{ backgroundColor: 'white' }}
+              >
+                {processed_data.length !== 0 ? (
+                  <>
+                    <Autocomplete
+                      id={'controllable-states-processed'}
+                      label="처리상태"
+                      value={processed_toggle}
+                      onChange={(event, newValue) => {
+                        setProcessedToggle(newValue);
+                      }}
+                      inputValue={processedToggleValue}
+                      onInputChange={(event, newInputValue) => {
+                        setProcessedToggleValue(
+                          newInputValue
+                        ); /*이미지 바꾸기 */
+                      }}
+                      options={options.slice(1)}
+                      size="small"
+                      sx={{ width: 'fit-content', marginBottom: '10px' }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                    <ProcessedTable
+                      edited={edited}
+                      modal={modal}
+                      setModal={setModal}
+                      processed_img_path={processed_img_path}
+                      processedMinute={processedMinute}
+                      setProcessedMinute={setProcessedMinute}
+                      processedInput={processedInput}
+                      processed_data={processed_data}
+                      processedToggleValue={processedToggleValue}
+                      handleInputChange={handleInputChange}
+                      processed_date={processed_date}
+                    />
+                  </>
+                ) : (
+                  <div style={divStyle.errorContainer}>
+                    <div style={divStyle.errorText}>
+                      처리육 데이터가 없습니다
+                    </div>
+                  </div>
+                )}
+              </Tab>
+              <Tab
+                value="heat"
+                eventKey="heatedMeat"
+                title="가열육"
+                style={{ backgroundColor: 'white' }}
+              >
+                <Autocomplete
+                  value={heatedToggle}
+                  size="small"
+                  onChange={(event, newValue) => {
+                    setHeatedToggle(newValue);
+                  }}
+                  inputValue={heatedToggleValue}
+                  onInputChange={(event, newInputValue) => {
+                    setHeatedToggleValue(newInputValue);
+                  }}
+                  id={'controllable-states-heated'}
+                  options={options}
+                  sx={{ width: 'fit-content', marginBottom: '10px' }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="처리상태" />
+                  )}
+                />
+                <HeatTable
+                  edited={edited}
+                  heatInput={heatInput}
+                  heated_data={heated_data}
+                  heatedToggleValue={heatedToggleValue}
+                  handleInputChange={handleInputChange}
+                />
+              </Tab>
+              <Tab
+                value="lab"
+                eventKey="labData"
+                title="실험실"
+                style={{ backgroundColor: 'white' }}
+              >
+                <Autocomplete
+                  value={labToggle}
+                  size="small"
+                  onChange={(event, newValue) => {
+                    setLabToggle(newValue);
+                  }}
+                  inputValue={labToggleValue}
+                  onInputChange={(event, newInputValue) => {
+                    setLabToggleValue(newInputValue);
+                  }}
+                  id={'controllable-states-api'}
+                  options={options}
+                  sx={{ width: 'fit-content', marginBottom: '10px' }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="처리상태" />
+                  )}
+                />
+                <LabTable
+                  edited={edited}
+                  labInput={labInput}
+                  lab_data={lab_data}
+                  labToggleValue={labToggleValue}
+                  handleInputChange={handleInputChange}
+                />
+              </Tab>
+              <Tab
+                value="api"
+                eventKey="api"
+                title="축산물 이력"
+                style={{ backgroundColor: 'white' }}
+              >
+                <ApiTable api_data={api_data} />
+              </Tab>
+            </Tabs>
+          </Card>
+        </div>
+        <div style={style.editBtnWrapper}>
+          {edited ? (
+            <button
+              type="button"
+              style={style.completeBtn}
+              onClick={onClickSubmitBtn}
+            >
+              완료
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={style.editBtn}
+              onClick={onClickEditBtn}
+            >
+              수정
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
