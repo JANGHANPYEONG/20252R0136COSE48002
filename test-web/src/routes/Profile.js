@@ -16,6 +16,7 @@ import CustomSnackbar from '../components/Base/CustomSnackbar';
 import { apiIP } from '../config';
 import { format } from 'date-fns';
 import { userDelete } from '../API/user/userDelete';
+import { userUpdate } from '../API/user/userUpdate';
 
 const navy = '#0F3659';
 
@@ -103,28 +104,16 @@ const Profile = () => {
   const updateUserInfo = async () => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`http://${apiIP}/user/update`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          // local storage에 저장되어 있지 않은 정보들은 주석 처리
-          userId: UserInfo.userId,
-          // password: UserInfo.password,
-          name: name,
-          homeAddr: homeAddr,
-          company: company,
-          jobTitle: jobTitle,
-
-          // alarm: UserInfo.alarm,
-          // type: UserInfo.type,
-          // updatedAt: UserInfo.updatedAt,
-          // loginAt: UserInfo.loginAt,
-          // createdAt: UserInfo.createdAt,
-        }),
+      const response = await userUpdate({
+        userId: UserInfo.userId,
+        name,
+        homeAddr,
+        company,
+        jobTitle,
       });
+
       const date = await response.json();
+
       if (response.ok) {
         const formattedCreatedAt = format(
           new Date(date.createdAt),
@@ -184,6 +173,18 @@ const Profile = () => {
         minHeight: '0px',
       }}
     >
+      <Typography
+        variant="h4"
+        gutterBottom
+        style={{
+          marginBottom: '20px',
+          color: '#0F3659',
+          fontSize: '30px',
+          fontWeight: '600',
+        }}
+      >
+        Profile
+      </Typography>
       <Paper sx={{ p: 2 }}>
         <div style={{ marginBottom: '1rem' }}>
           <TextField
