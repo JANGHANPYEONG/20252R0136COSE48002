@@ -12,3 +12,5 @@ export const userRegister = async (req) => {
   });
   return registrationResponse;
 };
+
+export default userRegister;
