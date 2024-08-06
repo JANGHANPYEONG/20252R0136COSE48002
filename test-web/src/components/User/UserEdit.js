@@ -15,7 +15,7 @@ import { db } from '../../firebase-config';
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 
-function UserEdit({ selectedUser }) {
+const UserEdit = ({ selectedUser }) => {
   const [userLevel, setUserLevel] = useState(''); // 사용자 레벨 상태 추가
   const [newUserLevel, setNewUserLevel] = useState(''); // 새로운 사용자 레벨 상태 추가
 
@@ -171,6 +171,6 @@ function UserEdit({ selectedUser }) {
       </Form>
     </div>
   );
-}
+};
 
 export default UserEdit;

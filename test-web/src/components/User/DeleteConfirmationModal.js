@@ -3,13 +3,13 @@ import { Modal, Button, Spinner } from 'react-bootstrap';
 
 const navy = '#0F3659';
 
-function DeleteConfirmationModal({
+const DeleteConfirmationModal = ({
   show,
   onHide,
   onConfirm,
   userName,
   userId,
-}) {
+}) => {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header style={{ border: 'none' }}>
@@ -58,6 +58,6 @@ function DeleteConfirmationModal({
       </Modal.Footer>
     </Modal>
   );
-}
+};
 
 export default DeleteConfirmationModal;

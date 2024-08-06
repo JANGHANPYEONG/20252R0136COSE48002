@@ -2,7 +2,7 @@ import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { statisticTime } from '../../../../API/statistic/statisticTime';
 
-export default function Taste_Time({ startDate, endDate, meatValue }) {
+const Taste_Time = ({ startDate, endDate, meatValue }) => {
   const fetchData = async () => {
     try {
       const response = await statisticTime(startDate, endDate, meatValue); //시계열 api 호출
@@ -128,4 +128,6 @@ export default function Taste_Time({ startDate, endDate, meatValue }) {
       </div>
     </div>
   );
-}
+};
+
+export default Taste_Time;

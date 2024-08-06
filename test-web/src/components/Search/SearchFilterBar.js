@@ -23,7 +23,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TIME_ZONE } from '../../config';
 const navy = '#0F3659';
 
-function SearchFilterBar({ setStartDate, setEndDate }) {
+const SearchFilterBar = ({ setStartDate, setEndDate }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -49,7 +49,7 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
   const [initialCalenderEnd, setInitialCalenderEnd] = useState(calenderEnd);
   const [initialIsDur, setInitialIsDur] = useState(isDur);
 
-  console.log(duration);
+  // console.log(duration);
 
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
@@ -329,7 +329,7 @@ function SearchFilterBar({ setStartDate, setEndDate }) {
       </IconButton>
     </div>
   );
-}
+};
 
 export default SearchFilterBar;
 

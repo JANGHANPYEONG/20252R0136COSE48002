@@ -9,9 +9,9 @@ import {
 } from 'firebase/auth';
 import { userRegister } from '../../API/user/userRegister';
 import { userDuplicateCheck } from '../../API/user/userDuplicateCheck';
-import RegisterCompletionModal from './Modal/RegisterCompletionModal';
+import RegisterCompletionModal from './RegisterCompletionModal';
 
-function UserRegister({ handleClose }) {
+const UserRegister = ({ handleClose }) => {
   const [userId, setuserId] = useState('');
   const [name, setname] = useState('');
   const [createdAt, setCreatedAt] = useState(
@@ -263,5 +263,5 @@ function UserRegister({ handleClose }) {
       />
     </div>
   );
-}
+};
 export default UserRegister;

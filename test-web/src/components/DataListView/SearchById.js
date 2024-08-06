@@ -4,7 +4,7 @@ import { HiOutlineSearch } from 'react-icons/hi';
 import { TextField, IconButton, Box } from '@mui/material';
 import { getByMeatId } from '../../API/get/getByMeatId';
 
-function SearchById({ onDataFetch, onValueChange }) {
+const SearchById = ({ onDataFetch, onValueChange }) => {
   const [meatId, setMeatId] = useState('');
   const [error, setError] = useState(false);
 
@@ -24,7 +24,7 @@ function SearchById({ onDataFetch, onValueChange }) {
   const handleSearch = async () => {
     if (error || !meatId) return; // error가 있거나 id가 없으면 검색하지 않음
     try {
-      const response = await getByMeatId(meatId)//getbymeatid api 호출
+      const response = await getByMeatId(meatId); //getbymeatid api 호출
       const data = await response.json();
       onDataFetch(data);
       onValueChange('single');
@@ -74,6 +74,6 @@ function SearchById({ onDataFetch, onValueChange }) {
       </IconButton>
     </Box>
   );
-}
+};
 
 export default SearchById;

@@ -3,12 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
 import calculateHeatMapChartSeries from './calculateHeatMapChartSeries';
 
-export default function Taste_Proc_Map({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+const Taste_Proc_Map = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
@@ -82,7 +77,7 @@ export default function Taste_Proc_Map({
       enabled: true,
       y: {
         title: {
-          formatter: function (value, { seriesIndex }) {
+          formatter: (value, { seriesIndex }) => {
             const axisName = ChartSeries[seriesIndex].name;
             const originalProperty = Object.keys(y_axis).find(
               (key) => y_axis[key] === axisName
@@ -90,7 +85,7 @@ export default function Taste_Proc_Map({
             return `${axisName}(${originalProperty}):`;
           },
         },
-        formatter: function (value, { seriesIndex, dataPointIndex }) {
+        formatter: (value, { seriesIndex, dataPointIndex }) => {
           const count = ChartSeries[seriesIndex].data[dataPointIndex] || 0;
           const total =
             ChartSeries[seriesIndex].data.reduce((a, b) => a + b, 0) || 1;
@@ -100,7 +95,7 @@ export default function Taste_Proc_Map({
       },
       x: {
         show: true,
-        formatter: function (value, { dataPointIndex, seriesIndex }) {
+        formatter: (value, { dataPointIndex, seriesIndex }) => {
           const categories = [
             '1 미만',
             '1.0 ~ 2.0',
@@ -130,4 +125,6 @@ export default function Taste_Proc_Map({
       height={350}
     />
   );
-}
+};
+
+export default Taste_Proc_Map;

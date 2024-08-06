@@ -4,12 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
 import calculateBoxPlotStatistics from './calculateBoxPlotStat';
 
-export default function Sens_FreshMeat({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+const Sens_FreshMeat = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState([]);
   const fetchData = async () => {
     try {
@@ -35,8 +30,6 @@ export default function Sens_FreshMeat({
       fetchData();
     }
   }, [startDate, endDate, animalType, grade]);
-
-
 
   const chartOptions = {
     chart: {
@@ -99,4 +92,6 @@ export default function Sens_FreshMeat({
       )}
     </div>
   );
-}
+};
+
+export default Sens_FreshMeat;

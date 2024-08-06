@@ -4,7 +4,7 @@ import { Box, Button, SvgIcon } from '@mui/material';
 const navy = '#0F3659';
 
 // 통계 export 버튼 컴포넌트
-function StatsExport() {
+const StatsExport = () => {
   return (
     <Box>
       <Button
@@ -26,6 +26,6 @@ function StatsExport() {
       </Button>
     </Box>
   );
-}
+};
 
 export default StatsExport;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import SearchFilterBar from '../components/Search/SearchFilterBar';
+import SearchFilterBar from '../components/Utils/SearchFilterBar';
 // 데이터 목록
 import PADataListComp from '../components/DataListView/PADataListComp';
 // mui

@@ -1,7 +1,7 @@
 import StatsTabs from '../components/Stats/StatsTabs';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import SearchFilterBar from '../components/Search/SearchFilterBar';
+import SearchFilterBar from '../components/Utils/SearchFilterBar';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TIME_ZONE } from '../config';

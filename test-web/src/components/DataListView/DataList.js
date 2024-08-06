@@ -17,11 +17,11 @@ import {
   IconButton,
 } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
-import DelWarningModal from './WarningComp';
+import DelWarningModal from './DelWarningModal';
 import PropTypes from 'prop-types';
 
 //데이터 목록 컴포넌트
-function DataList({
+const DataList = ({
   meatList, // 육류 목록 데이터
   pageProp, // 페이지 종류
   offset, // 현재 페이지 offset
@@ -30,7 +30,7 @@ function DataList({
   startDate, // 조회 시작 날짜
   endDate, // 조회 종료 날짜
   pageOffset, // 현재 페이지 offset
-}) {
+}) => {
   // 삭제 클릭 여부
   const [isDelClick, setIsDelClick] = useState(false);
   // 삭제할 아이템 배열 관리
@@ -76,7 +76,7 @@ function DataList({
     }
   };
   // 테이블 헤더
-  function OrderTableHead({ order, orderBy }) {
+  const OrderTableHead = ({ order, orderBy }) => {
     return (
       <TableHead>
         {
@@ -162,7 +162,7 @@ function DataList({
         </TableRow>
       </TableHead>
     );
-  }
+  };
 
   OrderTableHead.propTypes = {
     order: PropTypes.string,
@@ -327,7 +327,7 @@ function DataList({
       }
     </Box>
   );
-}
+};
 
 export default DataList;
 

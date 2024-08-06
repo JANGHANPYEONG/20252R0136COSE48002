@@ -3,12 +3,8 @@ import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { statisticSensoryHeated } from '../../../../API/statistic/statisticSensoryHeated';
 import calculateBoxPlotStatistics from './calculateBoxPlotStat';
-export default function Sens_HeatedMeat({
-  startDate,
-  endDate,
-  animalType,
-  grade,
-}) {
+
+const Sens_HeatedMeat = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState([]);
 
   const fetchData = async () => {
@@ -85,4 +81,6 @@ export default function Sens_HeatedMeat({
       )}
     </div>
   );
-}
+};
+
+export default Sens_HeatedMeat;
