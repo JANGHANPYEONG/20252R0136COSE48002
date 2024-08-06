@@ -3,7 +3,7 @@ import { ExcelRenderer } from 'react-excel-renderer';
 import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
 import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import { Box, Button, SvgIcon, CircularProgress } from '@mui/material';
-import { getDataListJSON, downloadExcel } from './ExcelExport';
+import { getDataListJSON, downloadExcel } from './excelExport';
 import { apiIP } from '../../config';
 import ExcelImportAlertModal from '../DataDetailPage/ExcelImportAlertModal';
 
