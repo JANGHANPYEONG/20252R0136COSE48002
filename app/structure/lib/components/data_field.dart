@@ -11,7 +11,7 @@ class DataField extends StatefulWidget {
   final TextEditingController controller;
   final bool? isPercent;
   final void Function(String)? onChangeFunc;
-  final int? isFinal;
+  final bool isFinal;
   final GlobalKey<FormState>? formKey;
 
   const DataField({
@@ -21,7 +21,7 @@ class DataField extends StatefulWidget {
     this.unit,
     required this.controller,
     this.isPercent,
-    this.isFinal,
+    this.isFinal = false,
     this.onChangeFunc,
     this.formKey,
   });
@@ -75,7 +75,7 @@ class _DataFieldState extends State<DataField> {
             controller: widget.controller,
             focusNode: _focusNode,
             textInputAction:
-                widget.isFinal != null ? null : TextInputAction.next,
+                widget.isFinal ? TextInputAction.done : TextInputAction.next,
             textAlign: TextAlign.left,
             inputFormatters:
                 widget.isPercent != null && widget.isPercent == true

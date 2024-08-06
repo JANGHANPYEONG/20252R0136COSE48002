@@ -93,15 +93,13 @@ class _DataAddScreenState extends State<DataAddScreen> {
                               padding: EdgeInsets.symmetric(vertical: 16.h),
                               child: DeepAgingCard(
                                 deepAgingNum:
-                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회',
+                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회차',
                                 mainText:
                                     '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
                                 butcheryDate: dataAddHomeViewModel.meatModel
                                     .deepAgingInfo![index + 1]['date'],
                                 // TODO : complete check
                                 completed: false,
-                                // dataAddHomeViewModel
-                                //     .meatModel.deepAgingInfo![index]['complete'],
                                 onTap: () async => await dataAddHomeViewModel
                                     .clickedProcessedMeat(index + 1, context),
                                 delete: () async => await dataAddHomeViewModel

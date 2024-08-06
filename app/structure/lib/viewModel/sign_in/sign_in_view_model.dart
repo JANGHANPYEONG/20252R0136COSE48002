@@ -50,8 +50,8 @@ class SignInViewModel with ChangeNotifier {
     try {
       // 로그인 시도
       await _authentication.signInWithEmailAndPassword(
-        email: userId,
-        password: userPw,
+        email: userId.trim(),
+        password: userPw.trim(),
       );
 
       // 이메일 validation
@@ -69,7 +69,7 @@ class SignInViewModel with ChangeNotifier {
           // 자동 로그인 설정
           if (isAutoLogin) {
             await LocalDataSource.saveDataToLocal(
-                jsonEncode({'auto': userModel.userId}), 'auto.json');
+                jsonEncode({'auto': userModel.userId?.trim()}), 'auto.json');
           } else {
             await LocalDataSource.saveDataToLocal(
                 jsonEncode({'auto': null}), 'auto.json');
@@ -142,7 +142,7 @@ class SignInViewModel with ChangeNotifier {
     // 로그인 API 호출
     try {
       // 유저 정보 가져오기 시도
-      dynamic userInfo = await RemoteDataSource.login(userId)
+      dynamic userInfo = await RemoteDataSource.login(userId.trim())
           .timeout(const Duration(seconds: 10));
       if (userInfo is Map<String, dynamic>) {
         // 200 OK

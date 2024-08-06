@@ -82,7 +82,7 @@ class HomeCard extends StatelessWidget {
 
           // 하단 화살표
           Transform.translate(
-            offset: Offset(144.w, 432.h),
+            offset: Offset(144.w, 448.h),
             child: Container(
               width: 160.w,
               height: 80.h,
