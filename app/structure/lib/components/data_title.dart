@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:structure/config/palette.dart';
 
 class DataTitle extends StatelessWidget {
   const DataTitle({super.key, required this.korText, required this.engText});
@@ -14,12 +15,12 @@ class DataTitle extends StatelessWidget {
         Text(
           '$engText ',
           textAlign: TextAlign.left,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: Palette.h4,
         ),
         Text(
           korText,
           textAlign: TextAlign.left,
-          style: const TextStyle(color: Colors.grey),
+          style: Palette.h4RegularOnSecondary,
         ),
       ],
     );

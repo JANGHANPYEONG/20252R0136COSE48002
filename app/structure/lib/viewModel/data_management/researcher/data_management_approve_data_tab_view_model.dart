@@ -1,6 +1,6 @@
 //
 //
-// 추가정보 입력 페이지(ViewModel) : Researcher
+// 일반 데이터 승인 탭 viewModel
 //
 //
 
@@ -13,14 +13,15 @@ import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
-class DataManagementHomeResearcherViewModel with ChangeNotifier {
+class DataManagementApproveDataTabViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-  DataManagementHomeResearcherViewModel(this.meatModel, this.userModel) {
+  DataManagementApproveDataTabViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
+  bool isLoading = true;
 
-  // 초기 리스트 (전체 데이터)
+  // 초기 리스트
   List<Map<String, String>> entireList = [];
 
   // 필터링된 리스트
@@ -33,23 +34,23 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
-  final ScrollController scrollController = ScrollController();
+  //스크롤바
+  final scrollController = ScrollController();
 
-  bool isLoading = true;
   bool isOpnedFilter = false; // 필터가 열린지 확인.
   bool isOpenTable = false; // 날짜 선택이 열린지 확인.
   bool isChecked = false; // 필터 값이 온전한지 확인 (직접 입력에서 날짜가 정확히 골라졌는지 여부)
 
   // 필터 값을 지칭
-  String filterdResult = '3일∙전체∙전체';
+  String filterdResult = '3일∙전체∙전체∙전체∙최신순';
 
   // 필터에 필요한 변수
   List<String> dateList = ['3일', '1개월', '3개월', '직접입력'];
   List<bool> dateStatus = [true, false, false, false];
   int dateSelectedIdx = 0;
 
-  List<String> dataList = ['전체', '나의 데이터', '일반 데이터', '연구 데이터'];
-  List<bool> dataStatus = [true, false, false, false];
+  List<String> dataList = ['전체', '나의 데이터'];
+  List<bool> dataStatus = [true, false];
   int dataSelectedIdx = 0;
 
   List<String> speciesList = ['전체', '소', '돼지'];
@@ -60,8 +61,12 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   List<bool> statusStatus = [true, false, false, false];
   int statusSelectedIdx = 0;
 
+  List<String> sortList = ['최신순', '과거순'];
+  List<bool> sortStatus = [true, false];
+  int sortSelectedIdx = 0;
+
   // 날짜 값이 담길 변수
-  DateTime? today;
+  DateTime? toDay;
   DateTime? threeDaysAgo;
   DateTime? monthsAgo;
   DateTime? threeMonthsAgo;
@@ -76,11 +81,15 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   String lastDayText = '';
   int indexDay = 0;
 
-  //총 개수
-  int selectedListNum = 0;
-
   // 초기화 함수.
   Future<void> _initialize() async {
+    isLoading = true;
+    notifyListeners();
+
+    entireList = [];
+    filteredList = [];
+    selectedList = [];
+
     await _fetchData();
     filterlize();
 
@@ -91,38 +100,37 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   // 데이터 호출
   Future<void> _fetchData() async {
     try {
-      // Confirm된 육류 데이터 호출
-      final response = await RemoteDataSource.getConfirmedMeatData();
+      final response = await RemoteDataSource.getALLMeatData();
       if (response is Map<String, dynamic>) {
-        List<dynamic> jsonData = response['승인'];
+        final jsonData = response['meat_dict'];
 
-        if (jsonData.isEmpty) {
+        if (jsonData == null) {
           throw ErrorDescription('Empty list');
         } else {
           // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
-          for (Map<String, dynamic> item in jsonData) {
+
+          jsonData.forEach((key, item) {
             String meatId = item['meatId'];
             String userId = item['userId'];
             String userType = item['userType'];
             String createdAt = item['createdAt'];
             String specieValue = item['specieValue'];
+            String statusType = item['statusType'];
 
             Map<String, String> idStatusPair = {
               'meatId': meatId,
               'userId': userId,
-              'Type': userType,
+              'userType': userType,
               'createdAt': createdAt,
               'specieValue': specieValue,
+              'statusType': statusType,
             };
             entireList.add(idStatusPair);
-          }
+          });
         }
-      } else {
-        throw Error();
       }
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 조회된 데이터가 없을 경우 처리
     }
   }
 
@@ -138,6 +146,10 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     dataStatus[dataSelectedIdx] = true;
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[speciesSelectedIdx] = true;
+    statusStatus = List.filled(statusStatus.length, false);
+    statusStatus[statusSelectedIdx] = true;
+    sortStatus = List.filled(sortStatus.length, false);
+    sortStatus[sortSelectedIdx] = true;
 
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {
@@ -170,6 +182,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     sortUserData();
     setData();
     setSpecies();
+    setStatus();
   }
 
   // 정렬 필터 입력에 따라 정렬 진행.
@@ -182,17 +195,13 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     selectedList = filteredList;
   }
 
-  // 데이터 종류에 따라 필터링 진행. (전체 / 나의 데이터 / 일반 데이터/ 연구 데이터)
+  // 데이터 종류에 따라 필터링 진행. (모든 데이터 / 나의 데이터)
   void setData() {
     if (dataSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         return (data['userId'] == userModel.userId);
       }).toList();
-    } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
-      filteredList = filteredList.where((data) {
-        return (data['userType'] == userModel.type);
-      }).toList();
-    } else {}
+    }
   }
 
   // 육종 별 필터링 진행. (소 / 돼지)
@@ -210,16 +219,35 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     selectedList = filteredList;
   }
 
+  void setStatus() {
+    if (statusSelectedIdx == 1) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '대기중');
+      }).toList();
+    } else if (statusSelectedIdx == 2) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '승인');
+      }).toList();
+    } else if (statusSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['statusType'] == '반려');
+      }).toList();
+    }
+    selectedList = filteredList;
+  }
+
   // 필터 조회 버튼 클릭시 호출
   void onPressedFilterSave() {
     // 필터 값 기억
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
     dataSelectedIdx = dataStatus.indexWhere((element) => element == true);
     speciesSelectedIdx = speciesStatus.indexWhere((element) => element == true);
+    statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
+    sortSelectedIdx = sortStatus.indexWhere((element) => element == true);
 
     // 필터 텍스트 할당
     filterdResult =
-        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}';
+        '${dateList[dateSelectedIdx]}∙${dataList[dataSelectedIdx]}∙${speciesList[speciesSelectedIdx]}∙${statusList[statusSelectedIdx]}∙${sortList[sortSelectedIdx]}';
 
     // 필터 창 닫기
     isOpnedFilter = false;
@@ -233,8 +261,6 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
     formatting();
     filterlize();
-
-    selectedListNum = selectedList.length;
     notifyListeners();
   }
 
@@ -247,7 +273,7 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     }
   }
 
-  /// 날짜 직접입력 fomatting
+  // 날짜 fomatting
   void formatting() {
     // 초기화
     isOpenTable = true;
@@ -281,14 +307,14 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
 
   // 날짜 필터를 이용할 때 호출된다.
   void onTapDate(int index) {
-    dateStatus = List.filled(dateStatus.length, false); // 전체 false로 초기화
-    dateStatus[index] = true; // 현재 선택된 필터만 true로 변경
+    dateStatus = List.filled(dateStatus.length, false);
+    dateStatus[index] = true;
+    // 직접 설정이면 TableCalendar 호출
     if (index != 3) {
       isOpenTable = false;
       firstDayText = '';
       lastDayText = '';
     } else {
-      // 직접 입력
       formatting();
     }
 
@@ -312,6 +338,20 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   void onTapSpecies(int index) {
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[index] = true;
+    notifyListeners();
+  }
+
+  // 정렬 필터링
+  void onTapSort(int index) {
+    sortStatus = List.filled(sortStatus.length, false);
+    sortStatus[index] = true;
+    notifyListeners();
+  }
+
+  //상태 필터 클릭
+  void onTapStatus(int index) {
+    statusStatus = List.filled(statusList.length, false);
+    statusStatus[index] = true;
     notifyListeners();
   }
 
@@ -350,22 +390,15 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  //상태 필터 클릭
-  void onTapStatus(int index) {
-    statusStatus = List.filled(statusList.length, false);
-    statusStatus[index] = true;
-    notifyListeners();
-  }
-
   // 현재 필터링 시간을 기준으로 시간 지정 (현재 날짜에 맞추어, 3일 | 1개월 | 3개월 날짜가 지정된다.)
   // 현재 지정 방식에서는 3일 전이면, 현재 시간을 기준으로 3일 전 자정까지이다.
   void setTime() {
-    today = DateTime.now();
+    toDay = DateTime.now();
     threeDaysAgo =
-        DateTime(today!.year, today!.month, today!.day - 3, 0, 0, 0, 0);
-    monthsAgo = DateTime(today!.year, today!.month - 1, today!.day, 0, 0, 0, 0);
+        DateTime(toDay!.year, toDay!.month, toDay!.day - 3, 0, 0, 0, 0);
+    monthsAgo = DateTime(toDay!.year, toDay!.month - 1, toDay!.day, 0, 0, 0, 0);
     threeMonthsAgo =
-        DateTime(today!.year, today!.month - 3, today!.day, 0, 0, 0, 0);
+        DateTime(toDay!.year, toDay!.month - 3, toDay!.day, 0, 0, 0, 0);
   }
 
   // 날짜 필터 입력에 따라 필터링
@@ -374,17 +407,17 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     if (dateSelectedIdx == 0) {
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
-        return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(today!);
+        return dateTime.isAfter(threeDaysAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
-        return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(today!);
+        return dateTime.isAfter(monthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else if (dateSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
         DateTime dateTime = DateTime.parse(data['createdAt']!);
-        return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(today!);
+        return dateTime.isAfter(threeMonthsAgo!) && dateTime.isBefore(toDay!);
       }).toList();
     } else {
       filteredList = filteredList.where((data) {
@@ -432,20 +465,25 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
     onChanged(null);
   }
 
-  /// 데이터 필드를 클릭 시에 호출된다.
-  Future<void> onTap(int idx, BuildContext context) async {
+  /// 육류 선택
+  Future<void> onTapApproveCard(int idx, BuildContext context) async {
     String meatId = '';
     isLoading = true;
     notifyListeners();
 
     try {
-      meatId = selectedList[idx]['meatId']!; // meatId 선택
+      meatId = selectedList[idx]['meatId']!;
 
-      // API 호출
-      final response = await RemoteDataSource.getMeatData(meatId);
+      dynamic response = await RemoteDataSource.getMeatData(meatId);
+
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response);
-        if (context.mounted) context.go('/home/data-manage-researcher/add');
+        meatModel.fromJsonDeepAged(0); // 원육 데이터 저장
+        if (context.mounted) {
+          GoRouter.of(context)
+              .push('/home/data-manage-researcher/approve')
+              .then((_) => _initialize());
+        }
       } else {
         throw Error();
       }
@@ -462,12 +500,12 @@ class DataManagementHomeResearcherViewModel with ChangeNotifier {
   void _filterStrings(bool isQr) {
     if (isQr = false) {
       selectedList = filteredList.where((map) {
-        String id = map['meatId'] ?? '';
+        String id = map['id'] ?? '';
         return id.contains(insertedText);
       }).toList();
     } else {
       selectedList = entireList.where((map) {
-        String id = map['meatId'] ?? '';
+        String id = map['id'] ?? '';
         return id.contains(insertedText);
       }).toList();
     }

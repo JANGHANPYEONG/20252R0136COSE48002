@@ -14,6 +14,7 @@ class CustomTableBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       height: 64.h,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       color: Palette.onPrimaryContainer,

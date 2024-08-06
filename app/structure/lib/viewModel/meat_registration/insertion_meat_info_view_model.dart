@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_dialog.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
@@ -38,8 +38,8 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
 
   // 'Togglebutton'에 사용될 위젯 변수
   List<Widget> speciesValues = [
-    Text('소', style: Pallete.h4Grey),
-    Text('돼지', style: Pallete.h4Grey),
+    Text('소', style: Palette.h4Secondary),
+    Text('돼지', style: Palette.h4Secondary),
   ];
 
   // 선택된 species

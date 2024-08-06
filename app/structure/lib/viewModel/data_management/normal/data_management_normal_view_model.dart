@@ -26,6 +26,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
   String insertedText = '';
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   bool isLoading = true;
   bool isOpnedFilter = false; // 필터가 열린지 확인.
@@ -100,14 +101,14 @@ class DataManagementNormalViewModel with ChangeNotifier {
           for (Map<String, dynamic> item in jsonData) {
             String meatId = item['meatId'];
             String statusType = item['statusType'];
-            // String specieValue = item['specieValue'];
+            String specieValue = item['specieValue'];
             String createdAt = Usefuls.parseDate(item['createdAt']);
 
             Map<String, String> idStatusPair = {
               'meatId': meatId,
               'statusType': statusType,
               'createdAt': createdAt,
-              // 'specieValue': specieValue,
+              'specieValue': specieValue,
             };
 
             entireList.add(idStatusPair);
@@ -142,8 +143,8 @@ class DataManagementNormalViewModel with ChangeNotifier {
     // 필터 값 기억
     dateSelectedIdx = dateStatus.indexWhere((element) => element == true);
     speciesSelectedIdx = speciesStatus.indexWhere((element) => element == true);
-    sortSelectedIdx = sortStatus.indexWhere((element) => element == true);
     statusSelectedIdx = statusStatus.indexWhere((element) => element == true);
+    sortSelectedIdx = sortStatus.indexWhere((element) => element == true);
     // 필터 텍스트 할당
     filterdResult =
         '${dateList[dateSelectedIdx]}∙${speciesList[speciesSelectedIdx]}∙${statusList[statusSelectedIdx]}∙${sortList[sortSelectedIdx]}';
@@ -198,10 +199,10 @@ class DataManagementNormalViewModel with ChangeNotifier {
     dateStatus[dateSelectedIdx] = true;
     speciesStatus = List.filled(speciesStatus.length, false);
     speciesStatus[speciesSelectedIdx] = true;
-    sortStatus = List.filled(sortStatus.length, false);
-    sortStatus[sortSelectedIdx] = true;
     statusStatus = List.filled(statusStatus.length, false);
     statusStatus[statusSelectedIdx] = true;
+    sortStatus = List.filled(sortStatus.length, false);
+    sortStatus[sortSelectedIdx] = true;
 
     // '직접 설정'이 아니면 날짜 지정 부분을 가린다.
     if (dateSelectedIdx != 3) {

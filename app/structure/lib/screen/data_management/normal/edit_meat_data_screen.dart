@@ -11,7 +11,6 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/round_button.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
 
 class EditMeatDataScreen extends StatelessWidget {
@@ -91,8 +90,11 @@ class EditMeatDataScreen extends StatelessWidget {
                             onPress: () {
                               editMeatDataViewModel.rejectMeatData(context);
                             },
-                            text: Text('반려',
-                                style: Pallete.fieldPlaceHolderWhite),
+                            text: Text(
+                              '반려',
+                              style: Palette.h4Regular
+                                  .copyWith(color: Colors.white),
+                            ),
                             bgColor: Palette.error,
                             width: double.infinity,
                             height: 96.h,
@@ -106,8 +108,11 @@ class EditMeatDataScreen extends StatelessWidget {
                             onPress: () {
                               editMeatDataViewModel.acceptMeatData(context);
                             },
-                            text: Text('승인',
-                                style: Pallete.fieldPlaceHolderWhite),
+                            text: Text(
+                              '승인',
+                              style: Palette.h4Regular
+                                  .copyWith(color: Colors.white),
+                            ),
                             bgColor: Palette.primary,
                             width: double.infinity,
                             height: 96.h,

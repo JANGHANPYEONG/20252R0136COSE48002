@@ -6,7 +6,6 @@ import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_input_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 import 'package:structure/viewModel/sign_in/sign_in_view_model.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -117,7 +116,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             SizedBox(width: 24.w),
 
-                            Text('자동 로그인', style: Pallete.h5),
+                            Text('자동 로그인', style: Palette.h5),
                             const Spacer(),
 
                             // 비밀번호 재설정.

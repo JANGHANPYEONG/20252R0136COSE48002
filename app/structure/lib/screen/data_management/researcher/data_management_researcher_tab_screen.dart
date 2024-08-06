@@ -9,9 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/screen/data_management/researcher/data_management_approve_data_tab_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_management_add_additional_info_tab_screen.dart';
-import 'package:structure/viewModel/data_management/researcher/approve_data_view_model.dart';
-import 'package:structure/viewModel/data_management/researcher/data_management_home_tab_view_model.dart';
-import 'package:structure/viewModel/data_management/researcher/data_management_researcher_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_approve_data_tab_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_researcher_tab_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_add_additional_info_tab_view_model.dart';
 
 class DataManagementResearcherTabScreen extends StatefulWidget {
   const DataManagementResearcherTabScreen({super.key});
@@ -57,14 +57,14 @@ class _DataManagementResearcherTabScreenState
         controller: _tabController,
         children: [
           ChangeNotifierProvider(
-            create: (context) => DataManagementHomeResearcherViewModel(
+            create: (context) => DataManagementAddAdditionalInfoTabViewModel(
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
             ),
             child: const DataManagementAddAdditionalInfoTabScreen(),
           ),
           ChangeNotifierProvider(
-            create: (context) => ApproveDataViewModel(
+            create: (context) => DataManagementApproveDataTabViewModel(
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
             ),

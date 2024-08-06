@@ -12,17 +12,29 @@ class Palette {
   // Primary continaer 색 (연초록)
   static const Color primaryContainer = Color(0xFF87E980);
 
+  // Primary Container 색 위에 올라가는 텍스트 색상
   static const Color onPrimaryContainer = Color(0xFFF9F9F9);
 
   // Secondary 색 (회색)
   static const Color secondary = Color(0xFF515151);
+
+  // Secondary 색 위에 올라가는 텍스트 색상
   static const Color onSecondary = Color(0xFF9F9F9F);
 
   // Error 색 (빨강)
   static const Color error = Color(0xFFFF4949);
 
   // 기타 색
-  static const Color starYellow = Color(0xFFFFE871);
+  static const Color starYellow = Color(0xFFFFE871); // 별 아이콘 색상
+  static const Color stepCardComplete = Color(0xFFDBF8D9); // Step Card 완료 색상
+  static const Color stepCardNotComplete =
+      Color(0xFFFFEBEB); // Step Card 미완료 색상
+  static const Color deepAgingNumBG = Color(0xFFE8E5FF); // 딥에이징 회차 배경 색
+  static const Color deepAgingNumText =
+      Color.fromARGB(255, 129, 112, 255); // 딥에이징 회차 텍스트 색
+  static const Color userNormalCardBg = Color(0xFFFFF856);
+  static const Color userResearcherCardBg = Color(0xFFD9C2FF);
+  static const Color userManagerCardBg = Color(0xFF70E391);
 
   /* TextStyle */
   /* h1 */
@@ -49,6 +61,14 @@ class Palette {
   );
 
   /// Font size: 36.sp
+  /// <br /> Font weight: w500
+  static TextStyle h3Medium = TextStyle(
+    fontSize: 36.sp,
+    fontWeight: FontWeight.w500,
+    color: Colors.black,
+  );
+
+  /// Font size: 36.sp
   /// <br /> Font weight: w700
   /// <br /> Color: primary
   static TextStyle h3Primary = TextStyle(
@@ -64,6 +84,15 @@ class Palette {
     fontSize: 36.sp,
     fontWeight: FontWeight.w700,
     color: onPrimary,
+  );
+
+  /// Font size: 36.sp
+  /// <br /> Font weight: w700
+  /// <br /> Color: onSecondary
+  static TextStyle h3OnSecondary = TextStyle(
+    fontSize: 36.sp,
+    fontWeight: FontWeight.w700,
+    color: onSecondary,
   );
 
   /// Font size: 36.sp
@@ -84,14 +113,6 @@ class Palette {
   );
 
   /// Font size: 30.sp
-  /// <br /> Font weight: w400
-  static TextStyle h4Regular = TextStyle(
-    fontSize: 30.sp,
-    fontWeight: FontWeight.w400,
-    color: Colors.black,
-  );
-
-  /// Font size: 30.sp
   /// <br /> Font weight: w600
   ///   /// <br /> Color: secondary
   static TextStyle h4Secondary = TextStyle(
@@ -106,6 +127,23 @@ class Palette {
   static TextStyle h4OnSecondary = TextStyle(
     fontSize: 30.sp,
     fontWeight: FontWeight.w600,
+    color: onSecondary,
+  );
+
+  /// Font size: 30.sp
+  /// <br /> Font weight: w400
+  static TextStyle h4Regular = TextStyle(
+    fontSize: 30.sp,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
+  /// Font size: 30.sp
+  /// <br /> Font weight: w400
+  ///   /// <br /> Color: onSecondary
+  static TextStyle h4RegularOnSecondary = TextStyle(
+    fontSize: 30.sp,
+    fontWeight: FontWeight.w400,
     color: onSecondary,
   );
 
@@ -146,21 +184,21 @@ class Palette {
   );
 
   /// Font size: 24.sp
-  /// <br /> Font weight: w600
-  /// <br /> Color: secondary
-  static TextStyle h5SemiBoldSecondary = TextStyle(
-    fontSize: 24.sp,
-    fontWeight: FontWeight.w600,
-    color: secondary,
-  );
-
-  /// Font size: 24.sp
   /// <br /> Font weight: w400
   /// <br /> Color: onSecondary
   static TextStyle h5OnSecondary = TextStyle(
     fontSize: 24.sp,
     fontWeight: FontWeight.w400,
     color: onSecondary,
+  );
+
+  /// Font size: 24.sp
+  /// <br /> Font weight: w600
+  /// <br /> Color: secondary
+  static TextStyle h5SemiBoldSecondary = TextStyle(
+    fontSize: 24.sp,
+    fontWeight: FontWeight.w600,
+    color: secondary,
   );
 
   /// Font size: 24.sp
@@ -183,6 +221,14 @@ class Palette {
 
   /// Font size: 20.sp
   /// <br /> Font weight: w600
+  static TextStyle h6SemiBold = TextStyle(
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w600,
+    color: Colors.black,
+  );
+
+  /// Font size: 20.sp
+  /// <br /> Font weight: w600
   /// <br /> Color: onSecondary
   static TextStyle h6SemiBoldOnSecondary = TextStyle(
     fontSize: 20.sp,
@@ -195,15 +241,6 @@ class Palette {
   /// <br /> Font weight: w400
   static TextStyle h7 = TextStyle(
     fontSize: 16.sp,
-    fontWeight: FontWeight.w400,
-    color: Colors.black,
-  );
-
-  /* h8 */
-  /// Font size: 12.sp
-  /// <br /> Font weight: w400
-  static TextStyle h8 = TextStyle(
-    fontSize: 12.sp,
     fontWeight: FontWeight.w400,
     color: Colors.black,
   );

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/model/user_model.dart';
 
 class PasswordResetViewModel with ChangeNotifier {
@@ -17,9 +17,7 @@ class PasswordResetViewModel with ChangeNotifier {
 
   // 이메일이 입력됐는지 확인
   String? emailValidate(String? value) {
-    bool isActivateButton = true;
     notifyListeners();
-    print('비밀번호 : $isActivateButton');
     if (value!.isEmpty) {
       _isValidEmail = false;
       return '이메일을 입력하세요';
@@ -70,7 +68,7 @@ class PasswordResetViewModel with ChangeNotifier {
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
-        backgroundColor: Pallete.alertBg,
+        backgroundColor: Palette.error,
       ),
     );
   }

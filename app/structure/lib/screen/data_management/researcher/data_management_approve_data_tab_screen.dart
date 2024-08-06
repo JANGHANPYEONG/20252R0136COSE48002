@@ -16,9 +16,8 @@ import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/pallete.dart';
 import 'package:structure/config/userfuls.dart';
-import 'package:structure/viewModel/data_management/researcher/approve_data_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_management_approve_data_tab_view_model.dart';
 
 class DataManagementApproveDataTabScreen extends StatefulWidget {
   const DataManagementApproveDataTabScreen({super.key});
@@ -32,8 +31,9 @@ class _DataManagementApproveDataTabScreenState
     extends State<DataManagementApproveDataTabScreen> {
   @override
   Widget build(BuildContext context) {
-    ApproveDataViewModel approveDataViewModel =
-        context.watch<ApproveDataViewModel>();
+    DataManagementApproveDataTabViewModel
+        dataManagementApproveDataTabViewModel =
+        context.watch<DataManagementApproveDataTabViewModel>();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -58,15 +58,15 @@ class _DataManagementApproveDataTabScreenState
                       children: [
                         // 데이터 개수 텍스트
                         Text(
-                          '${approveDataViewModel.selectedList.length}개의 데이터',
+                          '${dataManagementApproveDataTabViewModel.selectedList.length}개의 데이터',
                           textAlign: TextAlign.left,
                           style: Palette.h5Secondary,
                         ),
 
                         // 필터 버튼
                         InkWell(
-                          onTap: () =>
-                              approveDataViewModel.clickedFilter(context),
+                          onTap: () => dataManagementApproveDataTabViewModel
+                              .clickedFilter(context),
                           borderRadius: BorderRadius.circular(20.r),
                           child: Container(
                             padding: EdgeInsets.all(16.w),
@@ -75,12 +75,14 @@ class _DataManagementApproveDataTabScreenState
                               children: [
                                 // 선택된 필터
                                 Text(
-                                  approveDataViewModel.filterdResult,
-                                  style: Pallete.h4,
+                                  dataManagementApproveDataTabViewModel
+                                      .filterdResult,
+                                  style: Palette.h4,
                                 ),
 
                                 // 화살표
-                                approveDataViewModel.isOpnedFilter
+                                dataManagementApproveDataTabViewModel
+                                        .isOpnedFilter
                                     ? const Icon(Icons.arrow_drop_up_outlined)
                                     : const Icon(Icons.arrow_drop_down),
                               ],
@@ -91,40 +93,68 @@ class _DataManagementApproveDataTabScreenState
                     ),
 
                     // 필터 area
-                    approveDataViewModel.isOpnedFilter
+                    dataManagementApproveDataTabViewModel.isOpnedFilter
                         ? FilterBox(
                             type: 2,
-                            dateList: approveDataViewModel.dateList,
+                            dateList:
+                                dataManagementApproveDataTabViewModel.dateList,
                             onTapDate: (index) =>
-                                approveDataViewModel.onTapDate(index),
-                            dateStatus: approveDataViewModel.dateStatus,
-                            firstDayText: approveDataViewModel.firstDayText,
-                            indexDay: approveDataViewModel.indexDay,
+                                dataManagementApproveDataTabViewModel
+                                    .onTapDate(index),
+                            dateStatus: dataManagementApproveDataTabViewModel
+                                .dateStatus,
+                            firstDayText: dataManagementApproveDataTabViewModel
+                                .firstDayText,
+                            indexDay:
+                                dataManagementApproveDataTabViewModel.indexDay,
                             firstDayOnTapTable: () =>
-                                approveDataViewModel.onTapTable(0),
-                            lastDayText: approveDataViewModel.lastDayText,
+                                dataManagementApproveDataTabViewModel
+                                    .onTapTable(0),
+                            lastDayText: dataManagementApproveDataTabViewModel
+                                .lastDayText,
                             lastDayOnTapTable: () =>
-                                approveDataViewModel.onTapTable(1),
-                            isOpenTable: approveDataViewModel.isOpenTable,
-                            focused: approveDataViewModel.focused,
+                                dataManagementApproveDataTabViewModel
+                                    .onTapTable(1),
+                            isOpenTable: dataManagementApproveDataTabViewModel
+                                .isOpenTable,
+                            focused:
+                                dataManagementApproveDataTabViewModel.focused,
                             onDaySelected: (selectedDay, focusedDay) =>
-                                approveDataViewModel.onDaySelected(
-                                    selectedDay, focusedDay),
-                            dataList: approveDataViewModel.dataList,
+                                dataManagementApproveDataTabViewModel
+                                    .onDaySelected(selectedDay, focusedDay),
+                            dataList:
+                                dataManagementApproveDataTabViewModel.dataList,
                             onTapData: (index) =>
-                                approveDataViewModel.onTapData(index),
-                            dataStatus: approveDataViewModel.dataStatus,
-                            speciesList: approveDataViewModel.speciesList,
+                                dataManagementApproveDataTabViewModel
+                                    .onTapData(index),
+                            dataStatus: dataManagementApproveDataTabViewModel
+                                .dataStatus,
+                            speciesList: dataManagementApproveDataTabViewModel
+                                .speciesList,
                             onTapSpecies: (index) =>
-                                approveDataViewModel.onTapSpecies(index),
-                            speciesStatus: approveDataViewModel.speciesStatus,
-                            checkedFilter: approveDataViewModel.checkedFilter(),
+                                dataManagementApproveDataTabViewModel
+                                    .onTapSpecies(index),
+                            speciesStatus: dataManagementApproveDataTabViewModel
+                                .speciesStatus,
+                            checkedFilter: dataManagementApproveDataTabViewModel
+                                .checkedFilter(),
                             onPressedFilterSave: () =>
-                                approveDataViewModel.onPressedFilterSave(),
-                            statusList: approveDataViewModel.statusList,
+                                dataManagementApproveDataTabViewModel
+                                    .onPressedFilterSave(),
+                            statusList: dataManagementApproveDataTabViewModel
+                                .statusList,
                             onTapstatus: (index) =>
-                                approveDataViewModel.onTapStatus(index),
-                            statusStatus: approveDataViewModel.statusStatus,
+                                dataManagementApproveDataTabViewModel
+                                    .onTapStatus(index),
+                            statusStatus: dataManagementApproveDataTabViewModel
+                                .statusStatus,
+                            sortList:
+                                dataManagementApproveDataTabViewModel.sortList,
+                            sortStatus: dataManagementApproveDataTabViewModel
+                                .sortStatus,
+                            onTapSort: (index) =>
+                                dataManagementApproveDataTabViewModel
+                                    .onTapSort(index),
                           )
                         : SizedBox(height: 16.h),
 
@@ -141,20 +171,25 @@ class _DataManagementApproveDataTabScreenState
                             mainText: '관리번호 입력',
                             validateFunc: null,
                             onSaveFunc: null,
-                            controller: approveDataViewModel.controller,
-                            focusNode: approveDataViewModel.focusNode,
+                            controller: dataManagementApproveDataTabViewModel
+                                .controller,
+                            focusNode:
+                                dataManagementApproveDataTabViewModel.focusNode,
                             onChangeFunc: (value) =>
-                                approveDataViewModel.onChanged(value),
+                                dataManagementApproveDataTabViewModel
+                                    .onChanged(value),
                             hideFloatingLabel: true,
                             canAlert: true,
                             prefixIcon: const Icon(
                               Icons.search,
                               color: Colors.black,
                             ),
-                            suffixIcon: approveDataViewModel.focusNode.hasFocus
+                            suffixIcon: dataManagementApproveDataTabViewModel
+                                    .focusNode.hasFocus
                                 ? IconButton(
                                     onPressed: () {
-                                      approveDataViewModel.textClear(context);
+                                      dataManagementApproveDataTabViewModel
+                                          .textClear(context);
                                     },
                                     icon: const Icon(
                                       Icons.cancel,
@@ -170,7 +205,8 @@ class _DataManagementApproveDataTabScreenState
                         IconButton(
                           iconSize: 48.w,
                           onPressed: () async =>
-                              approveDataViewModel.clickedQr(context),
+                              dataManagementApproveDataTabViewModel
+                                  .clickedQr(context),
                           icon: const Icon(
                             Icons.qr_code_scanner_rounded,
                             color: Palette.primary,
@@ -189,19 +225,24 @@ class _DataManagementApproveDataTabScreenState
                       height: 800.h,
                       child: Scrollbar(
                         thumbVisibility: true,
-                        controller: approveDataViewModel.scrollController,
+                        controller: dataManagementApproveDataTabViewModel
+                            .scrollController,
                         child: ListView.separated(
-                          controller: approveDataViewModel.scrollController,
-                          itemCount: approveDataViewModel.selectedList.length,
+                          controller: dataManagementApproveDataTabViewModel
+                              .scrollController,
+                          itemCount: dataManagementApproveDataTabViewModel
+                              .selectedList.length,
                           itemBuilder: (context, index) => ListCard(
-                            onTap: () async => await approveDataViewModel
-                                .onTapApproveCard(index, context),
-                            meatId: approveDataViewModel.selectedList[index]
-                                ['meatId']!,
-                            dayTime: Usefuls.parseDate(approveDataViewModel
-                                .selectedList[index]['createdAt']!),
-                            statusType: approveDataViewModel.selectedList[index]
-                                ['statusType']!,
+                            onTap: () async =>
+                                await dataManagementApproveDataTabViewModel
+                                    .onTapApproveCard(index, context),
+                            meatId: dataManagementApproveDataTabViewModel
+                                .selectedList[index]['meatId']!,
+                            dayTime: Usefuls.parseDate(
+                                dataManagementApproveDataTabViewModel
+                                    .selectedList[index]['createdAt']!),
+                            statusType: dataManagementApproveDataTabViewModel
+                                .selectedList[index]['statusType']!,
                           ),
                           keyboardDismissBehavior:
                               ScrollViewKeyboardDismissBehavior.onDrag,
@@ -215,7 +256,7 @@ class _DataManagementApproveDataTabScreenState
                 ),
               ),
             ),
-            approveDataViewModel.isLoading
+            dataManagementApproveDataTabViewModel.isLoading
                 ? const Center(child: LoadingScreen())
                 : Container(),
           ],

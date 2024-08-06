@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/labels.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
@@ -125,7 +125,7 @@ class DeleteUserViewModel with ChangeNotifier {
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
-        backgroundColor: Pallete.alertBg,
+        backgroundColor: Palette.error,
       ),
     );
   }

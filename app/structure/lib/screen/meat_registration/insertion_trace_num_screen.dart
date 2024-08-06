@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:provider/provider.dart';
+import 'package:structure/components/custom_text_button.dart';
 import 'package:structure/components/inner_box.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
@@ -127,16 +128,14 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
 
                   // 취소 버튼
                   SizedBox(
-                    width: 50,
-                    child: TextButton(
+                    width: 80.w,
+                    height: 80.h,
+                    child: CustomTextButton(
+                      title: '취소',
                       onPressed: () {
                         insertionTraceNumViewModel.clearText();
                         FocusScope.of(context).unfocus();
                       },
-                      child: const Text(
-                        '취소',
-                        style: TextStyle(color: Colors.black, fontSize: 14),
-                      ),
                     ),
                   ),
                 ],
