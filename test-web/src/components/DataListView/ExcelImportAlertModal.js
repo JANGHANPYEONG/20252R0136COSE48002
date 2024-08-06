@@ -77,6 +77,8 @@ const ExcelImportAlertModal = ({
   );
 };
 
+export default ExcelImportAlertModal;
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -89,4 +91,3 @@ const style = {
   p: 4,
   borderRadius: '10px',
 };
-export default ExcelImportAlertModal
