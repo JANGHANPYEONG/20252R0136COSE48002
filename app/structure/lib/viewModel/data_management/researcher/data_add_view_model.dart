@@ -13,9 +13,9 @@ import 'package:structure/model/meat_model.dart';
 import 'package:structure/screen/data_management/researcher/add_deep_aging_data_screen.dart';
 import 'package:structure/viewModel/data_management/researcher/add_deep_aging_data_view_model.dart';
 
-class DataAddHomeViewModel with ChangeNotifier {
+class DataAddViewModel with ChangeNotifier {
   MeatModel meatModel;
-  DataAddHomeViewModel(this.meatModel) {
+  DataAddViewModel(this.meatModel) {
     _initialize();
   }
 

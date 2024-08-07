@@ -13,6 +13,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double? top;
   final TabController? tabController;
   final List<Tab>? tabs;
+  final Widget? actionButton;
 
   const CustomAppBar({
     super.key,
@@ -25,6 +26,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.top,
     this.tabController,
     this.tabs,
+    this.actionButton,
   });
 
   @override
@@ -51,27 +53,29 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           style: Palette.h4Secondary,
         ),
       ),
-      actions: closeButton
-          ? [
-              Container(
-                margin: EdgeInsets.only(
-                  right: 48.w,
-                  top: top ?? 40.h,
-                ),
-                child: Row(
-                  children: [
-                    InkWell(
-                        onTap: closeButtonOnPressed ??
-                            () {
-                              FocusScope.of(context).unfocus();
-                              context.pop();
-                            },
-                        child: const Icon(Icons.arrow_back)),
-                  ],
-                ),
-              ),
-            ]
-          : null,
+      actions: [
+        if (closeButton)
+          Container(
+            margin: EdgeInsets.only(
+              right: 48.w,
+              top: top ?? 40.h,
+            ),
+            child: Row(
+              children: [
+                InkWell(
+                    onTap: closeButtonOnPressed ??
+                        () {
+                          FocusScope.of(context).unfocus();
+                          context.pop();
+                        },
+                    child: const Icon(Icons.arrow_back)),
+              ],
+            ),
+          ),
+
+        // 기타 액션 버튼
+        actionButton ?? Container(),
+      ],
       bottom: tabController != null
           ? TabBar(
               indicatorColor: Palette.primary,
