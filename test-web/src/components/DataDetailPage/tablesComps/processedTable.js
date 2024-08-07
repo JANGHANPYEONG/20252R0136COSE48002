@@ -22,6 +22,7 @@ const ProcessedTable = ({
   handleInputChange,
   processed_data,
   processed_date,
+  processed_data_seq,
 }) => {
   // 처리육 딥에이징 시간 (분) input 핸들링
   const handleMinuteInputChange = (e, index) => {
@@ -30,6 +31,7 @@ const ProcessedTable = ({
       setProcessedMinute((prev) => ({ ...prev, [index]: value }));
     }
   };
+  const len = processed_data_seq.length - 2
 
   return (
     <TableContainer
@@ -42,15 +44,15 @@ const ProcessedTable = ({
           <TableRow>
             <TableCell style={{ background: '#cfd8dc' }}>{}</TableCell>
             <TableCell align="right" style={{ background: '#cfd8dc' }}>
-              1회차
+            {processed_data_seq[1]}차
             </TableCell>
             {
               // 2회차 이상부터
               Array.from(
-                { length: Number(processedToggleValue.slice(0, -1)) - 1 },
+                { length: len },
                 (_, arr_idx) => (
                   <TableCell align="right" style={{ background: '#cfd8dc' }}>
-                    {arr_idx + 2}회차
+                    {processed_data_seq[arr_idx + 2]}차
                   </TableCell>
                 )
               )
@@ -140,7 +142,7 @@ const ProcessedTable = ({
               {
                 //2회차 부터
                 Array.from(
-                  { length: Number(processedToggleValue.slice(0, -1)) - 1 },
+                  { length: len },
                   (_, arr_idx) => (
                     <TableCell align="right">
                       {f === 'minute' ? (
