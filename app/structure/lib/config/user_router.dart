@@ -22,6 +22,7 @@ import 'package:structure/screen/data_management/researcher/insertion_lab_data_s
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
 import 'package:structure/screen/home_screen.dart';
 import 'package:structure/screen/meat_registration/camera_screen.dart';
+import 'package:structure/screen/meat_registration/creation_management_num_fail_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_meat_info_screen.dart';
 import 'package:structure/screen/meat_registration/insertion_trace_num_screen.dart';
@@ -194,10 +195,15 @@ class UserRouter {
             GoRoute(
               path: 'success-registration',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    CreationManagementNumViewModel(meatModel, userModel),
+                create: (context) => CreationManagementNumViewModel(
+                    meatModel, userModel, context),
                 child: const CreationManagementNumScreen(),
               ),
+            ),
+            GoRoute(
+              path: 'registration-fail',
+              builder: (context, state) =>
+                  const CreationManagementNumFailScreen(),
             ),
             // 마이 페이지
             GoRoute(

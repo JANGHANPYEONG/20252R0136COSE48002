@@ -83,6 +83,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
                         maxLength: 15,
                         controller:
                             insertionTraceNumViewModel.textEditingController,
+                        isNum: 1,
                         action: TextInputAction.search,
                         formatter: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9L]'))

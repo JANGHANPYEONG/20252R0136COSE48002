@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:structure/config/userfuls.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -17,8 +18,9 @@ import 'package:structure/model/user_model.dart';
 class CreationManagementNumViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
+  BuildContext context;
 
-  CreationManagementNumViewModel(this.meatModel, this.userModel) {
+  CreationManagementNumViewModel(this.meatModel, this.userModel, this.context) {
     _initialize();
     _listenToPrinterStatus();
   }
@@ -31,8 +33,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     isLoading = true;
     notifyListeners();
-
-    // TODO : 실패 화면
 
     // 관리번호 생성
     await _createManagementNum();
@@ -115,7 +115,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       await uploadQRCodeImageToStorage();
     } catch (e) {
       debugPrint('Error uploading image to firebase: $e');
-      // TODO : 에러 페이지
+      if (context.mounted) context.go('/home/registration-fail');
     }
   }
 
@@ -151,15 +151,17 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
       if (response1 == 200 && response2 == 200) {
         // 육류 등록 성공
-        // 로딩상태 비활성화
+        // 임시저장된 데이터 삭제
+        await LocalDataSource.deleteLocalData(meatModel.userId!);
+
         isLoading = false;
         notifyListeners();
       } else {
         throw ErrorDescription(response2);
       }
     } catch (e) {
-      // TODO : 에러 메시지 팝업
       debugPrint('Error: $e');
+      if (context.mounted) context.go('/home/registration-fail');
     }
   }
 
@@ -195,7 +197,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
     }
   }
 
-  void clickedHomeButton(BuildContext context) {
+  void clickedHomeButton() {
     context.go('/home');
   }
 }

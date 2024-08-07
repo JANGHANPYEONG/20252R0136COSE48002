@@ -26,7 +26,6 @@ class CreationManagementNumScreen extends StatelessWidget {
         context.watch<CreationManagementNumViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Container(
         child: creationManagementNumViewModel.isLoading
             ? const CreationManagementNumLoadingScreen()
@@ -153,8 +152,8 @@ class CreationManagementNumScreen extends StatelessWidget {
                       margin: EdgeInsets.only(bottom: 40.h),
                       child: CustomTextButton(
                         title: '홈으로 이동하기',
-                        onPressed: () => creationManagementNumViewModel
-                            .clickedHomeButton(context),
+                        onPressed: () =>
+                            creationManagementNumViewModel.clickedHomeButton(),
                       ),
                     ),
                   ],
