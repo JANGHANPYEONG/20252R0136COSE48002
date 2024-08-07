@@ -12,7 +12,7 @@ import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/custom_scroll.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
-import 'package:structure/viewModel/data_management/researcher/add_processed_meat_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_processed_meat_view_model.dart';
 import 'package:structure/components/main_button.dart';
 
 class DataAddProcessedMeatScreen extends StatelessWidget {
@@ -21,8 +21,8 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AddProcessedMeatViewModel addProcessedMeatViewModel =
-        context.watch<AddProcessedMeatViewModel>();
+    DataAddProcessedMeatViewModel addProcessedMeatViewModel =
+        context.watch<DataAddProcessedMeatViewModel>();
 
     return Scaffold(
       appBar: const CustomAppBar(

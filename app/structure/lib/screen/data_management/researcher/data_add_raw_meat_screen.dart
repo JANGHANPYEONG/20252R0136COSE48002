@@ -13,7 +13,7 @@ import 'package:structure/components/custom_scroll.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/step_card.dart';
 import 'package:structure/model/meat_model.dart';
-import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_raw_meat_view_model.dart';
 
 class DataAddRawMeatScreen extends StatelessWidget {
   final MeatModel meatModel;
@@ -21,8 +21,8 @@ class DataAddRawMeatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AddRawMeatViewModel addRawMeatViewModel =
-        context.watch<AddRawMeatViewModel>();
+    DataAddRawMeatViewModel addRawMeatViewModel =
+        context.watch<DataAddRawMeatViewModel>();
 
     return Scaffold(
       appBar: const CustomAppBar(

@@ -39,9 +39,9 @@ import 'package:structure/screen/sign_up/insertion_user_detail_screen.dart';
 import 'package:structure/screen/sign_up/insertion_user_info_screen.dart';
 import 'package:structure/screen/meat_registration/meat_registration_screen.dart';
 import 'package:structure/screen/sign_in/sign_in_screen.dart';
-import 'package:structure/viewModel/data_management/researcher/add_processed_meat_view_model.dart';
-import 'package:structure/viewModel/data_management/researcher/add_raw_meat_view_model.dart';
-import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_processed_meat_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_raw_meat_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/data_management_normal_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/edit_meat_data_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/sensory_eval_not_editable_view_model.dart';
@@ -324,14 +324,14 @@ class UserRouter {
                 GoRoute(
                   path: 'add',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => DataAddHomeViewModel(meatModel),
+                    create: (context) => DataAddViewModel(meatModel),
                     child: const DataAddScreen(),
                   ),
                   routes: [
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) => AddRawMeatViewModel(),
+                        create: (context) => DataAddRawMeatViewModel(),
                         child: DataAddRawMeatScreen(meatModel: meatModel),
                       ),
                       routes: [
@@ -424,7 +424,7 @@ class UserRouter {
                     GoRoute(
                       path: 'processed-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) => AddProcessedMeatViewModel(),
+                        create: (context) => DataAddProcessedMeatViewModel(),
                         child: DataAddProcessedMeatScreen(meatModel: meatModel),
                       ),
                       routes: [

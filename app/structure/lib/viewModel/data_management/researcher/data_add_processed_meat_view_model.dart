@@ -11,7 +11,7 @@ import 'package:structure/main.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/components/custom_dialog.dart';
 
-class AddProcessedMeatViewModel with ChangeNotifier {
+class DataAddProcessedMeatViewModel with ChangeNotifier {
   bool popup = true;
 
   /// 처리육 단면 촬영
