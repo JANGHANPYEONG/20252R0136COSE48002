@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 set -e
 
 # Find the process ID of the running application and kill it gracefully

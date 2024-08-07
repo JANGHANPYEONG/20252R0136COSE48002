@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 cd /home/ubuntu/deeplant-admin
 source venv/bin/activate
 cd test-flask

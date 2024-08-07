@@ -1,14 +1,14 @@
-#!/bin/bash
+#! /bin/bash
 set -e
 
 # Define log file
 LOG_FILE="/home/ubuntu/deeplant-admin/logs/before_install.log"
 
 {
-  echo "Starting BeforeInstall phase..."
+  echo "Starting Prepare_New_Version phase..."
 
   # Update the package list and install required packages
-  echo "Updating package list and installing dependencies..."
+  echo "Updating package list and required packages..."
   sudo apt update -y
   sudo apt install -y python3.10 python3-pip
 
