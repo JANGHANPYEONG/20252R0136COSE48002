@@ -28,12 +28,12 @@ const MeatImgsCard = ({
   processedInput, // 처리육 데이터
   processed_data, // 처리육 데이터
   processedMinute, // 처리 시간 (분)
+  processed_data_seq, // 회차 정보
 }) => {
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
   useEffect(() => {
     setImgArr([...imgArr, ...processed_img_path]);
-
   }, []);
 
   // 이미지 배열 페이지네이션
@@ -149,6 +149,7 @@ const MeatImgsCard = ({
     setImgArr(newImages);
   };
 
+
   return (
     <Card
       style={{
@@ -172,7 +173,7 @@ const MeatImgsCard = ({
               <div style={style.imgTitleWrapper}>원육이미지</div>
             ) : (
               <div style={style.imgTitleWrapper}>
-                딥에이징 {currentIdx}회차 이미지
+                딥에이징 {processed_data_seq[currentIdx]}차 이미지
               </div>
             )
           }
