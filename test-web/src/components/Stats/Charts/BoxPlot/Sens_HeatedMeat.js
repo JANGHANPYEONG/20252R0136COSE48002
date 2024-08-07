@@ -54,7 +54,7 @@ const Sens_HeatedMeat = ({ startDate, endDate, animalType, grade }) => {
                   y: calculateBoxPlotStatistics(chartData.flavor.values),
                 },
                 {
-                  x: '육즙(juiciness)',
+                  x: '다즙성(juiciness)',
                   y: calculateBoxPlotStatistics(chartData.juiciness.values),
                 },
                 {
