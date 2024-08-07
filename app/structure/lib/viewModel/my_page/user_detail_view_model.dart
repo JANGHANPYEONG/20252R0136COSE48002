@@ -113,8 +113,6 @@ class UserDetailViewModel with ChangeNotifier {
     if (userModel.alarm != null) {
       isChecked = userModel.alarm!;
     }
-    // isChecked =
-    print('체크 : $isChecked');
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');
       if (index != -1 && userModel.homeAdress!.substring(0, index).isNotEmpty) {

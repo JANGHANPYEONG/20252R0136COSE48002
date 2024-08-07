@@ -5,9 +5,14 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 
 class PartEval extends StatelessWidget {
+  final int? idx;
+  final double value;
+  final List<String>? selectedText;
+  final Function(dynamic value)? onChanged;
+
   PartEval({
     super.key,
-    required this.idx,
+    this.idx,
     required this.value,
     required this.selectedText,
     required this.onChanged,
@@ -20,10 +25,6 @@ class PartEval extends StatelessWidget {
     'assets/images/eval_SurfaceMoisture.png',
     'assets/images/eval_Overall.png'
   ];
-  final List<String>? selectedText;
-  final double value;
-  final Function(dynamic value)? onChanged;
-  final int idx;
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +34,13 @@ class PartEval extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // 기준 이미지
-        Image.asset(
-          imagePath[idx],
-          width: double.infinity,
-          height: 68.h,
-          fit: BoxFit.fitWidth,
-        ),
+        if (idx != null)
+          Image.asset(
+            imagePath[idx!],
+            width: double.infinity,
+            height: 68.h,
+            fit: BoxFit.fitWidth,
+          ),
 
         // 기준 텍스트
         Row(

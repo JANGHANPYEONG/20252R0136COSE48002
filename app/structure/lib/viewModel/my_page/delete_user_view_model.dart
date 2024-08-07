@@ -27,7 +27,7 @@ class DeleteUserViewModel with ChangeNotifier {
   String? pwValidate(String? value) {
     isActivateButton = true;
     notifyListeners();
-    print('isActive: $isActivateButton');
+
     if (value!.isEmpty) {
       _isValidPw = false;
       return '비밀번호를 입력하세요.';

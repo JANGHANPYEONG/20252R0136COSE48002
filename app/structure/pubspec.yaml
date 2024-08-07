@@ -46,40 +46,6 @@ flutter:
     # To add assets to your application, add an assets section, like this:
     assets:
         - assets/images/
-        # - assets/images/temporarySave.png
-        # - assets/images/print.png
-        # - assets/images/eval_Color.png
-        # - assets/images/eval_Marbling.png
-        # - assets/images/eval_Overall.png
-        # - assets/images/eval_SurfaceMoisture.png
-        # - assets/images/eval_Texture.png
-        # - assets/images/deepaging_logo.svg
-        # - assets/images/deepplant_logo.svg
-        # - assets/images/arrow-b.png
-        # - assets/images/arrow-r.png
-        # - assets/images/chart.png
-        # - assets/images/qr.png
-        # - assets/images/pig.png
-        # - assets/images/person.png
-        # - assets/images/person.svg
-        # - assets/images/add_circle.png
-        # - assets/images/close.png
-        # - assets/images/data_register.png
-        # - assets/images/exit.png
-        # - assets/images/fresh_meat_eval.png
-        # - assets/images/picture_save.png
-        # - assets/images/trash.png
-        # - assets/images/warning.png
-        # - assets/images/meat_eval.png
-        # - assets/images/meat_info.png
-        # - assets/images/meat_image.png
-        # - assets/images/qr_scan.png
-        # - assets/images/meat_lab.png
-        # - assets/images/meat_tongue.png
-        # - assets/images/trash_image.png
-        # - assets/images/cam-shutter-in.png
-        # - assets/images/cam-shutter-out.png
-        # - assets/images/cam-shutter.png
         - .env
 
     # An image asset can refer to one or more resolution-specific "variants", see
