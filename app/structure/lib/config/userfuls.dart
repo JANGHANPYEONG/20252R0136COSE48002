@@ -54,7 +54,7 @@ class Usefuls {
 
     // 형식 변환
     String formattedDate =
-        "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day}";
+        "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}";
 
     return formattedDate;
   }

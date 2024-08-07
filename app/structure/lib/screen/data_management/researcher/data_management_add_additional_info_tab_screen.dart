@@ -207,8 +207,9 @@ class _DataManagementAddAdditionalInfoTabScreenState
                                               .textClear(context);
                                         },
                                         icon: const Icon(
-                                          Icons.cancel,
-                                          color: Palette.primaryContainer,
+                                          Icons.cancel_outlined,
+                                          color:
+                                              Color.fromARGB(255, 73, 73, 73),
                                         ),
                                       )
                                     : null,
