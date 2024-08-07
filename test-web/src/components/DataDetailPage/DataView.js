@@ -54,7 +54,7 @@ const DataView = ({ dataProps }) => {
     processed_img_path, // 처리육 이미지 경로
     processed_date,
   } = dataProps;
-  console.log("ddd:",dataProps)
+
 
   // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
   // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
@@ -424,7 +424,7 @@ const DataView = ({ dataProps }) => {
         centered
       >
         <Modal.Body>
-        <Modal.Title
+          <Modal.Title
             style={{
               color: '#151D48',
               fontFamily: 'Poppins',
@@ -434,7 +434,11 @@ const DataView = ({ dataProps }) => {
           >
             딥에이징 회차 추가
           </Modal.Title>
-          <AgingInfoRegister handleClose = {handleInfoRegisterClose} maxSeqno = {len} meatId = {meatId}/>
+          <AgingInfoRegister
+            handleClose={handleInfoRegisterClose}
+            maxSeqno={len}
+            meatId={meatId}
+          />
         </Modal.Body>
       </Modal>
       <div style={{ width: '100%', position: 'relative' }}>
@@ -490,6 +494,7 @@ const DataView = ({ dataProps }) => {
             processedInput={processedInput}
             processed_data={processed_data}
             processedMinute={processedMinute}
+            processed_data_seq={processed_data_seq}
           />
           {/* 2. QR코드와 데이터에 대한 기본 정보*/}
           <QRInfoCard
@@ -560,6 +565,7 @@ const DataView = ({ dataProps }) => {
                       processedToggleValue={processedToggleValue}
                       handleInputChange={handleInputChange}
                       processed_date={processed_date}
+                      processed_data_seq={processed_data_seq}
                     />
                   </>
                 ) : (
@@ -599,6 +605,7 @@ const DataView = ({ dataProps }) => {
                   heated_data={heated_data}
                   heatedToggleValue={heatedToggleValue}
                   handleInputChange={handleInputChange}
+                  processed_data_seq={processed_data_seq}
                 />
               </Tab>
               <Tab
@@ -630,6 +637,7 @@ const DataView = ({ dataProps }) => {
                   lab_data={lab_data}
                   labToggleValue={labToggleValue}
                   handleInputChange={handleInputChange}
+                  processed_data_seq={processed_data_seq}
                 />
               </Tab>
               <Tab

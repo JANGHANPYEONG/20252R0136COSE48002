@@ -287,6 +287,7 @@ const DataView = ({ dataProps }) => {
           processedInput={processedInput}
           processed_data={processed_data}
           processedMinute={processedMinute}
+          processed_data_seq={processed_data_seq}
         />
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard

@@ -14,7 +14,9 @@ const LabTable = ({
   lab_data,
   labToggleValue,
   handleInputChange,
+  processed_data_seq,
 }) => {
+  const len = processed_data_seq.length - 1;
   return (
     <TableContainer
       key="labData"
@@ -27,11 +29,11 @@ const LabTable = ({
             <TableCell key={'labData-exp-col'}>{}</TableCell>
             <TableCell key={'labData-exp-col0'}>원육</TableCell>
             {Array.from(
-              { length: Number(labToggleValue.slice(0, -1)) },
+              { length: len},
               (_, arr_idx) => (
                 <TableCell key={'labData-exp-col' + (arr_idx + 1)}>
                   {' '}
-                  {arr_idx + 1}회차{' '}
+                  {processed_data_seq[arr_idx + 1]}차{' '}
                 </TableCell>
               )
             )}
@@ -68,7 +70,7 @@ const LabTable = ({
                 {
                   // 실험실 및 가열육 추가 데이터 수정
                   Array.from(
-                    { length: Number(labToggleValue.slice(0, -1)) },
+                    { length: len },
                     (_, arr_idx) => (
                       <TableCell key={'lab-' + arr_idx + '-col' + arr_idx}>
                         {edited ? (
@@ -121,7 +123,7 @@ const labField = [
   'bitterness',
   'umami',
   'richness',
-  'Collagen'
+  'Collagen',
 ];
 const labDBFieldToSemanticWord = {
   L: '명도',
