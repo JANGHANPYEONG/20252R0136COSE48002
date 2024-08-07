@@ -1,3 +1,6 @@
+/* 웹페이지 위젯바 표시 및 조작 컴포넌트 */
+
+/* 화면 상단 및 좌측 위젯인 AppBar와 Drawer를 불러와 표시 */
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 

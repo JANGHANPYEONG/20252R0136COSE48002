@@ -32,7 +32,7 @@ const Sens_Heated_Map = ({ startDate, endDate, animalType, grade }) => {
 
   const y_axis = {
     flavor: '풍미',
-    juiciness: '육즙',
+    juiciness: '다즙성',
     palatability: '기호도',
     tenderness: '연도',
     umami: '감칠맛',
