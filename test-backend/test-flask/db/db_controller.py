@@ -552,6 +552,7 @@ def get_meat(db_session, id):
     result["gradeNum"] = gradeNum.value
     result["statusType"] = statusType.value
     result["createdAt"] = convert2string(result["createdAt"], 1)
+    result["updatedAt"] = convert2string(result["updatedAt"], 1)
     result["butcheryYmd"] = convert2string(result["butcheryYmd"], 2)
     result["birthYmd"] = convert2string(result["birthYmd"], 2)
 
@@ -924,6 +925,7 @@ def _getMeatDataByUserId(db_session, userId, offset, count, start, end):
                 result.append({
                     "meatId": meat_obj.id,
                     "createdAt": convert2string(meat_obj.createdAt, 1),
+                    "updatedAt": convert2string(meat_obj.updatedAt, 1),
                     "statusType": statusType[meat_obj.statusType],
                     "specieValue": species[specie_id]
                 })
@@ -1129,6 +1131,7 @@ def _updateRejectData(db_session, id):
     meat = db_session.query(Meat).get(id)  # DB에 있는 육류 정보
     if meat and meat.statusType != 1:
         meat.statusType = 1
+        meat.updatedAt = datetime.now()
         db_session.merge(meat)
         db_session.commit()
         return jsonify({"msg": "Success to update StatusType"}), 200
