@@ -250,6 +250,7 @@ class Meat(Base):
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
+    updatedAt = Column(DateTime) # 대기 중인 상태에서 반려한 시간
     traceNum = Column(String(255), nullable=False)  # 이력번호(혹은 묶은 번호)
     farmAddr = Column(String(255))  # 농장 주소
     farmerName = Column(String(255))  # 농장주 이름
