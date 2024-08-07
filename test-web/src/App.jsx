@@ -12,7 +12,7 @@ import UserManagement from './routes/UserManagement';
 import DataConfirm from './routes/DataConfirm';
 import DataPredict from './routes/DataPredict';
 import Box from '@mui/material/Box';
-import Sidebar from './components/Base/Sidebar';
+import MainWidgetBars from './components/Base/WidgetBars/MainWidgetBars';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 const defaultTheme = createTheme();
 
@@ -90,7 +90,7 @@ function App() {
                     <LogIn />
                   ) : (
                     <Box sx={{ display: 'flex' }}>
-                      <Sidebar />
+                      <MainWidgetBars />
                       <Box
                         component="main"
                         sx={{
