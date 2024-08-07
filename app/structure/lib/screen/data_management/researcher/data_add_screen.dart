@@ -13,7 +13,7 @@ import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/deep_aging_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/viewModel/data_management/researcher/data_add_home_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/data_add_view_model.dart';
 
 class DataAddScreen extends StatefulWidget {
   const DataAddScreen({super.key});
@@ -25,8 +25,7 @@ class DataAddScreen extends StatefulWidget {
 class _DataAddScreenState extends State<DataAddScreen> {
   @override
   Widget build(BuildContext context) {
-    DataAddHomeViewModel dataAddHomeViewModel =
-        context.watch<DataAddHomeViewModel>();
+    DataAddViewModel dataAddHomeViewModel = context.watch<DataAddViewModel>();
 
     return Scaffold(
       appBar: CustomAppBar(

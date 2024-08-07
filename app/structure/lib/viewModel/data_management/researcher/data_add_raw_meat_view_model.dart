@@ -11,7 +11,7 @@ import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/main.dart';
 import 'package:structure/model/meat_model.dart';
 
-class AddRawMeatViewModel with ChangeNotifier {
+class DataAddRawMeatViewModel with ChangeNotifier {
   /// 원육 기본정보 (수정 불가)
   void clicekdBasic(BuildContext context) {
     context.go('/home/data-manage-researcher/add/raw-meat/info');
