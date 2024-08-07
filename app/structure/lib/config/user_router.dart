@@ -17,6 +17,7 @@ import 'package:structure/screen/data_management/researcher/data_add_raw_meat_sc
 import 'package:structure/screen/data_management/researcher/data_add_screen.dart';
 import 'package:structure/screen/data_management/normal/data_management_normal_screen.dart';
 import 'package:structure/screen/data_management/researcher/data_management_researcher_tab_screen.dart';
+import 'package:structure/screen/data_management/researcher/insertion_heated_sensory_add_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_heated_sensory_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_lab_data_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
@@ -48,6 +49,7 @@ import 'package:structure/viewModel/data_management/normal/not_editable/sensory_
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_image_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/normal/not_editable/insertion_meat_info_not_editable_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_researcher_tab_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_add_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
@@ -476,6 +478,18 @@ class UserRouter {
                                     meatModel, userModel),
                             child: const InsertionHeatedSensoryScreen(),
                           ),
+                          routes: [
+                            GoRoute(
+                              path: 'heated-sensory-add',
+                              builder: (context, state) =>
+                                  ChangeNotifierProvider(
+                                create: (context) =>
+                                    InsertionHeatedSensoryAddViewModel(
+                                        meatModel, userModel),
+                                child: const InsertionHeatedSensoryAddScreen(),
+                              ),
+                            ),
+                          ],
                         ),
                         GoRoute(
                           path: 'heated-tongue',

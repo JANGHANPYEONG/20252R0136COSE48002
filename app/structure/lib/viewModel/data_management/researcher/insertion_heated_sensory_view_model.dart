@@ -37,6 +37,8 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
     palatability = meatModel.heatedSensoryEval?['palatability'] ?? 1;
 
     notifyListeners();
+    // print(meatModel);
+    // print(meatModel.seqno);
   }
 
   /// 관능평가 풍미 데이터 할당
@@ -132,5 +134,10 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
       // 처리육
       _context.go('/home/data-manage-researcher/add/processed-meat');
     }
+  }
+
+  void clickedTendernessAdd(BuildContext context) {
+    context.go(
+        '/home/data-manage-researcher/add/processed-meat/heated-sensory/heated-sensory-add');
   }
 }

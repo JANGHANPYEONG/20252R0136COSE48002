@@ -12,6 +12,7 @@ import 'package:structure/components/data_title.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_view_model.dart';
 
 class InsertionHeatedSensoryScreen extends StatefulWidget {
@@ -38,10 +39,19 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
         context.watch<InsertionHeatedSensoryViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         title: '가열육 관능평가',
         backButton: true,
         closeButton: false,
+        actionButton: insertionHeatedSensoryViewModel.meatModel.seqno != 0
+            ? IconButton(
+                onPressed: () {
+                  insertionHeatedSensoryViewModel.clickedTendernessAdd(context);
+                },
+                icon: const Icon(Icons.timer),
+                color: Colors.black,
+              )
+            : null,
       ),
       body: Stack(
         children: [
