@@ -120,9 +120,6 @@ class DataAddHomeViewModel with ChangeNotifier {
     // 선택된 회차에 해당하는 딥에이징 데이터 가져오기
     // List builder에서 idx + 1을 한 값을 받아옴
     meatModel.fromJsonDeepAged(idx);
-
-    print(meatModel);
-
     context.go('/home/data-manage-researcher/add/processed-meat');
   }
 }

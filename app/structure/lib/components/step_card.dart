@@ -90,7 +90,11 @@ class StepCard extends StatelessWidget {
             SizedBox(width: 16.w),
 
             // 오른쪽 화살표
-            Image.asset('assets/images/arrow-r.png', width: 32.w, height: 32.h),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 32.w,
+              color: Palette.onSecondary,
+            )
           ],
         ),
       ),

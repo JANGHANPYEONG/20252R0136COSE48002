@@ -37,8 +37,8 @@ class _InsertionSensoryEvalScreenState extends State<InsertionSensoryEvalScreen>
   List<List<String>> text = [
     ['Mabling', '마블링 정도', '없음', '', '보통', '', '많음'],
     ['Color', '육색', '없음', '', '보통', '', '어둡고 진함'],
-    ['Texture', '조직감', '흐물함', '', '보통', '', '단단함'],
-    ['Surface Moisture', '표면육즙', '없음', '', '보통', '', '많음'],
+    ['Texture', '조직감', '물렁함', '', '보통', '', '단단함'],
+    ['Surface Moisture', '표면육즙', '적음', '', '보통', '', '많음'],
     ['Overall', '종합기호도', '나쁨', '', '보통', '', '좋음'],
   ];
 

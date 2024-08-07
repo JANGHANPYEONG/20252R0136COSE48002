@@ -208,8 +208,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                                         },
                                         icon: const Icon(
                                           Icons.cancel_outlined,
-                                          color:
-                                              Color.fromARGB(255, 73, 73, 73),
+                                          color: Palette.secondary,
                                         ),
                                       )
                                     : null,
