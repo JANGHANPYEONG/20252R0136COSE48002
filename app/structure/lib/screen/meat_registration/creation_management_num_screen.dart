@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:structure/components/custom_text_button.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_loading_screen.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
 

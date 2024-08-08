@@ -15,7 +15,7 @@ import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/viewModel/data_management/normal/data_management_normal_view_model.dart';
 
 class DataManagementNormalScreen extends StatefulWidget {

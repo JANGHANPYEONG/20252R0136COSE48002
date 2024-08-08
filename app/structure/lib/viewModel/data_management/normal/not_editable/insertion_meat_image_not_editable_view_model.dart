@@ -6,7 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/model/meat_model.dart';
 
 class InsertionMeatImageNotEditableViewModel with ChangeNotifier {

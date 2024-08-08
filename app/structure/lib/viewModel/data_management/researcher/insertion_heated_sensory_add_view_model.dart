@@ -24,6 +24,8 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   String currentDate = Usefuls.parseDate(Usefuls.getCurrentDate());
   int dateDiff = -1;
 
+  //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
+  bool check = false;
   //연도 기본 값
   double tenderness = 1;
 
@@ -36,6 +38,7 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     print(meatModel.deepAgingInfo![seqNo!]['date']);
     processCreatedAt = meatModel.deepAgingInfo![seqNo!]['date'];
     calculateDiff();
+    checkTenderness();
     notifyListeners();
   }
 
@@ -43,6 +46,13 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     dateDiff = int.parse(Usefuls.dotDateToDate(currentDate)) -
         int.parse(processCreatedAt);
     notifyListeners();
-    print(dateDiff);
+    // print(dateDiff);
+  }
+
+  void checkTenderness() {
+    if (dateDiff == 3 || dateDiff == 7 || dateDiff == 14 || dateDiff == 21) {
+      check = true;
+      notifyListeners();
+    }
   }
 }
