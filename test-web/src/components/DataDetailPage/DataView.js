@@ -30,6 +30,7 @@ import { computePeriod } from './computeTime';
 import isPost from '../../API/isPost';
 import { Modal } from 'react-bootstrap';
 import AgingInfoRegister from './AgingInfoRegister';
+import AgingInfoDeleter from './AgingInfoDelete';
 
 const navy = '#0F3659';
 
@@ -93,14 +94,17 @@ const DataView = ({ dataProps }) => {
     { value: apiInput, setter: setApiInput },
   ];
   const [infoRegisterShow, setInfoRegisterShow] = useState(false);
+  const [infoDeleteShow, setInfoDeleteShow] = useState(false);
 
   const [isProcessedPosted, setIsProcessedPosted] = useState({});
   const [isLabPosted, setIsLabPosted] = useState({});
   const [isHeatedPosted, setIsHeatedPosted] = useState({});
+  
 
   const handleInfoRegisterShow = () => setInfoRegisterShow(true);
   const handleInfoRegisterClose = () => setInfoRegisterShow(false);
-
+  const handleInfoDeleteShow = () => setInfoDeleteShow(true);
+  const handleInfoDeleteClose = () => setInfoDeleteShow(false);
   // input field별 value prop으로 만들기
   useEffect(() => {
     tabFields.map((t, index) => {
@@ -441,6 +445,31 @@ const DataView = ({ dataProps }) => {
           />
         </Modal.Body>
       </Modal>
+      <Modal
+        show={infoDeleteShow}
+        onHide={handleInfoDeleteClose}
+        backdrop="true"
+        keyboard={false}
+        centered
+      >
+        <Modal.Body>
+          <Modal.Title
+            style={{
+              color: '#151D48',
+              fontFamily: 'Poppins',
+              fontSize: `24px`,
+              fontWeight: 600,
+            }}
+          >
+            딥에이징 회차 삭제
+          </Modal.Title>
+          <AgingInfoDeleter
+            handleClose={handleInfoDeleteClose}
+            meatId={meatId}
+            processed_data_seq={processed_data_seq}
+          />
+        </Modal.Body>
+      </Modal>
       <div style={{ width: '100%', position: 'relative' }}>
         <Button
           className="mb-3"
@@ -448,7 +477,7 @@ const DataView = ({ dataProps }) => {
           style={{
             position: 'absolute',
             top: 0,
-            right: 10,
+            right: 160,
             display: 'inline-flex',
             paddingX: `${(12 / 1920) * 100}vw`,
             paddingY: `${(16 / 1080) * 100}vh`,
@@ -460,6 +489,27 @@ const DataView = ({ dataProps }) => {
           }}
         >
           딥에이징 회차 추가
+        </Button>
+      </div>
+      <div style={{ width: '100%', position: 'relative' }}>
+        <Button
+          className="mb-3"
+          onClick={handleInfoDeleteShow}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 10,
+            display: 'inline-flex',
+            paddingX: `${(12 / 1920) * 100}vw`,
+            paddingY: `${(16 / 1080) * 100}vh`,
+            alignItems: 'center',
+            gap: `${(8 / 1920) * 100}vw`,
+            borderRadius: `${(10 / 1920) * 100}vw`,
+            background: 'red',
+            borderColor: 'red',
+          }}
+        >
+          딥에이징 회차 삭제
         </Button>
       </div>
       <div style={{ width: '100%', marginTop: '40px' }}>

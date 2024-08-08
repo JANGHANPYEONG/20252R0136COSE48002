@@ -3,16 +3,15 @@ import Spinner from 'react-bootstrap/Spinner';
 import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import addDeepAgingRegister from '../../API/add/addDeepAging';
-import DeepInfoCompletionModal from './DeepInfoCompleteModal';
+import DeepInfoDeleteCompletionModal from './DeepInfoDeleteCompletionModal';
+import deleteDeepAging from '../../API/delete/deleteDeepAging';
 
-const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
+const AgingInfoDeleter = ({ handleClose, meatId, processed_data_seq }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [validated, setValidated] = useState(false);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [seqno, setSeqno] = useState('');
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+
   const handleCompletionModalClose = () => {
     setShowCompletionModal(false);
     handleClose();
@@ -30,65 +29,47 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
 
     setIsLoading(true);
     try {
-      const req = {
-        meatId: meatId,
-        seqno: seqno,
-        deepAging: {
-          date: date,
-          minute: time,
-        },
-      };
-      const registerResponse = await addDeepAgingRegister(req);
-      if (registerResponse.ok) {
-        console.log('Success to register DeepInfo');
+      const Response = await deleteDeepAging(meatId, seqno);
+      if (Response.ok) {
+        console.log('Success to delete DeepInfo');
         setShowCompletionModal(true);
       }
     } catch (error) {
-      console.error('Error during registration', error);
+      console.error('Error during deletion', error);
     } finally {
       setIsLoading(false);
     }
 
     setValidated(true);
   };
+
+  const filteredSeqs = processed_data_seq.filter((seq) => seq !== '원육');
   return (
     <div>
       <div>
         <Form noValidate validated={validated} onSubmit={handleSubmit}>
-          <Form.Label column>Date</Form.Label>
+          <Form.Label column></Form.Label>
           <InputGroup className="mb-3" hasValidation>
-            <Form.Control
+            <Form.Select
               required
-              type="Date"
-              id="DateInput"
-              placeholder="날짜를 입력하세요"
+              id="SelectSeqno"
               onChange={(event) => {
-                setDate(event.target.value);
+                const selectedSeq = filteredSeqs[event.target.value].replace('회', '');
+                setSeqno(selectedSeq);
               }}
-            />
+              //value={seqno}
+              defaultValue=""
+            >
+              <option value="" disabled hidden>
+                삭제할 회차를 선택하세요
+              </option>
+              {filteredSeqs.map((item, index) => (
+                <option key={index} value={index}>
+                  {item}
+                </option>
+              ))}
+            </Form.Select>
           </InputGroup>
-          <Form.Group className="mb-3">
-            <Form.Label column>시간(분)</Form.Label>
-            <Form.Control
-              required
-              type="number"
-              placeholder="딥에이징 시간(분)"
-              onChange={(event) => {
-                setTime(event.target.value);
-              }}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label column>회차</Form.Label>
-            <Form.Control
-              required
-              type="number"
-              placeholder="회차"
-              onChange={(event) => {
-                setSeqno(event.target.value);
-              }}
-            />
-          </Form.Group>
 
           <div className="text-end">
             <Button variant="text" onClick={handleClose}>
@@ -101,12 +82,12 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
                 background: '#0F3659',
                 width: '150px',
               }}
-              disabled={isLoading || !date || !time || !seqno}
+              disabled={isLoading || !seqno}
             >
               {isLoading ? (
                 <Spinner animation="border" size="sm" />
               ) : (
-                '회차 등록'
+                '회차 삭제'
               )}
             </Button>
           </div>
@@ -121,7 +102,7 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
           }}
         />
       )}
-      <DeepInfoCompletionModal
+      <DeepInfoDeleteCompletionModal
         show={showCompletionModal}
         onHide={handleCompletionModalClose}
         meatId={meatId}
@@ -130,4 +111,4 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
     </div>
   );
 };
-export default AgingInfoRegister;
+export default AgingInfoDeleter;
