@@ -50,6 +50,9 @@ class MeatModel with ChangeNotifier {
   /// 선택된 데이터의 seqno
   int? seqno;
 
+  /// 선택된 데이터의 deepaging 생성 날짜
+  String? deepAgingCreatedAt;
+
   /// 관능평가 데이터
   ///
   /// String meatId
@@ -211,6 +214,7 @@ class MeatModel with ChangeNotifier {
     this.birthYmd,
     this.deepAgingInfo,
     this.seqno,
+    this.deepAgingCreatedAt,
     this.sensoryEval,
     this.heatedSensoryEval,
     this.probExpt,
@@ -463,6 +467,7 @@ class MeatModel with ChangeNotifier {
   /// 선택된 index의 처리육 데이터 저장
   void fromJsonDeepAged(int idx) {
     seqno = int.parse('${deepAgingInfo![idx]['seqno']}');
+    deepAgingCreatedAt = deepAgingInfo![idx]['date'];
     sensoryEval = deepAgingInfo![idx]['sensory_eval'];
     heatedSensoryEval = deepAgingInfo![idx]['heatedmeat_sensory_eval'];
     probExpt = deepAgingInfo![idx]['probexpt_data'];
@@ -495,6 +500,7 @@ class MeatModel with ChangeNotifier {
     /* 딥에이징 관련 데이터 */
     deepAgingInfo = null;
     seqno = null;
+    deepAgingCreatedAt = null;
     sensoryEval = null;
     imgAdded = false;
     heatedSensoryEval = null;

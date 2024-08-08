@@ -5,8 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:structure/config/userfuls.dart';
-import 'package:structure/main.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -18,24 +17,32 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   bool isLoading = false;
+  int? seqNo = 0;
 
   //날짜
   String processCreatedAt = '';
-  DateTime currentDate = DateTime.now();
+  String currentDate = Usefuls.parseDate(Usefuls.getCurrentDate());
+  int dateDiff = -1;
+
   //연도 기본 값
   double tenderness = 1;
 
   void _initialize() {
-    // print("meatmodel 추ㅏㄱ");
-    // print(meatModel);
-    print("----------heatedSensoryEval---------");
-    // print(meatModel.heatedSensoryEval!["createdAt"]);
-    processCreatedAt =
-        Usefuls.parseDate(meatModel.heatedSensoryEval?['createdAt']);
-    print(processCreatedAt);
-
+    print("----------deepaginginfo---------");
+    print(meatModel.deepAgingInfo);
+    // processCreatedAt =
+    //     Usefuls.parseDate(meatModel.heatedSensoryEval?['createdAt']);
+    seqNo = meatModel.seqno;
+    print(meatModel.deepAgingInfo![seqNo!]['date']);
+    processCreatedAt = meatModel.deepAgingInfo![seqNo!]['date'];
+    calculateDiff();
     notifyListeners();
   }
 
-  void calculateDate() {}
+  void calculateDiff() {
+    dateDiff = int.parse(Usefuls.dotDateToDate(currentDate)) -
+        int.parse(processCreatedAt);
+    notifyListeners();
+    print(dateDiff);
+  }
 }

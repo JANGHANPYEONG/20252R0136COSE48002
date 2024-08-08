@@ -44,6 +44,19 @@ class _InsertionHeatedSensoryAddScreenState
                 SizedBox(height: 24.h),
                 Container(
                   alignment: Alignment.topLeft,
+                  child: Text(
+                      "${insertionHeatedSensoryAddViewModel.seqNo}회차 딥에이징"),
+                ),
+                // Container(
+                //   alignment: Alignment.topLeft,
+                //   child: Text(
+                //       "${insertionHeatedSensoryAddViewModel}회차 딥에이징"),
+                // ),
+                IconButton(
+                    onPressed: insertionHeatedSensoryAddViewModel.calculateDiff,
+                    icon: const Icon(Icons.abc)),
+                Container(
+                  alignment: Alignment.topLeft,
                   child: Text(period[1]),
                 ),
                 const DataTitle(korText: '연도', engText: 'Tenderness'),
