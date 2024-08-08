@@ -14,6 +14,8 @@ env:
   S3_BUCKET_NAME: ${{secrets.S3_BUCKET_NAME}}
   S3_REGION_NAME: ${{secrets.S3_REGION_NAME}}
   FIREBASE_BUCKET_ADDRESS: ${{secrets.FIREBASE_BUCKET_ADDRESS}}
+  APPLICATION_NAME: ${{secrets.APPLICATION_NAME}}
+  DEPLOYMENT_GROUP: ${{secrets.DEPLOYMENT_GROUP}}
 
 jobs:
   backend-deployment:
@@ -33,42 +35,20 @@ jobs:
       - name: Set environment variables
         run: |
           cd test-backend/test-flask
-          echo "SECRET_KEY=$DB_URI" >> .env
-          echo "SECRET_KEY=$AWS_ACCESS_KEY_ID" >> .env
-          echo "SECRET_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
-          echo "SECRET_KEY=$S3_BUCKET_NAME" >> .env
-          echo "SECRET_KEY=$S3_REGION_NAME" >> .env
-          echo "SECRET_KEY=$FIREBASE_BUCKET_ADDRESS" >> .env
+          echo "DB_URI=$DB_URI" >> .env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+          echo "S3_REGION_NAME=$S3_REGION_NAME" >> .env
+          echo "FIREBASE_BUCKET_ADDRESS=$FIREBASE_BUCKET_ADDRESS" >> .env
           cd ../../
 
       - name: Set serviceAccountKey JSON
         env:
-          type: ${{secrets.type}}
-          project_id: ${{secrets.project_id}}
-          private_key_id: ${{secrets.private_key_id}}
-          private_key: ${{secrets.private_key}}
-          client_email: ${{secrets.client_email}}
-          client_id: ${{secrets.client_id}}
-          auth_uri: ${{secrets.auth_uri}}
-          token_uri: ${{secrets.token_uri}}
-          auth_provider_x509_cert_url: ${{secrets.auth_provider_x509_cert_url}}
-          client_x509_cert_url: ${{secrets.client_x509_cert_url}}
-          universe_domain: ${{secrets.universe_domain}}
+          serviceAccountKey: ${{secrets.SERVICEACCOUNTKEY}}
         run: |
           cd test-backend/test-flask
-          echo '{
-            "type": "$type",
-            "project_id": "$project_id",
-            "private_key_id": "$private_key_id",
-            "private_key": "$private_key",
-            "client_email": "$client_email",
-            "client_id": "$client_id",
-            "auth_uri": "$auth_uri",
-            "token_uri": "$token_uri",
-            "auth_provider_x509_cert_url": "$auth_provider_x509_cert_url",
-            "client_x509_cert_url": "$client_x509_cert_url",
-            "universe_domain": "$universe_domain"
-          }' >> serviceAccountKey.json
+          echo "$serviceAccountKey" > serviceAccountKey.json
           cd ../../
 
       - name: Install dependencies
@@ -87,19 +67,19 @@ jobs:
 
       - name: Upload to S3
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.S3_REGION_NAME }}
+          AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          AWS_REGION: $S3_REGION_NAME
         run: |
-          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy.zip
+          aws s3 cp deploy.zip s3://$S3_BUCKET_NAME/deploy.zip
 
       - name: Deploy to CodeDeploy
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          AWS_REGION: $S3_REGION_NAME
         run: |
           aws deploy create-deployment \
-            --application-name ${{ secrets.APPLICATION_NAME }} \
-            --deployment-group-name ${{ secrets.DEPLOYMENT_GROUP }} \
-            --s3-location bucket=${{ secrets.S3_BUCKET }},bundleType=zip,key=deploy.zip
+            --application-name $APPLICATION_NAME \
+            --deployment-group-name $DEPLOYMENT_GROUP \
+            --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=deploy.zip

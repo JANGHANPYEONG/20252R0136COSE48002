@@ -12,6 +12,14 @@ on:
     paths:
       - test-backend/test-flask/**
 
+env:
+  DB_URI: ${{secrets.DB_URI}}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  S3_BUCKET_NAME: ${{secrets.S3_BUCKET_NAME}}
+  S3_REGION_NAME: ${{secrets.S3_REGION_NAME}}
+  FIREBASE_BUCKET_ADDRESS: ${{secrets.FIREBASE_BUCKET_ADDRESS}}
+
 jobs:
   test-on-pr:
     if: github.event_name == 'pull_request'
@@ -29,30 +37,20 @@ jobs:
       - name: Set environment variables
         run: |
           cd test-backend/test-flask
-          echo "SECRET_KEY=${{ secrets.DB_URI }}" >> .env
-          echo "SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "SECRET_KEY=${{ secrets.S3_BUCKET_NAME }}" >> .env
-          echo "SECRET_KEY=${{ secrets.S3_REGION_NAME }}" >> .env
-          echo "SECRET_KEY=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+          echo "DB_URI=$DB_URI" >> .env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+          echo "S3_REGION_NAME=$S3_REGION_NAME" >> .env
+          echo "FIREBASE_BUCKET_ADDRESS=$FIREBASE_BUCKET_ADDRESS" >> .env
           cd ../../
 
       - name: Set serviceAccountKey JSON
+        env:
+          serviceAccountKey: ${{secrets.SERVICEACCOUNTKEY}}
         run: |
           cd test-backend/test-flask
-          echo '{
-            "type": "${{secrets.type}}",
-            "project_id": "${{secrets.project_id}}",
-            "private_key_id": "${{secrets.private_key_id}}",
-            "private_key": "${{secrets.private_key}}",
-            "client_email": "${{secrets.client_email}}",
-            "client_id": "${{secrets.client_id}}",
-            "auth_uri": "${{secrets.auth_uri}}",
-            "token_uri": "${{secrets.token_uri}}",
-            "auth_provider_x509_cert_url": "${{secrets.auth_provider_x509_cert_url}}",
-            "client_x509_cert_url": "${{secrets.client_x509_cert_url}}",
-            "universe_domain": "${{secrets.universe_domain}}"
-          }' >> serviceAccountKey.json
+          echo "$serviceAccountKey" > serviceAccountKey.json
           cd ../../
 
       - name: Install dependencies
@@ -84,30 +82,20 @@ jobs:
       - name: Set environment variables
         run: |
           cd test-backend/test-flask
-          echo "SECRET_KEY=${{ secrets.DB_URI }}" >> .env
-          echo "SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "SECRET_KEY=${{ secrets.S3_BUCKET_NAME }}" >> .env
-          echo "SECRET_KEY=${{ secrets.S3_REGION_NAME }}" >> .env
-          echo "SECRET_KEY=${{ secrets.FIREBASE_BUCKET_ADDRESS }}" >> .env
+          echo "DB_URI=$DB_URI" >> .env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+          echo "S3_REGION_NAME=$S3_REGION_NAME" >> .env
+          echo "FIREBASE_BUCKET_ADDRESS=$FIREBASE_BUCKET_ADDRESS" >> .env
           cd ../../
 
       - name: Set serviceAccountKey JSON
+        env:
+          serviceAccountKey: ${{secrets.SERVICEACCOUNTKEY}}
         run: |
           cd test-backend/test-flask
-          echo '{
-            "type": "${{secrets.type}}",
-            "project_id": "${{secrets.project_id}}",
-            "private_key_id": "${{secrets.private_key_id}}",
-            "private_key": "${{secrets.private_key}}",
-            "client_email": "${{secrets.client_email}}",
-            "client_id": "${{secrets.client_id}}",
-            "auth_uri": "${{secrets.auth_uri}}",
-            "token_uri": "${{secrets.token_uri}}",
-            "auth_provider_x509_cert_url": "${{secrets.auth_provider_x509_cert_url}}",
-            "client_x509_cert_url": "${{secrets.client_x509_cert_url}}",
-            "universe_domain": "${{secrets.universe_domain}}"
-          }' >> serviceAccountKey.json
+          echo "$serviceAccountKey" > serviceAccountKey.json
           cd ../../
 
       - name: Install dependencies
