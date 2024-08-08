@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - test-backend/test-flask/*
+      - test-backend/test-flask/**
 
 env:
   DB_URI: ${{secrets.DB_URI}}

@@ -2,7 +2,7 @@
 set -e
 
 # Define log file
-LOG_FILE="/home/ubuntu/deeplant-admin/logs/after_install.log"
+LOG_FILE="/home/ubuntu/deeplant-admin/log/after_install.log"
 
 {
     echo "Starting AfterInstall phase..."
