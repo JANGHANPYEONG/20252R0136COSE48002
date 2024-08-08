@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 
 const navy = '#0F3659';
@@ -10,6 +10,17 @@ const DeleteConfirmationModal = ({
   userName,
   userId,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await onConfirm();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header style={{ border: 'none' }}>
@@ -48,12 +59,13 @@ const DeleteConfirmationModal = ({
           취소
         </Button>
         <Button
-          onClick={onConfirm}
+          onClick={handleConfirm}
           style={{
             background: navy,
           }}
+          disabled={isLoading}
         >
-          확인
+          {isLoading ? <Spinner animation="border" size="sm" /> : '확인'}
         </Button>
       </Modal.Footer>
     </Modal>
