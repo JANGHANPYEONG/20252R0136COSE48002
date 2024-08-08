@@ -12,7 +12,7 @@ const ProfileEditForm = ({
   userInfo,
   onUpdate,
   onDeleteRequest,
-  handleShowSnackbar,
+  handleSnackbarShow,
 }) => {
   const [updatedUserInfo, setUpdatedUserInfo] = useState(userInfo);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -52,13 +52,13 @@ const ProfileEditForm = ({
         };
 
         onUpdate(updatedData);
-        handleShowSnackbar('회원정보가 수정되었습니다.', 'success');
+        handleSnackbarShow('회원정보가 수정되었습니다.', 'success');
       } else {
-        handleShowSnackbar('회원정보 수정에 실패했습니다.', 'error');
+        handleSnackbarShow('회원정보 수정에 실패했습니다.', 'error');
       }
     } catch (error) {
       console.log('Error updating user information:', error);
-      handleShowSnackbar('서버와 통신 중 오류가 발생했습니다.', 'error');
+      handleSnackbarShow('서버와 통신 중 오류가 발생했습니다.', 'error');
     } finally {
       setIsUpdating(false);
     }

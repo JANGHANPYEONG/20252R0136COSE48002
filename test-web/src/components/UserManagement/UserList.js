@@ -23,10 +23,13 @@ import { IoMdPersonAdd } from 'react-icons/io';
 import CustomSnackbar from '../Base/CustomSnackbar';
 import DeleteConfirmationModal from './Childeren/DeleteConfirmationModal';
 import UserRegisterModal from './Childeren/UserRegisterModal';
+import handleUserDelete from './Childeren/handleUserDelete';
+import handleUserSearch from './Childeren/handleUserSearch';
+// import handleUserCellEdit from './Childeren/handleUserCellEdit';
+// import UserTypeEditCell from './Childeren/UserTypeEditCell';
 
 import { userList } from '../../API/user/userList';
 import { userUpdate } from '../../API/user/userUpdate';
-import { userDelete } from '../../API/user/userDelete';
 
 const UserList = () => {
   const [registerShow, setRegisterShow] = useState(false);
@@ -42,14 +45,10 @@ const UserList = () => {
 
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
-  const handleRegisterClose = () => {
-    setRegisterShow(false);
-  };
   const handleRegisterShow = () => setRegisterShow(true);
 
-  const handleDeleteConfirmClose = () => {
-    setDeleteConfirmShow(false);
-    setUserToDelete(null);
+  const handleRegisterClose = () => {
+    setRegisterShow(false);
   };
 
   const handleDeleteConfirmShow = (user) => {
@@ -57,44 +56,25 @@ const UserList = () => {
     setDeleteConfirmShow(true);
   };
 
-  const handleUserDeleteConfirmed = async () => {
-    if (userToDelete) {
-      await handleUserDelete(userToDelete?.userId);
-      handleDeleteConfirmClose();
-    }
+  const handleDeleteConfirmClose = () => {
+    setDeleteConfirmShow(false);
+    setUserToDelete(null);
   };
 
-  const handleUserDelete = async (userId) => {
-    try {
-      const auth = getAuth();
-      if (!UserInfo.userId) {
-        showSnackbar('로그인이 필요합니다.', 'error');
-        return;
-      }
-
-      if (UserInfo.userId === userId) {
-        showSnackbar(
-          '자신의 계정은 삭제할 수 없습니다. 회원탈퇴는 프로필 페이지에서 가능합니다.',
-          'error'
-        );
-        return;
-      }
-
-      // If reauthentication is successful, proceed with the account deletion
-      const response = await userDelete(userId);
-      if (response.ok) {
+  const handleUserDeleteConfirmed = async () => {
+    if (userToDelete) {
+      const success = await handleUserDelete(
+        userToDelete?.userId,
+        UserInfo,
+        handleSnackbarShow
+      );
+      if (success) {
         // 삭제된 유저를 제외한 새로운 사용자 목록 업데이트
         setAllUsers((prevUsers) =>
-          prevUsers.filter((user) => user.userId !== userId)
+          prevUsers.filter((user) => user.userId !== userToDelete?.userId)
         );
-        showSnackbar('사용자가 삭제되었습니다.', 'success');
-        //delete user in firebase
-      } else {
-        showSnackbar('사용자 삭제에 실패했습니다.', 'error');
+        handleDeleteConfirmClose();
       }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      showSnackbar('사용자 삭제 중 오류가 발생했습니다.', 'error');
     }
   };
 
@@ -102,7 +82,7 @@ const UserList = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const showSnackbar = (message, severity) => {
+  const handleSnackbarShow = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
@@ -126,7 +106,7 @@ const UserList = () => {
       headerName: '권한',
       width: 200,
       renderCell: (params) => (
-        <CustomEditCell
+        <UserTypeEditCell
           id={params.id}
           field={params.field}
           value={params.value}
@@ -208,30 +188,7 @@ const UserList = () => {
     fetchData();
   }, []);
 
-  const handleSearch = (event) => {
-    const value = event.target.value;
-    if (value) {
-      const keyword = value.toLowerCase();
-      if (!allUsers || allUsers.length === 0) {
-        return; // Return early if allUsers is empty or not yet initialized
-      }
-      if (keyword === '') {
-        setSearchedUsers([]); // Show no users if the search field is empty
-      } else {
-        const results = allUsers.filter(
-          (user) =>
-            (user.name && user.name.toLowerCase().includes(keyword)) ||
-            (user.userId && user.userId.toLowerCase().includes(keyword)) ||
-            (user.type && user.type.toLowerCase().includes(keyword)) ||
-            (user.company && user.company.toLowerCase().includes(keyword)) ||
-            (user.createdAt && user.createdAt.toLowerCase().includes(keyword))
-        );
-        setSearchedUsers(results);
-      }
-    }
-  };
-
-  const handleCellEdit = async (params) => {
+  const handleUserCellEdit = async (params) => {
     //유저 Type 수정
     const { id, field, value } = params;
     const userToUpdate = allUsers.find((user) => user.id === id);
@@ -262,7 +219,7 @@ const UserList = () => {
             user.id === id ? { ...user, [field]: value } : user
           )
         );
-        showSnackbar(
+        handleSnackbarShow(
           `${userToUpdate.name}님의 권한이 ${value}로 수정되었습니다. `,
           'success'
         );
@@ -274,10 +231,10 @@ const UserList = () => {
     }
   };
 
-  const CustomEditCell = ({ id, field, value, api }) => {
+  const UserTypeEditCell = ({ id, field, value, api }) => {
     const handleChange = (event) => {
       api.setEditCellValue({ id, field, value: event.target.value });
-      handleCellEdit({ id, field, value: event.target.value });
+      handleUserCellEdit({ id, field, value: event.target.value });
     };
 
     return (
@@ -353,7 +310,9 @@ const UserList = () => {
           <SearchIcon />
           <InputBase
             placeholder=" 사용자 검색"
-            onChange={(event) => handleSearch(event)}
+            onChange={(event) =>
+              handleUserSearch(event, allUsers, setSearchedUsers)
+            }
             sx={{
               color: '#737791',
               fontFamily: 'Poppins',
@@ -405,7 +364,7 @@ const UserList = () => {
           pageSizeOptions={[5, 10, 20]}
           pagination
           autoHeight
-          onEditCellChange={handleCellEdit} // Attach the event handler for cell edits
+          onEditCellChange={handleUserCellEdit} // Attach the event handler for cell edits
           initialState={{
             pagination: {
               paginationModel: {

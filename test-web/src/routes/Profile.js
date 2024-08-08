@@ -19,7 +19,7 @@ const Profile = () => {
 
   const navigate = useNavigate();
 
-  const handleShowSnackbar = (message, severity) => {
+  const handleSnackbarShow = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
@@ -33,7 +33,7 @@ const Profile = () => {
     setUserInfo(updatedData);
     localStorage.setItem('UserInfo', JSON.stringify(updatedData));
     window.dispatchEvent(new Event('userInfoUpdated'));
-    handleShowSnackbar('회원정보가 수정되었습니다.', 'success');
+    handleSnackbarShow('회원정보가 수정되었습니다.', 'success');
   };
 
   const handleDeleteRequest = () => {
@@ -44,7 +44,7 @@ const Profile = () => {
     setIsConfirmModalOpen(true);
   };
 
-  const deleteself = async () => {
+  const deleteSelf = async () => {
     try {
       const response = await userDelete(userInfo.userId);
 
@@ -77,7 +77,7 @@ const Profile = () => {
         userInfo={userInfo}
         onUpdate={handleUpdate}
         onDeleteRequest={handleDeleteRequest}
-        handleShowSnackbar={handleShowSnackbar}
+        handleSnackbarShow={handleSnackbarShow}
       />
 
       <PasswordCheckModal
@@ -89,7 +89,7 @@ const Profile = () => {
       <SelfDeleteConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        onConfirm={deleteself}
+        onConfirm={deleteSelf}
       />
 
       <CustomSnackbar
