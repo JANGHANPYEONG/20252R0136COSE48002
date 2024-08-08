@@ -2,7 +2,7 @@
 set -e
 
 # Define log file
-LOG_FILE="/home/ubuntu/deeplant-admin/logs/before_install.log"
+LOG_FILE="/home/ubuntu/deeplant-admin/log/before_install.log"
 
 {
   echo "Starting Prepare_New_Version phase..."

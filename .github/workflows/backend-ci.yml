@@ -5,12 +5,12 @@ on:
     branches:
       - feature/back
     paths:
-      - test-backend/test-flask/*
+      - test-backend/test-flask/**
   pull_request:
     branches:
       - feature/back
     paths:
-      - test-backend/test-flask/*
+      - test-backend/test-flask/**
 
 jobs:
   test-on-pr:
