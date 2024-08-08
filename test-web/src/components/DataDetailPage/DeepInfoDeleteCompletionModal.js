@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 const navy = '#0F3659';
 
-const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
+const DeepInfoDeleteCompletionModal = ({ show, onHide, meatId, seqno }) => {
   return (
     <Modal
       show={show}
@@ -28,7 +28,7 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
             fontWeight: 600,
           }}
         >
-          딥에이징 회차 추가
+          딥에이징 회차 삭제
         </Modal.Title>
       </Modal.Header>
       <Modal.Body
@@ -41,9 +41,7 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
           width: '100%',
         }}
       >
-        {
-          `${meatId} 데이터의 \n 딥에이징 ${seqno}회차가 추가되었습니다.`
-        }
+        {`${meatId} 데이터의 \n 딥에이징 ${seqno}회차가 삭제되었습니다.`}
       </Modal.Body>
       <Modal.Footer style={{ border: 'none', justifyContent: 'center' }}>
         <Button
@@ -59,5 +57,4 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
     </Modal>
   );
 };
-
-export default DeepInfoCompletionModal;
+export default DeepInfoDeleteCompletionModal;
