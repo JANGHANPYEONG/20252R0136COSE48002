@@ -6,7 +6,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import addDeepAgingRegister from '../../API/add/addDeepAging';
 import DeepInfoCompletionModal from './DeepInfoCompleteModal';
 
-const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
+const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [validated, setValidated] = useState(false);
   const [date, setDate] = useState('');
@@ -51,6 +51,14 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
 
     setValidated(true);
   };
+  
+
+  // All possible sequences
+  const allSeqs = ['1회', '2회', '3회', '4회'];
+
+  // Filtered nonExistSeq containing values not in processed_data_seq
+  const nonExistSeq = allSeqs.filter((seq) => !processed_data_seq.includes(seq));
+ 
   return (
     <div>
       <div>
@@ -78,7 +86,29 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
               }}
             />
           </Form.Group>
-          <Form.Group className="mb-3">
+          <Form.Label column>회차</Form.Label>
+          <InputGroup className="mb-3" hasValidation>
+            <Form.Select
+              required
+              id="SelectSeqno"
+              onChange={(event) => {
+                const selectedSeq = nonExistSeq[event.target.value].replace('회', '');
+                setSeqno(selectedSeq);
+              }}
+              //value={seqno}
+              defaultValue=""
+            >
+              <option value="" disabled hidden>
+                등록할 회차를 선택하세요
+              </option>
+              {nonExistSeq.map((item, index) => (
+                <option key={index} value={index}>
+                  {item}
+                </option>
+              ))}
+            </Form.Select>
+          </InputGroup>
+          {/* <Form.Group className="mb-3">
             <Form.Label column>회차</Form.Label>
             <Form.Control
               required
@@ -88,7 +118,7 @@ const AgingInfoRegister = ({ handleClose, maxSeqno, meatId }) => {
                 setSeqno(event.target.value);
               }}
             />
-          </Form.Group>
+          </Form.Group> */}
 
           <div className="text-end">
             <Button variant="text" onClick={handleClose}>

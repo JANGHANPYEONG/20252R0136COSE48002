@@ -440,7 +440,7 @@ const DataView = ({ dataProps }) => {
           </Modal.Title>
           <AgingInfoRegister
             handleClose={handleInfoRegisterClose}
-            maxSeqno={len}
+            processed_data_seq = {processed_data_seq}
             meatId={meatId}
           />
         </Modal.Body>
