@@ -3,12 +3,12 @@ name: App CI
 on:
   push:
     branches:
-      - main
+      - feature/app
     paths:
       - "app/**"
   pull_request:
     branches:
-      - main
+      - feature/app
     paths:
       - "app/**"
 
