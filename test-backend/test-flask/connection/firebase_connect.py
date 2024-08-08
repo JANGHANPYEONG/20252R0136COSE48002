@@ -1,8 +1,6 @@
 from flask import send_file
 import firebase_admin  # Firestore init
-from datetime import datetime  # 시간 출력용
 from firebase_admin import firestore, storage
-import io
 import os
 
 

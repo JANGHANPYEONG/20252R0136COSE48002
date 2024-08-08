@@ -4,7 +4,7 @@ from flask import (
     request,
     current_app,
 )
-from db.db_controller import _deleteSpecificMeatData, _deleteSpecificDeepAgingData, deleteMeatByIDList
+from db.db_controller import _deleteSpecificDeepAgingData, deleteMeatByIDList
 from utils import *
 
 

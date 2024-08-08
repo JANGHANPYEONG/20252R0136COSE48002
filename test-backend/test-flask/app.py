@@ -1,8 +1,7 @@
 # 서버 메인 파일
-from datetime import datetime
 import sys
 
-from flask import Flask, current_app, request, jsonify
+from flask import Flask, current_app
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -10,9 +9,6 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 
 from db.db_model import initialize_db
-from utils import logger
-import firebase_admin
-from firebase_admin import credentials, auth
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
