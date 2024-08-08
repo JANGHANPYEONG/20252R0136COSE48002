@@ -1,12 +1,8 @@
-import glob
-import pprint
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
 import uuid
-import hashlib
-from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
-from sqlalchemy import func, create_engine
+from sqlalchemy import func
 import json
 from utils import *
 
@@ -431,7 +427,6 @@ def create_specific_heatedmeat_seonsory_eval(
         sensory_data = data["heatedmeatSensoryData"]
         sensory_data["filmedAt"] = data["filmedAt"]
         existed_sensory_data = get_HeatedmeatSensoryEval(db_session, id, seqno)
-        print(existed_sensory_data)
 
         if existed_sensory_data: # 수정
             if is_post: # 수정인데 POST 메서드
@@ -443,6 +438,7 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             sensory_data["period"] = existed_sensory_data["period"]
+            sensory_data["tenderness"] = {**existed_sensory_data["tenderness"], **sensory_data["tenderness"]}
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             # db_session.merge(new_sensory_data)
 
@@ -842,8 +838,6 @@ def get_all_user(db_session):
         for user in users:
             time = convert2datetime(user.createdAt, 1)
             user.createdAt = convert2string(time, 0)
-            time = convert2datetime(user.createdAt, 1)
-            user.createdAt = convert2string(time, 0)
         
         db_session.close()
         return users
@@ -856,8 +850,6 @@ def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
-            time = convert2datetime(user_data.createdAt, 1)
-            user_data.createdAt = convert2string(time, 0)
             time = convert2datetime(user_data.createdAt, 1)
             user_data.createdAt = convert2string(time, 0)
         
@@ -1911,7 +1903,10 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 value_query.filter(Meat.gradeNum == grade)
                 if grade < 5 else value_query
             )
-            values = [value[0] for value in value_query.all() if value[0] is not None]
+            if field == "tenderness":
+                values = [value[0]["0"] for value in value_query.all() if value[0] is not None]
+            else:
+                values = [value[0] for value in value_query.all() if value[0] is not None]
 
             if values:
                 stats[field] = {
@@ -2046,7 +2041,7 @@ def get_probexpt_of_processed_heatedmeat(db_session, start, end):
     return result
 
 
-def get_timeseries_of_cattle_data(db_session, start, end, meat_value):
+def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
     # 기간 설정
     start = convert2datetime(start, 0)  # Start Time
     end = convert2datetime(end, 0)  # End Time
@@ -2054,20 +2049,21 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value):
     meat_id_list = [val[0] for val in meat_ids]
     
     stats = {}
-    for i in range(5):
+    for i, num in enumerate(["0", "3", "7", "14", "21"]):
         query = (
-            db_session.query(func.avg(getattr(HeatedmeatSensoryEval, 'tenderness')))
+            db_session.query(func.avg(HeatedmeatSensoryEval.tenderness[num].astext.cast(Float)))
             .join(DeepAgingInfo, (DeepAgingInfo.id == HeatedmeatSensoryEval.id) and (DeepAgingInfo.seqno == HeatedmeatSensoryEval.seqno))
             .join(Meat, Meat.id == DeepAgingInfo.id)
             .join(CategoryInfo, CategoryInfo.id == Meat.categoryId)
             .filter(
-                HeatedmeatSensoryEval.seqno == i,
+                HeatedmeatSensoryEval.seqno == seqno,
                 Meat.categoryId.in_(meat_id_list),
                 Meat.statusType == 2,
                 Meat.createdAt.between(start, end)
             )
         )
-        query = query.one()
-        stats[str(i)] = query[0] if query[0] else 0
+        query = query.all()
+        stats[i] = query[0][0] if query[0][0] is not None else 0
+
     db_session.close()
     return stats

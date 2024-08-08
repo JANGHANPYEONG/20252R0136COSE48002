@@ -1,7 +1,5 @@
-import fnmatch
 import boto3  # S3 Server connection
 import os
-from datetime import datetime  # 시간 출력용
 
 IMAGE_FOLDER_PATH = "./images/"
 

@@ -1,15 +1,14 @@
 import logging
 
 from flask import Blueprint, jsonify, request, current_app
-from db.db_model import User
-from db.db_controller import create_user, get_user, _get_users_by_type, update_user, get_all_user, delete_user
+from db.db_controller import create_user, get_user, update_user, get_all_user, delete_user
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
 from datetime import datetime
-from utils import logger, to_dict, usrType
+from utils import logger, usrType
 
 user_api = Blueprint("user_api", __name__)
 
