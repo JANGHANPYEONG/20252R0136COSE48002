@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-    paths:
-      - test-backend/test-flask/**
+    # paths:
+    #   - test-backend/test-flask/**
 
 env:
   DB_URI: ${{secrets.DB_URI}}
