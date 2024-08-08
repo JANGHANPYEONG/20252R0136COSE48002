@@ -81,5 +81,5 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name $APPLICATION_NAME \
-            --deployment-group-name $secrets.DEPLOYMENT_GROUP \
+            --deployment-group-name $DEPLOYMENT_GROUP \
             --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=deploy.zip
