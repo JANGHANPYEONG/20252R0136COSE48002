@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:structure/config/usefuls.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
+import 'package:intl/intl.dart';
 
 class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   final MeatModel meatModel;
@@ -21,8 +22,12 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
 
   //날짜
   String processCreatedAt = '';
-  String currentDate = Usefuls.parseDate(Usefuls.getCurrentDate());
+  // String currentDate = Usefuls.parseDate(Usefuls.getCurrentDate());
+  DateTime currentDate = DateTime.now();
   int dateDiff = -1;
+
+  //딥에이징 등록 후 3, 7, 14, 21일 각각 경과 했는지 여부
+  List<bool> checkDate = [false, false, false, false];
 
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
@@ -30,29 +35,56 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   double tenderness = 1;
 
   void _initialize() {
-    print("----------deepaginginfo---------");
-    print(meatModel.deepAgingInfo);
-    // processCreatedAt =
-    //     Usefuls.parseDate(meatModel.heatedSensoryEval?['createdAt']);
     seqNo = meatModel.seqno;
-    print(meatModel.deepAgingInfo![seqNo!]['date']);
+    print(seqNo);
     processCreatedAt = meatModel.deepAgingInfo![seqNo!]['date'];
+    print("1111");
     calculateDiff();
+    print("22222");
     checkTenderness();
+    print("333333");
+    checkDateBool();
     notifyListeners();
   }
 
+  /// 현재 날짜 - 딥에이징 등록 날짜 구하는 함수
   void calculateDiff() {
-    dateDiff = int.parse(Usefuls.dotDateToDate(currentDate)) -
-        int.parse(processCreatedAt);
+    dateDiff = int.parse(currentDate
+        .difference(DateTime.parse(processCreatedAt))
+        .inDays
+        .toString());
+    print("dateDiff :::: $dateDiff");
     notifyListeners();
-    // print(dateDiff);
   }
 
   void checkTenderness() {
-    if (dateDiff == 3 || dateDiff == 7 || dateDiff == 14 || dateDiff == 21) {
+    if (dateDiff >= 3) {
       check = true;
       notifyListeners();
     }
+    print("Dcdlc");
+    print(check);
+  }
+
+  void checkDateBool() {
+    print("dateDiff : :$dateDiff");
+    if (dateDiff >= 21) {
+      checkDate[0] = true;
+      checkDate[1] = true;
+      checkDate[2] = true;
+      checkDate[3] = true;
+    } else if (dateDiff >= 14) {
+      checkDate[0] = true;
+      checkDate[1] = true;
+      checkDate[2] = true;
+    } else if (dateDiff >= 7) {
+      checkDate[0] = true;
+      checkDate[1] = true;
+    } else if (dateDiff >= 3) {
+      checkDate[0] = true;
+    }
+    print("ddd");
+    print(checkDate);
+    notifyListeners();
   }
 }

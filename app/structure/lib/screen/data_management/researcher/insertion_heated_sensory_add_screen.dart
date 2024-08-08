@@ -47,15 +47,85 @@ class _InsertionHeatedSensoryAddScreenState
                   child: insertionHeatedSensoryAddViewModel.check
                       ? Column(
                           children: [
-                            const DataTitle(
-                                korText: '연도', engText: 'Tenderness'),
-                            SizedBox(height: 16.h),
-                            PartEval(
-                              selectedText: text,
-                              value:
-                                  insertionHeatedSensoryAddViewModel.tenderness,
-                              onChanged: null,
-                            ),
+                            //3일 이상인 경우 3일차 partEval 표시
+                            insertionHeatedSensoryAddViewModel.checkDate[0]
+                                ? Column(
+                                    children: [
+                                      const DataTitle(
+                                          korText: '연도',
+                                          engText: '3일차 Tenderness'),
+                                      SizedBox(height: 16.h),
+                                      PartEval(
+                                        selectedText: text,
+                                        value:
+                                            insertionHeatedSensoryAddViewModel
+                                                .tenderness,
+                                        onChanged: null,
+                                      ),
+                                      SizedBox(height: 16.h),
+                                    ],
+                                  )
+                                : Container(),
+                            //7일 이상인 경우 7일차 partEval 표시
+                            insertionHeatedSensoryAddViewModel.checkDate[1]
+                                ? Column(
+                                    children: [
+                                      SizedBox(height: 16.h),
+                                      const DataTitle(
+                                          korText: '연도',
+                                          engText: '7일차 Tenderness'),
+                                      SizedBox(height: 16.h),
+                                      PartEval(
+                                        selectedText: text,
+                                        value:
+                                            insertionHeatedSensoryAddViewModel
+                                                .tenderness,
+                                        onChanged: null,
+                                      ),
+                                      SizedBox(height: 16.h),
+                                    ],
+                                  )
+                                : Container(),
+                            //14일 이상인 경우 14일차 partEval 표시
+                            insertionHeatedSensoryAddViewModel.checkDate[2]
+                                ? Column(
+                                    children: [
+                                      SizedBox(height: 16.h),
+                                      const DataTitle(
+                                          korText: '연도',
+                                          engText: '14일차 Tenderness'),
+                                      SizedBox(height: 16.h),
+                                      PartEval(
+                                        selectedText: text,
+                                        value:
+                                            insertionHeatedSensoryAddViewModel
+                                                .tenderness,
+                                        onChanged: null,
+                                      ),
+                                      SizedBox(height: 16.h),
+                                    ],
+                                  )
+                                : Container(),
+                            //21일 이상인 경우 21일차 partEval 표시
+                            insertionHeatedSensoryAddViewModel.checkDate[2]
+                                ? Column(
+                                    children: [
+                                      SizedBox(height: 16.h),
+                                      const DataTitle(
+                                          korText: '연도',
+                                          engText: '21일차 Tenderness'),
+                                      SizedBox(height: 16.h),
+                                      PartEval(
+                                        selectedText: text,
+                                        value:
+                                            insertionHeatedSensoryAddViewModel
+                                                .tenderness,
+                                        onChanged: null,
+                                      ),
+                                      SizedBox(height: 16.h),
+                                    ],
+                                  )
+                                : Container(),
                           ],
                         )
                       : const Text("tenderness 등록 가능한 날이 아닙니다!"),
