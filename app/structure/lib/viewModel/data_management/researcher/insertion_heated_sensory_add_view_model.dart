@@ -5,10 +5,8 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:structure/config/usefuls.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
-import 'package:intl/intl.dart';
 
 class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   final MeatModel meatModel;
@@ -36,8 +34,11 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
 
   void _initialize() {
     seqNo = meatModel.seqno;
+    print(meatModel.deepAgingInfo);
     print(seqNo);
-    processCreatedAt = meatModel.deepAgingInfo![seqNo!]['date'];
+    processCreatedAt = meatModel.deepAgingCreatedAt!;
+    print(processCreatedAt);
+    print("길이 : ${meatModel.deepAgingInfo!.length}");
     print("1111");
     calculateDiff();
     print("22222");
@@ -47,13 +48,15 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  void deepAging() {}
+
   /// 현재 날짜 - 딥에이징 등록 날짜 구하는 함수
   void calculateDiff() {
     dateDiff = int.parse(currentDate
         .difference(DateTime.parse(processCreatedAt))
         .inDays
         .toString());
-    print("dateDiff :::: $dateDiff");
+    // print("dateDiff :::: $dateDiff");
     notifyListeners();
   }
 
