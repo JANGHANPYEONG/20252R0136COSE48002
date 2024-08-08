@@ -154,6 +154,18 @@ PIG = 1
 default_user_id = 'deeplant@example.com'
 default_user_type = 2
 
+def safe_json(val):
+    """
+    Safe Json 변환
+    """
+    try:
+        dictionary = {}
+        for key, value in val.items():
+            dictionary[key] = value
+        return dictionary
+    except (ValueError, TypeError):
+        return None
+
 
 def safe_float(val):
     """
@@ -262,7 +274,6 @@ def item_encoder(data_dict, item, input_data=None):
         "overall",
         "flavor",
         "juiciness",
-        "tenderness",
         "umami",
         "palatability",
         "L",
@@ -280,6 +291,7 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
+    json_cvr = ["tenderness"]
     bool_cvr = ["alarm", "isHeated"]
     if item in datetime0_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 0)
@@ -293,6 +305,8 @@ def item_encoder(data_dict, item, input_data=None):
         data_dict[item] = safe_int(data_dict.get(item))
     elif item in float_cvr:
         data_dict[item] = safe_float(data_dict.get(item))
+    elif item in json_cvr:
+        data_dict[item] = safe_json(data_dict.get(item))
     elif item in bool_cvr:
         data_dict[item] = safe_bool(data_dict.get(item))
     else:
@@ -312,8 +326,8 @@ def calId(id, s_id, type):
 
 
 def item_encoder(data_dict, item, input_data=None):
-    datetime0_cvr = ["filmedAt", "createdAt"]
-    datetime1_cvr = ["loginAt", "updatedAt"]
+    datetime0_cvr = ["filmedAt", "createdAt", "updatedAt"]
+    datetime1_cvr = ["loginAt"]
     datetime2_cvr = ["butcheryYmd", "birthYmd", "date"]
     str_cvr = [
         "id",
@@ -338,7 +352,6 @@ def item_encoder(data_dict, item, input_data=None):
         "overall",
         "flavor",
         "juiciness",
-        "tenderness",
         "umami",
         "palatability",
         "L",
@@ -356,6 +369,7 @@ def item_encoder(data_dict, item, input_data=None):
         "bitterness",
         "richness",
     ]
+    json_cvr = ["tenderness"]
     bool_cvr = ["alarm", "isHeated"]
     if item in datetime0_cvr:
         data_dict[item] = convert2datetime(data_dict.get(item), 0)
@@ -369,6 +383,8 @@ def item_encoder(data_dict, item, input_data=None):
         data_dict[item] = safe_int(data_dict.get(item))
     elif item in float_cvr:
         data_dict[item] = safe_float(data_dict.get(item))
+    elif item in json_cvr:
+        data_dict[item] = safe_json(data_dict.get(item))
     elif item in bool_cvr:
         data_dict[item] = safe_bool(data_dict.get(item))
     else:

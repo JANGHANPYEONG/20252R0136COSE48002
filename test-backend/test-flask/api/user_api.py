@@ -1,15 +1,14 @@
 import logging
 
 from flask import Blueprint, jsonify, request, current_app
-from db.db_model import User
-from db.db_controller import create_user, get_user, _get_users_by_type, update_user, get_all_user, delete_user
+from db.db_controller import create_user, get_user, update_user, get_all_user, delete_user
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from firebase_admin import auth as firebase_auth
 from datetime import datetime
-from utils import logger, to_dict, usrType
+from utils import logger, usrType
 
 user_api = Blueprint("user_api", __name__)
 
@@ -94,7 +93,7 @@ def login_user():
         )
 
     except Exception as e:
-        logger.exception("Exception: %s", e)
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -209,7 +208,7 @@ def update_user_data():
             200,
         )
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -230,7 +229,7 @@ def check_duplicate():
         else:
             return jsonify({"isDuplicated": True}), 200
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -254,13 +253,14 @@ def delete_user_data():
                         "userId": user_id,
                     }
                 ),
-                401,
+                400,
             )
+        delete_user(db_session, user)
+        
         # Firebase에서 유저 삭제
         user_record = firebase_auth.get_user_by_email(user_id)
         firebase_auth.delete_user(user_record.uid)
         
-        delete_user(db_session, user)
         return (
             jsonify(
                 {
@@ -271,7 +271,7 @@ def delete_user_data():
             200,
         )
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}

@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker, validates
 
 from utils import *
 
@@ -250,6 +250,7 @@ class Meat(Base):
 
     # 2. 육류 Open API 정보
     createdAt = Column(DateTime, nullable=False)  # 육류 관리번호 생성 시간
+    updatedAt = Column(DateTime) # 대기 중인 상태에서 반려한 시간
     traceNum = Column(String(255), nullable=False)  # 이력번호(혹은 묶은 번호)
     farmAddr = Column(String(255))  # 농장 주소
     farmerName = Column(String(255))  # 농장주 이름
@@ -414,7 +415,7 @@ class HeatedmeatSensoryEval(Base):
     # 3. 관능검사 측정 데이터
     flavor = Column(Float)
     juiciness = Column(Float)
-    tenderness = Column(Float)
+    tenderness = Column(JSONB)
     umami = Column(Float)
     palatability = Column(Float)
     
@@ -435,10 +436,27 @@ class HeatedmeatSensoryEval(Base):
         CheckConstraint('"period" >= 0', name="check_period_value"),
         CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
         CheckConstraint('"juiciness" >= 1 and "juiciness" <= 10', name="check_juiciness_stat"),
-        CheckConstraint('"tenderness" >= 1 and "tenderness" <= 10', name="check_tenderness_stat"),
         CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
         CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
     )
+    
+    @validates('tenderness')
+    def validate_tenderness(self, key, value):
+        required_keys = {'0', '3', '7', '14', '21'}
+        if not isinstance(value, dict):
+            raise ValueError("Tenderness must be a JSON object")
+        
+        keys = set(value.keys())
+        if not keys.issubset(required_keys):
+            raise ValueError(f"Invalid keys in tenderness: {keys - required_keys}")
+        
+        for k, v in value.items():
+            if not isinstance(v, (int, float)):
+                raise ValueError(f"Tenderness value for key {k} must be a number")
+            if not (1 <= v <= 10):
+                raise ValueError(f"Tenderness value for key {k} must be between 1 and 10")
+        
+        return value
 
 
 class AI_HeatedmeatSeonsoryEval(Base):
@@ -454,7 +472,7 @@ class AI_HeatedmeatSeonsoryEval(Base):
     # 3. 관능검사 AI 예측 데이터
     flavor = Column(Float)
     juiciness = Column(Float)
-    tenderness = Column(Float)
+    tenderness = Column(JSONB)
     umami = Column(Float)
     palatability = Column(Float)
     
@@ -468,10 +486,27 @@ class AI_HeatedmeatSeonsoryEval(Base):
         ),
         CheckConstraint('"flavor" >= 1 and "flavor" <= 10', name="check_flavor_stat"),
         CheckConstraint('"juiciness" >= 1 and "juiciness" <= 10', name="check_juiciness_stat"),
-        CheckConstraint('"tenderness" >= 1 and "tenderness" <= 10', name="check_tenderness_stat"),
         CheckConstraint('"umami" >= 1 and "umami" <= 10', name="check_umami_stat"),
         CheckConstraint('"palatability" >= 1 and "palatability" <= 10', name="check_palatability_stat")
     )
+    
+    @validates('tenderness')
+    def validate_tenderness(self, key, value):
+        required_keys = {'0', '3', '7', '14', '21'}
+        if not isinstance(value, dict):
+            raise ValueError("Tenderness must be a JSON object")
+        
+        keys = set(value.keys())
+        if not keys.issubset(required_keys):
+            raise ValueError(f"Invalid keys in tenderness: {keys - required_keys}")
+        
+        for k, v in value.items():
+            if not isinstance(v, (int, float)):
+                raise ValueError(f"Tenderness value for key {k} must be a number")
+            if not (1 <= v <= 10):
+                raise ValueError(f"Tenderness value for key {k} must be between 1 and 10")
+        
+        return value
 
 
 class ProbexptData(Base):

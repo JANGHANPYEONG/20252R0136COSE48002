@@ -1,0 +1,57 @@
+name: App CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/**"
+
+env:
+  API: ${{secrets.API}}
+  TRACEAPI: ${{secrets.TRACEAPI}}
+  TRACEAPIKEY: ${{secrets.TRACEAPIKEY}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
+
+      - name: Set Environment variables
+        run: |
+          cd app
+          echo "API=$API" >> .env
+          echo "TRACEAPI=$TRACEAPI" >> .env
+          echo "TRACEAPIKEY=$TRACEAPIKEY" >> .env
+          cd ../
+
+      - name: Set google-service JSON
+        env:
+          google-service: ${{secrets.GOOGLE_SERVICES}}
+        run: |
+          cd app/structure/android/app
+          echo "$google-service" > google-services.json
+          cd ../../../../
+
+      - name: Install dependencies
+        run: |
+          cd app
+          flutter pub get
+
+      - name: Run tests
+        run: |
+          cd app
+          flutter test

@@ -1,0 +1,85 @@
+name: Backend Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - test-backend/test-flask/**
+
+env:
+  DB_URI: ${{secrets.DB_URI}}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  S3_BUCKET_NAME: ${{secrets.S3_BUCKET_NAME}}
+  S3_REGION_NAME: ${{secrets.S3_REGION_NAME}}
+  FIREBASE_BUCKET_ADDRESS: ${{secrets.FIREBASE_BUCKET_ADDRESS}}
+  APPLICATION_NAME: ${{secrets.APPLICATION_NAME}}
+  DEPLOYMENT_GROUP: ${{secrets.DEPLOYMENT_GROUP}}
+
+jobs:
+  backend-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Set environment variables
+        run: |
+          cd test-backend/test-flask
+          echo "DB_URI=$DB_URI" >> .env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
+          echo "S3_REGION_NAME=$S3_REGION_NAME" >> .env
+          echo "FIREBASE_BUCKET_ADDRESS=$FIREBASE_BUCKET_ADDRESS" >> .env
+          cd ../../
+
+      - name: Set serviceAccountKey JSON
+        env:
+          serviceAccountKey: ${{secrets.SERVICEACCOUNTKEY}}
+        run: |
+          cd test-backend/test-flask
+          echo "$serviceAccountKey" > serviceAccountKey.json
+          cd ../../
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r test-backend/test-flask/requirements.txt
+
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r test-backend/test-flask/* deploy/
+          cp test-backend/test-flask/appspec.yml deploy/
+          cd deploy
+          zip -r ../deploy.zip .
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          AWS_REGION: $S3_REGION_NAME
+        run: |
+          aws s3 cp deploy.zip s3://$S3_BUCKET_NAME/deploy.zip
+
+      - name: Deploy to CodeDeploy
+        env:
+          AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          AWS_REGION: $S3_REGION_NAME
+        run: |
+          aws deploy create-deployment \
+            --application-name $APPLICATION_NAME \
+            --deployment-group-name $DEPLOYMENT_GROUP \
+            --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=deploy.zip

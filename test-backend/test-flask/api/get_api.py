@@ -10,12 +10,9 @@ from db.db_controller import (
     get_meat,
     _getMeatDataByUserId,
     _getMeatDataByUserType,
-    _getMeatDataByStatusType,
     _getMeatDataByRangeStatusType,
-    _getMeatDataByTotalStatusType,
     _getTexanomyData,
     _getPredictionData,
-    get_user,
 )
 from utils import *
 
