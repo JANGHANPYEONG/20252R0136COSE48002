@@ -21,6 +21,8 @@ hooks:
   ApplicationStart:
     - location: scripts/start_flask.sh
       runas: ubuntu
+    - location: scripts/start_user_count_service.sh
+      runas: ubuntu
   ValidateService:
     - location: scripts/validate_service.sh
       runas: ubuntu
