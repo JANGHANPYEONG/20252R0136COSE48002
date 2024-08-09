@@ -3,7 +3,7 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { userRegister } from '../../../API/user/userRegister';
+import { userRegister } from '../../../../API/user/userRegister';
 
 const handleUserRegisterSubmit = async (submitData) => {
   const {

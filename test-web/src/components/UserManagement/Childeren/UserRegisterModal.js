@@ -3,8 +3,8 @@ import Form from 'react-bootstrap/Form';
 import { Button, Spinner, Modal } from 'react-bootstrap';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { userDuplicateCheck } from '../../../API/user/userDuplicateCheck';
-import handleUserRegisterSubmit from './handleUserRegisterSubmit';
-import RegisterCompletionModal from './RegisterCompletionModal';
+import handleUserRegisterSubmit from './UserRegisterModalChildren/handleUserRegisterSubmit';
+import RegisterCompletionModal from './UserRegisterModalChildren/RegisterCompletionModal';
 
 const UserRegisterModal = ({ show, onHide }) => {
   const [userId, setUserId] = useState('');
@@ -106,9 +106,9 @@ const UserRegisterModal = ({ show, onHide }) => {
   return (
     <Modal
       show={show}
-      onHide={onHide}
-      backdrop="true"
-      keyboard={false}
+      onHide={isLoading ? null : onHide}
+      backdrop={isLoading ? 'static' : true}
+      keyboard={!isLoading}
       centered
     >
       <Modal.Body>

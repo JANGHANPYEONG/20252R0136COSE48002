@@ -22,7 +22,13 @@ const DeleteConfirmationModal = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal
+      show={show}
+      onHide={isLoading ? null : onHide}
+      backdrop={isLoading ? 'static' : true}
+      keyboard={!isLoading}
+      centered
+    >
       <Modal.Header style={{ border: 'none' }}>
         <Modal.Title
           style={{

@@ -1,8 +1,6 @@
 /**/
 import { React, useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
 import { format } from 'date-fns';
-
 import {
   Typography,
   InputBase,
@@ -17,31 +15,36 @@ import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-
 import { IoMdPersonAdd } from 'react-icons/io';
 
 import CustomSnackbar from '../Base/CustomSnackbar';
+
 import DeleteConfirmationModal from './Childeren/DeleteConfirmationModal';
 import UserRegisterModal from './Childeren/UserRegisterModal';
+
 import handleUserDelete from './Childeren/handleUserDelete';
 import handleUserSearch from './Childeren/handleUserSearch';
-// import handleUserCellEdit from './Childeren/handleUserCellEdit';
-// import UserTypeEditCell from './Childeren/UserTypeEditCell';
+import handleUserEdit from './Childeren/handleUserEdit';
 
 import { userList } from '../../API/user/userList';
-import { userUpdate } from '../../API/user/userUpdate';
 
 const UserList = () => {
-  const [registerShow, setRegisterShow] = useState(false);
-  const [deleteConfirmShow, setDeleteConfirmShow] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editShow, setEditShow] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState([]);
+
+  // const [editShow, setEditShow] = useState(false);
+  // const [selectedUser, setSelectedUser] = useState(null);
+  // const [users, setUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [usersData, setUsersData] = useState({});
   const [searchedUsers, setSearchedUsers] = useState([]);
+
+  const [registerShow, setRegisterShow] = useState(false);
+  const [deleteConfirmShow, setDeleteConfirmShow] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
@@ -61,7 +64,7 @@ const UserList = () => {
     setUserToDelete(null);
   };
 
-  const handleUserDeleteConfirmed = async () => {
+  const handleDeleteConfirmed = async () => {
     if (userToDelete) {
       const success = await handleUserDelete(
         userToDelete?.userId,
@@ -77,10 +80,6 @@ const UserList = () => {
       }
     }
   };
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const handleSnackbarShow = (message, severity) => {
     setSnackbarMessage(message);
@@ -188,55 +187,22 @@ const UserList = () => {
     fetchData();
   }, []);
 
-  const handleUserCellEdit = async (params) => {
-    //유저 Type 수정
-    const { id, field, value } = params;
-    const userToUpdate = allUsers.find((user) => user.id === id);
-    if (!userToUpdate || userToUpdate[field] === value) {
-      return; // Return early if the value is not changed or the user is not found
-    }
-    const req = {
-      userId: userToUpdate.userId,
-      createdAt: userToUpdate.createdAt,
-      updatedAt: userToUpdate.updatedAt, // Set the current date as updatedAt
-      loginAt: userToUpdate.loginAt,
-      password: userToUpdate.password,
-      name: userToUpdate.name,
-      company: userToUpdate.company,
-      jobTitle: userToUpdate.jobTitle,
-      homeAddr: userToUpdate.homeAddr,
-      alarm: userToUpdate.alarm,
-      type: value, // The new value for the "type" field
-    };
-
-    try {
-      // Send a POST request to update the user's information
-      const response = await userUpdate(req);
-      if (response.ok) {
-        // If the update was successful, update the user's information in the state
+  const UserTypeEditCell = ({ id, field, value, api }) => {
+    const handleChange = async (event) => {
+      const newValue = event.target.value;
+      const success = await handleUserEdit(
+        { id, field, value: newValue },
+        handleSnackbarShow
+      );
+      if (success) {
         setAllUsers((prevUsers) =>
           prevUsers.map((user) =>
-            user.id === id ? { ...user, [field]: value } : user
+            user.id === id ? { ...user, [field]: newValue } : user
           )
         );
-        handleSnackbarShow(
-          `${userToUpdate.name}님의 권한이 ${value}로 수정되었습니다. `,
-          'success'
-        );
-      } else {
-        console.log('Failed to update the user information');
+        api.setEditCellValue({ id, field, value: newValue }, event);
       }
-    } catch (error) {
-      console.log('Error updating user information:', error);
-    }
-  };
-
-  const UserTypeEditCell = ({ id, field, value, api }) => {
-    const handleChange = (event) => {
-      api.setEditCellValue({ id, field, value: event.target.value });
-      handleUserCellEdit({ id, field, value: event.target.value });
     };
-
     return (
       <Select value={value} onChange={handleChange} sx={{ width: '140px' }}>
         <MenuItem value="Normal">Normal</MenuItem>
@@ -282,7 +248,7 @@ const UserList = () => {
       <DeleteConfirmationModal
         show={deleteConfirmShow}
         onHide={handleDeleteConfirmClose}
-        onConfirm={handleUserDeleteConfirmed}
+        onConfirm={handleDeleteConfirmed}
         userName={userToDelete?.name}
         userId={userToDelete?.userId}
       />
@@ -364,7 +330,6 @@ const UserList = () => {
           pageSizeOptions={[5, 10, 20]}
           pagination
           autoHeight
-          onEditCellChange={handleUserCellEdit} // Attach the event handler for cell edits
           initialState={{
             pagination: {
               paginationModel: {
