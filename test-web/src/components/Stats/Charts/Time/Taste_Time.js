@@ -2,11 +2,13 @@ import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
 import { statisticTime } from '../../../../API/statistic/statisticTime';
 
-const Taste_Time = ({ startDate, endDate, meatValue }) => {
+const Taste_Time = ({ startDate, endDate, seqnoValue, meatValue }) => {
   const fetchData = async () => {
     try {
-      const response = await statisticTime(startDate, endDate, meatValue); //시계열 api 호출
+      const response = await statisticTime(startDate, endDate, seqnoValue, meatValue);
+      const freshmeat = await statisticTime(startDate, endDate, 1, meatValue) //시계열 api 호출
       const data = await response.json();
+      const freshmeat_data = await freshmeat.json()
 
       // Extract the necessary data from the response
       const deepAgingData = [
@@ -17,10 +19,10 @@ const Taste_Time = ({ startDate, endDate, meatValue }) => {
       ];
 
       const rawMeatData = [
-        parseFloat(data[0].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
-        parseFloat(data[0].toFixed(2)),
-        parseFloat(data[0].toFixed(2)),
-        parseFloat(data[0].toFixed(2)),
+        parseFloat(freshmeat_data[1].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
+        parseFloat(freshmeat_data[1].toFixed(2)),
+        parseFloat(freshmeat_data[1].toFixed(2)),
+        parseFloat(freshmeat_data[1].toFixed(2)),
       ];
 
       // Update the chart data
@@ -41,7 +43,7 @@ const Taste_Time = ({ startDate, endDate, meatValue }) => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, meatValue]);
+  }, [startDate, endDate, meatValue, seqnoValue]);
 
   const [series, setSeries] = useState([
     {

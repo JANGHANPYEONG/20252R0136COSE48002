@@ -62,6 +62,7 @@ const StatsTabs = ({ startDate, endDate }) => {
   const [animalType, setAnimalType] = useState('소');
   const [grade, setGrade] = useState('5');
   const [meatValue, setMeatValue] = useState('등심');
+  const [seqnoValue, setSeqnoValue] = useState(1);
 
   useEffect(() => {
     // console.log('stat tab' + startDate, '-', endDate);
@@ -72,6 +73,9 @@ const StatsTabs = ({ startDate, endDate }) => {
   };
   const handleMeatValueChange = (event) => {
     setMeatValue(event.target.value);
+  };
+  const handleSeqnoValueChange = (event) => {
+    setSeqnoValue(event.target.value);
   };
   const handleFirstChange = (event) => {
     setAlignment(event.target.value);
@@ -115,16 +119,30 @@ const StatsTabs = ({ startDate, endDate }) => {
         </Tabs>
         <Box>
           {value == 3 ? (
-            <Select
-              labelId="meat-value-label"
-              id="meat-value"
-              value={meatValue}
-              onChange={handleMeatValueChange}
-              label="원육, 처리육, 가열육"
-            >
-              <MenuItem value="등심">등심</MenuItem>
-              <MenuItem value="설도">설도</MenuItem>
-            </Select>
+            <>
+              <Select
+                labelId="meat-value-label"
+                id="meat-value"
+                value={meatValue}
+                onChange={handleMeatValueChange}
+                //label="원육, 처리육, 가열육"
+              >
+                <MenuItem value="등심">등심</MenuItem>
+                <MenuItem value="설도">설도</MenuItem>
+              </Select>
+              <Select
+                labelId="seqno-label"
+                id="seqno-value"
+                value={seqnoValue}
+                onChange={handleSeqnoValueChange}
+                //label="원육, 처리육, 가열육"
+              >
+                <MenuItem value="1">1회차</MenuItem>
+                <MenuItem value="2">2회차</MenuItem>
+                <MenuItem value="3">3회차</MenuItem>
+                <MenuItem value="4">4회차</MenuItem>
+              </Select>
+            </>
           ) : (
             <div>
               <Select
@@ -345,6 +363,7 @@ const StatsTabs = ({ startDate, endDate }) => {
         <Taste_Time
           startDate={startDate}
           endDate={endDate}
+          seqnoValue={seqnoValue}
           meatValue={meatValue}
         />
       </CustomTabPanel>

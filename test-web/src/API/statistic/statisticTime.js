@@ -1,8 +1,8 @@
 import { apiIP } from '../../config';
 
-export const statisticTime = async (startDate, endDate, meatValue) => {
+export const statisticTime = async (startDate, endDate, seqnoValue, meatValue) => {
   const response = await fetch(
-    `http://${apiIP}/meat/statistic/time?start=${startDate}&end=${endDate}&meatValue=${meatValue}`
+    `http://${apiIP}/meat/statistic/time?start=${startDate}&end=${endDate}&seqno=${seqnoValue}&meatValue=${meatValue}`
   );
 
   if (!response.ok) {
