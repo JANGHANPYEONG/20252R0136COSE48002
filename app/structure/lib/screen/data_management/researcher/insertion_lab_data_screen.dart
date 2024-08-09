@@ -32,11 +32,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        appBar: CustomAppBar(
-          title: insertionLabDataViewModel.title,
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: CustomAppBar(title: insertionLabDataViewModel.title),
         body: Stack(
           children: [
             SingleChildScrollView(

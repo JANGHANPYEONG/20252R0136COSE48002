@@ -24,11 +24,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         context.watch<ChangePasswordViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '비밀번호 변경',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '비밀번호 변경'),
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [

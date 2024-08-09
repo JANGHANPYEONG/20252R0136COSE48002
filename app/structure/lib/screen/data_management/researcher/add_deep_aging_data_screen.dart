@@ -30,11 +30,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
         context.watch<AddDeepAgingDataViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '딥에이징 데이터',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '딥에이징 데이터'),
       resizeToAvoidBottomInset: false,
       body: GestureDetector(
         onTap: () {

@@ -24,11 +24,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: const CustomAppBar(
-          title: '비밀번호 재설정',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: const CustomAppBar(title: '비밀번호 재설정'),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [

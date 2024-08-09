@@ -40,11 +40,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
         context.watch<MeatRegistrationViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '육류 등록',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '육류 등록'),
       body: Stack(
         children: [
           Container(

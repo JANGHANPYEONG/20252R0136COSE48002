@@ -31,11 +31,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
       // 키보드 unfocus
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: CustomAppBar(
-          title: insertionTongueDataViewModel.title,
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: CustomAppBar(title: insertionTongueDataViewModel.title),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [

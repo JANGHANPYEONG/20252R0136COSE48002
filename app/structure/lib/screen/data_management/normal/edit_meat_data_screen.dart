@@ -22,11 +22,7 @@ class EditMeatDataScreen extends StatelessWidget {
         context.watch<EditMeatDataViewModel>();
 
     return Scaffold(
-      appBar: CustomAppBar(
-        title: '${editMeatDataViewModel.meatModel.meatId}',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: CustomAppBar(title: '${editMeatDataViewModel.meatModel.meatId}'),
       body: Stack(
         children: [
           Container(

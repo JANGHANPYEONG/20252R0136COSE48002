@@ -56,11 +56,7 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: const CustomAppBar(
-          title: '육류 기본정보',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: const CustomAppBar(title: '육류 기본정보'),
         resizeToAvoidBottomInset: false,
         body: Container(
           margin: EdgeInsets.symmetric(horizontal: 40.w),

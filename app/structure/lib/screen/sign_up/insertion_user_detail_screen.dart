@@ -27,11 +27,7 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: const CustomAppBar(
-          title: '회원가입',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: const CustomAppBar(title: '회원가입'),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [

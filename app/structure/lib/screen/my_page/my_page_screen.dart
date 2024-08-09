@@ -20,11 +20,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     UserInfoViewModel userInfoViewModel = context.watch<UserInfoViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '마이페이지',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '마이페이지'),
       body: Container(
         margin: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(
