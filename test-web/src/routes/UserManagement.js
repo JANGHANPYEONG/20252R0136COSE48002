@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserList from '../components/UserManagement/UserList';
+import UserList from '../components/UserManagement/UserMangementField';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 

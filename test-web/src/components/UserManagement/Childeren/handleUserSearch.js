@@ -1,3 +1,5 @@
+/* 유저 검색 함수 */
+/* 유저 이름, 아이디, 권한, 회사, 가입날짜를 검색 시 일치하는 유저를 검색함 */
 const handleUserSearch = (event, allUsers, setSearchedUsers) => {
   const value = event.target.value;
   if (value) {

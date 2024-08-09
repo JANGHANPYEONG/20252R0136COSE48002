@@ -1,3 +1,4 @@
+/** 유저 삭제 확인 모달 */
 import React, { useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 

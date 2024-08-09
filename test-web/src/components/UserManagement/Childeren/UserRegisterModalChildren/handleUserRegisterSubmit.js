@@ -1,3 +1,4 @@
+/** 유저 등록 함수 */
 import {
   getAuth,
   createUserWithEmailAndPassword,

@@ -1,4 +1,5 @@
-/**/
+/*가입된 유저 정보를 표시 및 검색*/
+/*유저 등록, 삭제, 수정 기능 총괄. 관련 컴포넌트, handle 함수와 연결*/
 import { React, useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {

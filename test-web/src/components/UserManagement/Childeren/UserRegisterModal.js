@@ -1,3 +1,5 @@
+/* 유저 등록 모달 */
+/* 유저 등록 및 등록완료확인 모달 표시 처리 */
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import { Button, Spinner, Modal } from 'react-bootstrap';
@@ -12,11 +14,11 @@ const UserRegisterModal = ({ show, onHide }) => {
   const [createdAt, setCreatedAt] = useState(
     new Date().toISOString().slice(0, -5)
   );
-  const [updatedAt, setUpdatedAt] = useState(
-    new Date().toISOString().slice(0, -5)
-  );
-  const [loginAt, setLoginAt] = useState(new Date().toISOString().slice(0, -5));
-  const [password, setPassword] = useState('');
+  // const [updatedAt, setUpdatedAt] = useState(
+  //   new Date().toISOString().slice(0, -5)
+  // );
+  // const [loginAt, setLoginAt] = useState(new Date().toISOString().slice(0, -5));
+  // const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [homeAddr, setHomeAddr] = useState('');

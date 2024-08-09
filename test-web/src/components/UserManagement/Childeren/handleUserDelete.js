@@ -1,3 +1,4 @@
+/** 매니저의 유저 삭제 함수. (탈퇴는 Profile의 deleteSelf) */
 import { getAuth } from 'firebase/auth';
 import { userDelete } from '../../../API/user/userDelete';
 

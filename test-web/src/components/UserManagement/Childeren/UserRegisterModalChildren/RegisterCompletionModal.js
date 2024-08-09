@@ -1,3 +1,4 @@
+/** 유저 등록 확인 모달 */
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 

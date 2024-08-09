@@ -1,7 +1,8 @@
+/** 유저 정보 수정 함수 */
+/** id 해당하는 유저의 field 값으로 들어온 정보를 value로 수정*/
 import { userUpdate } from '../../../API/user/userUpdate';
 
 const handleUserEdit = async (params, handleSnackbarShow) => {
-  //유저 Type 수정
   const { id, field, value } = params;
 
   const req = {
