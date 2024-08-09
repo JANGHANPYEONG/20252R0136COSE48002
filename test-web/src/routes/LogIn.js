@@ -1,5 +1,5 @@
 import LogInField from '../components/LogIn/LogInField';
-import { UserProvider } from '../components/User/UserContext';
+import { UserProvider } from '../components/Base/UserContext';
 
 const LogIn = () => {
   return (

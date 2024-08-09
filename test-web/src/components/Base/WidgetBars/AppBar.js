@@ -1,6 +1,6 @@
 /* 웹 화면 상단의 툴바 컴포넌트 */
 
-/* 기업 로고, 유저 정보 및 로그아웃 정보 표시, 유저 아이콘 클릭 시 프로필 페이지로 이동 */
+/* 기업 로고, 유저 정보 및 로그아웃 아이콘 표시, 유저 아이콘 클릭 시 프로필 페이지로 이동 */
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';

@@ -17,10 +17,6 @@ import home4 from '../src_assets/home4.png';
 import home5 from '../src_assets/home5.png';
 import home6 from '../src_assets/home6.png';
 
-const Alert = React.forwardRef((props, ref) => {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
 const cards = [
   {
     title: '홈',

@@ -14,7 +14,7 @@ import AppBar from './AppBar';
 import Drawer from './Drawer';
 
 const MainWidgetBars = () => {
-  const [open, setOpen] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -45,7 +45,7 @@ const MainWidgetBars = () => {
   const logout = useLogout();
 
   const toggleDrawer = () => {
-    setOpen(!open);
+    setWidgetOpen(!widgetOpen);
   };
 
   const handleSnackbarClose = () => {
@@ -69,14 +69,14 @@ const MainWidgetBars = () => {
   return (
     <ThemeProvider theme={defaultTheme}>
       <AppBar
-        open={open}
+        open={widgetOpen}
         toggleDrawer={toggleDrawer}
         userInfo={userInfo}
         logout={logout}
         drawerWidth={drawerWidth}
       />
       <Drawer
-        open={open}
+        open={widgetOpen}
         toggleDrawer={toggleDrawer}
         location={location}
         handleListItemClick={handleListItemClick}

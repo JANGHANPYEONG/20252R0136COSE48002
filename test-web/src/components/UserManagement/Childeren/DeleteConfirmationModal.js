@@ -1,4 +1,5 @@
-import React from 'react';
+/** 유저 삭제 확인 모달 */
+import React, { useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 
 const navy = '#0F3659';
@@ -10,8 +11,25 @@ const DeleteConfirmationModal = ({
   userName,
   userId,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await onConfirm();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal
+      show={show}
+      onHide={isLoading ? null : onHide}
+      backdrop={isLoading ? 'static' : true}
+      keyboard={!isLoading}
+      centered
+    >
       <Modal.Header style={{ border: 'none' }}>
         <Modal.Title
           style={{
@@ -48,12 +66,13 @@ const DeleteConfirmationModal = ({
           취소
         </Button>
         <Button
-          onClick={onConfirm}
+          onClick={handleConfirm}
           style={{
             background: navy,
           }}
+          disabled={isLoading}
         >
-          확인
+          {isLoading ? <Spinner animation="border" size="sm" /> : '확인'}
         </Button>
       </Modal.Footer>
     </Modal>
