@@ -7,5 +7,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-test-flask/log/app.log
+test-flask/log/*
 test-flask/images/*
