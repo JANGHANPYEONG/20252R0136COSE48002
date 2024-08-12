@@ -12,6 +12,7 @@ const Taste_Time = ({ startDate, endDate, seqnoValue, meatValue }) => {
 
       // Extract the necessary data from the response
       const deepAgingData = [
+        parseFloat(data[0].toFixed(2)), // 0일
         parseFloat(data[1].toFixed(2)), // 3일
         parseFloat(data[2].toFixed(2)), // 7일
         parseFloat(data[3].toFixed(2)), // 14일
@@ -19,6 +20,7 @@ const Taste_Time = ({ startDate, endDate, seqnoValue, meatValue }) => {
       ];
 
       const rawMeatData = [
+        parseFloat(freshmeat_data[1].toFixed(2)), 
         parseFloat(freshmeat_data[1].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
         parseFloat(freshmeat_data[1].toFixed(2)),
         parseFloat(freshmeat_data[1].toFixed(2)),
@@ -94,7 +96,7 @@ const Taste_Time = ({ startDate, endDate, seqnoValue, meatValue }) => {
       size: 1,
     },
     xaxis: {
-      categories: ['3일', '7일', '14일', '21일'],
+      categories: ['0일','3일', '7일', '14일', '21일'],
       title: {
         text: '숙성일',
       },

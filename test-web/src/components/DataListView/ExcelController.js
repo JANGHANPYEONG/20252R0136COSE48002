@@ -180,7 +180,7 @@ const ExcelController = ({ startDate, endDate, specieValue }) => {
         style={{ display: 'none' }}
       />
 
-      <Button
+      {/* <Button
         style={style.importBtnWrapper}
         onClick={() => {
           fileRef.current.click();
@@ -192,7 +192,7 @@ const ExcelController = ({ startDate, endDate, specieValue }) => {
           </SvgIcon>
           <span>Import</span>
         </div>
-      </Button>
+      </Button> */}
 
       {isLoading ? (
         <CircularProgress />
