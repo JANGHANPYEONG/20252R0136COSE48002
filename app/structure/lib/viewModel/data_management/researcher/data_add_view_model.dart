@@ -15,7 +15,8 @@ import 'package:structure/viewModel/data_management/researcher/add_deep_aging_da
 
 class DataAddViewModel with ChangeNotifier {
   MeatModel meatModel;
-  DataAddViewModel(this.meatModel) {
+  BuildContext context;
+  DataAddViewModel(this.meatModel, this.context) {
     _initialize();
   }
 
@@ -56,7 +57,7 @@ class DataAddViewModel with ChangeNotifier {
   }
 
   // 딥에이징 데이터 삭제
-  Future<void> deleteList(BuildContext context, int idx) async {
+  Future<void> deleteList(int idx) async {
     isLoading = true;
     notifyListeners();
 
@@ -86,7 +87,7 @@ class DataAddViewModel with ChangeNotifier {
   /// 딥 에이징 데이터 추가
   ///
   /// AddDeepAgingDataScreen 호출 후 DB에 딥에이징 추가
-  void addDeepAgingData(BuildContext context) {
+  void addDeepAgingData() {
     isLoading = true;
     notifyListeners();
 
@@ -109,17 +110,22 @@ class DataAddViewModel with ChangeNotifier {
   }
 
   /// 원육 데이터 입력 카드 클릭
-  Future<void> clickedRawMeat(BuildContext context) async {
+  Future<void> clickedRawMeat() async {
     meatModel.fromJsonDeepAged(0); // 원육 정보 가져오기
 
     context.go('/home/data-manage-researcher/add/raw-meat');
   }
 
   /// 처리육 데이터 입력 카드 클릭
-  Future<void> clickedProcessedMeat(int idx, BuildContext context) async {
+  Future<void> clickedProcessedMeat(int idx) async {
     // 선택된 회차에 해당하는 딥에이징 데이터 가져오기
     // List builder에서 idx + 1을 한 값을 받아옴
     meatModel.fromJsonDeepAged(idx);
     context.go('/home/data-manage-researcher/add/processed-meat');
+  }
+
+  /// QR 프린트 버튼 클릭
+  void clickedQRButton() {
+    context.go('/home/data-manage-researcher/add/qr-list');
   }
 }

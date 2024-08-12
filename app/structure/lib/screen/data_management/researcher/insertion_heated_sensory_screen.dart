@@ -38,11 +38,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
         context.watch<InsertionHeatedSensoryViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '가열육 관능평가',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '가열육 관능평가'),
       body: Stack(
         children: [
           Container(

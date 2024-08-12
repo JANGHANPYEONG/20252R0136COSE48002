@@ -6,11 +6,8 @@ import 'package:structure/config/palette.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool backButton;
-  final bool closeButton;
   final VoidCallback? backButtonOnPressed;
-  final VoidCallback? closeButtonOnPressed;
   final bool? centerTitle;
-  final double? top;
   final TabController? tabController;
   final List<Tab>? tabs;
   final Widget? actionButton;
@@ -18,12 +15,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
     required this.title,
-    this.backButton = false,
-    this.closeButton = false,
+    this.backButton = true,
     this.backButtonOnPressed,
-    this.closeButtonOnPressed,
     this.centerTitle,
-    this.top,
     this.tabController,
     this.tabs,
     this.actionButton,
@@ -53,29 +47,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           style: Palette.h4Secondary,
         ),
       ),
-      actions: [
-        if (closeButton)
-          Container(
-            margin: EdgeInsets.only(
-              right: 48.w,
-              top: top ?? 40.h,
-            ),
-            child: Row(
-              children: [
-                InkWell(
-                    onTap: closeButtonOnPressed ??
-                        () {
-                          FocusScope.of(context).unfocus();
-                          context.pop();
-                        },
-                    child: const Icon(Icons.arrow_back)),
-              ],
-            ),
-          ),
-
-        // 기타 액션 버튼
-        actionButton ?? Container(),
-      ],
+      actions: [actionButton ?? Container()],
       bottom: tabController != null
           ? TabBar(
               indicatorColor: Palette.primary,

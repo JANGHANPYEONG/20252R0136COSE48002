@@ -20,7 +20,7 @@ class CustomDropdown extends StatefulWidget {
   final String? value;
   final List<String> itemList;
   final bool hasDropdown;
-  final Function(String?)? onChanged;
+  final Function(String?, int)? onChanged;
 
   const CustomDropdown({
     super.key,
@@ -37,6 +37,7 @@ class CustomDropdown extends StatefulWidget {
 
 class _CustomDropdownState extends State<CustomDropdown> {
   final LayerLink _layerLink = LayerLink();
+  ScrollController scrollController = ScrollController();
   OverlayEntry? _overlayEntry;
 
   void _toggleDropdown() {
@@ -74,19 +75,23 @@ class _CustomDropdownState extends State<CustomDropdown> {
               constraints: BoxConstraints(maxHeight: 400.h),
               child: Scrollbar(
                 thumbVisibility: true,
-                child: ListView(
+                controller: scrollController,
+                child: ListView.builder(
+                  controller: scrollController,
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   physics: const ClampingScrollPhysics(),
-                  children: widget.itemList.map((String item) {
+                  itemCount: widget.itemList.length,
+                  itemBuilder: (context, index) {
+                    String item = widget.itemList[index];
                     return ListTile(
                       title: Text(item, style: Palette.h4),
                       onTap: () {
-                        widget.onChanged!(item);
+                        widget.onChanged!(item, index);
                         _toggleDropdown();
                       },
                     );
-                  }).toList(),
+                  },
                 ),
               ),
             ),

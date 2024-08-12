@@ -33,8 +33,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
             mainAddressController.text = result.jibunAddress;
             notifyListeners();
           },
-          appBar: const CustomAppBar(
-              title: '주소검색', backButton: true, closeButton: false),
+          appBar: const CustomAppBar(title: '주소검색'),
         ),
       ),
     );

@@ -25,11 +25,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
         context.watch<DataAddProcessedMeatViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '추가 정보 입력',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '추가 정보 입력'),
       body: ScrollConfiguration(
         behavior: CustomScroll(),
         child: SingleChildScrollView(

@@ -21,11 +21,7 @@ class UserDetailScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: const CustomAppBar(
-          title: '상세정보 변경',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: const CustomAppBar(title: '상세정보 변경'),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
