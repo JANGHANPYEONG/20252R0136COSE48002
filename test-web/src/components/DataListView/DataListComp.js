@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Spinner from 'react-bootstrap/Spinner';
 import DataList from './DataList';
-import Pagination from './Pagination';
+import Pagination from './Children/Pagination';
 import { useMeatList } from '../../API/get/getMeatListSWR';
 import style from './style/datalistcompstyle';
 
