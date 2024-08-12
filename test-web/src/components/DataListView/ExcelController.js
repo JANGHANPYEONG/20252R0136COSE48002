@@ -5,7 +5,7 @@ import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import { Box, Button, SvgIcon, CircularProgress } from '@mui/material';
 import { getDataListJSON, downloadExcel } from './excelExport';
 import { apiIP } from '../../config';
-import ExcelImportAlertModal from './ExcelImportAlertModal';
+import ExcelImportAlertModal from './Children/ExcelImportAlertModal';
 import style from './style/excelcontrollerstyle';
 
 const ExcelController = ({ startDate, endDate, specieValue }) => {
