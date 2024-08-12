@@ -25,13 +25,16 @@ class DataAddScreen extends StatefulWidget {
 class _DataAddScreenState extends State<DataAddScreen> {
   @override
   Widget build(BuildContext context) {
-    DataAddViewModel dataAddHomeViewModel = context.watch<DataAddViewModel>();
+    DataAddViewModel dataAddViewModel = context.watch<DataAddViewModel>();
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: dataAddHomeViewModel.meatModel.meatId!,
-        backButton: true,
-        closeButton: false,
+        title: dataAddViewModel.meatModel.meatId!,
+        actionButton: IconButton(
+          iconSize: 48.w,
+          onPressed: () => dataAddViewModel.clickedQRButton(),
+          icon: const Icon(Icons.qr_code_scanner_rounded),
+        ),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -48,7 +51,7 @@ class _DataAddScreenState extends State<DataAddScreen> {
                   Text('원육', style: Palette.h3),
 
                   // 등록자
-                  Text(dataAddHomeViewModel.userName, style: Palette.h5),
+                  Text(dataAddViewModel.userName, style: Palette.h5),
                 ],
               ),
               SizedBox(height: 16.h),
@@ -58,10 +61,10 @@ class _DataAddScreenState extends State<DataAddScreen> {
                 isRaw: true,
                 deepAgingNum: '',
                 mainText:
-                    '${dataAddHomeViewModel.speciesValue} > ${dataAddHomeViewModel.secondary}',
-                butcheryDate: dataAddHomeViewModel.butcheryDate,
-                completed: dataAddHomeViewModel.meatModel.rawCompleted,
-                onTap: () => dataAddHomeViewModel.clickedRawMeat(context),
+                    '${dataAddViewModel.speciesValue} > ${dataAddViewModel.secondary}',
+                butcheryDate: dataAddViewModel.butcheryDate,
+                completed: dataAddViewModel.meatModel.rawCompleted,
+                onTap: () => dataAddViewModel.clickedRawMeat(),
               ),
               SizedBox(height: 16.h),
 
@@ -79,30 +82,30 @@ class _DataAddScreenState extends State<DataAddScreen> {
                 height: 450.h,
                 // 딥에이징 추가 데이터 입력 (DeepAgingCard 컴포넌트 사용) - 클릭 | 삭제 시 대응되는 함수 호출
                 // index 0은 원육 정보이기 때문에 index + 1 부터 리스트에 표시해야 함
-                child: dataAddHomeViewModel.isLoading
+                child: dataAddViewModel.isLoading
                     ? const Center(child: LoadingScreen())
                     : Scrollbar(
                         thumbVisibility: true,
                         child: ListView.builder(
-                          itemCount: dataAddHomeViewModel
-                                  .meatModel.deepAgingInfo!.length -
-                              1,
+                          itemCount:
+                              dataAddViewModel.meatModel.deepAgingInfo!.length -
+                                  1,
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
                               padding: EdgeInsets.symmetric(vertical: 16.h),
                               child: DeepAgingCard(
                                 deepAgingNum:
-                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회차',
+                                    '${dataAddViewModel.meatModel.deepAgingInfo![index + 1]['seqno']}회차',
                                 mainText:
-                                    '${dataAddHomeViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
-                                butcheryDate: dataAddHomeViewModel.meatModel
+                                    '${dataAddViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
+                                butcheryDate: dataAddViewModel.meatModel
                                     .deepAgingInfo![index + 1]['date'],
                                 // TODO : complete check
                                 completed: false,
-                                onTap: () async => await dataAddHomeViewModel
-                                    .clickedProcessedMeat(index + 1, context),
-                                delete: () async => await dataAddHomeViewModel
-                                    .deleteList(context, index + 1),
+                                onTap: () async => await dataAddViewModel
+                                    .clickedProcessedMeat(index + 1),
+                                delete: () async => await dataAddViewModel
+                                    .deleteList(index + 1),
                               ),
                             );
                           },
@@ -117,7 +120,7 @@ class _DataAddScreenState extends State<DataAddScreen> {
                 height: 136.h,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20.r),
-                  onTap: () => dataAddHomeViewModel.addDeepAgingData(context),
+                  onTap: () => dataAddViewModel.addDeepAgingData(),
                   child: DottedBorder(
                     radius: Radius.circular(20.r),
                     borderType: BorderType.RRect,
@@ -146,7 +149,7 @@ class _DataAddScreenState extends State<DataAddScreen> {
 
                   // 처리 횟수 / 처리 시간
                   Text(
-                    dataAddHomeViewModel.total,
+                    dataAddViewModel.total,
                     textAlign: TextAlign.center,
                     style: Palette.h3.copyWith(color: Palette.primary),
                   ),

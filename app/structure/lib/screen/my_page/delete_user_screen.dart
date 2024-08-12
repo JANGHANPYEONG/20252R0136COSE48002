@@ -24,11 +24,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
         context.watch<DeleteUserViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '회원 탈퇴',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '회원 탈퇴'),
       body: Stack(
         children: [
           GestureDetector(

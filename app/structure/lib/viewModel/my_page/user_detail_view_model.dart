@@ -50,8 +50,7 @@ class UserDetailViewModel with ChangeNotifier {
       context,
       MaterialPageRoute(
         builder: (_) => KpostalView(
-          appBar: const CustomAppBar(
-              title: '주소검색', backButton: true, closeButton: false),
+          appBar: const CustomAppBar(title: '주소검색'),
           useLocalServer: false,
           callback: (Kpostal result) {
             mainAddress.text = result.jibunAddress;

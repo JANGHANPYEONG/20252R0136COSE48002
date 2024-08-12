@@ -44,11 +44,7 @@ class _SensoryEvalNotEditableScreenState
         context.watch<SensoryEvalNotEditableViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '원육 관능평가',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '원육 관능평가'),
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 40.w),

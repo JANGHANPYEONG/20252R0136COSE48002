@@ -21,11 +21,7 @@ class MeatImageNotEditableScreen extends StatelessWidget {
         context.watch<InsertionMeatImageNotEditableViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '원육 단면 촬영',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '원육 단면 촬영'),
       body: Container(
         margin: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(

@@ -41,11 +41,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        backButton: true,
-        closeButton: false,
-        title: '회원가입',
-      ),
+      appBar: const CustomAppBar(title: '회원가입'),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Stack(

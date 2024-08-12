@@ -21,6 +21,7 @@ import 'package:structure/screen/data_management/researcher/insertion_heated_sen
 import 'package:structure/screen/data_management/researcher/insertion_heated_sensory_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_lab_data_screen.dart';
 import 'package:structure/screen/data_management/researcher/insertion_tongue_data_screen.dart';
+import 'package:structure/screen/data_management/researcher/printer_screen.dart';
 import 'package:structure/screen/home_screen.dart';
 import 'package:structure/screen/meat_registration/camera_screen.dart';
 import 'package:structure/screen/meat_registration/creation_management_num_fail_screen.dart';
@@ -53,6 +54,7 @@ import 'package:structure/viewModel/data_management/researcher/insertion_heated_
 import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_lab_data_view_model.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_tongue_data_view_model.dart';
+import 'package:structure/viewModel/data_management/researcher/printer_view_model.dart';
 import 'package:structure/viewModel/home_view_model.dart';
 import 'package:structure/viewModel/meat_registration/camera_view_model.dart';
 import 'package:structure/viewModel/meat_registration/creation_management_num_view_model.dart.dart';
@@ -326,10 +328,18 @@ class UserRouter {
                 GoRoute(
                   path: 'add',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => DataAddViewModel(meatModel),
+                    create: (context) => DataAddViewModel(meatModel, context),
                     child: const DataAddScreen(),
                   ),
                   routes: [
+                    GoRoute(
+                      path: 'qr-list',
+                      builder: (context, state) => ChangeNotifierProvider(
+                        create: (context) =>
+                            PrinterViewModel(meatModel, context),
+                        child: const PrinterScreen(),
+                      ),
+                    ),
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(

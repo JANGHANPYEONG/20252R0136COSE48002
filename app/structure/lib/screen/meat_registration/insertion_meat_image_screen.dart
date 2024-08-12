@@ -27,8 +27,6 @@ class InsertionMeatImageScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: insertionMeatImageViewModel.title,
-        backButton: true,
-        closeButton: false,
         backButtonOnPressed:
             insertionMeatImageViewModel.backBtnPressed(context),
       ),

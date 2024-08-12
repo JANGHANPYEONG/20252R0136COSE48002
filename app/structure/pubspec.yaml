@@ -35,7 +35,7 @@ dependencies:
     flutter_dotenv: ^5.1.0
     camera: ^0.11.0+1
     syncfusion_flutter_core: ^26.1.42
-    flutter_bluetooth_printer: ^2.16.10
+    flutter_blue_plus: ^1.32.11
 
 dev_dependencies:
     flutter_test:

@@ -36,11 +36,7 @@ class _DataManagementNormalScreenState
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: const CustomAppBar(
-          title: '데이터 관리',
-          backButton: true,
-          closeButton: false,
-        ),
+        appBar: const CustomAppBar(title: '데이터 관리'),
         body: Stack(
           children: [
             SingleChildScrollView(

@@ -33,7 +33,6 @@ class _InsertionHeatedSensoryAddScreenState
       appBar: const CustomAppBar(
         title: 'Tenderness 연도 추가 입력',
         backButton: true,
-        closeButton: false,
       ),
       body: Stack(
         children: [

@@ -50,8 +50,6 @@ class _InsertionSensoryEvalScreenState extends State<InsertionSensoryEvalScreen>
     return Scaffold(
       appBar: CustomAppBar(
         title: insertionSeosnryEvalViewModel.title,
-        backButton: true,
-        closeButton: false,
         backButtonOnPressed:
             insertionSeosnryEvalViewModel.backBtnPressed(context),
       ),

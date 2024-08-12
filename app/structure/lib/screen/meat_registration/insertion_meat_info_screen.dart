@@ -32,8 +32,6 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
       child: Scaffold(
         appBar: CustomAppBar(
             title: '육류 기본정보',
-            backButton: true,
-            closeButton: false,
             backButtonOnPressed:
                 insertionMeatInfoViewModel.backBtnPressed(context)),
         resizeToAvoidBottomInset: false,
@@ -109,7 +107,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                 value: insertionMeatInfoViewModel.primalValue,
                 itemList: insertionMeatInfoViewModel.largeDiv,
                 onChanged: insertionMeatInfoViewModel.isSelectedSpecies
-                    ? (value) {
+                    ? (value, _) {
                         insertionMeatInfoViewModel.primalValue =
                             value as String;
                         insertionMeatInfoViewModel.setPrimal();
@@ -125,7 +123,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
                 value: insertionMeatInfoViewModel.secondaryValue,
                 itemList: insertionMeatInfoViewModel.litteDiv,
                 onChanged: insertionMeatInfoViewModel.isSelectedPrimal
-                    ? (value) {
+                    ? (value, _) {
                         insertionMeatInfoViewModel.secondaryValue =
                             value as String;
                         insertionMeatInfoViewModel.setSecondary();
