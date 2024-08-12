@@ -320,7 +320,11 @@ class MeatModel with ChangeNotifier {
       'heatedmeatSensoryData': {
         'flavor': heatedSensoryEval?['flavor'],
         'juiciness': heatedSensoryEval?['juiciness'],
-        'tenderness': heatedSensoryEval?['tenderness'],
+        'tenderness0': heatedSensoryEval?['tenderness0'],
+        'tenderness3': heatedSensoryEval?['tenderness3'],
+        'tenderness7': heatedSensoryEval?['tenderness7'],
+        'tenderness14': heatedSensoryEval?['tenderness14'],
+        'tenderness21': heatedSensoryEval?['tenderness21'],
         'umami': heatedSensoryEval?['umami'],
         'palatability': heatedSensoryEval?['palatability'],
       }
@@ -579,7 +583,11 @@ class MeatModel with ChangeNotifier {
     heatedSensoryCompleted = (heatedSensoryEval != null &&
         heatedSensoryEval!['flavor'] != null &&
         heatedSensoryEval!['juiciness'] != null &&
-        heatedSensoryEval!['tenderness'] != null &&
+        heatedSensoryEval!['tenderness0'] != null &&
+        heatedSensoryEval!['tenderness3'] != null &&
+        heatedSensoryEval!['tenderness7'] != null &&
+        heatedSensoryEval!['tenderness14'] != null &&
+        heatedSensoryEval!['tenderness21'] != null &&
         heatedSensoryEval!['umami'] != null &&
         heatedSensoryEval!['palatability'] != null);
 

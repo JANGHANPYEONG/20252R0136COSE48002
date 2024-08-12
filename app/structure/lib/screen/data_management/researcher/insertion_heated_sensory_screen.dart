@@ -76,7 +76,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
 
                 PartEval(
                   selectedText: text[2],
-                  value: insertionHeatedSensoryViewModel.tenderness,
+                  value: insertionHeatedSensoryViewModel.tenderness0,
                   onChanged: (value) => insertionHeatedSensoryViewModel
                       .onChangedTenderness(value),
                 ),
