@@ -4,8 +4,7 @@ import DataList from './DataList';
 import Spinner from 'react-bootstrap/Spinner';
 import Pagination from './Children/Pagination';
 import { useRejectedMeatList } from '../../API/get/getRejectedMeatListSWR';
-
-const navy = '#0F3659';
+import style from './style/rejecteddatalistcompstyle';
 
 // 반려 데이터 목록 컴포넌트
 const RejectedDataListComp = ({
@@ -128,39 +127,3 @@ const RejectedDataListComp = ({
 };
 
 export default RejectedDataListComp;
-
-const style = {
-  listContainer: {
-    textAlign: 'center',
-    width: '100%',
-    paddingRight: '0px',
-    paddingBottom: '0',
-    height: 'auto',
-  },
-  paginationBar: {
-    marginTop: '40px',
-    width: '100%',
-    justifyContent: 'center',
-  },
-  deletBtnContainer: {
-    display: 'flex',
-    margin: '20px 0',
-    padding: '0px 100px',
-    width: '100%',
-    justifyContent: 'start',
-  },
-  deleteBtn: {
-    backgroundColor: 'transparent',
-    color: navy,
-    fontWeight: '600',
-  },
-  formControl: {
-    minWidth: 120,
-    marginLeft: '20px',
-  },
-  paginationContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-};
