@@ -5,7 +5,6 @@ import {
   Box,
   Divider,
   Link,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +18,7 @@ import {
 import { FaRegTrashAlt } from 'react-icons/fa';
 import DelWarningModal from './DelWarningModal';
 import PropTypes from 'prop-types';
+import OrderStatus from './Children/OrderStatus';
 
 //데이터 목록 컴포넌트
 const DataList = ({
@@ -31,6 +31,99 @@ const DataList = ({
   endDate, // 조회 종료 날짜
   pageOffset, // 현재 페이지 offset
 }) => {
+    // 테이블 헤더
+    const OrderTableHead = ({ order, orderBy }) => {
+      return (
+        <TableHead>
+          {
+            // 반려함 탭일 경우 전체 선택 테이블 헤더 추가
+            pageProp === 'reject' && (
+              <TableRow
+                style={{
+                  padding: '0px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  key={'checkbox'}
+                  align="center"
+                  padding="none"
+                  style={{
+                    padding: '0px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Checkbox
+                    checked={checkItems.length === meatList.length ? true : false}
+                    label="전체선택"
+                    labelPlacement="top"
+                    onChange={(e) => handleAllCheck(e.target.checked)}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                    style={style.tableDelHeader}
+                  />
+                  <span style={{ fontSize: '12px', fontWeight: '600' }}>
+                    전체선택 &#40;{checkItems.length}/{totalPages}&#41;
+                  </span>
+                </div>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  variant="middle"
+                  style={{
+                    background: 'black',
+                    width: '2px',
+                    margin: '7px 10px',
+                  }}
+                />
+                <div style={{ padding: '0px' }}>
+                  <Button
+                    onClick={handleTableHeaderDeleteBtn}
+                    style={style.tableDelHeader}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: '600' }}>
+                      선택삭제
+                    </span>
+                  </Button>
+                </div>
+              </TableRow>
+            )
+          }
+          <TableRow>
+            {
+              // 반려함 탭인 경우 전체 선택 테이블 셀 추가
+              pageProp === 'reject' && (
+                <TableCell
+                  key={'checkbox'}
+                  align="center"
+                  padding="none"
+                  style={{}}
+                ></TableCell>
+              )
+            }
+            {headCells.map((headCell) => (
+              <TableCell
+                key={headCell.meatId}
+                align={headCell.align}
+                padding={headCell.disablePadding ? 'none' : 'none'} // normal
+                sortDirection={orderBy === headCell.meatId ? order : false}
+              >
+                <div key={headCell.meatId} style={style.tableHeader}>
+                  {headCell.label}
+                </div>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+      );
+    };
+  
+    OrderTableHead.propTypes = {
+      order: PropTypes.string,
+      orderBy: PropTypes.string,
+    };
   // 삭제 클릭 여부
   const [isDelClick, setIsDelClick] = useState(false);
   // 삭제할 아이템 배열 관리
@@ -74,99 +167,6 @@ const DataList = ({
       // 체크 해제한 경우 배열을 []로 설정
       setCheckItems([]);
     }
-  };
-  // 테이블 헤더
-  const OrderTableHead = ({ order, orderBy }) => {
-    return (
-      <TableHead>
-        {
-          // 반려함 탭일 경우 전체 선택 테이블 헤더 추가
-          pageProp === 'reject' && (
-            <TableRow
-              style={{
-                padding: '0px',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <div
-                key={'checkbox'}
-                align="center"
-                padding="none"
-                style={{
-                  padding: '0px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Checkbox
-                  checked={checkItems.length === meatList.length ? true : false}
-                  label="전체선택"
-                  labelPlacement="top"
-                  onChange={(e) => handleAllCheck(e.target.checked)}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                  style={style.tableDelHeader}
-                />
-                <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                  전체선택 &#40;{checkItems.length}/{totalPages}&#41;
-                </span>
-              </div>
-              <Divider
-                orientation="vertical"
-                flexItem
-                variant="middle"
-                style={{
-                  background: 'black',
-                  width: '2px',
-                  margin: '7px 10px',
-                }}
-              />
-              <div style={{ padding: '0px' }}>
-                <Button
-                  onClick={handleTableHeaderDeleteBtn}
-                  style={style.tableDelHeader}
-                >
-                  <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                    선택삭제
-                  </span>
-                </Button>
-              </div>
-            </TableRow>
-          )
-        }
-        <TableRow>
-          {
-            // 반려함 탭인 경우 전체 선택 테이블 셀 추가
-            pageProp === 'reject' && (
-              <TableCell
-                key={'checkbox'}
-                align="center"
-                padding="none"
-                style={{}}
-              ></TableCell>
-            )
-          }
-          {headCells.map((headCell) => (
-            <TableCell
-              key={headCell.meatId}
-              align={headCell.align}
-              padding={headCell.disablePadding ? 'none' : 'none'} // normal
-              sortDirection={orderBy === headCell.meatId ? order : false}
-            >
-              <div key={headCell.meatId} style={style.tableHeader}>
-                {headCell.label}
-              </div>
-            </TableCell>
-          ))}
-        </TableRow>
-      </TableHead>
-    );
-  };
-
-  OrderTableHead.propTypes = {
-    order: PropTypes.string,
-    orderBy: PropTypes.string,
   };
 
   // 테이블 바디
@@ -411,59 +411,3 @@ const headCells = [
     label: '삭제',
   },
 ];
-
-//테이블 상태 컴포넌트
-const OrderStatus = ({ status }) => {
-  let color;
-  let title;
-  let backgroundColor;
-
-  switch (status) {
-    case 0:
-      backgroundColor = '#ffcdd2';
-      color = '#e53935';
-      title = '반려';
-      break;
-    case 1:
-      backgroundColor = '#b9f6ca';
-      color = '#00e676';
-      title = '승인';
-      break;
-    case 2:
-      backgroundColor = '#bcaaa4';
-      color = '#5d4037';
-      title = '대기';
-      break;
-    default:
-      color = 'primary';
-      title = 'None';
-  }
-
-  return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Button
-        style={{
-          backgroundColor: backgroundColor,
-          height: '30px',
-          width: '35px',
-          borderRadius: '10px',
-        }}
-      >
-        <span
-          style={{
-            color: color,
-            fontSize: '15px',
-            fontWeight: '600',
-            padding: '5px',
-          }}
-        >
-          {title}
-        </span>
-      </Button>
-    </Stack>
-  );
-};
-
-OrderStatus.propTypes = {
-  status: PropTypes.number,
-};
