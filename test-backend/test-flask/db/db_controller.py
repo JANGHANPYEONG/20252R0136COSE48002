@@ -426,6 +426,11 @@ def create_specific_heatedmeat_seonsory_eval(
     try:
         sensory_data = data["heatedmeatSensoryData"]
         sensory_data["filmedAt"] = data["filmedAt"]
+        sensory_data["tenderness"] = {}
+        for key in ["0", "3", "7", "14", "21"]:
+                if sensory_data[f"tenderness{key}"] is not None:
+                    sensory_data["tenderness"] = {**sensory_data["tenderness"], **{key: sensory_data[f"tenderness{key}"]}}
+                del sensory_data[f"tenderness{key}"]
         existed_sensory_data = get_HeatedmeatSensoryEval(db_session, id, seqno)
 
         if existed_sensory_data: # 수정
@@ -438,7 +443,6 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             sensory_data["period"] = existed_sensory_data["period"]
-            sensory_data["tenderness"] = {**existed_sensory_data["tenderness"], **sensory_data["tenderness"]}
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             # db_session.merge(new_sensory_data)
 
@@ -630,6 +634,13 @@ def get_HeatedmeatSensoryEval(db_session, id, seqno):
     )
     if heated_meat_data:
         heated_meat = to_dict(heated_meat_data)
+        tender = heated_meat["tenderness"]
+        for key in ["0", "3", "7", "14", "21"]:
+            if key in tender.keys():
+                heated_meat[f"tenderness{key}"] = tender[key]
+            else:
+                heated_meat[f"tenderness{key}"] = None
+        del heated_meat["tenderness"]
         heated_meat["meatId"] = heated_meat.pop("id")
         heated_meat["filmedAt"] = convert2string(heated_meat["filmedAt"], 1)
         heated_meat["createdAt"] = convert2string(heated_meat["createdAt"], 1)
