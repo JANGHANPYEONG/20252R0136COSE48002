@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
-import { deleteMeat } from '../../API/delete/deleteMeat';
+import { deleteMeat } from '../../../API/delete/deleteMeat';
 const navy = '#0F3659';
 
 // 삭제 경고창 컴포넌트

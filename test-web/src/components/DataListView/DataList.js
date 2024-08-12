@@ -1,178 +1,67 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-// material-ui
 import {
   Box,
-  Divider,
   Link,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Button,
   Checkbox,
   IconButton,
 } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
-import DelWarningModal from './DelWarningModal';
-import PropTypes from 'prop-types';
+import DelWarningModal from './Children/DelWarningModal';
+import OrderTableHead from './Children/OrderTableHead'; // 분리된 컴포넌트 임포트
 import OrderStatus from './Children/OrderStatus';
+import style from './style/dataliststyle';
+import headCells from './constants/headCells';
 
-//데이터 목록 컴포넌트
 const DataList = ({
-  meatList, // 육류 목록 데이터
-  pageProp, // 페이지 종류
-  offset, // 현재 페이지 offset
-  count, // 한 페이지 당 보여줄 육류 데이터 개수
-  totalPages, // 전체 페이지 개수
-  startDate, // 조회 시작 날짜
-  endDate, // 조회 종료 날짜
-  pageOffset, // 현재 페이지 offset
+  meatList,
+  pageProp,
+  offset,
+  count,
+  totalPages,
+  startDate,
+  endDate,
+  pageOffset,
 }) => {
-    // 테이블 헤더
-    const OrderTableHead = ({ order, orderBy }) => {
-      return (
-        <TableHead>
-          {
-            // 반려함 탭일 경우 전체 선택 테이블 헤더 추가
-            pageProp === 'reject' && (
-              <TableRow
-                style={{
-                  padding: '0px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <div
-                  key={'checkbox'}
-                  align="center"
-                  padding="none"
-                  style={{
-                    padding: '0px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Checkbox
-                    checked={checkItems.length === meatList.length ? true : false}
-                    label="전체선택"
-                    labelPlacement="top"
-                    onChange={(e) => handleAllCheck(e.target.checked)}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                    style={style.tableDelHeader}
-                  />
-                  <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                    전체선택 &#40;{checkItems.length}/{totalPages}&#41;
-                  </span>
-                </div>
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  variant="middle"
-                  style={{
-                    background: 'black',
-                    width: '2px',
-                    margin: '7px 10px',
-                  }}
-                />
-                <div style={{ padding: '0px' }}>
-                  <Button
-                    onClick={handleTableHeaderDeleteBtn}
-                    style={style.tableDelHeader}
-                  >
-                    <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                      선택삭제
-                    </span>
-                  </Button>
-                </div>
-              </TableRow>
-            )
-          }
-          <TableRow>
-            {
-              // 반려함 탭인 경우 전체 선택 테이블 셀 추가
-              pageProp === 'reject' && (
-                <TableCell
-                  key={'checkbox'}
-                  align="center"
-                  padding="none"
-                  style={{}}
-                ></TableCell>
-              )
-            }
-            {headCells.map((headCell) => (
-              <TableCell
-                key={headCell.meatId}
-                align={headCell.align}
-                padding={headCell.disablePadding ? 'none' : 'none'} // normal
-                sortDirection={orderBy === headCell.meatId ? order : false}
-              >
-                <div key={headCell.meatId} style={style.tableHeader}>
-                  {headCell.label}
-                </div>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-      );
-    };
-  
-    OrderTableHead.propTypes = {
-      order: PropTypes.string,
-      orderBy: PropTypes.string,
-    };
-  // 삭제 클릭 여부
   const [isDelClick, setIsDelClick] = useState(false);
-  // 삭제할 아이템 배열 관리
   const [checkItems, setCheckItems] = useState([]);
+  const [selected] = useState([]);
+  const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
-  // 테이블 셀에 있는 '휴지통 아이콘'삭제 버튼 클릭 시
   const handleTableCellDelete = (id) => {
-    // 삭제할 id를 배열로 만듦
     let idArr = [];
     idArr.push(id);
     setCheckItems(idArr);
     setIsDelClick(true);
   };
 
-  // 테이블 헤더의 '선택 삭제'버튼 클릭 시
   const handleTableHeaderDeleteBtn = () => {
     setIsDelClick(true);
   };
 
-  // 체크박스 단일 개체 선택
   const handleSingleCheck = (checked, id) => {
-    // 삭제할 id를 배열로 만듦
     if (checked) {
-      // 체크한 경우 배열에 추가
       setCheckItems([...checkItems, id]);
     } else {
-      // 체크 해제한 경우 배열에서 삭제
       setCheckItems(checkItems.filter((el) => el !== id));
     }
   };
 
-  // 체크박스 전체 선택
   const handleAllCheck = (checked) => {
-    // 삭제할 id를 배열로 만듦
     if (checked) {
-      // 체크한 경우 전체 id를 배열에 추가
       const idArray = [];
       meatList.forEach((el) => idArray.push(el.meatId));
       setCheckItems(idArray);
     } else {
-      // 체크 해제한 경우 배열을 []로 설정
       setCheckItems([]);
     }
   };
 
-  // 테이블 바디
-  const [selected] = useState([]);
-
-  const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
   return (
     <Box
@@ -199,7 +88,17 @@ const DataList = ({
             '& .MuiTableCell-root:last-of-type': { pr: 3 },
           }}
         >
-          <OrderTableHead />
+          <OrderTableHead
+            pageProp={pageProp}
+            order="asc"
+            orderBy="trackingNo"
+            headCells={headCells}
+            meatList={meatList}
+            checkItems={checkItems}
+            totalPages={totalPages}
+            handleAllCheck={handleAllCheck}
+            handleTableHeaderDeleteBtn={handleTableHeaderDeleteBtn}
+          />
 
           <TableBody>
             {meatList.map((content, index) => {
@@ -215,24 +114,19 @@ const DataList = ({
                   key={index}
                   selected={isItemSelected}
                 >
-                  {
-                    //반려함이나 예측 페이지인 경우 삭제 체크박스 추가
-                    pageProp === 'reject' && (
-                      <TableCell style={style.tableCell}>
-                        <Checkbox
-                          value={content.meatId}
-                          key={content.meatId}
-                          checked={
-                            checkItems.includes(content.meatId) ? true : false
-                          }
-                          onChange={(e) =>
-                            handleSingleCheck(e.target.checked, content.meatId)
-                          }
-                          inputProps={{ 'aria-label': 'controlled' }}
-                        />
-                      </TableCell>
-                    )
-                  }
+                  {pageProp === 'reject' && (
+                    <TableCell style={style.tableCell}>
+                      <Checkbox
+                        value={content.meatId}
+                        key={content.meatId}
+                        checked={checkItems.includes(content.meatId)}
+                        onChange={(e) =>
+                          handleSingleCheck(e.target.checked, content.meatId)
+                        }
+                        inputProps={{ 'aria-label': 'controlled' }}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell
                     component="th"
                     id={labelId}
@@ -313,101 +207,17 @@ const DataList = ({
           </TableBody>
         </Table>
       </TableContainer>
-      {
-        // 테이블 삭제 버튼이 클릭된 경우
-        isDelClick && (
-          <DelWarningModal
-            idArr={checkItems}
-            setIsDelClick={setIsDelClick}
-            pageOffset={pageOffset}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        )
-      }
+      {isDelClick && (
+        <DelWarningModal
+          idArr={checkItems}
+          setIsDelClick={setIsDelClick}
+          pageOffset={pageOffset}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      )}
     </Box>
   );
 };
 
 export default DataList;
-
-const style = {
-  tableDelHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '6px',
-    fontWeight: '600',
-    color: 'black',
-  },
-  tableHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '6px',
-    fontWeight: '600',
-    color: '#90a4ae',
-  },
-  tableCell: {
-    align: 'left',
-    fontSize: '17px',
-    fontWeight: '600',
-    padding: '5px',
-  },
-};
-
-// 테이블 헤더 CELL
-const headCells = [
-  {
-    id: 'trackingNo',
-    align: 'center',
-    disablePadding: false,
-    label: 'No.',
-  },
-  {
-    id: 'meatId',
-    align: 'center',
-    disablePadding: true,
-    label: '관리번호',
-  },
-  {
-    id: 'farmAddr',
-    align: 'center',
-    disablePadding: true,
-    label: '농장주소',
-  },
-  {
-    id: 'userName',
-    align: 'center',
-    disablePadding: true,
-    label: '등록인',
-  },
-  {
-    id: 'userType',
-    align: 'center',
-    disablePadding: true,
-    label: '등록인 타입',
-  },
-  {
-    id: 'company',
-    align: 'center',
-    disablePadding: true,
-    label: '소속',
-  },
-  {
-    id: 'createdAt',
-    align: 'center',
-    disablePadding: true,
-    label: '생성 날짜',
-  },
-  {
-    id: 'accept',
-    align: 'center',
-    disablePadding: false,
-    label: '승인 여부',
-  },
-  {
-    id: 'delete',
-    align: 'center',
-    disablePadding: false,
-    label: '삭제',
-  },
-];

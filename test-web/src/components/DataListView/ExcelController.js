@@ -5,9 +5,8 @@ import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import { Box, Button, SvgIcon, CircularProgress } from '@mui/material';
 import { getDataListJSON, downloadExcel } from './excelExport';
 import { apiIP } from '../../config';
-import ExcelImportAlertModal from './ExcelImportAlertModal';
-
-const navy = '#0F3659';
+import ExcelImportAlertModal from './Children/ExcelImportAlertModal';
+import style from './style/excelcontrollerstyle';
 
 const ExcelController = ({ startDate, endDate, specieValue }) => {
   // 엑셀 업로드 성공 여부
@@ -216,20 +215,4 @@ const ExcelController = ({ startDate, endDate, specieValue }) => {
 
 export default ExcelController;
 
-const style = {
-  importBtnWrapper: {
-    color: navy,
-    marginRight: '10px',
-    backgroundColor: 'white',
-    border: `1px solid ${navy}`,
-    height: '35px',
-    borderRadius: '10px',
-  },
-  exportBtnWrapper: {
-    color: navy,
-    backgroundColor: 'white',
-    border: `1px solid ${navy}`,
-    height: '35px',
-    borderRadius: '10px',
-  },
-};
+
