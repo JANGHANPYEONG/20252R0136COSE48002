@@ -4,6 +4,7 @@ import DataList from './DataList';
 import Pagination from './Children/Pagination';
 import Spinner from 'react-bootstrap/Spinner';
 import {usePredictedMeatList} from '../../API/get/getPredictedMeatListSWR';
+import style from './style/padatalistcompstyle';
 
 // 데이터 예측 페이지 목록 컴포넌트
 const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
@@ -139,28 +140,3 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
 
 export default PADataListComp;
 
-const style = {
-  listContainer: {
-    textAlign: 'center',
-    width: '100%',
-    paddingRight: '0px',
-    paddingBottom: '0',
-    height: 'auto',
-    minWidth: '640px',
-  },
-  paginationBar: {
-    marginTop: '40px',
-    width: '100%',
-    justifyContent: 'center',
-  },
-  paginationContainer: {
-    display: 'flex',
-    justifyContent: 'right',
-    alignItems: 'center',
-    minWidth: '640px',
-  },
-  formControl: {
-    minWidth: 120,
-    marginLeft: '20px',
-  },
-};
