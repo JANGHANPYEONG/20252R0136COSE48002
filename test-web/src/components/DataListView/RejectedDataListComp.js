@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DataList from './DataList';
 import Spinner from 'react-bootstrap/Spinner';
-import Pagination from './Pagination';
+import Pagination from './Children/Pagination';
 import { useRejectedMeatList } from '../../API/get/getRejectedMeatListSWR';
 
 const navy = '#0F3659';
