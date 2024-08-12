@@ -1,4 +1,5 @@
-#! /bin/bash
+#!/bin/bash
+export DEBIAN_FRONTEND=noninteractive
 
 # check user count 서비스 파일 등록
 sudo tee /etc/systemd/system/check-user-count.service > /dev/null <<EOL
