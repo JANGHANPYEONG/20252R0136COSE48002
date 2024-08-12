@@ -12,7 +12,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
-import DelWarningModal from './DelWarningModal';
+import DelWarningModal from './Children/DelWarningModal';
 import OrderTableHead from './Children/OrderTableHead'; // 분리된 컴포넌트 임포트
 import OrderStatus from './Children/OrderStatus';
 import style from './style/dataliststyle';
