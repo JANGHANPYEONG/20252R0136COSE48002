@@ -65,6 +65,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   /// 관능평가 연도 데이터 할당
   void onChangedTenderness(dynamic value) {
     tenderness0 = double.parse(value.toStringAsFixed(1));
+    print(tenderness0);
     notifyListeners();
   }
 

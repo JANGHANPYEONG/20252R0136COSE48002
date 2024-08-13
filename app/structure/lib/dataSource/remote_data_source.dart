@@ -212,7 +212,6 @@ class RemoteDataSource {
   }
 
   /// 유저 정보 조회 (GET)
-  // TODO : 삭제
   static Future<dynamic> getUserInfo(String userId) async {
     dynamic response = await _getApi('user/get?userId=$userId');
     return response;

@@ -27,7 +27,6 @@ class UserInfoViewModel with ChangeNotifier {
     userName = userModel.name ?? '-';
     userType = userModel.type ?? '-';
     createdAt = Usefuls.parseDate(userModel.createdAt);
-
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');
       if (index != -1 && userModel.homeAdress!.substring(0, index).isNotEmpty) {
