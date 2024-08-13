@@ -41,11 +41,11 @@ const HeatTable = ({
         <TableBody>
           {heatedField.map((f, idx) => {
             return (
-              <TableRow key={'heated-' + idx}>
+              <TableRow key={'heated-' + idx} >
                 <TableCell key={'heated-' + idx + 'col1'}>
                   {heatedDBFieldToSemanticWord[f]}
                 </TableCell>
-                <TableCell key={'heated-' + idx + 'col2'}>
+                <TableCell key={'heated-' + idx + 'col2'} >
                   {edited ? (
                     <input
                       key={'heated-' + idx + 'input'}
@@ -70,7 +70,7 @@ const HeatTable = ({
                   Array.from(
                     { length: len },
                     (_, arr_idx) => (
-                      <TableCell key={'heated-' + arr_idx + '-col' + arr_idx}>
+                      <TableCell key={'heated-' + arr_idx + '-col' + arr_idx} >
                         {edited ? (
                           <input
                             key={'heated-' + arr_idx + '-input'}
@@ -109,14 +109,22 @@ export default HeatTable;
 const heatedField = [
   'flavor',
   'juiciness',
-  'tenderness',
   'umami',
   'palatability',
+  'tenderness0',
+  'tenderness3',
+  'tenderness7',
+  'tenderness14',
+  'tenderness21',
 ];
 const heatedDBFieldToSemanticWord = {
   flavor: '풍미',
   juiciness: '육즙',
-  tenderness: '연도',
   umami: '감칠맛',
   palatability: '기호도',
+  tenderness0: '연도(0)',
+  tenderness3: '연도(3)',
+  tenderness7: '연도(7)',
+  tenderness14: '연도(14)',
+  tenderness21: '연도(21)',
 };

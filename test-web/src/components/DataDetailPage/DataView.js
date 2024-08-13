@@ -155,15 +155,23 @@ const DataView = ({ dataProps }) => {
           heated_data[i]?.flavor,
           heated_data[i]?.juiciness,
           heated_data[i]?.palatability,
-          heated_data[i]?.tenderness,
           heated_data[i]?.umami,
+          heated_data[i]?.tenderness0,
+          heated_data[i]?.tenderness3,
+          heated_data[i]?.tenderness7,
+          heated_data[i]?.tenderness14,
+          heated_data[i]?.tenderness21,
         ],
         [
           heatInput[i]?.flavor,
           heatInput[i]?.juiciness,
           heatInput[i]?.palatability,
-          heatInput[i]?.tenderness,
           heatInput[i]?.umami,
+          heatInput[i]?.tenderness0,
+          heatInput[i]?.tenderness3,
+          heatInput[i]?.tenderness7,
+          heatInput[i]?.tenderness14,
+          heatInput[i]?.tenderness21,
         ],
         isHeatedPosted[i]
       );
@@ -745,9 +753,13 @@ const deepAgingField = [
 const heatedField = [
   'flavor',
   'juiciness',
-  'tenderness',
   'umami',
   'palatability',
+  'tenderness0',
+  'tenderness3',
+  'tenderness7',
+  'tenderness14',
+  'tenderness21',
 ];
 const labField = [
   'L',

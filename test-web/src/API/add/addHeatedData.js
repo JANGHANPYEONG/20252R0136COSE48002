@@ -11,9 +11,13 @@ export const addHeatedData = async (
   const dataset = {
     ['flavor']: parseFloat(data.flavor),
     ['juiciness']: parseFloat(data.juiciness),
-    ['tenderness']: parseFloat(data.tenderness),
     ['umami']: parseFloat(data.umami),
     ['palatability']: parseFloat(data.palatability),
+    ['tenderness0']: parseFloat(data.tenderness0),
+    ['tenderness3']: parseFloat(data.tenderness3),
+    ['tenderness7']: parseFloat(data.tenderness7),
+    ['tenderness14']: parseFloat(data.tenderness14),
+    ['tenderness21']: parseFloat(data.tenderness21),
   };
   //request body에 보낼 데이터 가공
   let req = {
