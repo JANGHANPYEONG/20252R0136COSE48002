@@ -85,7 +85,11 @@ class MeatModel with ChangeNotifier {
   /// <br /> double flavor
   /// <br /> double juiciness
   /// <br /> double palatability
-  /// <br /> double tenderness
+  /// <br /> double tenderness0
+  /// <br /> double tenderness3
+  /// <br /> double tenderness7
+  /// <br /> double tenderness14
+  /// <br /> double tenderness21
   /// <br /> double umami
   Map<String, dynamic>? heatedSensoryEval;
   // 이미지 신규 추가 여부
@@ -174,7 +178,7 @@ class MeatModel with ChangeNotifier {
 
   /// 가열육 관능평가 완료 여부
   ///
-  /// flavor, juiciness, tenderness, umami, palatability
+  /// flavor, juiciness, tenderness0, umami, palatability
   bool heatedSensoryCompleted = false;
 
   /// 가열육 전자혀 데이터 등록 완료 여부

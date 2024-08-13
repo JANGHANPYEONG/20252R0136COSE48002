@@ -5,6 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -17,6 +18,7 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   bool isLoading = false;
+  // late BuildContext _context;
   int? seqNo = 0;
 
   //날짜
@@ -31,14 +33,19 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
   //연도 기본 값
-  double tenderness3 = 1;
-  double tenderness7 = 1;
-  double tenderness14 = 1;
-  double tenderness21 = 1;
+  double tenderness3 = 1.0;
+  double tenderness7 = 1.0;
+  double tenderness14 = 1.0;
+  double tenderness21 = 1.0;
 
   void _initialize() {
     seqNo = meatModel.seqno;
     processCreatedAt = meatModel.deepAgingCreatedAt!;
+    tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
+    tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
+    tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;
+    tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1.0;
+
     calculateDiff();
     checkTenderness();
     checkDateBool();
@@ -109,25 +116,27 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   Future<void> saveData(BuildContext context) async {
-    bool isPost = false;
-    if (meatModel.heatedSensoryEval == null) {
-      isPost = true;
-      meatModel.heatedSensoryEval = {};
-      meatModel.heatedSensoryEval!['meatId'] = meatModel;
-      meatModel.heatedSensoryEval!['seqno'] = meatModel.seqno;
-      meatModel.heatedSensoryEval!['userId'] = userModel.userId;
-    }
-
     meatModel.heatedSensoryEval!['tenderness3'] = tenderness3;
     meatModel.heatedSensoryEval!['tenderness7'] = tenderness7;
     meatModel.heatedSensoryEval!['tenderness14'] = tenderness14;
     meatModel.heatedSensoryEval!['tenderness21'] = tenderness21;
 
-    // try{
-    //   dynamic response;
-    //   if(isPost){
-    //     response = await RemoteDataSource.createMeatData(dest, jsonData)
-    //   }
-    // }
+    try {
+      dynamic response;
+      response = await RemoteDataSource.patchMeatData(
+          'heatedmeat-eval', meatModel.toJsonHeatedSensory());
+      if (response == 200) {
+        meatModel.updateHeatedSeonsory();
+        // _context = context;
+      } else {
+        throw ErrorDescription(response);
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context);
+    }
+    meatModel.checkCompleted();
+    isLoading = false;
+    notifyListeners();
   }
 }
