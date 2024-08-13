@@ -1,14 +1,14 @@
-name: App CI
+name: App Deployment
 
 on:
   push:
     branches:
-      - feature/app
+      - main
     paths:
       - "app/**"
   pull_request:
     branches:
-      - feature/app
+      - main
     paths:
       - "app/**"
 
@@ -96,16 +96,28 @@ jobs:
           echo "$google-service" > google-services.json
           cd ../../../../
 
-      - name: Install dependencies
+      - name: Build APK
         run: |
-          cd app
-          flutter pub get
+          cd app/structure
+          flutter build apk
 
-      - name: Check Format Issue
-        run: flutter format --set-exit-if-changed .
+      - name: Upload Generated APK to Artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-apk
+          path: app/structure/build/app/outputs/apk/release/app-release.apk
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-      - name: Analyze Code Error
-        run: flutter analyze .
-
-      - name: Run Widget Test
-        run: flutter test
+      - name: Upload APK to S3
+        run: |
+          aws s3 cp app/structure/build/app/outputs/flutter-apk/app-release.apk s3://${{ secrets.FLUTTER_S3_BUCKET_NAME }}/app-release-${{ github.sha }}.apk
+          
+      - name: Create download URL
+        run: |
+          echo "Download URL: https://${{ secrets.FLUTTER_S3_BUCKET_NAME }}.s3.amazonaws.com/app-release-${{ github.sha }}.apk" >> $GITHUB_STEP_SUMMARY

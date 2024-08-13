@@ -21,6 +21,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create .env file with secrets
+        run: |
+          cd test-web
+          echo "SKIP_PREFLIGHT_CHECK=$SKIP_PREFLIGHT_CHECK" >> .env
+          echo "REACT_APP_SERVER_API=$REACT_APP_SERVER_API" >> .env
+          echo "REACT_APP_SERVER_PORT=$REACT_APP_SERVER_PORT" >> .env
+          echo "REACT_APP_PORT=$REACT_APP_PORT" >> .env
+          echo "REACT_APP_API_KEY=$REACT_APP_API_KEY" >> .env
+          echo "REACT_APP_AUTH_DOMAIN=$REACT_APP_AUTH_DOMAIN" >> .env
+          echo "REACT_APP_PROJECT_ID=$REACT_APP_PROJECT_ID" >> .env
+          echo "REACT_APP_STORAGE_BUCKET=$REACT_APP_STORAGE_BUCKET" >> .env
+          echo "REACT_APP_MESSAGING_SENDER_ID=$REACT_APP_MESSAGING_SENDER_ID" >> .env
+          echo "REACT_APP_APP_ID=$REACT_APP_APP_ID" >> .env
+          echo "REACT_APP_MEASUREMENT_ID=$REACT_APP_MEASUREMENT_ID" >> .env
+          cd ../
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Dependency by Caching node modules
+        uses: actions/cache@v3
+        with:
+          path: test-web/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('test-web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Build
+        run: |
+          cd test-web
+          npm run build
+          echo 'Build Success!'
+
       - name: Deploy to S3
         env:
             AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
