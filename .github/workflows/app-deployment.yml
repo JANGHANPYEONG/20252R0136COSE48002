@@ -5,12 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "app/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "app/**"
+      - app/**
 
 env:
   API_URL: ${{secrets.API_URL}}
