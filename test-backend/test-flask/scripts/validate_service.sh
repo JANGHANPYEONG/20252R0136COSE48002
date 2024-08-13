@@ -1,5 +1,7 @@
-#! /bin/bash
+#!/bin/bash
 set -e
+
+export DEBIAN_FRONTEND=noninteractive
 
 # Send a request to the application and check for a response
 curl -f http://localhost:8080 || exit 1

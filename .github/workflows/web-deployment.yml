@@ -1,0 +1,31 @@
+name: Web Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - test-web/**
+
+env:
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  S3_REGION_NAME: ${{secrets.S3_REGION_NAME}}
+  REACT_APP_BUCKET_NAME: ${{secrets.REACT_APP_BUCKET_NAME}}
+
+jobs:
+  web-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to S3
+        env:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_REGION: ap-northeast-2
+        run: |
+          cd test-web
+          aws s3 sync build/ s3://$REACT_APP_BUCKET_NAME --delete

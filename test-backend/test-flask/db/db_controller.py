@@ -847,8 +847,8 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            time = convert2datetime(user.createdAt, 1)
-            user.createdAt = convert2string(time, 0)
+            # time = convert2datetime(user.createdAt, 1)
+            user.createdAt = convert2string(user.createdAt, 0)
         
         db_session.close()
         return users
@@ -861,8 +861,8 @@ def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
-            time = convert2datetime(user_data.createdAt, 1)
-            user_data.createdAt = convert2string(time, 0)
+            # time = convert2datetime(user_data.createdAt, 1)
+            user_data.createdAt = convert2string(user_data.createdAt, 0)
         
         db_session.close()
         return user_data
@@ -1424,35 +1424,6 @@ def get_num_of_processed_raw(db_session, start, end):
     except Exception as e:
         db_session.close()
         raise Exception("Something Wrong with DB" + str(e))
-
-
-def get_num_of_cattle_pig(db_session, start, end):
-    # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-
-    cow_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .count()
-    )
-    pig_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .count()
-    )
-    db_session.close()
-    return jsonify({"cattle_count": cow_count, "pig_count": pig_count}), 200
 
 
 def get_num_of_primal_part(db_session, start, end):
