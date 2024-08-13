@@ -64,3 +64,4 @@ const apiDBFieldToSemanticWord = {
   statusType: '데이터승인',
   traceNum: 'traceNum',
 };
+

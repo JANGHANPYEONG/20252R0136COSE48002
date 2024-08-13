@@ -244,3 +244,5 @@ const deepAgingDBFieldToSemanticWord = {
   minute: '딥에이징 시간(분)',
   period: 'period',
 };
+
+

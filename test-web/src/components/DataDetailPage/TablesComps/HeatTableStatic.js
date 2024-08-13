@@ -78,3 +78,4 @@ const heatedDBFieldToSemanticWord = {
   umami: '감칠맛',
   palatability: '기호도',
 };
+
