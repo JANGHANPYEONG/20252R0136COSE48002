@@ -1,15 +1,14 @@
 import React from 'react';
 import { Select, MenuItem } from '@mui/material';
-import handleUserEdit from './handleUserEdit';
 
 const UserTypeEditCell = ({
-  id,
-  field,
-  value,
-  api,
+  userCellProps,
   setAllUsers,
+  handleUserEdit,
   handleSnackbarShow,
 }) => {
+  const { id, field, value, api } = userCellProps;
+
   const handleChange = async (event) => {
     const newValue = event.target.value;
     const success = await handleUserEdit(

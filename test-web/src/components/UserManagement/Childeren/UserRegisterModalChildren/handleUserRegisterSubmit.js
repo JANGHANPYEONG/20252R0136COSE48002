@@ -12,7 +12,7 @@ const handleUserRegisterSubmit = async (submitData) => {
     setValidated,
     isFormValid,
     setIsLoading,
-    setCreatedAt,
+    // setCreatedAt,
     userId,
     name,
     company,
@@ -70,12 +70,15 @@ const handleUserRegisterSubmit = async (submitData) => {
           userId,
           tempPassword
         );
-        await sendPasswordResetEmail(auth, userId);
-
+        if (user) {
+          await sendPasswordResetEmail(auth, userId);
+        } else {
+          console.error('User registration failed in firebase');
+        }
         console.log('User registered successfully');
         setShowCompletionModal(true);
       } else {
-        console.error('User registration failed');
+        console.error('User registration API failed');
         // Add additional error handling or notifications as needed
       }
     } catch (error) {

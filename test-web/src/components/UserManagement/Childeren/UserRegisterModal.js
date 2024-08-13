@@ -11,9 +11,9 @@ import RegisterCompletionModal from './UserRegisterModalChildren/RegisterComplet
 const UserRegisterModal = ({ show, onHide }) => {
   const [userId, setUserId] = useState('');
   const [name, setName] = useState('');
-  const [createdAt, setCreatedAt] = useState(
-    new Date().toISOString().slice(0, -5)
-  );
+  // const [createdAt, setCreatedAt] = useState(
+  //   new Date().toISOString().slice(0, -5)
+  // );
   // const [updatedAt, setUpdatedAt] = useState(
   //   new Date().toISOString().slice(0, -5)
   // );
@@ -94,7 +94,7 @@ const UserRegisterModal = ({ show, onHide }) => {
     setValidated,
     isFormValid,
     setIsLoading,
-    setCreatedAt,
+    // setCreatedAt,
     userId,
     name,
     company,

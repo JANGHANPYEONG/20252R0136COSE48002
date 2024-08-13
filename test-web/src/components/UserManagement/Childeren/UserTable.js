@@ -2,7 +2,8 @@ import React from 'react';
 import { format } from 'date-fns';
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import UserTypeEditCell from './UserTypeEditCell';
+import UserTypeEditCell from './UserTableChildren/UserTypeEditCell';
+import handleUserEdit from './UserTableChildren/handleUserEdit';
 
 const UserTable = (
   handleDeleteConfirmShow,
@@ -15,16 +16,22 @@ const UserTable = (
     field: 'type',
     headerName: '권한',
     width: 200,
-    renderCell: (params) => (
-      <UserTypeEditCell
-        id={params.id}
-        field={params.field}
-        value={params.value}
-        api={params.api}
-        setAllUsers={setAllUsers}
-        handleSnackbarShow={handleSnackbarShow}
-      />
-    ),
+    renderCell: (params) => {
+      const userCellProps = {
+        id: params.id,
+        field: params.field,
+        value: params.value,
+        api: params.api,
+      };
+      return (
+        <UserTypeEditCell
+          userCellProps={userCellProps}
+          setAllUsers={setAllUsers}
+          handleUserEdit={handleUserEdit}
+          handleSnackbarShow={handleSnackbarShow}
+        />
+      );
+    },
   },
   { field: 'company', headerName: '회사', width: 120 },
   {

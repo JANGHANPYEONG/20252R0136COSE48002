@@ -31,7 +31,7 @@ const UserList = () => {
   // const [selectedUser, setSelectedUser] = useState(null);
   // const [users, setUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [usersData, setUsersData] = useState({});
+  // const [usersData, setUsersData] = useState({});
   const [searchedUsers, setSearchedUsers] = useState([]);
 
   const [registerShow, setRegisterShow] = useState(false);
@@ -110,9 +110,10 @@ const UserList = () => {
         const usersWithTransformedType = usersData.map((user) => ({
           ...user,
           type: transformType(user.type),
+          id: user.userId,
         }));
 
-        setUsersData(usersWithTransformedType);
+        setAllUsers(usersWithTransformedType);
 
         const usersWithAdditionalData = usersWithTransformedType.map(
           (user) => ({
