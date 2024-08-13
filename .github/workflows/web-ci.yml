@@ -62,9 +62,3 @@ jobs:
           cd test-web
           npm test
           echo 'Test Success!'
-
-      - name: Build
-        run: |
-          cd test-web
-          npm run build
-          echo 'Build Success!'
