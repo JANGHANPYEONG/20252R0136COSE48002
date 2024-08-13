@@ -121,3 +121,4 @@ const deepAgingDBFieldToSemanticWord = {
   overall: '기호도',
   xai_gradeNum: '예상등급',
 };
+

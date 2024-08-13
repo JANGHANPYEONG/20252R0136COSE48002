@@ -101,3 +101,4 @@ const deepAgingDBFieldToSemanticWord = {
   surfaceMoisture: '표면육즙',
   overall: '기호도',
 };
+

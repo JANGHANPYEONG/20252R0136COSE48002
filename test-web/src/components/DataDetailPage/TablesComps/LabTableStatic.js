@@ -100,3 +100,4 @@ const labDBFieldToSemanticWord = {
   richness: '후미',
   collagen: '콜라겐',
 };
+
