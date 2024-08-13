@@ -100,3 +100,4 @@ const QRInfoCard = ({
 };
 
 export default QRInfoCard;
+
