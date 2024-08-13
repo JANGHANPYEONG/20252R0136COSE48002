@@ -1,20 +1,15 @@
 /*가입된 유저 정보를 표시 및 검색*/
 /*유저 등록, 삭제, 수정 기능 총괄. 관련 컴포넌트, handle 함수와 연결*/
 import { React, useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import {
   Typography,
   InputBase,
-  Select,
-  MenuItem,
   Toolbar,
   Box,
-  IconButton,
   CircularProgress,
 } from '@mui/material';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { DataGrid } from '@mui/x-data-grid';
-import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { IoMdPersonAdd } from 'react-icons/io';
 
@@ -25,9 +20,9 @@ import UserRegisterModal from './Childeren/UserRegisterModal';
 
 import handleUserDelete from './Childeren/handleUserDelete';
 import handleUserSearch from './Childeren/handleUserSearch';
-import handleUserEdit from './Childeren/handleUserEdit';
 
 import { userList } from '../../API/user/userList';
+import UserTable from './Childeren/UserTable';
 
 const UserList = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +31,7 @@ const UserList = () => {
   // const [selectedUser, setSelectedUser] = useState(null);
   // const [users, setUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [usersData, setUsersData] = useState({});
+  // const [usersData, setUsersData] = useState({});
   const [searchedUsers, setSearchedUsers] = useState([]);
 
   const [registerShow, setRegisterShow] = useState(false);
@@ -92,56 +87,6 @@ const UserList = () => {
     setSnackbarOpen(false);
   };
 
-  const renderTooltip = (props) => (
-    <Tooltip id="button-tooltip" {...props}>
-      신규 회원 등록
-    </Tooltip>
-  );
-
-  const columns = [
-    { field: 'name', headerName: '이름', width: 100 },
-    { field: 'userId', headerName: '아이디', width: 250 },
-    {
-      field: 'type',
-      headerName: '권한',
-      width: 200,
-      renderCell: (params) => (
-        <UserTypeEditCell
-          id={params.id}
-          field={params.field}
-          value={params.value}
-          api={params.api}
-        />
-      ),
-    },
-    { field: 'company', headerName: '회사', width: 120 },
-    {
-      field: 'createdAt',
-      headerName: '회원가입 날짜',
-      width: 240,
-      renderCell: (params) => {
-        const createdAt = params.row.createdAt;
-        if (createdAt) {
-          const parsedDate = new Date(createdAt);
-          return format(parsedDate, 'y년 M월 d일 a h시 m분');
-        }
-        return '';
-      },
-    },
-    {
-      field: 'actions',
-      headerName: '',
-      width: 120,
-      renderCell: (params) => (
-        <div>
-          <IconButton onClick={() => handleDeleteConfirmShow(params.row)}>
-            <DeleteIcon />
-          </IconButton>
-        </div>
-      ),
-    },
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -165,9 +110,10 @@ const UserList = () => {
         const usersWithTransformedType = usersData.map((user) => ({
           ...user,
           type: transformType(user.type),
+          id: user.userId,
         }));
 
-        setUsersData(usersWithTransformedType);
+        setAllUsers(usersWithTransformedType);
 
         const usersWithAdditionalData = usersWithTransformedType.map(
           (user) => ({
@@ -187,31 +133,6 @@ const UserList = () => {
 
     fetchData();
   }, []);
-
-  const UserTypeEditCell = ({ id, field, value, api }) => {
-    const handleChange = async (event) => {
-      const newValue = event.target.value;
-      const success = await handleUserEdit(
-        { id, field, value: newValue },
-        handleSnackbarShow
-      );
-      if (success) {
-        setAllUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === id ? { ...user, [field]: newValue } : user
-          )
-        );
-        api.setEditCellValue({ id, field, value: newValue }, event);
-      }
-    };
-    return (
-      <Select value={value} onChange={handleChange} sx={{ width: '140px' }}>
-        <MenuItem value="Normal">Normal</MenuItem>
-        <MenuItem value="Researcher">Researcher</MenuItem>
-        <MenuItem value="Manager">Manager</MenuItem>
-      </Select>
-    );
-  };
 
   return (
     <div
@@ -295,7 +216,7 @@ const UserList = () => {
           <OverlayTrigger
             placement="top"
             delay={{ show: 250, hide: 400 }}
-            overlay={renderTooltip}
+            overlay={<Tooltip id="button-tooltip">신규 회원 등록</Tooltip>}
           >
             <Button
               className="mb-3"
@@ -322,7 +243,11 @@ const UserList = () => {
       ) : (
         <DataGrid
           rows={searchedUsers.length > 0 ? searchedUsers : allUsers}
-          columns={columns.map((column) =>
+          columns={UserTable(
+            handleDeleteConfirmShow,
+            setAllUsers,
+            handleSnackbarShow
+          ).map((column) =>
             column.field === 'type'
               ? { ...column, editable: true } // Enable editing for the "type" field
               : column

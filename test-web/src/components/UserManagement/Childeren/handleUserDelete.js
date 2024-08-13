@@ -1,10 +1,10 @@
 /** 매니저의 유저 삭제 함수. (탈퇴는 Profile의 deleteSelf) */
-import { getAuth } from 'firebase/auth';
+// import { getAuth } from 'firebase/auth';
 import { userDelete } from '../../../API/user/userDelete';
 
 const handleUserDelete = async (userId, UserInfo, handleSnackbarShow) => {
   try {
-    const auth = getAuth();
+    // const auth = getAuth();
     if (!UserInfo.userId) {
       handleSnackbarShow('로그인이 필요합니다.', 'error');
       return;
