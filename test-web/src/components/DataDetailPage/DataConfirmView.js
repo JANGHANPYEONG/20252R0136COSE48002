@@ -11,7 +11,7 @@ import InputTransitionsModal from './InputTransitionsModal';
 // import tables
 import RawTable from './TablesComps/RawTable';
 import ProcessedTable from './TablesComps/ProcessedTable';
-import HeatTable from './TablesComps/HeatTable';
+import HeatTable from './TablesComps/arbitaryname';
 import LabTable from './TablesComps/LabTable';
 import ApiTable from './TablesComps/ApiTable';
 // import timezone
