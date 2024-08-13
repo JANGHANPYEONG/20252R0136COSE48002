@@ -51,7 +51,7 @@ const handleUserRegisterSubmit = async (submitData) => {
   if (isFormValid()) {
     setIsLoading(true);
     try {
-      setCreatedAt(new Date().toISOString().slice(0, -5));
+      // setCreatedAt(new Date().toISOString().slice(0, -5));
       const req = {
         userId: userId,
         name: name,
