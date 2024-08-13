@@ -12,7 +12,7 @@ import { TextField, Autocomplete } from '@mui/material';
 // import tables
 import RawTable from './TablesComps/RawTable';
 import ProcessedTable from './TablesComps/ProcessedTable';
-import HeatTable from './TablesComps/arbitaryname';
+import HeatTable from './TablesComps/HeatTable';
 import LabTable from './TablesComps/LabTable';
 import ApiTable from './TablesComps/ApiTable';
 // import timezone
@@ -56,7 +56,6 @@ const DataView = ({ dataProps }) => {
     processed_date,
   } = dataProps;
 
-
   // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
   // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
   // console.log(`1회차 실험육 데이터: ${JSON.stringify(lab_data[1])}`);
@@ -99,7 +98,6 @@ const DataView = ({ dataProps }) => {
   const [isProcessedPosted, setIsProcessedPosted] = useState({});
   const [isLabPosted, setIsLabPosted] = useState({});
   const [isHeatedPosted, setIsHeatedPosted] = useState({});
-  
 
   const handleInfoRegisterShow = () => setInfoRegisterShow(true);
   const handleInfoRegisterClose = () => setInfoRegisterShow(false);
@@ -448,7 +446,7 @@ const DataView = ({ dataProps }) => {
           </Modal.Title>
           <AgingInfoRegister
             handleClose={handleInfoRegisterClose}
-            processed_data_seq = {processed_data_seq}
+            processed_data_seq={processed_data_seq}
             meatId={meatId}
           />
         </Modal.Body>
