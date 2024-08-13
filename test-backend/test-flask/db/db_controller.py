@@ -837,7 +837,7 @@ def get_all_user(db_session):
         users = db_session.query(User).all()
         for user in users:
             # time = convert2datetime(user.createdAt, 1)
-            user.createdAt = convert2string(user.createdAt, 0)
+            user.createdAt = convert2string(user.createdAt, 1)
         
         db_session.close()
         return users
@@ -851,7 +851,7 @@ def get_user(db_session, user_id):
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
             # time = convert2datetime(user_data.createdAt, 1)
-            user_data.createdAt = convert2string(user_data.createdAt, 0)
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
         
         db_session.close()
         return user_data
