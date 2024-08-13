@@ -49,8 +49,6 @@ app.*.map.json
 # Printer SDK
 /android/app/src/main/jniLibs/arm64-v8a/*.so
 
-# Firebase
-/lib/firebase_options.dart
 
 # dotenv
 .env

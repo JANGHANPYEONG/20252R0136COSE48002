@@ -5,6 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
@@ -30,20 +31,16 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
   //연도 기본 값
-  double tenderness = 1;
+  double tenderness3 = 1;
+  double tenderness7 = 1;
+  double tenderness14 = 1;
+  double tenderness21 = 1;
 
   void _initialize() {
     seqNo = meatModel.seqno;
-    print(meatModel.deepAgingInfo);
-    print(seqNo);
     processCreatedAt = meatModel.deepAgingCreatedAt!;
-    print(processCreatedAt);
-    print("길이 : ${meatModel.deepAgingInfo!.length}");
-    print("1111");
     calculateDiff();
-    print("22222");
     checkTenderness();
-    print("333333");
     checkDateBool();
     notifyListeners();
   }
@@ -89,5 +86,48 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     print("ddd");
     print(checkDate);
     notifyListeners();
+  }
+
+  void onChangedTenderness3(dynamic value) {
+    tenderness3 = double.parse(value.toStringAsFixed(1));
+    notifyListeners();
+  }
+
+  void onChangedTenderness7(dynamic value) {
+    tenderness7 = double.parse(value.toStringAsFixed(1));
+    notifyListeners();
+  }
+
+  void onChangedTenderness14(dynamic value) {
+    tenderness14 = double.parse(value.toStringAsFixed(1));
+    notifyListeners();
+  }
+
+  void onChangedTenderness21(dynamic value) {
+    tenderness21 = double.parse(value.toStringAsFixed(1));
+    notifyListeners();
+  }
+
+  Future<void> saveData(BuildContext context) async {
+    bool isPost = false;
+    if (meatModel.heatedSensoryEval == null) {
+      isPost = true;
+      meatModel.heatedSensoryEval = {};
+      meatModel.heatedSensoryEval!['meatId'] = meatModel;
+      meatModel.heatedSensoryEval!['seqno'] = meatModel.seqno;
+      meatModel.heatedSensoryEval!['userId'] = userModel.userId;
+    }
+
+    meatModel.heatedSensoryEval!['tenderness3'] = tenderness3;
+    meatModel.heatedSensoryEval!['tenderness7'] = tenderness7;
+    meatModel.heatedSensoryEval!['tenderness14'] = tenderness14;
+    meatModel.heatedSensoryEval!['tenderness21'] = tenderness21;
+
+    // try{
+    //   dynamic response;
+    //   if(isPost){
+    //     response = await RemoteDataSource.createMeatData(dest, jsonData)
+    //   }
+    // }
   }
 }

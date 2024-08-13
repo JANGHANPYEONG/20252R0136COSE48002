@@ -58,8 +58,10 @@ class _InsertionHeatedSensoryAddScreenState
                                         selectedText: text,
                                         value:
                                             insertionHeatedSensoryAddViewModel
-                                                .tenderness,
-                                        onChanged: null,
+                                                .tenderness3,
+                                        onChanged: (value) =>
+                                            insertionHeatedSensoryAddViewModel
+                                                .onChangedTenderness3(value),
                                       ),
                                       SizedBox(height: 16.h),
                                     ],
@@ -78,8 +80,10 @@ class _InsertionHeatedSensoryAddScreenState
                                         selectedText: text,
                                         value:
                                             insertionHeatedSensoryAddViewModel
-                                                .tenderness,
-                                        onChanged: null,
+                                                .tenderness7,
+                                        onChanged: (value) =>
+                                            insertionHeatedSensoryAddViewModel
+                                                .onChangedTenderness7(value),
                                       ),
                                       SizedBox(height: 16.h),
                                     ],
@@ -98,8 +102,10 @@ class _InsertionHeatedSensoryAddScreenState
                                         selectedText: text,
                                         value:
                                             insertionHeatedSensoryAddViewModel
-                                                .tenderness,
-                                        onChanged: null,
+                                                .tenderness14,
+                                        onChanged: (value) =>
+                                            insertionHeatedSensoryAddViewModel
+                                                .onChangedTenderness14(value),
                                       ),
                                       SizedBox(height: 16.h),
                                     ],
@@ -118,8 +124,10 @@ class _InsertionHeatedSensoryAddScreenState
                                         selectedText: text,
                                         value:
                                             insertionHeatedSensoryAddViewModel
-                                                .tenderness,
-                                        onChanged: null,
+                                                .tenderness21,
+                                        onChanged: (value) =>
+                                            insertionHeatedSensoryAddViewModel
+                                                .onChangedTenderness21(value),
                                       ),
                                       SizedBox(height: 16.h),
                                     ],
