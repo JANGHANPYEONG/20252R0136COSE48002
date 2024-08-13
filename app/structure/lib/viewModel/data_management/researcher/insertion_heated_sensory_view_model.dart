@@ -25,10 +25,10 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   double flavor = 1;
   double juiciness = 1;
   double tenderness0 = 1;
-  double tenderness3 = 1;
-  double tenderness7 = 1;
-  double tenderness14 = 1;
-  double tenderness21 = 1;
+  // double tenderness3 = 1;
+  // double tenderness7 = 1;
+  // double tenderness14 = 1;
+  // double tenderness21 = 1;
 
   double umami = 1;
   double palatability = 1;
@@ -37,17 +37,14 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   void _initialize() {
     flavor = meatModel.heatedSensoryEval?['flavor'] ?? 1;
     juiciness = meatModel.heatedSensoryEval?['juiciness'] ?? 1;
+    // tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1;
+    // tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1;
+    // tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1;
+    // tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1;
     tenderness0 = meatModel.heatedSensoryEval?['tenderness0'] ?? 1;
-    tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1;
-    tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1;
-    tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1;
-    tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1;
     umami = meatModel.heatedSensoryEval?['umami'] ?? 1;
     palatability = meatModel.heatedSensoryEval?['palatability'] ?? 1;
-
     notifyListeners();
-    print("meatmodelllll");
-    print(meatModel);
   }
 
   /// 관능평가 풍미 데이터 할당
@@ -65,7 +62,6 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   /// 관능평가 연도 데이터 할당
   void onChangedTenderness(dynamic value) {
     tenderness0 = double.parse(value.toStringAsFixed(1));
-    print(tenderness0);
     notifyListeners();
   }
 
