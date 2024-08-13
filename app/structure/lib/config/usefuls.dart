@@ -47,6 +47,14 @@ class Usefuls {
     return '$year.$month.$day';
   }
 
+  /// date 형식을 yyyy.MM.dd -> yyyyMMdd로 변환하는 함수
+  static String dotDateToDate(String dotDate) {
+    String year = dotDate.substring(0, 4);
+    String month = dotDate.substring(5, 7);
+    String day = dotDate.substring(8, 10);
+    return '$year$month$day';
+  }
+
   /// yyyy-MM-ddThh:mm:ss 형식의 날짜를 yyyy.MM.dd 형식으로 파싱
   static String parseDate(String? inputDate) {
     if (inputDate == null) return '-';

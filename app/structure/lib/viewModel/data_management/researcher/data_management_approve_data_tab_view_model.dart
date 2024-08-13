@@ -190,7 +190,11 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
     filteredList.sort((a, b) {
       DateTime dateA = DateTime.parse(a['createdAt']!);
       DateTime dateB = DateTime.parse(b['createdAt']!);
-      return dateB.compareTo(dateA);
+      if (sortSelectedIdx == 1) {
+        return dateA.compareTo(dateB);
+      } else {
+        return dateB.compareTo(dateA);
+      }
     });
     selectedList = filteredList;
   }

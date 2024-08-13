@@ -18,7 +18,7 @@ import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 
 class DeepAgingCard extends StatelessWidget {
   final bool isRaw;

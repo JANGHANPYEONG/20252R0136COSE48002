@@ -12,6 +12,7 @@ import 'package:structure/components/data_title.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_view_model.dart';
 
 class InsertionHeatedSensoryScreen extends StatefulWidget {
@@ -75,7 +76,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
 
                 PartEval(
                   selectedText: text[2],
-                  value: insertionHeatedSensoryViewModel.tenderness,
+                  value: insertionHeatedSensoryViewModel.tenderness0,
                   onChanged: (value) => insertionHeatedSensoryViewModel
                       .onChangedTenderness(value),
                 ),

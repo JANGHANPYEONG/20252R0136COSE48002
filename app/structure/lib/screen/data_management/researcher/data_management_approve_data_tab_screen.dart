@@ -16,7 +16,7 @@ import 'package:structure/components/list_card.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_text_field.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/viewModel/data_management/researcher/data_management_approve_data_tab_view_model.dart';
 
 class DataManagementApproveDataTabScreen extends StatefulWidget {
