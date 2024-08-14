@@ -6,7 +6,7 @@ import 'package:syncfusion_flutter_core/theme.dart';
 
 class PartEval extends StatelessWidget {
   final int? idx;
-  final double value;
+  final num value;
   final List<String>? selectedText;
   final Function(dynamic value)? onChanged;
 

@@ -33,10 +33,10 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
   //연도 기본 값
-  double tenderness3 = 1.0;
-  double tenderness7 = 1.0;
-  double tenderness14 = 1.0;
-  double tenderness21 = 1.0;
+  num tenderness3 = 1.0;
+  num tenderness7 = 1.0;
+  num tenderness14 = 1.0;
+  num tenderness21 = 1.0;
 
   void _initialize() {
     print("시작");
@@ -45,6 +45,7 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     print("aaaaa");
     print(meatModel.heatedSensoryEval);
     tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
+    print("dfs");
     tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
     tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;
     tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1.0;
