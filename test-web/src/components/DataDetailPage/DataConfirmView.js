@@ -4,6 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+// userContext
+import { useUser } from '../../Utils/UserContext';
 // modal component
 import InputTransitionsModal from './InputTransitionsModal';
 // mui
@@ -57,7 +59,7 @@ const DataView = ({ dataProps }) => {
   //dataProps로 부터 properties destruct
   const {
     meatId, // 이력번호
-    userId, // 로그인한 사용자 meatI
+    userId, // 로그인한 사용자
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
@@ -132,9 +134,8 @@ const DataView = ({ dataProps }) => {
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
   //로그인한 유저 정보
-
-  const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-  console.log('type:', userInfo);
+  const user = useUser();
+  // const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
   const onClickSubmitBtn = async () => {
@@ -146,7 +147,8 @@ const DataView = ({ dataProps }) => {
     // period 계산
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
-    const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+    const userId = user.userId;
+    // const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
     //4. 원육 데이터 수정 API
     addSensoryRawData(rawInput, 0, meatId)
@@ -225,7 +227,7 @@ const DataView = ({ dataProps }) => {
           <span style={divStyle.loadingText}>이미지를 업로드 중 입니다..</span>
         </div>
       )}
-      {userInfo.type === 'Manager' && (
+      {user.type === 'Manager' && (
         <div style={style.confirmEditBtnWrapper}>
           <IconButton
             style={style.acceptBtn}

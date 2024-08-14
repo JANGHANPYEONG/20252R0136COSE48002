@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../Utils/UserContext';
+
 import UserList from '../components/UserManagement/UserMangementField';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
-import MuiAlert from '@mui/material/Alert';
+// import MuiAlert from '@mui/material/Alert';
 
-const Alert = React.forwardRef((props, ref) => {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+// const Alert = React.forwardRef((props, ref) => {
+//   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+// });
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const [hasPermission, setHasPermission] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
-
+  // const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
+  const user = useUser();
   useEffect(() => {
-    if (UserInfo.type !== 'Manager') {
+    if (user.type !== 'Manager') {
       setHasPermission(false);
       setSnackbarOpen(true);
       setTimeout(() => {
         navigate('/');
-      }, 5000);
+      }, 2500);
     }
-  }, [UserInfo, navigate]);
+  }, [user, navigate]);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
