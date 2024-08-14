@@ -1,5 +1,8 @@
 import boto3  # S3 Server connection
 import os
+import numpy as np
+
+import cv2
 
 IMAGE_FOLDER_PATH = "./images/"
 
@@ -40,6 +43,25 @@ class S3_:
         else:
             print(f"No such file in Flask Server: {type}/{item_id}.png")
             return False
+        
+    def download_image(self, object_key):
+        """S3에서 이미지를 다운로드하고 OpenCV 이미지로 변환 (최적화 버전)"""
+        try:
+            # 스트리밍 응답 사용
+            response = self.s3.get_object(Bucket=self.bucket, Key=object_key)
+            stream = response['Body']
+            
+            # 스트림에서 직접 이미지 디코딩
+            file_bytes = np.asarray(bytearray(stream.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            
+            if image is None:
+                raise ValueError(f"Failed to decode image: {object_key}")
+            
+            return image
+        except Exception as e:
+            print(f"Error downloading image from S3: {e}")
+            return None
 
     def put_object(self, bucket, filepath, access_key):  # (S3 <- Server) Upload Pic
         """

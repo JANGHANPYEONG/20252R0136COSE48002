@@ -63,6 +63,7 @@ from api.get_api import get_api
 from api.update_api import update_api
 from api.delete_api import delete_api
 from api.statistic_api import statistic_api
+from api.predict_api import predict_api
     
 app.register_blueprint(user_api, url_prefix="/user")  # user 관련 API
 app.register_blueprint(add_api, url_prefix="/meat/add")  # 육류 정보 생성 API
@@ -70,6 +71,7 @@ app.register_blueprint(get_api, url_prefix="/meat/get")  # 육류 정보 조회 
 app.register_blueprint(update_api, url_prefix="/meat/update")  # 육류 정보 수정 API
 app.register_blueprint(delete_api, url_prefix="/meat/delete")  # 육류 정보 삭제 API
 app.register_blueprint(statistic_api, url_prefix="/meat/statistic")  # 통계 데이터 조회 API
+app.register_blueprint(predict_api, url_prefix="/meat/predict") # 예측 데이터 조회 API
 
 @app.route("/")
 def hello_world():
@@ -77,5 +79,5 @@ def hello_world():
 
 # Flask 실행
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8081)
     

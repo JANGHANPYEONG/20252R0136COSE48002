@@ -1,10 +1,12 @@
 import requests
+import boto3
 import numpy as np
+from numba import jit
 
 import cv2
 from PIL import Image
 from skimage.segmentation import slic
-from skimage.feature import greycomatrix, greycoprops, local_binary_pattern
+from skimage.feature import graycomatrix, graycoprops, local_binary_pattern
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial import KDTree
@@ -22,7 +24,7 @@ import io
 
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = "all"
-from utils import Colorpalette
+from utils import ColorPalette
 
 
 ## ---------------- 공통: ndarray to image ---------------- ##
@@ -609,14 +611,16 @@ def process_visualize(model, s3_conn, image_url):
 
 
 ## ---------------- 단백질, 지방 컬러팔레트 ---------------- ##
-palette = Colorpalette()
+palette = ColorPalette()
 
+@jit(nopython=True)
 def calculate_distance(color1, color2):
-    return np.sqrt(np.sum((np.array(color1) - np.array(color2))**2))
+    return np.sqrt(np.sum((color1 - color2)**2))
 
-def find_closest_color(input_color, color_list):
-    distances = [calculate_distance(input_color, color) for color in color_list]
-    return min(distances)
+@jit(nopython=True)
+def find_closest_color(color, color_list):
+    distances = np.sqrt(np.sum((color_list - color)**2, axis=1))
+    return np.min(distances)
 
 def determine_color(palette_as_list, proportions):
     protein_count = 0  # 단백질 개수
@@ -664,11 +668,8 @@ def color_list_distance(pixel, white_exclude_color):
 
 ## ---------------- 전체 컬러팔레트, 지방 단백질 비율 ---------------- ##
 # 최종 함수 (컬러팔레트 리스트 3개, 단&지 비율)
-def final_color_palette_proportion(image_path):
-    
-    #이미지 불러오기
-    image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+def final_color_palette_proportion(img):
+    image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     original_sorted_palette, proportions, segments, superpixel_image = create_slic_color_palette(image, num_segments=3000, num_colors = 11)
     
     original_sorted_palette = original_sorted_palette[1:]
@@ -678,6 +679,7 @@ def final_color_palette_proportion(image_path):
     # 실제 생성된 슈퍼픽셀 개수 확인: num_segments로 생성한 개수와 실 생성한 픽셀 수 다름.
     unique_segments = np.unique(segments)
     actual_num_segments = len(unique_segments)
+    print(1)
 
     # 각 슈퍼픽셀의 주요 색상 추출
     superpixel_colors = np.zeros((actual_num_segments, 3))
@@ -690,11 +692,13 @@ def final_color_palette_proportion(image_path):
     for i, seg_val in enumerate(unique_segments):
         mask = segments == seg_val
         superpixel_image[mask] = superpixel_colors[i]
+    print(2)
 
     kmeans = KMeans(n_clusters=palette.num_colors, n_init=10)
     kmeans.fit(superpixel_colors)
     colors = kmeans.cluster_centers_
     labels = kmeans.labels_
+    print(3)
 
     # 각 클러스터의 빈도 계산: count 개념
     _, counts = np.unique(labels, return_counts=True)
@@ -704,6 +708,7 @@ def final_color_palette_proportion(image_path):
 
     sorted_palette = sorted_palette[1:]
     proportions = proportions[1:]
+    print(4)
 
     # 각 색상의 비율 계산: %로 계산
     total_count = np.sum(sorted_counts.astype(float))
@@ -719,6 +724,7 @@ def final_color_palette_proportion(image_path):
             boundary_mask |= (segments == seg_val)
 
     protein_ratio, _ = determine_color(sorted_palette, proportions)
+    print(5)
 
     # 지방에 해당하는 모든 인덱스를 한 번에 이미지에 표시
     boundary_mask = np.zeros_like(segments, dtype=bool)
@@ -730,6 +736,7 @@ def final_color_palette_proportion(image_path):
         for i, seg_val in enumerate(unique_segments):
             if labels[i] == target_cluster_index:
                 boundary_mask |= (segments == seg_val)
+    print(5)
 
     # 경계 내의 픽셀 색상을 추출하여 검정색과 제외 색상을 제외하고 주요 색상 5개 추출
     fat_region_pixels = image[boundary_mask]
@@ -743,12 +750,6 @@ def final_color_palette_proportion(image_path):
     outside_non_excluded_pixels = [
         pixel for pixel in outside_pixels 
         if calculate_distance(pixel, palette.black[0]) > 40 and color_list_distance(pixel, palette.red_exclude_color)
-    ]
-    
-    # reds에 가까운 색상을 찾기
-    red_proximity_pixels = [
-        pixel for pixel in non_excluded_pixels
-        if find_closest_color(pixel, palette.red_list_select) < 30
     ]
 
     # whites에 가까운 색상을 찾기
@@ -784,6 +785,83 @@ def final_color_palette_proportion(image_path):
     return result
 
 
+# def final_color_palette_proportion(img):
+#     image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+#     # SLIC 슈퍼픽셀 생성
+#     segments = slic(image, n_segments=3000, compactness=10, sigma=1, start_label=1)
+#     unique_segments, _ = np.unique(segments, return_counts=True)
+#     print(1)
+#     # 각 슈퍼픽셀의 주요 색상 추출 (벡터화)
+#     superpixel_colors = np.array([np.mean(image[segments == seg_val], axis=0) for seg_val in unique_segments])
+
+#     # KMeans 클러스터링
+#     kmeans = KMeans(n_clusters=11, n_init=10, random_state=42)
+#     labels = kmeans.fit_predict(superpixel_colors)
+#     colors = kmeans.cluster_centers_
+#     print(2)
+#     # 각 클러스터의 빈도 계산 및 정렬
+#     _, counts = np.unique(labels, return_counts=True)
+#     counts_sorted_indices = np.argsort(-counts)
+#     sorted_palette = colors[counts_sorted_indices]
+#     proportions = counts[counts_sorted_indices] / np.sum(counts)
+
+#     original_sorted_palette = sorted_palette.copy()
+#     sorted_palette = sorted_palette[1:]
+#     proportions = proportions[1:]
+
+#     # 지방 영역 마스크 생성 (벡터화)
+#     boundary_mask = np.isin(labels, counts_sorted_indices[palette.white_idx_list])
+#     fat_region_pixels = image[boundary_mask]
+#     print(3)
+#     print("지방 영역 마스크 생성 완료")
+
+#     # 픽셀 필터링 (벡터화)
+#     non_excluded_pixels = fat_region_pixels[
+#         (np.sqrt(np.sum((fat_region_pixels - palette.black[0])**2, axis=1)) > 40) &
+#         np.apply_along_axis(lambda x: color_list_distance(x, palette.white_exclude_color), 1, fat_region_pixels)
+#     ]
+
+#     outside_pixels = image[~boundary_mask]
+#     outside_non_excluded_pixels = outside_pixels[
+#         (np.sqrt(np.sum((outside_pixels - palette.black[0])**2, axis=1)) > 40) &
+#         np.apply_along_axis(lambda x: color_list_distance(x, palette.red_exclude_color), 1, outside_pixels)
+#     ]
+#     print(4)
+#     # whites에 가까운 색상 찾기 (벡터화)
+#     whites_proximity_mask = np.apply_along_axis(
+#         lambda x: find_closest_color(x, palette.whites_list_select) < 30, 1, non_excluded_pixels
+#     )
+#     whites_proximity_pixels = non_excluded_pixels[whites_proximity_mask]
+
+#     # 지방 주요 색상 추출
+#     n_clusters_white = min(5, len(whites_proximity_pixels))
+#     if n_clusters_white > 0:
+#         kmeans_white = KMeans(n_clusters=n_clusters_white, n_init=10, random_state=42)
+#         fat_colors = kmeans_white.fit(whites_proximity_pixels).cluster_centers_
+#     else:
+#         fat_colors = np.array([])
+
+#     # 단백질 주요 색상 추출
+#     n_clusters_red = min(5, len(outside_non_excluded_pixels))
+#     if n_clusters_red > 0:
+#         kmeans_red = KMeans(n_clusters=n_clusters_red, n_init=10, random_state=42)
+#         protein_colors = kmeans_red.fit(outside_non_excluded_pixels).cluster_centers_
+#     else:
+#         protein_colors = np.array([])
+#     print("지방, 단백질 주요 색상 추출 완료")
+#     print(5)
+#     protein_ratio, _ = determine_color(sorted_palette, proportions)
+
+#     result = {
+#         "fat_color_palette": fat_colors.tolist(),
+#         "protein_color_palette": protein_colors.tolist(),
+#         "total_color_palette": original_sorted_palette.tolist(),
+#         "protein_ratio": protein_ratio
+#     }
+#     return result
+
+
 ## ---------------- texture 정보 ---------------- ##
 def create_texture_info(img_path):
     image = cv2.imread(img_path)
@@ -802,15 +880,15 @@ def create_texture_info(img_path):
     # GLCM 계산
     distances = [1]
     angles = [np.pi/2]
-    glcm = greycomatrix(roi_reshaped, distances, angles, 256, symmetric=True, normed=True)
+    glcm = graycomatrix(roi_reshaped, distances, angles, 256, symmetric=True, normed=True)
 
     # 텍스처 특징 추출
     texture_result = {
-        "contrast" : greycoprops(glcm, 'contrast'),
-        "dissimilarity" : greycoprops(glcm, 'dissimilarity'),
-        "homogeneity" : greycoprops(glcm, 'homogeneity'),
-        "energy" : greycoprops(glcm, 'energy'),
-        "correlation" : greycoprops(glcm, 'correlation')
+        "contrast" : graycoprops(glcm, 'contrast'),
+        "dissimilarity" : graycoprops(glcm, 'dissimilarity'),
+        "homogeneity" : graycoprops(glcm, 'homogeneity'),
+        "energy" : graycoprops(glcm, 'energy'),
+        "correlation" : graycoprops(glcm, 'correlation')
     }
 
     return texture_result
