@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
-
+import style from './style/inputtransitionsmodalstyle';
 const navy = '#0F3659';
 
 // 처리육 데이터 수정 전, 이미지 먼저 업로드 필수 알림 경고창
@@ -59,17 +59,4 @@ const InputTransitionsModal = ({ setModal }) => {
   );
 }
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 500,
-  height: '160px',
-  bgcolor: 'background.paper',
-  //border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: '10px',
-};
 export default InputTransitionsModal;
