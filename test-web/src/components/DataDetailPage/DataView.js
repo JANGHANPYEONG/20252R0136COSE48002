@@ -5,6 +5,8 @@ import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Button from 'react-bootstrap/Button';
+// userContext
+import { useUser } from '../../Utils/UserContext';
 // modal component
 import InputTransitionsModal from './InputTransitionsModal';
 // mui
@@ -131,6 +133,9 @@ const DataView = ({ dataProps }) => {
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
+  // userContext
+  const user = useUser();
+
   // 수정 완료 버튼 클릭 시 수정된 data API로 전송
   const onClickSubmitBtn = async () => {
     setIsEdited(false);
@@ -141,9 +146,10 @@ const DataView = ({ dataProps }) => {
     // period 계산
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
-    const currentUserId = JSON.parse(localStorage.getItem('UserInfo'))[
-      'userId'
-    ];
+    const currentUserId = user.userId;
+    // const currentUserIdd = JSON.parse(localStorage.getItem('UserInfo'))[
+    //   'userId'
+    // ];
 
     // 1. 가열육 관능검사 데이터 생성/수정 API POST/PATCH
     let dict = {};

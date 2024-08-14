@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth } from '../../firebase-config';
+import { useUser, useSetUser } from '../../Utils/UserContext';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -18,6 +19,7 @@ import background from '../../src_assets/background.png';
 import { userIsLogin } from '../../API/user/userIsLogin';
 
 const defaultTheme = createTheme();
+
 const LogInField = () => {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
@@ -26,6 +28,8 @@ const LogInField = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [rememberMe, setRememberMe] = useState(false); // New state variable for "Remember Me" checkbox
+
+  const setUser = useSetUser();
 
   useEffect(() => {
     // Check if the email was stored in the local storage
@@ -65,6 +69,7 @@ const LogInField = () => {
 
       const response = await userIsLogin(loginEmail);
       const user = await response.json();
+      // const user = userUser();
 
       if (!user.type || user.type === 'Normal') {
         // 관리자가 아닌 경우
@@ -84,25 +89,34 @@ const LogInField = () => {
           loginEmail,
           loginPassword
         );
-        const firebaseUser = userCredential.user;
-        // 이메일 인증 여부 확인
-        // if (!firebaseUser.emailVerified) {
-        //   setLoginError(
-        //     '이메일 인증이 필요한 계정입니다. 이메일을 확인하고 인증을 완료해주세요.'
-        //   );
-        //   return;
-        // }
 
+        // 이메일 인증 여부 확인
+
+        /*const firebaseUser = userCredential.user;
+        if (
+          !firebaseUser.emailVerified &&
+          loginEmail != 'deeplant@example.com'
+        ) {
+          setLoginError(
+            '이메일 인증이 필요한 계정입니다. 이메일을 확인하고 인증을 완료해주세요.'
+          );
+          return;
+        }*/
+
+        // 로그인 성공 시 UserContext에 사용자 정보 설정
+        setUser(user);
+
+        // 로그인 성공 시 Localstorage에 사용자 정보 설정
         if (rememberMe) {
           localStorage.setItem('rememberedEmail', loginEmail);
         } else {
           localStorage.removeItem('rememberedEmail');
         }
-        localStorage.setItem('UserInfo', JSON.stringify(user));
-        const updateinfo = JSON.parse(localStorage.getItem('updateinfo'));
+
+        // localStorage.setItem('UserInfo', JSON.stringify(user));
+        localStorage.setItem('isLoggedIn', 'true');
 
         // 로그인 성공 시 홈으로 이동
-        localStorage.setItem('isLoggedIn', 'true');
         console.log('LOGIN SUCCESS');
         navigate('/Home');
         window.location.reload();
