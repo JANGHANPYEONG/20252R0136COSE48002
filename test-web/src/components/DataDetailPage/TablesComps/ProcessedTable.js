@@ -9,6 +9,10 @@ import {
 } from '@mui/material';
 // modal component
 import InputTransitionsModal from '../InputTransitionsModal';
+import {
+  deepAgingField,
+  deepAgingDBFieldToSemanticWord,
+} from '../constants/infofield';
 
 const ProcessedTable = ({
   edited,
@@ -31,7 +35,7 @@ const ProcessedTable = ({
       setProcessedMinute((prev) => ({ ...prev, [index]: value }));
     }
   };
-  const len = processed_data_seq.length - 2
+  const len = processed_data_seq.length - 2;
 
   return (
     <TableContainer
@@ -44,18 +48,15 @@ const ProcessedTable = ({
           <TableRow>
             <TableCell style={{ background: '#cfd8dc' }}>{}</TableCell>
             <TableCell align="right" style={{ background: '#cfd8dc' }}>
-            {processed_data_seq[1]}차
+              {processed_data_seq[1]}차
             </TableCell>
             {
               // 2회차 이상부터
-              Array.from(
-                { length: len },
-                (_, arr_idx) => (
-                  <TableCell align="right" style={{ background: '#cfd8dc' }}>
-                    {processed_data_seq[arr_idx + 2]}차
-                  </TableCell>
-                )
-              )
+              Array.from({ length: len }, (_, arr_idx) => (
+                <TableCell align="right" style={{ background: '#cfd8dc' }}>
+                  {processed_data_seq[arr_idx + 2]}차
+                </TableCell>
+              ))
             }
           </TableRow>
         </TableHead>
@@ -141,76 +142,73 @@ const ProcessedTable = ({
               </TableCell>
               {
                 //2회차 부터
-                Array.from(
-                  { length: len },
-                  (_, arr_idx) => (
-                    <TableCell align="right">
-                      {f === 'minute' ? (
-                        edited ? (
-                          modal ? (
-                            <InputTransitionsModal setModal={setModal} />
-                          ) : (
-                            <input
-                              key={'processed-' + idx + 'input'}
-                              name={f}
-                              style={{ width: '100px', height: '23px' }}
-                              value={processedMinute[arr_idx + 1]}
-                              placeholder={
-                                processedMinute[arr_idx + 1] === null
-                                  ? '0.0'
-                                  : processedMinute[arr_idx + 1]
-                              }
-                              onChange={(e) => {
-                                handleMinuteInputChange(e, arr_idx + 1);
-                              }}
-                            />
-                          )
-                        ) : processedMinute[arr_idx + 1] ? (
-                          processedMinute[arr_idx + 1]
-                        ) : (
-                          ''
-                        )
-                      ) : // createdAt seqno period 수정 X (자동 수정됨)
-                      f === 'seqno' || f === 'period' ? (
-                        processedInput[arr_idx + 1]?.[f] ? (
-                          processedInput[arr_idx + 1]?.[f]
-                        ) : (
-                          ''
-                        )
-                      ) : f === 'createdAt' ? (
-                        processed_date[arr_idx + 1] ? (
-                          processed_date[arr_idx + 1]
-                        ) : (
-                          ''
-                        )
-                      ) : //나머지 데이터 (이미지 업로드 후에만 수정 가능 )
+                Array.from({ length: len }, (_, arr_idx) => (
+                  <TableCell align="right">
+                    {f === 'minute' ? (
                       edited ? (
                         modal ? (
                           <InputTransitionsModal setModal={setModal} />
                         ) : (
                           <input
-                            key={'processed-' + arr_idx + '-input'}
-                            style={{ width: '100px', height: '23px' }}
+                            key={'processed-' + idx + 'input'}
                             name={f}
-                            value={processedInput[arr_idx + 1]?.[f]}
+                            style={{ width: '100px', height: '23px' }}
+                            value={processedMinute[arr_idx + 1]}
                             placeholder={
-                              processed_data[arr_idx + 1] === null
+                              processedMinute[arr_idx + 1] === null
                                 ? '0.0'
-                                : processed_data[arr_idx]?.[f]
+                                : processedMinute[arr_idx + 1]
                             }
                             onChange={(e) => {
-                              handleInputChange(e, 1, arr_idx + 1);
+                              handleMinuteInputChange(e, arr_idx + 1);
                             }}
                           />
                         )
-                      ) : processedInput[arr_idx + 1]?.[f] ? (
+                      ) : processedMinute[arr_idx + 1] ? (
+                        processedMinute[arr_idx + 1]
+                      ) : (
+                        ''
+                      )
+                    ) : // createdAt seqno period 수정 X (자동 수정됨)
+                    f === 'seqno' || f === 'period' ? (
+                      processedInput[arr_idx + 1]?.[f] ? (
                         processedInput[arr_idx + 1]?.[f]
                       ) : (
                         ''
-                      )}
-                    </TableCell>
-                  )
-                )
+                      )
+                    ) : f === 'createdAt' ? (
+                      processed_date[arr_idx + 1] ? (
+                        processed_date[arr_idx + 1]
+                      ) : (
+                        ''
+                      )
+                    ) : //나머지 데이터 (이미지 업로드 후에만 수정 가능 )
+                    edited ? (
+                      modal ? (
+                        <InputTransitionsModal setModal={setModal} />
+                      ) : (
+                        <input
+                          key={'processed-' + arr_idx + '-input'}
+                          style={{ width: '100px', height: '23px' }}
+                          name={f}
+                          value={processedInput[arr_idx + 1]?.[f]}
+                          placeholder={
+                            processed_data[arr_idx + 1] === null
+                              ? '0.0'
+                              : processed_data[arr_idx]?.[f]
+                          }
+                          onChange={(e) => {
+                            handleInputChange(e, 1, arr_idx + 1);
+                          }}
+                        />
+                      )
+                    ) : processedInput[arr_idx + 1]?.[f] ? (
+                      processedInput[arr_idx + 1]?.[f]
+                    ) : (
+                      ''
+                    )}
+                  </TableCell>
+                ))
               }
             </TableRow>
           ))}
@@ -221,28 +219,3 @@ const ProcessedTable = ({
 };
 
 export default ProcessedTable;
-
-const deepAgingField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'createdAt',
-  //'seqno',
-  'minute',
-  'period',
-];
-const deepAgingDBFieldToSemanticWord = {
-  marbling: '마블링',
-  color: '육색',
-  texture: '조직감',
-  surfaceMoisture: '표면육즙',
-  overall: '기호도',
-  createdAt: '생성일자',
-  //seqno: '딥에이징 회차',
-  minute: '딥에이징 시간(분)',
-  period: 'period',
-};
-
-

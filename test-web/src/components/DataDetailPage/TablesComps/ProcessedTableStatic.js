@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import {deepAgingStaticField ,deepAgingStaticDBFieldToSemanticWord } from '../constants/infofield';
 
 const ProcessedTableStatic = ({
   processedMinute,
@@ -40,13 +41,13 @@ const ProcessedTableStatic = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {deepAgingField.map((f, idx) => (
+          {deepAgingStaticField.map((f, idx) => (
             <TableRow
               key={'processed-' + idx}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">
-                {deepAgingDBFieldToSemanticWord[f]}
+                {deepAgingStaticDBFieldToSemanticWord[f]}
               </TableCell>
               <TableCell align="right">
                 {
@@ -86,19 +87,3 @@ const ProcessedTableStatic = ({
 };
 
 export default ProcessedTableStatic;
-
-const deepAgingField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-];
-const deepAgingDBFieldToSemanticWord = {
-  marbling: '마블링',
-  color: '육색',
-  texture: '조직감',
-  surfaceMoisture: '표면육즙',
-  overall: '기호도',
-};
-

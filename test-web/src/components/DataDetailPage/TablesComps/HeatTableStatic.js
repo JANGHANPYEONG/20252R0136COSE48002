@@ -8,6 +8,11 @@ import {
   TableRow,
 } from '@mui/material';
 
+import {
+  heatedStaticField,
+  heatedStaticDBFieldToSemanticWord,
+} from '../constants/infofield';
+
 const HeatTableStatic = ({ heated_data, heatedToggleValue }) => {
   return (
     <TableContainer
@@ -31,11 +36,11 @@ const HeatTableStatic = ({ heated_data, heatedToggleValue }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {heatedField.map((f, idx) => {
+          {heatedStaticField.map((f, idx) => {
             return (
               <TableRow key={'heated-' + idx}>
                 <TableCell key={'heated-' + idx + 'col1'}>
-                  {heatedDBFieldToSemanticWord[f]}
+                  {heatedStaticDBFieldToSemanticWord[f]}
                 </TableCell>
                 <TableCell key={'heated-' + idx + 'col2'}>
                   {heated_data[0]?.[f] ? heated_data[0]?.[f] : ''}
@@ -63,19 +68,3 @@ const HeatTableStatic = ({ heated_data, heatedToggleValue }) => {
 };
 
 export default HeatTableStatic;
-
-const heatedField = [
-  'flavor',
-  'juiciness',
-  'tenderness',
-  'umami',
-  'palatability',
-];
-const heatedDBFieldToSemanticWord = {
-  flavor: '풍미',
-  juiciness: '육즙',
-  tenderness: '연도',
-  umami: '감칠맛',
-  palatability: '기호도',
-};
-

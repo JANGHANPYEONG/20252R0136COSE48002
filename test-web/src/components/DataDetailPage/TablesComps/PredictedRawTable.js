@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { rawPAField, rawPADBFieldToSematicWord } from '../constants/infofield';
 
 const PredictedRawTable = ({ raw_data, dataPA }) => {
   return (
@@ -22,7 +23,7 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
             return (
               <TableRow key={'raw-Row' + idx}>
                 <TableCell key={'raw-' + idx + 'col1'}>
-                  {rawDBFieldToSematicWord[f]}
+                  {rawPADBFieldToSematicWord[f]}
                 </TableCell>
                 <TableCell
                   key={'raw-' + idx + 'col2'}
@@ -85,21 +86,3 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
 };
 
 export default PredictedRawTable;
-
-const rawPAField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'xai_gradeNum',
-];
-const rawDBFieldToSematicWord = {
-  marbling: '마블링',
-  color: '육색',
-  texture: '조직감',
-  surfaceMoisture: '표면육즙',
-  overall: '기호도',
-  xai_gradeNum: '예상등급',
-};
-

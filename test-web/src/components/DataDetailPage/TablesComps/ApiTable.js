@@ -8,6 +8,8 @@ import {
   TableRow,
 } from '@mui/material';
 
+import { apiField, apiDBFieldToSemanticWord } from '../constants/infofield';
+
 const ApiTable = ({ api_data }) => {
   return (
     <TableContainer
@@ -38,30 +40,4 @@ const ApiTable = ({ api_data }) => {
 
 export default ApiTable;
 
-const apiField = [
-  'birthYmd',
-  'butcheryYmd',
-  'farmAddr',
-  'farmerName',
-  'gradeNm',
-  'primalValue',
-  'secondaryValue',
-  'sexType',
-  'species',
-  'statusType',
-  'traceNum',
-];
-const apiDBFieldToSemanticWord = {
-  birthYmd: '출생년월일',
-  butcheryYmd: '도축일자',
-  farmAddr: '사육지',
-  farmerName: '소유주',
-  gradeNm: '육질등급',
-  primalValue: '대분류',
-  secondaryValue: '소분류',
-  sexType: '성별',
-  species: '종',
-  statusType: '데이터승인',
-  traceNum: 'traceNum',
-};
 
