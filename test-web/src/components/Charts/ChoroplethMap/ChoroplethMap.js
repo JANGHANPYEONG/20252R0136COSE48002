@@ -64,4 +64,3 @@ const styles = {
 };
 
 export default ChoroplethMap;
-

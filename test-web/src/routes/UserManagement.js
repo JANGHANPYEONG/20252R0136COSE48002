@@ -14,7 +14,6 @@ const UserManagement = () => {
   const navigate = useNavigate();
   const [hasPermission, setHasPermission] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  // const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
   const user = useUser();
   useEffect(() => {
     if (user.type !== 'Manager') {

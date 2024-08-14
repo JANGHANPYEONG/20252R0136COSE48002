@@ -11,8 +11,8 @@ import MuiAppBar from '@mui/material/AppBar';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 // import images
-import deeplant_long from '../../../src_assets/deeplant_long.webp';
-import logo from '../../../src_assets/logo.png';
+import deeplant_long from '../../../../src_assets/deeplant_long.webp';
+import logo from '../../../../src_assets/logo.png';
 
 // Appbar 스타일 설정
 const StyledAppBar = styled(MuiAppBar, {

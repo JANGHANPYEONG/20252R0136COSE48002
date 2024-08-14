@@ -43,8 +43,8 @@ const UserList = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
+  // UserContext에서 유저 정보 불러오기
   const user = useUser();
-  // const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
   const handleRegisterShow = () => setRegisterShow(true);
 
