@@ -7,8 +7,11 @@ import { getDataListJSON, downloadExcel } from './excelExport';
 import { apiIP } from '../../config';
 import ExcelImportAlertModal from './Children/ExcelImportAlertModal';
 import style from './style/excelcontrollerstyle';
+import { useUser } from '../../Utils/UserContext';
 
 const ExcelController = ({ startDate, endDate, specieValue }) => {
+  // UserContext에서 유저 정보 불러오기
+  const user = useUser();
   // 엑셀 업로드 성공 여부
   const [isImportSuccessed, setIsImportSuccessed] = useState(true);
   // 엑셀 업로드 완료
@@ -68,7 +71,7 @@ const ExcelController = ({ startDate, endDate, specieValue }) => {
           const elapsedMSec = lastModified - butcheryDate.getTime();
           const elapsedHour = elapsedMSec / 1000 / 60 / 60;
           // 로그인한 유저 정보
-          const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+          const userId = user.userId;
 
           // 1.1 가열육 관능평가 데이터 JSON으로 변환
           let heatedmeatEvalReq = heatedmeat_eval;
@@ -214,5 +217,3 @@ const ExcelController = ({ startDate, endDate, specieValue }) => {
 };
 
 export default ExcelController;
-
-

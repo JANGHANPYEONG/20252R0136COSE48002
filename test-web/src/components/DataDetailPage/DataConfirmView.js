@@ -133,10 +133,8 @@ const DataView = ({ dataProps }) => {
   const len = processed_data_seq.length;
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
-  //로그인한 유저 정보
+  // UserContext에서 유저 정보 불러오기
   const user = useUser();
-  // const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
   const onClickSubmitBtn = async () => {
     setIsEdited(false);
@@ -148,7 +146,6 @@ const DataView = ({ dataProps }) => {
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
     const userId = user.userId;
-    // const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
 
     //4. 원육 데이터 수정 API
     addSensoryRawData(rawInput, 0, meatId)

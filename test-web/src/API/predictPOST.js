@@ -1,8 +1,10 @@
 import { apiIP } from '../config';
+import { useUser } from '../Utils/UserContext';
 
 export const PredictData = (elapsedHour, len, id) => {
   //로그인한 유저 정보
-  const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+  const user = useUser();
+  const userId = user.userId;
 
   for (let i = 0; i < len; i++) {
     let req = {

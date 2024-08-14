@@ -133,7 +133,7 @@ const DataView = ({ dataProps }) => {
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
-  // userContext
+  // UserContext에서 유저 정보 불러오기
   const user = useUser();
 
   // 수정 완료 버튼 클릭 시 수정된 data API로 전송
@@ -147,9 +147,6 @@ const DataView = ({ dataProps }) => {
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
     const currentUserId = user.userId;
-    // const currentUserIdd = JSON.parse(localStorage.getItem('UserInfo'))[
-    //   'userId'
-    // ];
 
     // 1. 가열육 관능검사 데이터 생성/수정 API POST/PATCH
     let dict = {};

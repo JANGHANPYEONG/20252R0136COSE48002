@@ -5,6 +5,8 @@ import { Card } from 'react-bootstrap';
 import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 // mui
 import { IconButton } from '@mui/material';
+// UserContext
+import { useUser } from '../../../Utils/UserContext';
 // 이미지 수정 api 호출
 import addSensoryRawImg from '../../../API/add/addSensoryRawImg';
 import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
@@ -60,6 +62,9 @@ const MeatImgsCard = ({
   // 이미지 미리보기 or 이미지 변경 될 때 마다 firebase 업로드
   const [isImgChanged, setIsImgChanged] = useState(false);
 
+  // UserContext에서 유저 정보 불러오기
+  const user = useUser();
+
   /**
    * 이미지 파일 업로드 한 경우
    * 1. firebase의 fire storage에 이미지 업로드
@@ -72,7 +77,7 @@ const MeatImgsCard = ({
       const folderName = 'sensory_evals';
       const reader = new FileReader();
       //로그인한 유저 정보
-      const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+      const userId = user.userId;
       // 수정 시간
       const createdDate = new Date(new Date().getTime() + TIME_ZONE)
         .toISOString()
@@ -149,7 +154,6 @@ const MeatImgsCard = ({
     newImages[currentIdx] = reader.result;
     setImgArr(newImages);
   };
-
 
   return (
     <Card
