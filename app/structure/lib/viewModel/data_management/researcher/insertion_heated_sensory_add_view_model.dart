@@ -39,13 +39,9 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   num tenderness21 = 1.0;
 
   void _initialize() {
-    print("시작");
     seqNo = meatModel.seqno;
     processCreatedAt = meatModel.deepAgingCreatedAt!;
-    print("aaaaa");
-    print(meatModel.heatedSensoryEval);
     tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
-    print("dfs");
     tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
     tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;
     tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1.0;
@@ -64,7 +60,6 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
         .difference(DateTime.parse(processCreatedAt))
         .inDays
         .toString());
-    // print("dateDiff :::: $dateDiff");
     notifyListeners();
   }
 
@@ -73,12 +68,10 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
       check = true;
       notifyListeners();
     }
-    print("Dcdlc");
     print(check);
   }
 
   void checkDateBool() {
-    print("dateDiff : :$dateDiff");
     if (dateDiff >= 21) {
       checkDate[0] = true;
       checkDate[1] = true;
@@ -94,8 +87,6 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     } else if (dateDiff >= 3) {
       checkDate[0] = true;
     }
-    print("ddd");
-    print(checkDate);
     notifyListeners();
   }
 
