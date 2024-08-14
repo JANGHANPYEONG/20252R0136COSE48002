@@ -1,3 +1,4 @@
+import pprint
 import requests
 import boto3
 import numpy as np
@@ -863,8 +864,7 @@ def final_color_palette_proportion(img):
 
 
 ## ---------------- texture 정보 ---------------- ##
-def create_texture_info(img_path):
-    image = cv2.imread(img_path)
+def create_texture_info(image):
     # 이미지 로드
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -884,19 +884,18 @@ def create_texture_info(img_path):
 
     # 텍스처 특징 추출
     texture_result = {
-        "contrast" : graycoprops(glcm, 'contrast'),
-        "dissimilarity" : graycoprops(glcm, 'dissimilarity'),
-        "homogeneity" : graycoprops(glcm, 'homogeneity'),
-        "energy" : graycoprops(glcm, 'energy'),
-        "correlation" : graycoprops(glcm, 'correlation')
-    }
-
+        "contrast" : graycoprops(glcm, 'contrast')[0][0],
+        "dissimilarity" : graycoprops(glcm, 'dissimilarity')[0][0],
+        "homogeneity" : graycoprops(glcm, 'homogeneity')[0][0],
+        "energy" : graycoprops(glcm, 'energy')[0][0],
+        "correlation" : graycoprops(glcm, 'correlation')[0][0]
+        }
+    
     return texture_result
 
 
 ## ---------------- LBP images, Gabor Filter images ---------------- ##
-def lbp_calculate(s3_conn, img_path, meat_id, seqno):
-    image = cv2.imread(img_path)
+def lbp_calculate(s3_conn, image, meat_id, seqno):
     # 이미지가 컬러 이미지인 경우 그레이스케일로 변환
     if len(image.shape) == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -927,9 +926,13 @@ def lbp_calculate(s3_conn, img_path, meat_id, seqno):
     n_points = 8 * radius
     lbp2 = local_binary_pattern(image, n_points, radius, method='uniform')
     
+    print("Success to create gabor_texture")
+    
     # Save the LBP image
     image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
     image_name2 = f'openCV_images/{meat_id}-{seqno}-lbp2-{i+1}.png'
+    
+    print(image_name1, image_name2)
     
     lbp_image1 = ndarray_to_image(s3_conn, lbp1, image_name1)
     lbp_image2 = ndarray_to_image(s3_conn, lbp2, image_name2)
@@ -968,8 +971,8 @@ def compute_texture_features(responses):
     return features
 
 
-def gabor_texture_analysis(s3_conn, img_path, id, seqno):
-    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+def gabor_texture_analysis(s3_conn, image, id, seqno):
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Gabor 필터 파라미터
     ksize = 31
@@ -982,6 +985,8 @@ def gabor_texture_analysis(s3_conn, img_path, id, seqno):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
+    pprint.pprint(features)
+    print("Success to create gabor_texture")
     
     result = {}
     for i, response in enumerate(responses):
@@ -990,9 +995,9 @@ def gabor_texture_analysis(s3_conn, img_path, id, seqno):
         
         result[i+1] = {
             "images": image_path,
-            "mean": features[i][0],
-            "std_dev": features[i][1],
-            "energy": features[i][2]
+            "mean": float(features[i][0]),
+            "std_dev": float(features[i][1]),
+            "energy": float(features[i][2])
         }
 
     return result

@@ -158,3 +158,23 @@ class S3_:
                 break
         
         return matching_files
+    
+    def upload_fileobj(self, file_obj, bucket, key):
+        """
+        S3 버킷에 파일 객체를 업로드합니다.
+        :param file_obj: 파일 객체 (BytesIO 등)
+        :param bucket: 업로드할 S3 버킷 이름
+        :param key: S3 내에서 파일의 위치 및 이름
+        :return: 업로드 성공 시 True, 실패 시 False 반환
+        """
+        try:
+            self.s3.upload_fileobj(
+                Fileobj=file_obj,  # 업로드할 파일 객체
+                Bucket=bucket,  # 버킷 이름
+                Key=key,  # S3 내의 파일 경로 및 이름
+                ExtraArgs={"ContentType": "image/png", "ACL": "public-read"},
+            )
+            return True
+        except Exception as e:
+            print(f"Error uploading file: {e}")
+            return False
