@@ -15,6 +15,7 @@ import PredictedProcessedTablePA from './TablesComps/PredictedProcessedTablePA';
 
 import { computePeriod } from './computeTime';
 import { apiIP } from '../../config';
+import { useUser } from '../../Utils/UserContext';
 
 const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
@@ -74,10 +75,13 @@ const DataPAView = ({ dataProps }) => {
   //예측 post 중 로딩 표시
   const [isPredictedDone, SetIsPredictedDone] = useState(true);
 
+  // UserContext에서 유저 정보 불러오기
+  const user = useUser();
+
   //데이터 예측 버튼 클릭 시
   const handlePredictClick = async () => {
     //로그인한 유저 정보
-    const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+    const userId = user.userId;
     // period 계산
     const elapsedHour = computePeriod(api_data['butcheryYmd']);
     const len = processed_data_seq.length;

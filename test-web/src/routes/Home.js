@@ -9,7 +9,7 @@ import Container from '@mui/material/Container';
 import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-
+import { useUser } from '../Utils/UserContext';
 import home1 from '../src_assets/home1.png';
 import home2 from '../src_assets/home2.png';
 import home3 from '../src_assets/home3.png';
@@ -59,10 +59,9 @@ const cards = [
 const Home = () => {
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
+  const user = useUser();
   const handleCardClick = (link) => {
-    const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
-    if (link === '/UserManagement' && UserInfo.type !== 'Manager') {
+    if (link === '/UserManagement' && user.type !== 'Manager') {
       setSnackbarOpen(true);
     } else {
       navigate(link);

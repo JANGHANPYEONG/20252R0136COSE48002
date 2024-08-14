@@ -6,11 +6,11 @@ import { userDelete } from '../API/user/userDelete';
 import ProfileEditForm from '../components/Profile/ProfileEditForm';
 import PasswordCheckModal from '../components/Profile/PasswordCheckModal';
 import SelfDeleteConfirmationModal from '../components/Profile/SelfDeleteConfirmationModal';
+import { useUser, useSetUser } from '../Utils/UserContext';
 
 const Profile = () => {
-  const [userInfo, setUserInfo] = useState(
-    JSON.parse(localStorage.getItem('UserInfo'))
-  );
+  const user = useUser();
+  const setUser = useSetUser();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -30,9 +30,8 @@ const Profile = () => {
   };
 
   const handleUpdate = (updatedData) => {
-    setUserInfo(updatedData);
-    localStorage.setItem('UserInfo', JSON.stringify(updatedData));
-    window.dispatchEvent(new Event('userInfoUpdated'));
+    setUser(updatedData);
+    // window.dispatchEvent(new Event('userInfoUpdated'));
     handleSnackbarShow('회원정보가 수정되었습니다.', 'success');
   };
 
@@ -46,9 +45,10 @@ const Profile = () => {
 
   const deleteSelf = async () => {
     try {
-      const response = await userDelete(userInfo.userId);
+      const response = await userDelete(user.userId);
 
       if (response.ok) {
+        setUser({}); // 사용자 정보 초기화
         localStorage.setItem('isLoggedIn', 'false');
         navigate('/');
         window.location.reload();
@@ -74,7 +74,7 @@ const Profile = () => {
       </Typography>
 
       <ProfileEditForm
-        userInfo={userInfo}
+        userInfo={user}
         onUpdate={handleUpdate}
         onDeleteRequest={handleDeleteRequest}
         handleSnackbarShow={handleSnackbarShow}

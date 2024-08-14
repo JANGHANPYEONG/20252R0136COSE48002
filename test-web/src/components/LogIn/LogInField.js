@@ -112,8 +112,6 @@ const LogInField = () => {
         } else {
           localStorage.removeItem('rememberedEmail');
         }
-
-        // localStorage.setItem('UserInfo', JSON.stringify(user));
         localStorage.setItem('isLoggedIn', 'true');
 
         // 로그인 성공 시 홈으로 이동

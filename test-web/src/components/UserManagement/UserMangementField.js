@@ -21,6 +21,7 @@ import UserRegisterModal from './Childeren/UserRegisterModal';
 import handleUserDelete from './Childeren/handleUserDelete';
 import handleUserSearch from './Childeren/handleUserSearch';
 
+import { useUser } from '../../Utils/UserContext';
 import { userList } from '../../API/user/userList';
 import UserTable from './Childeren/UserTable';
 
@@ -42,7 +43,8 @@ const UserList = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
+  const user = useUser();
+  // const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
 
   const handleRegisterShow = () => setRegisterShow(true);
 
@@ -64,7 +66,7 @@ const UserList = () => {
     if (userToDelete) {
       const success = await handleUserDelete(
         userToDelete?.userId,
-        UserInfo,
+        user,
         handleSnackbarShow
       );
       if (success) {
