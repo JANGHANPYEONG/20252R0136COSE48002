@@ -13,6 +13,7 @@ const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
   const [time, setTime] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [seqno, setSeqno] = useState('');
+  
   const handleCompletionModalClose = () => {
     setShowCompletionModal(false);
     handleClose();
