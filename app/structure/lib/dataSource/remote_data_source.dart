@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
-  static String baseUrl = dotenv.env['API']!;
+  static String baseUrl = dotenv.env['API_URL']!;
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
