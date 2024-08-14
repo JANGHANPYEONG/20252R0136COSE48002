@@ -66,4 +66,3 @@ const LabTableStatic = ({ lab_data, labToggleValue }) => {
 };
 
 export default LabTableStatic;
-

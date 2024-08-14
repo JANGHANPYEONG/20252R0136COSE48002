@@ -7,7 +7,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {deepAgingStaticField ,deepAgingStaticDBFieldToSemanticWord } from '../constants/infofield';
+import {
+  deepAgingStaticField,
+  deepAgingStaticDBFieldToSemanticWord,
+} from '../constants/infofield';
 
 const ProcessedTableStatic = ({
   processedMinute,

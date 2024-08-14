@@ -12,7 +12,6 @@ const LabTable = ({
   edited,
   labInput,
   lab_data,
-  labToggleValue,
   handleInputChange,
   processed_data_seq,
 }) => {
