@@ -7,6 +7,7 @@ import {
   TableRow,
   TextField,
 } from '@mui/material';
+import { rawField, rawDBFieldToSematicWord } from '../constants/infofield';
 
 const RawTable = ({ data, edited, handleRawInputChange }) => {
   return (
@@ -46,13 +47,3 @@ const RawTable = ({ data, edited, handleRawInputChange }) => {
 };
 
 export default RawTable;
-
-const rawField = ['marbling', 'color', 'texture', 'surfaceMoisture', 'overall'];
-const rawDBFieldToSematicWord = {
-  marbling: '마블링',
-  color: '육색',
-  texture: '조직감',
-  surfaceMoisture: '표면육즙',
-  overall: '기호도',
-};
-

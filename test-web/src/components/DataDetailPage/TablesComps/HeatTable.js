@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { heatedField, heatedDBFieldToSemanticWord } from '../constants/infofield';
 
 const HeatTable = ({
   edited,
@@ -105,26 +106,3 @@ const HeatTable = ({
 };
 
 export default HeatTable;
-
-const heatedField = [
-  'flavor',
-  'juiciness',
-  'umami',
-  'palatability',
-  'tenderness0',
-  'tenderness3',
-  'tenderness7',
-  'tenderness14',
-  'tenderness21',
-];
-const heatedDBFieldToSemanticWord = {
-  flavor: '풍미',
-  juiciness: '육즙',
-  umami: '감칠맛',
-  palatability: '기호도',
-  tenderness0: '연도(0)',
-  tenderness3: '연도(3)',
-  tenderness7: '연도(7)',
-  tenderness14: '연도(14)',
-  tenderness21: '연도(21)',
-};

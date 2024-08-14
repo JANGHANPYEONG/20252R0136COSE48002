@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { labStaticField, labStaticDBFieldToSemanticWord } from '../constants/infofield';
 
 const LabTableStatic = ({ lab_data, labToggleValue }) => {
   return (
@@ -33,11 +34,11 @@ const LabTableStatic = ({ lab_data, labToggleValue }) => {
         </TableHead>
 
         <TableBody>
-          {labField.map((f, idx) => {
+          {labStaticField.map((f, idx) => {
             return (
               <TableRow key={'lab-' + idx}>
                 <TableCell key={'lab-' + idx + 'col1'}>
-                  {labDBFieldToSemanticWord[f]}
+                  {labStaticDBFieldToSemanticWord[f]}
                 </TableCell>
                 <TableCell key={'lab-' + idx + 'col2'}>
                   {lab_data[0]?.[f] ? lab_data[0]?.[f] : ''}
@@ -65,39 +66,3 @@ const LabTableStatic = ({ lab_data, labToggleValue }) => {
 };
 
 export default LabTableStatic;
-
-const labField = [
-  'L',
-  'a',
-  'b',
-  'DL',
-  'CL',
-  'RW',
-  'ph',
-  'WBSF',
-  'cardepsin_activity',
-  'MFI',
-  'sourness',
-  'bitterness',
-  'umami',
-  'richness',
-  'Collagen',
-];
-const labDBFieldToSemanticWord = {
-  L: '명도',
-  a: '적색도',
-  b: '황색도',
-  DL: '육즙감량',
-  CL: '가열감량',
-  RW: '압착감량',
-  ph: 'pH',
-  WBSF: '전단가',
-  cardepsin_activity: '카뎁신활성도',
-  MFI: '근소편화지수',
-  sourness: '신만',
-  bitterness: '진한맛',
-  umami: '감칠맛',
-  richness: '후미',
-  collagen: '콜라겐',
-};
-

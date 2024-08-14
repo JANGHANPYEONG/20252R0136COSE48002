@@ -7,6 +7,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import {
+  deepAgingPAField,
+  deepAgingPADBFieldToSemanticWord,
+} from '../constants/infofield';
 
 const PredictedProcessedTablePA = ({ seqno, processed_data, dataPA }) => {
   const processedDataIdx = seqno - 1;
@@ -32,7 +36,7 @@ const PredictedProcessedTablePA = ({ seqno, processed_data, dataPA }) => {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">
-                {deepAgingDBFieldToSemanticWord[f]}
+                {deepAgingPADBFieldToSemanticWord[f]}
               </TableCell>
               <TableCell align="right">
                 <div style={{ display: 'flex' }}>
@@ -104,21 +108,3 @@ const PredictedProcessedTablePA = ({ seqno, processed_data, dataPA }) => {
 };
 
 export default PredictedProcessedTablePA;
-
-const deepAgingPAField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'xai_gradeNum',
-];
-const deepAgingDBFieldToSemanticWord = {
-  marbling: '마블링',
-  color: '육색',
-  texture: '조직감',
-  surfaceMoisture: '표면육즙',
-  overall: '기호도',
-  xai_gradeNum: '예상등급',
-};
-
