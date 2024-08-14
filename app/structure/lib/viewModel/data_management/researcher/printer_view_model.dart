@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:bixolon_printer/bixolon_printer.dart';
-import 'package:bx_btprinter/btprinter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 
 class PrinterViewModel extends ChangeNotifier {
   MeatModel meatModel;
@@ -19,13 +20,11 @@ class PrinterViewModel extends ChangeNotifier {
   bool isScanning = false;
 
   // Bluetooth
-  final btPrinter = Btprinter();
+  BixolonPrinter bixolonPrinter = BixolonPrinter();
   List<String> devices = [];
   List<String> deviceNames = [];
   String? selectedDevice;
   bool isDeviceConnected = false;
-
-  BixolonPrinter bixolonPrinter = BixolonPrinter();
 
   void _initialize() async {
     await scan();
@@ -76,10 +75,12 @@ class PrinterViewModel extends ChangeNotifier {
 
   /// 프린트 동작
   void printQR() async {
+    showPrintPopup(context);
     if (meatModel.imagePath != null) {
       String qrString = await loadQr();
       await bixolonPrinter.printQr(qrString, true, 60, 10, 450, 100, 80, 0, 0);
     }
+    if (context.mounted) context.pop();
   }
 
   /// S3에 저장된 QR 이미지를 프린트 가능한 문자열로 변환하는 함수

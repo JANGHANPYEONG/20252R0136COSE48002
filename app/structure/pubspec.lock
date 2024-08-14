@@ -40,14 +40,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  bx_btprinter:
-    dependency: "direct main"
-    description:
-      name: bx_btprinter
-      sha256: "3d6e7e468058510ced7f90c098d35e1eeda1dbcea1260dfa7a7a958edcc84d90"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   camera:
     dependency: "direct main"
     description:
@@ -88,14 +80,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.5"
-  change_app_package_name:
-    dependency: transitive
-    description:
-      name: change_app_package_name
-      sha256: f734e127d334053873733fb61b1ecae73c09abb694b759a4afd26aa9c9547850
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
   characters:
     dependency: transitive
     description:

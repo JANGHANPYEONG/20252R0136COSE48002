@@ -35,7 +35,6 @@ dependencies:
   flutter_dotenv: ^5.1.0
   camera: ^0.11.0+1
   syncfusion_flutter_core: ^26.1.42
-  bx_btprinter: ^0.0.2
   bixolon_printer:
     path: ../bixolon_printer
 
