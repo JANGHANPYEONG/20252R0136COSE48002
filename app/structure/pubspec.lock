@@ -28,8 +28,8 @@ packages:
   bixolon_printer:
     dependency: "direct main"
     description:
-      path: "/Users/hajin/Desktop/bixolon_printer"
-      relative: false
+      path: "../bixolon_printer"
+      relative: true
     source: path
     version: "0.0.1"
   boolean_selector:

@@ -37,7 +37,7 @@ dependencies:
   syncfusion_flutter_core: ^26.1.42
   bx_btprinter: ^0.0.2
   bixolon_printer:
-    path: /Users/hajin/Desktop/bixolon_printer
+    path: ../bixolon_printer
 
 dev_dependencies:
   flutter_test:

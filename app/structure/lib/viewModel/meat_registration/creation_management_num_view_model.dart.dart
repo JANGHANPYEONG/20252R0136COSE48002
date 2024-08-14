@@ -6,8 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:structure/config/userfuls.dart';
 import 'package:structure/dataSource/local_data_source.dart';
@@ -22,7 +22,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
   CreationManagementNumViewModel(this.meatModel, this.userModel, this.context) {
     _initialize();
-    _listenToPrinterStatus();
   }
   bool isLoading = true;
 
@@ -137,6 +136,14 @@ class CreationManagementNumViewModel with ChangeNotifier {
     final storageRef =
         FirebaseStorage.instance.ref().child('qr_codes/$managementNum.png');
     await storageRef.putData(bytes);
+
+    // 프린트를 위해 이미지 위치 저장
+    final directory = await getTemporaryDirectory();
+    final imgPath = '${directory.path}/qr-${DateTime.now()}.jpeg';
+    meatModel.imagePath = imgPath;
+
+    final imgFile = File(imgPath);
+    await imgFile.writeAsBytes(bytes);
   }
 
   /// 3. 육류 정보를 서버로 전송
@@ -165,36 +172,8 @@ class CreationManagementNumViewModel with ChangeNotifier {
     }
   }
 
-  // 프린터 조작
-  static const platform = MethodChannel('com.example.structure/printer');
-  String _printerStatus = 'Unknown';
-
-  static const EventChannel _printerStatusChannel =
-      EventChannel('com.example.structure/printerStatus');
-
-  // 프린터 상태 업데이트
-  void _listenToPrinterStatus() {
-    _printerStatusChannel.receiveBroadcastStream().listen(
-      (dynamic status) {
-        _printerStatus = status;
-        if (_printerStatus == "CONNECTED") {
-          // 프린트
-          platform.invokeMethod('printQr', {'qrData': managementNum});
-        }
-      },
-      onError: (dynamic error) {
-        debugPrint('Received error: ${error.message}');
-      },
-    );
-  }
-
-  Future<void> printQr() async {
-    try {
-      // 프린터 연결
-      await platform.invokeMethod('connect');
-    } on PlatformException catch (e) {
-      debugPrint("Failed to connect to the printer: '${e.message}'.");
-    }
+  void clickedQR() {
+    context.go('/home/success-registration/qr');
   }
 
   void clickedHomeButton() {

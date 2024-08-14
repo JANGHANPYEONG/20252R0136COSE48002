@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:bixolon_printer/bixolon_printer.dart';
 import 'package:bx_btprinter/btprinter.dart';
 import 'package:flutter/material.dart';
@@ -75,22 +76,29 @@ class PrinterViewModel extends ChangeNotifier {
 
   /// 프린트 동작
   void printQR() async {
-    String qrString = await loadQr();
-    await bixolonPrinter.printQr(qrString, true, 60, 10, 450, 100, 80, 0, 0);
+    if (meatModel.imagePath != null) {
+      String qrString = await loadQr();
+      await bixolonPrinter.printQr(qrString, true, 60, 10, 450, 100, 80, 0, 0);
+    }
   }
 
-  /// QR 이미지를 프린트 가능한 문자열로 변환하는 함수
+  /// S3에 저장된 QR 이미지를 프린트 가능한 문자열로 변환하는 함수
   Future<String> loadQr() async {
-    // Fetch the image from the internet
-    final response = await http.get(Uri.parse(meatModel.imagePath!));
+    Uint8List imageBytes;
 
-    if (response.statusCode == 200) {
-      Uint8List imageBytes = response.bodyBytes;
-      String base64Image = base64Encode(imageBytes);
-
-      return base64Image;
+    if (meatModel.imagePath!.contains('http')) {
+      final response = await http.get(Uri.parse(meatModel.imagePath!));
+      if (response.statusCode == 200) {
+        imageBytes = response.bodyBytes;
+      } else {
+        throw Exception('Failed to load image from S3 server');
+      }
     } else {
-      throw Exception("Failed to load image from the internet");
+      final file = File(meatModel.imagePath!);
+      imageBytes = await file.readAsBytes();
     }
+
+    String base64Image = base64Encode(imageBytes);
+    return base64Image;
   }
 }
