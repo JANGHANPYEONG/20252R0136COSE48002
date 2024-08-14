@@ -6,8 +6,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 // import mui component
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 // import widget components
-import AppBar from './AppBar';
-import Drawer from './Drawer';
+import AppBar from './Children/AppBar';
+import Drawer from './Children/Drawer';
 
 import CustomSnackbar from '../../Base/CustomSnackbar';
 import useLogout from '../../../Utils/useLogout';

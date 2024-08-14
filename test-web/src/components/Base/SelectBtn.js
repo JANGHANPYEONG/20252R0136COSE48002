@@ -1,8 +1,9 @@
 import { Button } from '@mui/material';
+import style from './style/selectbtnstyle';
 
 const SelectedBtn = ({ date }) => {
   return (
-    <Button variant="contained" value="week" style={styles.button}>
+    <Button variant="contained" value="week" style={style.button}>
       {date}
     </Button>
   );
@@ -13,7 +14,7 @@ const UnSelectedBtn = ({ date, handleDr }) => {
     <Button
       variant="outlined"
       value="week"
-      style={styles.button}
+      style={style.button}
       onClick={handleDr}
     >
       {date}
@@ -22,13 +23,3 @@ const UnSelectedBtn = ({ date, handleDr }) => {
 };
 
 export { SelectedBtn, UnSelectedBtn };
-
-const styles = {
-  button: {
-    borderRadius: '50px',
-    padding: '0px 15px',
-    width: '70px',
-    height: '35px',
-    fontWeight: '500',
-  },
-};

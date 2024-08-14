@@ -18,7 +18,7 @@ import MuiDrawer from '@mui/material/Drawer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 // import page lists
-import pageListItems from './pageListItems';
+import pageListItems from '../constants/pageListItems';
 
 // Drawer 스타일 설정
 const StyledDrawer = styled(MuiDrawer, {
