@@ -80,17 +80,23 @@ class ListCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Center(
-                        child: statusType != '반려'
+                        child: statusType != '반려' && dDay! >= 0
                             ? Text(
                                 'D-$dDay',
                                 style: Palette.h7,
                                 textAlign: TextAlign.center,
                               )
-                            : Text(
-                                'D-$updatedAt',
-                                style: Palette.h7,
-                                textAlign: TextAlign.center,
-                              ),
+                            : statusType != '반려' && dDay! < 0
+                                ? Text(
+                                    '종료',
+                                    style: Palette.h7,
+                                    textAlign: TextAlign.center,
+                                  )
+                                : Text(
+                                    'D-$updatedAt',
+                                    style: Palette.h7,
+                                    textAlign: TextAlign.center,
+                                  ),
                       ),
                     ),
                   )

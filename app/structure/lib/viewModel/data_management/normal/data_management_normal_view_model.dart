@@ -99,8 +99,6 @@ class DataManagementNormalViewModel with ChangeNotifier {
         } else {
           // 각 사용자별로 데이터를 순회하며 id와 statusType 값을 추출하여 리스트에 추가
           for (Map<String, dynamic> item in jsonData) {
-            print("iten");
-            print(item);
             String meatId = item['meatId'];
             String statusType = item['statusType'];
             String specieValue = item['specieValue'];
@@ -116,8 +114,6 @@ class DataManagementNormalViewModel with ChangeNotifier {
             };
 
             entireList.add(idStatusPair);
-            print("ef");
-            print(entireList);
           }
         }
       }
@@ -443,14 +439,8 @@ class DataManagementNormalViewModel with ChangeNotifier {
 
     try {
       meatId = selectedList[idx]['meatId']!;
-      print(selectedList);
-      print(selectedList[idx]['updatedAt']);
-      String d = selectedList[idx]['updatedAt']!;
-      print(Usefuls.calculateDateDifference(
-          Usefuls.dateShortToDateLong(selectedList[idx]["updatedAt"]!)));
+
       final response = await RemoteDataSource.getMeatData(meatId);
-      print("response 출력");
-      print(response['updatedAt']);
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response); // 불러온 정보 저장
         meatModel.fromJsonDeepAged(0);
