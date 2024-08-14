@@ -197,13 +197,21 @@ class UserRouter {
             ),
             // 육류 등록 완료 페이지
             GoRoute(
-              path: 'success-registration',
-              builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => CreationManagementNumViewModel(
-                    meatModel, userModel, context),
-                child: const CreationManagementNumScreen(),
-              ),
-            ),
+                path: 'success-registration',
+                builder: (context, state) => ChangeNotifierProvider(
+                      create: (context) => CreationManagementNumViewModel(
+                          meatModel, userModel, context),
+                      child: const CreationManagementNumScreen(),
+                    ),
+                routes: [
+                  GoRoute(
+                    path: 'qr',
+                    builder: (context, state) => ChangeNotifierProvider(
+                      create: (context) => PrinterViewModel(meatModel, context),
+                      child: const PrinterScreen(),
+                    ),
+                  ),
+                ]),
             GoRoute(
               path: 'registration-fail',
               builder: (context, state) =>
@@ -333,7 +341,7 @@ class UserRouter {
                   ),
                   routes: [
                     GoRoute(
-                      path: 'qr-list',
+                      path: 'qr',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
                             PrinterViewModel(meatModel, context),

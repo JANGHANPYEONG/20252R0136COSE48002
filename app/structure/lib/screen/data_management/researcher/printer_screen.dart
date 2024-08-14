@@ -22,7 +22,7 @@ class _PrinterScreenState extends State<PrinterScreen> {
     PrinterViewModel printerViewModel = context.watch<PrinterViewModel>();
 
     return Scaffold(
-      appBar: const CustomAppBar(title: '프린터 검색'),
+      appBar: const CustomAppBar(title: 'QR 프린트'),
       body: Stack(
         children: [
           Container(
@@ -38,12 +38,13 @@ class _PrinterScreenState extends State<PrinterScreen> {
                     // 리스트 dropdown
                     Expanded(
                       child: CustomDropdown(
-                        hintText: Text('프린터 선택', style: Palette.h4OnSecondary),
-                        value: printerViewModel.selectedDevice?.name ??
+                        hintText:
+                            Text('프린터를 선택하세요', style: Palette.h4OnSecondary),
+                        value: printerViewModel.selectedDevice ??
                             (printerViewModel.devices.isEmpty
-                                ? '프린터 없음'
-                                : '프린터 선택'),
-                        itemList: printerViewModel.deviceNames(),
+                                ? '프린터를 찾을 수 없습니다'
+                                : '프린터를 선택하세요'),
+                        itemList: printerViewModel.deviceNames,
                         onChanged: (_, index) =>
                             printerViewModel.selectPrinter(index),
                       ),
@@ -96,6 +97,3 @@ class _PrinterScreenState extends State<PrinterScreen> {
     );
   }
 }
-
-
-// https://pub.dev/packages/flutter_pos_printer_platform_image_3

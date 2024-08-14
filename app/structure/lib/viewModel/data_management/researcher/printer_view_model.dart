@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'package:bixolon_printer/bixolon_printer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter/services.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/model/meat_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 
 class PrinterViewModel extends ChangeNotifier {
   MeatModel meatModel;
@@ -15,155 +20,86 @@ class PrinterViewModel extends ChangeNotifier {
   bool isScanning = false;
 
   // Bluetooth
-  List<BluetoothDevice> devices = [];
-  BluetoothDevice? selectedDevice;
+  BixolonPrinter bixolonPrinter = BixolonPrinter();
+  List<String> devices = [];
+  List<String> deviceNames = [];
+  String? selectedDevice;
   bool isDeviceConnected = false;
 
   void _initialize() async {
-    _flutterBlueSetting();
     await scan();
 
     isLoading = false;
     notifyListeners();
   }
 
-  /// 블루투스 초기 값 설정
-  void _flutterBlueSetting() async {
-    // 블루투스를 지원하지 않음
-    if (await FlutterBluePlus.isSupported == false) {
-      debugPrint('Blueprint not supported');
-      return;
-    }
-
-    FlutterBluePlus.adapterState.listen((BluetoothAdapterState state) {
-      if (state == BluetoothAdapterState.on) {
-        // 블루트스 활성화 상태
-      } else if (state == BluetoothAdapterState.unauthorized) {
-        // 블루트스 권한 없음 상태
-      } else {
-        // 기타 상태
-      }
-    });
-
-    if (Platform.isAndroid) {
-      await FlutterBluePlus.turnOn();
-    }
-  }
-
-  /// 블루투스 기기 스캔
+  /// 등록된 블루투스 기기 스캔
   Future<void> scan() async {
     isScanning = true;
     selectedDevice = null;
-    isDeviceConnected = false;
     notifyListeners();
 
-    // 리스트 초기화
-    devices.clear();
+    try {
+      var pairedDevices = await bixolonPrinter.findBluetoothPrinter();
+      devices = pairedDevices
+          .cast<String>()
+          .where((device) => device.startsWith('SPP')) //SPP로 시작하는 장치만 가져옴
+          .toList();
+      deviceNames =
+          devices.map((device) => device.split('(')[0].trim()).toList();
+    } catch (e) {}
 
-    // 블루투스 기기 찾기
-    await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
-
-    // 찾은 기기 저장
-    var temp = FlutterBluePlus.onScanResults.listen(
-      (results) async {
-        if (results.isNotEmpty) {
-          ScanResult r = results.last;
-          if (r.advertisementData.advName.isNotEmpty) {
-            devices.add(r.device);
-            notifyListeners();
-          }
-        }
-      },
-    );
-
-    // FlutterBluePrint에 저장된 기기 초기화
-    FlutterBluePlus.cancelWhenScanComplete(temp);
+    // 만약 프린터가 하나만 발견된다면 바로 연결까지 진행
+    if (devices.length == 1) {
+      selectPrinter(0);
+    }
 
     isScanning = false;
     notifyListeners();
   }
 
-  /// 찾은 블루투스 기기 이름 반환하는 함수
-  List<String> deviceNames() {
-    return devices
-        .map((device) => '${device.advName} : ${device.remoteId}')
-        .toList();
-  }
-
   /// 프린터 선택
   void selectPrinter(int index) async {
     isDeviceConnected = false;
+    isScanning = false;
     notifyListeners();
 
-    if (selectedDevice != null) {
-      // 이미 연결된 기기가 있으면 먼저 disconnect
-      StreamSubscription subscription = selectedDevice!.connectionState
-          .listen((BluetoothConnectionState state) async {
-        if (state == BluetoothConnectionState.disconnected) {
-          debugPrint(
-              '${selectedDevice!.disconnectReason?.code} ${selectedDevice!.disconnectReason?.description}');
-        }
-      });
-      selectedDevice!
-          .cancelWhenDisconnected(subscription, delayed: true, next: true);
-    }
-
-    // 선택된 기기 설정
-    selectedDevice = devices[index];
-    await selectedDevice!.connect();
-    isDeviceConnected = selectedDevice!.isConnected;
-
+    // 프린터 선택
+    selectedDevice = devices[index].split('(')[0].trim();
+    // 프린터 주소 추출
+    final address = devices[index].split('(')[1].replaceAll(')', '').trim();
+    // 프린터 연결
+    isDeviceConnected = await bixolonPrinter.connectPrinter(address);
     notifyListeners();
   }
 
   /// 프린트 동작
   void printQR() async {
-    // try {
-    //   if (selectedDevice == null) {
-    //     throw ErrorDescription('Printer not selected');
-    //   }
+    showPrintPopup(context);
+    if (meatModel.imagePath != null) {
+      String qrString = await loadQr();
+      await bixolonPrinter.printQr(qrString, true, 60, 10, 450, 100, 80, 0, 0);
+    }
+    if (context.mounted) context.pop();
+  }
 
-    // } catch (e) {
-    //   debugPrint('Error: $e');
-    // }
+  /// S3에 저장된 QR 이미지를 프린트 가능한 문자열로 변환하는 함수
+  Future<String> loadQr() async {
+    Uint8List imageBytes;
 
-    List<BluetoothService> services = await selectedDevice!.discoverServices();
-    // for (var service in services) {
-    //   if (service.uuid == Guid('00001101-0000-1000-8000-00805F9B34FB')) {
-    //     for (var characteristic in service.characteristics) {
-    //       if (characteristic.uuid ==
-    //           Guid('00001101-0000-1000-8000-00805F9B34FB')) {
-    //         List<int> bytes = utf8.encode("Hello, Printer!");
-    //         await characteristic.write(bytes);
-    //       } else {
-    //         print('1');
-    //       }
-    //     }
-    //   } else {
-    //     print('2');
-    //   }
-    // }
-
-    for (var service in services) {
-      for (var characteristic in service.characteristics) {
-        print(characteristic.uuid);
-        // List<int> bytes = utf8.encode("Hello, Printer!");
-        // await characteristic.write(bytes);
+    if (meatModel.imagePath!.contains('http')) {
+      final response = await http.get(Uri.parse(meatModel.imagePath!));
+      if (response.statusCode == 200) {
+        imageBytes = response.bodyBytes;
+      } else {
+        throw Exception('Failed to load image from S3 server');
       }
+    } else {
+      final file = File(meatModel.imagePath!);
+      imageBytes = await file.readAsBytes();
     }
 
-    // services.forEach((service) {
-    //   print(service.uuid);
-    //   if (service.uuid == Guid("YOUR_SERVICE_UUID")) {
-    //     service.characteristics.forEach((characteristic) async {
-    //       print(characteristic);
-    //       if (characteristic.uuid == Guid("YOUR_CHARACTERISTIC_UUID")) {
-    //         // 데이터 작성
-    //         List<int> bytes = utf8.encode("Hello, Printer!");
-    //         await characteristic.write(bytes);
-    //       }
-    //     });
-    //   }
-    // });
+    String base64Image = base64Encode(imageBytes);
+    return base64Image;
   }
 }
