@@ -220,6 +220,18 @@ class _DataManagementNormalScreenState
                                       dataManagementNormalViewModel
                                           .selectedList[index]["createdAt"]!),
                                 ),
+                            //반려중일때만 updatedAt이 들어가도록
+
+                            updatedAt: dataManagementNormalViewModel
+                                        .selectedList[index]["statusType"]! ==
+                                    '반려'
+                                ? 3 -
+                                    Usefuls.calculateDateDifference(
+                                        Usefuls.dateShortToDateLong(
+                                            dataManagementNormalViewModel
+                                                    .selectedList[index]
+                                                ["updatedAt"]!))
+                                : null,
                           ),
                           keyboardDismissBehavior:
                               ScrollViewKeyboardDismissBehavior.onDrag,

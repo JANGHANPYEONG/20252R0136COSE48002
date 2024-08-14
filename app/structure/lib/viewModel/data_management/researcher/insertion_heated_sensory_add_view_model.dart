@@ -39,8 +39,11 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   double tenderness21 = 1.0;
 
   void _initialize() {
+    print("시작");
     seqNo = meatModel.seqno;
     processCreatedAt = meatModel.deepAgingCreatedAt!;
+    print("aaaaa");
+    print(meatModel.heatedSensoryEval);
     tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
     tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
     tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;

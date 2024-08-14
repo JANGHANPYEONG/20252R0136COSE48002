@@ -103,12 +103,14 @@ class DataManagementNormalViewModel with ChangeNotifier {
             String statusType = item['statusType'];
             String specieValue = item['specieValue'];
             String createdAt = Usefuls.parseDate(item['createdAt']);
+            String updatedAt = Usefuls.parseDate(item['updatedAt']);
 
             Map<String, String> idStatusPair = {
               'meatId': meatId,
               'statusType': statusType,
               'createdAt': createdAt,
               'specieValue': specieValue,
+              'updatedAt': updatedAt,
             };
 
             entireList.add(idStatusPair);
