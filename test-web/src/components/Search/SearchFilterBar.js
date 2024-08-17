@@ -1,5 +1,5 @@
 // import react
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import mui
 import {
@@ -24,7 +24,7 @@ import updateDates from './helper/updateDates';
 import style from './style/searchfilterbarstyle';
 const navy = '#0F3659';
 
-const SearchFilterBar = ({ setStartDate, setEndDate }) => {
+const SearchFilterBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -34,8 +34,6 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
   const [duration, setDuration] = useState(
     searchParams.get('duration') || 'week'
   );
-  const [durStart, setDurStart] = useState(null);
-  const [durEnd, setDurEnd] = useState(null);
   // 조회 기간 (직접 입력할 시)
   const [calenderStart, setCalenderStart] = useState(
     dayjs(searchParams.get('start') || null)
@@ -50,8 +48,6 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
   const [initialCalenderEnd, setInitialCalenderEnd] = useState(calenderEnd);
   const [initialIsDur, setInitialIsDur] = useState(isDur);
 
-  // console.log(duration);
-
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
     setDuration(event.target.value);
@@ -63,47 +59,41 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
 
   //완료 버튼 클릭하면 변함
   const handleCompleteBtn = () => {
-    const queryParams = new URLSearchParams();
+    let newStartDate, newEndDate;
+
     if (!isDur) {
-      //직접 입력할 시
-      if (calenderStart) {
-        const startVal = `${calenderStart.$y}-${String(calenderStart.$M + 1).padStart(2, '0')}-${String(calenderStart.$D).padStart(2, '0')}T00:00:00`;
-        setStartDate(startVal);
-        queryParams.set('start', calenderStart.format('YYYY-MM-DD'));
-      }
-      if (calenderEnd) {
-        const endVal = `${calenderEnd.$y}-${String(calenderEnd.$M + 1).padStart(2, '0')}-${String(calenderEnd.$D).padStart(2, '0')}T23:59:59`;
-        setEndDate(endVal);
-        queryParams.set('end', calenderEnd.format('YYYY-MM-DD'));
-      }
-      setDuration(null);
+      // 직접 입력할 시
+      newStartDate = calenderStart;
+      newEndDate = calenderEnd;
     } else {
-      //탭으로 클릭할시
-      queryParams.set('duration', duration);
+      // 탭으로 클릭할 시
       const { start, end } = updateDates(duration);
-      setStartDate(start);
-      setEndDate(end);
+      newStartDate = dayjs(start);
+      newEndDate = dayjs(end);
     }
+    const queryParams = new URLSearchParams();
+
+    if (newStartDate) {
+      queryParams.set('start', newStartDate.format('YYYY-MM-DD'));
+    }
+    if (newEndDate) {
+      queryParams.set('end', newEndDate.format('YYYY-MM-DD'));
+    }
+    // 이전 설정값 저장
     setInitialDuration(duration);
     setInitialCalenderStart(calenderStart);
     setInitialCalenderEnd(calenderEnd);
     setInitialIsDur(isDur);
+    // URL 업데이트
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
   const handleReset = () => {
-    setDuration('week');
+    setDuration(null);
     setCalenderStart(null);
     setCalenderEnd(null);
     setIsDur(true);
-
-    const { start, end } = updateDates('week');
-    setStartDate(start);
-    setEndDate(end);
-
-    const queryParams = new URLSearchParams();
-    queryParams.set('duration', 'week');
-    navigate(`${location.pathname}?${queryParams.toString()}`);
+    navigate(`${location.pathname}`);
   };
 
   // pop over 결정
