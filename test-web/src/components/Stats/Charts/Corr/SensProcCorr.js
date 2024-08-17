@@ -3,30 +3,30 @@ import ApexCharts from 'react-apexcharts';
 import { statisticSensoryProcessed } from '../../../../API/statistic/statisticSensoryProcessed';
 import calculateChartSeries from './calculateChartSeries';
 
-const Sense_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
+const SenseProcCorr = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      const response = await statisticSensoryProcessed(
-        startDate,
-        endDate,
-        animalType,
-        grade
-      );
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setProp(Object.keys(data));
-      setChartData(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await statisticSensoryProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
+        );
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setProp(Object.keys(data));
+        setChartData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
@@ -166,4 +166,4 @@ const Sense_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
   );
 };
 
-export default Sense_Proc_Corr;
+export default SenseProcCorr;

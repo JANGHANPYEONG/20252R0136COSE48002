@@ -1,42 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
+import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
 import calculateChartSeries from './calculateChartSeries';
-
-const Sense_Fresh_Corr = ({ startDate, endDate, animalType, grade }) => {
+const TasteProcCorr = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      const response = await statisticSensoryFresh(
-        startDate,
-        endDate,
-        animalType,
-        grade
-      );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setProp(Object.keys(data));
-      setChartData(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await statisticProbexptProcessed(
+          startDate,
+          endDate,
+          animalType,
+          grade
+        );
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setProp(Object.keys(data));
+        setChartData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
   const axis_labels = {
-    color: '색',
-    marbling: '마블링',
-    overall: '기호도',
-    surfaceMoisture: '육즙',
-    texture: '조직감',
+    bitterness: '진한맛',
+    richness: '후미',
+    sourness: '신맛',
+    umami: '감칠맛',
   };
 
   const ChartSeries = calculateChartSeries(prop, chartData, axis_labels);
@@ -48,28 +46,7 @@ const Sense_Fresh_Corr = ({ startDate, endDate, animalType, grade }) => {
   const ChartOption = {
     chart: {
       height: 450,
-      width: '100%',
       type: 'heatmap',
-      // events: {
-      //   mounted: function(chart) {
-      //     const styleTag = document.createElement('style');
-      //     styleTag.innerHTML = `
-      //       .custom-tooltip {
-      //         background: #fff;
-      //         border: 1px solid #ccc;
-      //         padding: 5px 10px;
-      //         font-size: 12px;
-      //       }
-      //     `;
-      //     document.head.appendChild(styleTag);
-      //   }
-      // }
-    },
-    grid: {
-      padding: {
-        left: 0, // 왼쪽 여백 제거
-        right: 20,
-      },
     },
     dataLabels: {
       enabled: false,
@@ -79,34 +56,13 @@ const Sense_Fresh_Corr = ({ startDate, endDate, animalType, grade }) => {
       categories: xCategories, // 4가지 요소로 구성된 배열을 사용
     },
     title: {
-      text: '원육 관능데이터 상관관계',
+      text: '처리육 맛데이터 상관관계',
     },
     grid: {
       padding: {
         right: 20,
       },
     },
-    // tooltip: {
-    //   enabled: true,
-    //   y: {
-    //     formatter: function (value) {
-    //       const decimalValue = value / 100;
-    //       return decimalValue.toFixed(3);
-    //     },
-    //   },
-    // },
-    // tooltip: {
-    //   enabled: true,
-    //   custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-    //     const xLabel = w.globals.labels[dataPointIndex];
-    //     const yLabel = w.config.series[seriesIndex].name;
-    //     const value = series[seriesIndex][dataPointIndex];
-    //     const decimalValue = (value / 100).toFixed(3);
-    //     return `<div class="custom-tooltip">
-    //       <span>${yLabel} - ${xLabel}: ${decimalValue}</span>
-    //     </div>`;
-    //   },
-    // },
     tooltip: {
       enabled: true,
       y: {
@@ -209,4 +165,4 @@ const Sense_Fresh_Corr = ({ startDate, endDate, animalType, grade }) => {
   );
 };
 
-export default Sense_Fresh_Corr;
+export default TasteProcCorr;

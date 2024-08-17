@@ -1,45 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { statisticSensoryHeated } from '../../../../API/statistic/statisticSensoryHeated';
+import { statisticProbexptFresh } from '../../../../API/statistic/statisticProbexptFresh';
 import calculateChartSeries from './calculateChartSeries';
 
-const Sense_Heated_Corr = ({ startDate, endDate, animalType, grade }) => {
+const TasteFreshCorr = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      const response = await statisticSensoryHeated(
-        startDate,
-        endDate,
-        animalType,
-        grade
-      );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setProp(Object.keys(data));
-      setChartData(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await statisticProbexptFresh(
+          startDate,
+          endDate,
+          animalType,
+          grade
+        );
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setProp(Object.keys(data));
+        setChartData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
   const axis_labels = {
-    flavor: '풍미',
-    juiciness: '다즙성',
-    palatability: '기호도',
-    tenderness: '연도',
+    bitterness: '진한맛',
+    richness: '후미',
+    sourness: '신맛',
     umami: '감칠맛',
   };
 
   const ChartSeries = calculateChartSeries(prop, chartData, axis_labels);
+
+  // 두 배열의 상관 관계 계수 계산
 
   const xCategories = prop
     .slice()
@@ -48,6 +49,7 @@ const Sense_Heated_Corr = ({ startDate, endDate, animalType, grade }) => {
   const ChartOption = {
     chart: {
       height: 450,
+      width: '100%',
       type: 'heatmap',
     },
     dataLabels: {
@@ -58,7 +60,7 @@ const Sense_Heated_Corr = ({ startDate, endDate, animalType, grade }) => {
       categories: xCategories, // 4가지 요소로 구성된 배열을 사용
     },
     title: {
-      text: '가열육 관능데이터 상관관계',
+      text: '원육 맛데이터 상관관계',
     },
     grid: {
       padding: {
@@ -162,9 +164,10 @@ const Sense_Heated_Corr = ({ startDate, endDate, animalType, grade }) => {
       options={ChartOption}
       series={ChartSeries}
       type="heatmap"
+      width="100%"
       height={350}
     />
   );
 };
 
-export default Sense_Heated_Corr;
+export default TasteFreshCorr;

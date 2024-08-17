@@ -1,40 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import ApexCharts from 'react-apexcharts';
-import { statisticProbexptProcessed } from '../../../../API/statistic/statisticProbexptProcessed';
+import { statisticSensoryFresh } from '../../../../API/statistic/statisticSensoryFresh';
 import calculateChartSeries from './calculateChartSeries';
-const Taste_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
+
+const SenseFreshCorr = ({ startDate, endDate, animalType, grade }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      const response = await statisticProbexptProcessed(
-        startDate,
-        endDate,
-        animalType,
-        grade
-      );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setProp(Object.keys(data));
-      setChartData(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await statisticSensoryFresh(
+          startDate,
+          endDate,
+          animalType,
+          grade
+        );
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setProp(Object.keys(data));
+        setChartData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
     fetchData();
   }, [startDate, endDate, animalType, grade]);
 
   const axis_labels = {
-    bitterness: '진한맛',
-    richness: '후미',
-    sourness: '신맛',
-    umami: '감칠맛',
+    color: '색',
+    marbling: '마블링',
+    overall: '기호도',
+    surfaceMoisture: '육즙',
+    texture: '조직감',
   };
 
   const ChartSeries = calculateChartSeries(prop, chartData, axis_labels);
@@ -46,7 +48,22 @@ const Taste_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
   const ChartOption = {
     chart: {
       height: 450,
+      width: '100%',
       type: 'heatmap',
+      // events: {
+      //   mounted: function(chart) {
+      //     const styleTag = document.createElement('style');
+      //     styleTag.innerHTML = `
+      //       .custom-tooltip {
+      //         background: #fff;
+      //         border: 1px solid #ccc;
+      //         padding: 5px 10px;
+      //         font-size: 12px;
+      //       }
+      //     `;
+      //     document.head.appendChild(styleTag);
+      //   }
+      // }
     },
     dataLabels: {
       enabled: false,
@@ -56,7 +73,7 @@ const Taste_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
       categories: xCategories, // 4가지 요소로 구성된 배열을 사용
     },
     title: {
-      text: '처리육 맛데이터 상관관계',
+      text: '원육 관능데이터 상관관계',
     },
     grid: {
       padding: {
@@ -165,4 +182,4 @@ const Taste_Proc_Corr = ({ startDate, endDate, animalType, grade }) => {
   );
 };
 
-export default Taste_Proc_Corr;
+export default SenseFreshCorr;
