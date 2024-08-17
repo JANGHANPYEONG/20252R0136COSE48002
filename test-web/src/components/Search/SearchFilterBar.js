@@ -65,6 +65,7 @@ const SearchFilterBar = () => {
       // 직접 입력할 시
       newStartDate = calenderStart;
       newEndDate = calenderEnd;
+      // setDuration(null)
     } else {
       // 탭으로 클릭할 시
       const { start, end } = updateDates(duration);
@@ -231,6 +232,7 @@ const SearchFilterBar = () => {
                     onChange={(newVal) => {
                       setCalenderStart(newVal);
                       setIsDur(false);
+                      setDuration(null);
                     }}
                     value={isDur ? null : calenderStart}
                     label="시작날짜"
@@ -246,6 +248,7 @@ const SearchFilterBar = () => {
                     onChange={(newVal) => {
                       setCalenderEnd(newVal);
                       setIsDur(false);
+                      setDuration(null);
                     }}
                     value={isDur ? null : calenderEnd}
                     label="종료날짜"
@@ -262,7 +265,6 @@ const SearchFilterBar = () => {
           <Box style={{ display: 'flex', justifyContent: 'end' }}>
             <button
               onClick={() => {
-                setIsDur(false);
                 handleCompleteBtn();
                 setAnchorEl(null);
               }}

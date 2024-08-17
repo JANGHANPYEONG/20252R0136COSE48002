@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 // 검색 필터 컴포넌트
 import SearchFilterBar from '../components/Search/SearchFilterBar';
 // 목록 컴포넌트
@@ -29,12 +29,15 @@ const Dashboard = () => {
 
   // 쿼리스트링 추출
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
 
-  const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-
-  const queryStartDate = searchParams.get('start') || '';
-  const queryEndDate = searchParams.get('end') || '';
+  const { pageOffset, queryStartDate, queryEndDate } = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    return {
+      pageOffset: searchParams.get('pageOffset'),
+      queryStartDate: searchParams.get('start') || '',
+      queryEndDate: searchParams.get('end') || '',
+    };
+  }, [location.search]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -53,13 +56,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     const now = new Date();
-    let start = new Date(now);
+    let start = new Date('1970-01-01T00:00:00Z');
     let end = new Date(now);
 
-    if (queryStartDate && queryEndDate) {
-      // startDate와 endDate 파라미터가 있을 경우
-      start = new Date(queryStartDate);
-      end = new Date(queryEndDate);
+    if (queryStartDate || queryEndDate) {
+      // startDate 또는 endDate 파라미터가 있을 경우
+      if (queryStartDate) {
+        start = new Date(queryStartDate);
+      }
+      if (queryEndDate) {
+        end = new Date(queryEndDate);
+      }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
       start.setDate(now.getDate() - 7);
