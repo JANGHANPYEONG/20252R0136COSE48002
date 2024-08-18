@@ -1,5 +1,6 @@
 # 서버 메인 파일
 import sys
+from threading import Thread
 
 from flask import Flask, current_app
 from flask_cors import CORS
@@ -12,13 +13,15 @@ from db.db_model import initialize_db
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
+from consumer import *
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 환경 변수 다운로드
 load_dotenv()  
 
 app = Flask(__name__)
-    
+
 # RDS DB 연결
 db_uri = os.getenv("DB_URI")
 if not db_uri:
@@ -51,6 +54,12 @@ def initialize_services(app):
         
         # Firestore 초기화
         current_app.firestore_db = firebase_conn.firebase_db
+        
+        consumer = create_consumer()
+        # Kafka consumer를 별도의 스레드에서 실행
+        kafka_thread = Thread(target=process_messages, args=(s3_conn, consumer))
+        kafka_thread.daemon = True  # 메인 스레드가 종료되면 이 스레드도 종료됩니다
+        kafka_thread.start()
     
     
 # 서비스 초기화
@@ -80,4 +89,3 @@ def hello_world():
 # Flask 실행
 if __name__ == "__main__":
     app.run(debug=True, port=8081)
-    

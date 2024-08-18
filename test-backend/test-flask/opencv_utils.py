@@ -926,7 +926,7 @@ def lbp_calculate(s3_conn, image, meat_id, seqno):
     n_points = 8 * radius
     lbp2 = local_binary_pattern(image, n_points, radius, method='uniform')
     
-    print("Success to create gabor_texture")
+    print("Success to create lbp images")
     
     # Save the LBP image
     image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
@@ -985,8 +985,7 @@ def gabor_texture_analysis(s3_conn, image, id, seqno):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
-    pprint.pprint(features)
-    print("Success to create gabor_texture")
+    print("Success to create gabor images")
     
     result = {}
     for i, response in enumerate(responses):

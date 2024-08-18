@@ -1,3 +1,4 @@
+from threading import Thread
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -7,6 +8,8 @@ import json
 from utils import *
 
 from .db_model import *
+from producer import *
+from consumer import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)
@@ -392,7 +395,8 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             # db_session.merge(new_sensory_eval)
 
             if need_img:
-                transfer_folder_image(
+                producer = create_producer()
+                image_path = transfer_folder_image(
                     s3_conn,
                     firestore_conn,
                     db_session,
@@ -400,10 +404,23 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                     new_sensory_eval,
                     "sensory_evals",
                 )
+                try:
+                    data = {
+                        "image_url": image_path,
+                        "meat_id": meat_id,
+                        "seqno": seqno
+                    }
+                    producer.send(os.getenv("KAFKA_TOPIC"), value=json.dumps(data).encode("utf-8"))
+                    producer.flush()
+                    print(f"Success to send message to Kafka")
+                except Exception as e:
+                    print(f"Failed to send message to Kafka: {e}")
+                finally:
+                    producer.close()
             else:
                 db_session.merge(new_sensory_eval)
             db_session.commit()
-            return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
+            return {"msg": f"Success to Update Sensory Evaluation and Extract Texture Info of {meat_id}-{seqno}", "code": 200}
             
     except Exception as e:
         db_session.rollback()
