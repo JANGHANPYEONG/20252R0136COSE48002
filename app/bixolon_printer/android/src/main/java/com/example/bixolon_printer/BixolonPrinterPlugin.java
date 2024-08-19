@@ -1,11 +1,14 @@
 package com.example.bixolon_printer;
 
+import androidx.annotation.NonNull;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +21,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
-import com.bixolon.commonlib.BXLCommonConst;
 import com.bixolon.labelprinter.BixolonLabelPrinter;
 
 /** BixolonPrinterPlugin */
@@ -29,19 +31,19 @@ public class BixolonPrinterPlugin implements FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
   private BixolonLabelPrinter bixolonLabelPrinter;
+  private Handler handler;
   private Context context;
 
   private String TAG = "Bixolon Printer";
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    Log.d(TAG, "Plugin attached");
-
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "bixolon_printer");
     channel.setMethodCallHandler(this);
 
+	// backgroundThread.start();
     context = flutterPluginBinding.getApplicationContext();
-    bixolonLabelPrinter = new BixolonLabelPrinter(context);
+	bixolonLabelPrinter = new BixolonLabelPrinter(context);
   }
 
   @Override
@@ -64,12 +66,12 @@ public class BixolonPrinterPlugin implements FlutterPlugin, MethodCallHandler {
     }
   }
 
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-  }
-
-  // 휴대폰에 연결된 블루투스 장치 리스트를 반환하는 함수
+	@Override
+	public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+		channel.setMethodCallHandler(null);
+	}
+	
+	// 휴대폰에 연결된 블루투스 장치 리스트를 반환하는 함수
   private void findBluetoothPrinter(@NonNull Result result) {
     try {
       BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -117,3 +119,4 @@ public class BixolonPrinterPlugin implements FlutterPlugin, MethodCallHandler {
     result.success(true);
   }
 }
+
