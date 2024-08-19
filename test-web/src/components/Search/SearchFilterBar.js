@@ -50,7 +50,12 @@ const SearchFilterBar = () => {
 
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
-    setDuration(event.target.value);
+    const clickedValue = event.target.value;
+    if (duration === clickedValue) {
+      setDuration(null);
+    } else {
+      setDuration(clickedValue);
+    }
     // 직접입력을 null로 바꾸기 (초기화)
     setCalenderStart(null);
     setCalenderEnd(null);
@@ -64,13 +69,17 @@ const SearchFilterBar = () => {
     if (!isDur) {
       // 직접 입력할 시
       newStartDate = calenderStart;
-      newEndDate = calenderEnd;
+      newEndDate = calenderEnd ? dayjs(calenderEnd).add(1, 'day') : calenderEnd;
       // setDuration(null)
     } else {
       // 탭으로 클릭할 시
-      const { start, end } = updateDates(duration);
-      newStartDate = dayjs(start);
-      newEndDate = dayjs(end);
+      if (!duration) {
+        handleReset();
+      } else {
+        const { start, end } = updateDates(duration);
+        newStartDate = dayjs(start);
+        newEndDate = dayjs(end);
+      }
     }
     const queryParams = new URLSearchParams();
 
@@ -90,7 +99,7 @@ const SearchFilterBar = () => {
   };
 
   const handleReset = () => {
-    setDuration(null);
+    setDuration('week');
     setCalenderStart(null);
     setCalenderEnd(null);
     setIsDur(true);
@@ -152,76 +161,52 @@ const SearchFilterBar = () => {
             }}
           >
             <Typography>조회기간</Typography>
-            {duration === 'week' ? (
-              <Button variant="contained" value="week" style={style.button}>
-                1주
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="week"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1주
-              </Button>
-            )}
-            {duration === 'month' ? (
-              <Button variant="contained" value="month" style={style.button}>
-                1개월
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="month"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1개월
-              </Button>
-            )}
-            {duration === 'quarter' ? (
-              <Button variant="contained" value="quarter" style={style.button}>
-                1분기
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="quarter"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1분기
-              </Button>
-            )}
-            {duration === 'year' ? (
-              <Button variant="contained" value="year" style={style.button}>
-                1년
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="year"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1년
-              </Button>
-            )}
-            {duration === 'total' ? (
-              <Button variant="contained" value="total" style={style.button}>
-                전체
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="total"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                전체
-              </Button>
-            )}
+            <Button
+              variant={duration === 'week' ? 'contained' : 'outlined'}
+              value="week"
+              style={duration === 'week' ? style.button : style.unClickedbutton}
+              onClick={handleDr}
+            >
+              1주
+            </Button>
+            <Button
+              variant={duration === 'month' ? 'contained' : 'outlined'}
+              value="month"
+              style={
+                duration === 'month' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              1개월
+            </Button>
+            <Button
+              variant={duration === 'quarter' ? 'contained' : 'outlined'}
+              value="quarter"
+              style={
+                duration === 'quarter' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              1분기
+            </Button>
+            <Button
+              variant={duration === 'year' ? 'contained' : 'outlined'}
+              value="year"
+              style={duration === 'year' ? style.button : style.unClickedbutton}
+              onClick={handleDr}
+            >
+              1년
+            </Button>
+            <Button
+              variant={duration === 'total' ? 'contained' : 'outlined'}
+              value="total"
+              style={
+                duration === 'total' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              전체
+            </Button>
           </Box>
           <Box style={{ display: 'flex' }}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>

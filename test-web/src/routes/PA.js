@@ -20,10 +20,10 @@ const PA = () => {
 
   // 쿼리스트링 추출
   const location = useLocation();
-  const { pageOffset, queryStartDate, queryEndDate } = useMemo(() => {
+  const { querypageOffset, queryStartDate, queryEndDate } = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
     return {
-      pageOffset: searchParams.get('pageOffset'),
+      querypageOffset: searchParams.get('pageOffset'),
       queryStartDate: searchParams.get('start') || '',
       queryEndDate: searchParams.get('end') || '',
     };
@@ -31,6 +31,7 @@ const PA = () => {
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [pageOffset, setPageOffset] = useState(1);
 
   const handleValueChange = (newValue) => {
     setValue(newValue);
@@ -43,6 +44,10 @@ const PA = () => {
   const handleSingleDataFetch = (fetchedData) => {
     setSingleData(fetchedData);
   };
+
+  useEffect(() => {
+    setPageOffset(querypageOffset);
+  }, [querypageOffset]);
 
   useEffect(() => {
     const now = new Date();
@@ -59,6 +64,7 @@ const PA = () => {
       }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
+      start = new Date(now);
       start.setDate(now.getDate() - 7);
     }
 
@@ -71,7 +77,7 @@ const PA = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [queryStartDate, queryEndDate]);
+  }, [queryStartDate, queryEndDate, location.search]);
 
   return (
     <div
