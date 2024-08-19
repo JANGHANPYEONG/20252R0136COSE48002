@@ -5,6 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -18,7 +19,7 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   bool isLoading = false;
-  // late BuildContext _context;
+  late BuildContext _context;
   int? seqNo = 0;
 
   //날짜
@@ -111,6 +112,9 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   Future<void> saveData(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
     meatModel.heatedSensoryEval!['tenderness3'] = tenderness3;
     meatModel.heatedSensoryEval!['tenderness7'] = tenderness7;
     meatModel.heatedSensoryEval!['tenderness14'] = tenderness14;
@@ -122,7 +126,8 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
           'heatedmeat-eval', meatModel.toJsonHeatedSensory());
       if (response == 200) {
         meatModel.updateHeatedSeonsory();
-        // _context = context;
+        _context = context;
+        _movePage();
       } else {
         throw ErrorDescription(response);
       }
@@ -133,5 +138,9 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     meatModel.checkCompleted();
     isLoading = false;
     notifyListeners();
+  }
+
+  void _movePage() {
+    _context.pop();
   }
 }

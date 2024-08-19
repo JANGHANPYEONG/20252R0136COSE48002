@@ -35,18 +35,11 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   // num palabilityrgs = 1;
   // 초기 할당 (객체에 값이 존재시 할당)
   void _initialize() {
-    print("fff");
-    print(meatModel.heatedSensoryEval);
     flavor = meatModel.heatedSensoryEval?['flavor'] ?? 1;
-    print("vnd");
     juiciness = meatModel.heatedSensoryEval?['juiciness'] ?? 1;
-    print("Dfs");
     tenderness0 = meatModel.heatedSensoryEval?['tenderness0'] ?? 1;
-    print("sfds");
     umami = meatModel.heatedSensoryEval?['umami'] ?? 1;
-    print("sfpjs");
     palatability = meatModel.heatedSensoryEval?['palatability'] ?? 1;
-    print("sfe");
     notifyListeners();
   }
 
