@@ -37,7 +37,7 @@ import RejectModal from './RejectModal';
 import { FaRegCheckCircle, FaRegTimesCircle } from 'react-icons/fa';
 // mui
 import { IconButton, TextField, Autocomplete } from '@mui/material';
-import {style, divStyle} from './style/dataviewstyle';
+import { style, divStyle } from './style/dataviewstyle';
 
 // import tables
 // import RawTable from './tablesComps/rawTable';
