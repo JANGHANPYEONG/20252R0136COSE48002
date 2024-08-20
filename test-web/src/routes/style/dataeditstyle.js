@@ -1,5 +1,3 @@
-const navy = '#0F3659';
-
 const style = {
   fixed: {
     marginTop: '80px',
