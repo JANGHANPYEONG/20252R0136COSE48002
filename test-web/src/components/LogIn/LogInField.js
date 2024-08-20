@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { auth } from '../../firebase-config';
+// import { auth } from '../../firebase-config';
 import { useUser, useSetUser } from '../../Utils/UserContext';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -21,8 +21,8 @@ import { userIsLogin } from '../../API/user/userIsLogin';
 const defaultTheme = createTheme();
 
 const LogInField = () => {
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
+  // const [registerEmail, setRegisterEmail] = useState('');
+  // const [registerPassword, setRegisterPassword] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -42,7 +42,7 @@ const LogInField = () => {
 
   const auth = getAuth();
 
-  const register = async () => {
+  /*const register = async () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -53,7 +53,7 @@ const LogInField = () => {
     } catch (error) {
       console.log(error.message);
     }
-  };
+  };*/
 
   const navigate = useNavigate();
   const login = async () => {
@@ -144,7 +144,7 @@ const LogInField = () => {
     }
   };
 
-  const handleKeyPress = (event) => {
+  const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       if (event.target.name === 'email') {
         // 아이디 필드에서 Enter 키를 누르면 비밀번호 필드로 이동
@@ -224,7 +224,7 @@ const LogInField = () => {
             onChange={(event) => {
               setLoginEmail(event.target.value);
             }}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             style={{
               width: `${(365 / 1920) * 100}vw`, // 너비를 365px로 설정
               height: `${(72 / 1080) * 100}vh`, // 높이를 72px로 설정
@@ -244,7 +244,7 @@ const LogInField = () => {
             onChange={(event) => {
               setLoginPassword(event.target.value);
             }}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             style={{
               width: `${(365 / 1920) * 100}vw`, // 너비를 365px로 설정
               height: `${(72 / 1080) * 100}vh`, // 높이를 72px로 설정
