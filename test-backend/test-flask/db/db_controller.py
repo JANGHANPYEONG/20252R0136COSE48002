@@ -1,4 +1,3 @@
-from threading import Thread
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -8,7 +7,6 @@ import json
 from utils import *
 
 from .db_model import *
-from celery import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)

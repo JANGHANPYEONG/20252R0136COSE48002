@@ -12,7 +12,6 @@ from db.db_model import initialize_db
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
-from consumer import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
