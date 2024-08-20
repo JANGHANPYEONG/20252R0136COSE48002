@@ -181,7 +181,8 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
         });
       } else {
         // 처리육 수정
-        _context.go('/home/data-manage-researcher/add/processed-meat');
+        // _context.go('/home/data-manage-researcher/add/processed-meat');
+        _context.pop();
       }
     }
   }

@@ -37,10 +37,13 @@ class MeatModel with ChangeNotifier {
   /// 딥에이징 데이터
   ///
   /// seqno가 0일 경우 원육, 1 이상일 경우 처리육
+  /// isCompleted 0 - 미완료, 1 - 진행 중, 2 - 완료
   ///
   /// int seqno
   /// <br /> String date
   /// <br /> int minute
+  /// <br /> int seqno
+  /// <br /> int isCompleted
   /// <br /> Map<String, dynamic> sensory_eval
   /// <br /> Map<String, dynamic> heatedmeat_sensory_eval
   /// <br /> Map<String, dynamic> probexpt_data
@@ -49,6 +52,10 @@ class MeatModel with ChangeNotifier {
 
   /// 선택된 데이터의 seqno
   int? seqno;
+
+  /// 선택된 데이터의 입력 완료 여부
+  /// <br /> 0 - 미완료, 1 - 진행 중, 2 - 완료
+  int? isCompleted;
 
   /// 선택된 데이터의 deepaging 생성 날짜
   String? deepAgingCreatedAt;
@@ -191,13 +198,6 @@ class MeatModel with ChangeNotifier {
   /// L, a, b, DL, CL, RW, ph, WBSF, cardepsin_activity, MFI, Collagen
   bool heatedLabCompleted = false;
 
-  /// 원육 추가정보 입력 완료 여부
-  ///
-  /// tongueCompleted, labCompleted, heatedImageCompleted, heatedSensoryCompleted, heatedTongueCompleted, heatedLabCompleted
-  bool rawCompleted = false;
-
-  List<bool> processedCompleted = [];
-
   // Constructor
   MeatModel({
     this.meatId,
@@ -218,6 +218,7 @@ class MeatModel with ChangeNotifier {
     this.birthYmd,
     this.deepAgingInfo,
     this.seqno,
+    this.isCompleted,
     this.deepAgingCreatedAt,
     this.sensoryEval,
     this.heatedSensoryEval,
@@ -393,6 +394,17 @@ class MeatModel with ChangeNotifier {
     });
   }
 
+  /// 딥에이징 isCompleted 업데이트를 위한 딥에이징 정보 json 변환
+  ///
+  /// meatId, seqno, isCompleted
+  String toJsonDeepAging() {
+    return jsonEncode({
+      'meatId': meatId,
+      'seqno': seqno,
+      'isCompleted': isCompleted,
+    });
+  }
+
   /* deepAgingInfo 업데이트 함수 */
   /// 새로 추가된 deepAgingInfo 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
@@ -402,6 +414,7 @@ class MeatModel with ChangeNotifier {
           .format(DateTime.parse(jsonData['deepAging']['date'])),
       'minute': jsonData['deepAging']['minute'],
       'seqno': jsonData['seqno'],
+      'isCompleted': 0,
       'sensory_eval': null,
       'heatedmeat_sensory_eval': null,
       'probexpt_data': null,
@@ -411,12 +424,22 @@ class MeatModel with ChangeNotifier {
     deepAgingInfo!.add(info);
   }
 
+  /// 데이터 입력 완료시 로컬 deepAgingInfo의 isCompleted를 업데이터하는 함수
+  /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
+  void updateIsCompleted() {
+    final info =
+        deepAgingInfo!.firstWhere((item) => '${item['seqno']}' == '$seqno');
+    info['isCompleted'] = isCompleted;
+  }
+
   /// 새로 추가된 sensoryEval 데이터를 로컬 deepAgingInfo에 추가하는 함수
   /// <br /> DB에 데이터 전송 후 200인 경우에만 실행
   void updateSeonsory() {
     final info = deepAgingInfo!
         .firstWhere((item) => '${item['seqno']}' == '${sensoryEval!['seqno']}');
     info['sensory_eval'] = sensoryEval;
+    isCompleted = 1;
+    info['isCompleted'] = isCompleted;
   }
 
   /// 새로 추가된 heatedSensoryEval 데이터를 로컬 deepAgingInfo에 추가하는 함수
@@ -425,6 +448,8 @@ class MeatModel with ChangeNotifier {
     final info = deepAgingInfo!.firstWhere(
         (item) => '${item['seqno']}' == '${heatedSensoryEval!['seqno']}');
     info['heatedmeat_sensory_eval'] = heatedSensoryEval;
+    isCompleted = 1;
+    info['isCompleted'] = isCompleted;
   }
 
   /// 새로 추가된 probExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
@@ -433,6 +458,8 @@ class MeatModel with ChangeNotifier {
     final info = deepAgingInfo!
         .firstWhere((item) => '${item['seqno']}' == '${probExpt!['seqno']}');
     info['probexpt_data'] = probExpt;
+    isCompleted = 1;
+    info['isCompleted'] = isCompleted;
   }
 
   /// 새로 추가된 heatedProbExpt 데이터를 로컬 deepAgingInfo에 추가하는 함수
@@ -441,6 +468,8 @@ class MeatModel with ChangeNotifier {
     final info = deepAgingInfo!.firstWhere(
         (item) => '${item['seqno']}' == '${heatedProbExpt!['seqno']}');
     info['heatedmeat_probexpt_data'] = heatedProbExpt;
+    isCompleted = 1;
+    info['isCompleted'] = isCompleted;
   }
 
   /// 육류 전체 데이터 저장
@@ -475,6 +504,7 @@ class MeatModel with ChangeNotifier {
   /// 선택된 index의 처리육 데이터 저장
   void fromJsonDeepAged(int idx) {
     seqno = int.parse('${deepAgingInfo![idx]['seqno']}');
+    isCompleted = int.parse('${deepAgingInfo![idx]['isCompleted']}');
     deepAgingCreatedAt = deepAgingInfo![idx]['date'];
     sensoryEval = deepAgingInfo![idx]['sensory_eval'];
     heatedSensoryEval = deepAgingInfo![idx]['heatedmeat_sensory_eval'];
@@ -508,6 +538,7 @@ class MeatModel with ChangeNotifier {
     /* 딥에이징 관련 데이터 */
     deepAgingInfo = null;
     seqno = null;
+    isCompleted = null;
     deepAgingCreatedAt = null;
     sensoryEval = null;
     imgAdded = false;
@@ -518,8 +549,6 @@ class MeatModel with ChangeNotifier {
 
     /* 데이터 입력 완료 확인 */
     basicCompleted = false;
-    rawCompleted = false;
-    processedCompleted = [];
     imageCompleted = false;
     sensoryCompleted = false;
     tongueCompleted = false;
@@ -615,15 +644,6 @@ class MeatModel with ChangeNotifier {
         heatedProbExpt!['cardepsin_activity'] != null &&
         heatedProbExpt!['MFI'] != null &&
         heatedProbExpt!['Collagen'] != null);
-
-    /* 추기정보 입력 완료 여부 */
-    // 원육 추가정보 입력 완료 확인
-    rawCompleted = (tongueCompleted &&
-        labCompleted &&
-        heatedImageCompleted &&
-        heatedSensoryCompleted &&
-        heatedTongueCompleted &&
-        heatedLabCompleted);
   }
 
   // text code

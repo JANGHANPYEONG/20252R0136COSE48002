@@ -18,7 +18,6 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
     _initialize();
   }
   bool isLoading = false;
-  late BuildContext _context;
 
   // 관능평가 값
   // 초기 값은 1(최하)로 설정
@@ -112,9 +111,6 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
 
       if (response == 200) {
         meatModel.updateHeatedSeonsory();
-
-        _context = context;
-        _movePage();
       } else {
         // TODO : 입력한 데이터 초기화
         throw ErrorDescription(response);
@@ -128,16 +124,8 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
-  }
 
-  void _movePage() {
-    if (meatModel.seqno == 0) {
-      // 원육
-      _context.go('/home/data-manage-researcher/add/raw-meat');
-    } else {
-      // 처리육
-      _context.go('/home/data-manage-researcher/add/processed-meat');
-    }
+    if (context.mounted) context.pop();
   }
 
   void clickedTendernessAdd(BuildContext context) {

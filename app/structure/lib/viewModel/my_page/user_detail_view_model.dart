@@ -95,7 +95,6 @@ class UserDetailViewModel with ChangeNotifier {
           showSuccessChangeUserInfo(context, () {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
-            // context.go('/home/my-page');
           });
         }
       } else {
