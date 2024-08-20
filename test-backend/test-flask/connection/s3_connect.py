@@ -1,5 +1,8 @@
 import boto3  # S3 Server connection
 import os
+import numpy as np
+
+import cv2
 
 IMAGE_FOLDER_PATH = "./images/"
 
@@ -40,6 +43,25 @@ class S3_:
         else:
             print(f"No such file in Flask Server: {type}/{item_id}.png")
             return False
+        
+    def download_image(self, object_key):
+        """S3에서 이미지를 다운로드하고 OpenCV 이미지로 변환 (최적화 버전)"""
+        try:
+            # 스트리밍 응답 사용
+            response = self.s3.get_object(Bucket=self.bucket, Key=object_key)
+            stream = response['Body']
+            
+            # 스트림에서 직접 이미지 디코딩
+            file_bytes = np.asarray(bytearray(stream.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            
+            if image is None:
+                raise ValueError(f"Failed to decode image: {object_key}")
+            
+            return image
+        except Exception as e:
+            print(f"Error downloading image from S3: {e}")
+            return None
 
     def put_object(self, bucket, filepath, access_key):  # (S3 <- Server) Upload Pic
         """
@@ -136,3 +158,23 @@ class S3_:
                 break
         
         return matching_files
+    
+    def upload_fileobj(self, file_obj, bucket, key):
+        """
+        S3 버킷에 파일 객체를 업로드합니다.
+        :param file_obj: 파일 객체 (BytesIO 등)
+        :param bucket: 업로드할 S3 버킷 이름
+        :param key: S3 내에서 파일의 위치 및 이름
+        :return: 업로드 성공 시 True, 실패 시 False 반환
+        """
+        try:
+            self.s3.upload_fileobj(
+                Fileobj=file_obj,  # 업로드할 파일 객체
+                Bucket=bucket,  # 버킷 이름
+                Key=key,  # S3 내의 파일 경로 및 이름
+                ExtraArgs={"ContentType": "image/png", "ACL": "public-read"},
+            )
+            return True
+        except Exception as e:
+            print(f"Error uploading file: {e}")
+            return False
