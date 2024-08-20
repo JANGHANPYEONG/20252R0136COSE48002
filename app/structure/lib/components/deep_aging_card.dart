@@ -25,7 +25,7 @@ class DeepAgingCard extends StatelessWidget {
   final String deepAgingNum;
   final String mainText;
   final String butcheryDate;
-  final bool completed;
+  final int completed;
   final VoidCallback onTap;
   final VoidCallback? delete;
   const DeepAgingCard({
@@ -41,6 +41,13 @@ class DeepAgingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> completedText = ['미완료', '진행중', '완료'];
+    final List<Color> completedColor = [
+      Palette.error,
+      Palette.onError,
+      Palette.primary
+    ];
+
     return Stack(
       children: [
         SizedBox(
@@ -111,9 +118,9 @@ class DeepAgingCard extends StatelessWidget {
 
                         // 데이터 입력 확인
                         Text(
-                          completed ? '완료' : '미완료',
+                          completedText[completed],
                           style: Palette.h4.copyWith(
-                            color: completed ? Palette.primary : Palette.error,
+                            color: completedColor[completed],
                           ),
                         ),
                       ],

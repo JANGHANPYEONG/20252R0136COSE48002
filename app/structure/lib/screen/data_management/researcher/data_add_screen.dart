@@ -63,7 +63,8 @@ class _DataAddScreenState extends State<DataAddScreen> {
                 mainText:
                     '${dataAddViewModel.speciesValue} > ${dataAddViewModel.secondary}',
                 butcheryDate: dataAddViewModel.butcheryDate,
-                completed: dataAddViewModel.meatModel.rawCompleted,
+                completed: int.parse(
+                    '${dataAddViewModel.meatModel.deepAgingInfo![0]['isCompleted']}'),
                 onTap: () => dataAddViewModel.clickedRawMeat(),
               ),
               SizedBox(height: 16.h),
@@ -101,7 +102,8 @@ class _DataAddScreenState extends State<DataAddScreen> {
                                 butcheryDate: dataAddViewModel.meatModel
                                     .deepAgingInfo![index + 1]['date'],
                                 // TODO : complete check
-                                completed: false,
+                                completed: int.parse(
+                                    '${dataAddViewModel.meatModel.deepAgingInfo![index + 1]['isCompleted']}'),
                                 onTap: () async => await dataAddViewModel
                                     .clickedProcessedMeat(index + 1),
                                 delete: () async => await dataAddViewModel
