@@ -1904,7 +1904,7 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 if grade < 5 else value_query
             )
             if field == "tenderness":
-                values = [value[0]["0"] for value in value_query.all() if value[0] is not None]
+                values = [value[0]['0'] for value in value_query.all() if value[0] is not None and "0" in value[0].keys()]
             else:
                 values = [value[0] for value in value_query.all() if value[0] is not None]
 
