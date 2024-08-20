@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { TableHead, TableRow, TableCell, Checkbox, Button, Divider } from '@mui/material';
+import style from '../style/ordertableheadstyle';
 
 // 테이블 헤더 컴포넌트
 const OrderTableHead = ({
@@ -107,20 +108,3 @@ OrderTableHead.propTypes = {
 };
 
 export default OrderTableHead;
-
-const style = {
-  tableDelHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '6px',
-    fontWeight: '600',
-    color: 'black',
-  },
-  tableHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '6px',
-    fontWeight: '600',
-    color: '#90a4ae',
-  },
-};

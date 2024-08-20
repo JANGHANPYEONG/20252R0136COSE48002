@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Backdrop, Box, Modal, Fade, Button, Typography } from '@mui/material';
 import { FaRegTrashAlt } from 'react-icons/fa';
 import { deleteMeat } from '../../../API/delete/deleteMeat';
+import style from '../style/delwarningmodalstyle';
 const navy = '#0F3659';
 
 // 삭제 경고창 컴포넌트
@@ -145,14 +146,3 @@ const DelWarningModal = ({
 
 export default DelWarningModal;
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 500,
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: '10px',
-};
