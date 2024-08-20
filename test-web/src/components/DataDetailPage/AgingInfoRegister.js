@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import addDeepAgingRegister from '../../API/add/addDeepAging';
-import DeepInfoCompletionModal from './DeepInfoCompleteModal';
+import DeepInfoCompleteModal from './DeepInfoCompleteModal';
 
 const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -152,11 +152,12 @@ const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
           }}
         />
       )}
-      <DeepInfoCompletionModal
+      <DeepInfoCompleteModal
         show={showCompletionModal}
         onHide={handleCompletionModalClose}
         meatId={meatId}
         seqno={seqno}
+        type="add"
       />
     </div>
   );
