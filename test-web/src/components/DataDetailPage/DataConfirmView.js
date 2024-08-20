@@ -12,17 +12,12 @@ import InputTransitionsModal from './InputTransitionsModal';
 // import { TextField, Autocomplete } from '@mui/material';
 // import tables
 import RawTable from './TablesComps/RawTable';
-import ProcessedTable from './TablesComps/ProcessedTable';
-import HeatTable from './TablesComps/HeatTable';
-import LabTable from './TablesComps/LabTable';
 import ApiTable from './TablesComps/ApiTable';
 // import timezone
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
 // import update APIs
-import addHeatedData from '../../API/add/addHeatedData';
-import addProbexptData from '../../API/add/addProbexptData';
-import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
+
 import addSensoryRawData from '../../API/add/addSensoryRawData';
 import RestrictedModal from './RestrictedModal';
 // import card
@@ -38,18 +33,7 @@ import { FaRegCheckCircle, FaRegTimesCircle } from 'react-icons/fa';
 // mui
 import { IconButton, TextField, Autocomplete } from '@mui/material';
 import { style, divStyle } from './style/dataviewstyle';
-
-// import tables
-// import RawTable from './tablesComps/rawTable';
-import ProcessedTableStatic from './TablesComps/ProcessedTableStatic';
-import HeatTableStatic from './TablesComps/HeatTableStatic';
-import LabTableStatic from './TablesComps/LabTableStatic';
-// import ApiTable from './tablesComps/apiTable';
-
-// import card
-// import QRInfoCard from './cardComps/QRInfoCard';
-// import MeatImgsCard from './cardComps/MeatImgsCard';
-import MeatImgsCardStatic from './CardComps/MeatImgsCardStatic';
+import { rawField, apiField } from './constants/infofield';
 
 const navy = '#0F3659';
 
@@ -65,45 +49,20 @@ const DataView = ({ dataProps }) => {
     qrImagePath, // QR이미지 경로
     raw_img_path, // 원육 이미지 경로
     raw_data, // 원육 데이터
-    processed_data, // 처리육 데이터
-    heated_data, // 가열육 데이터
-    lab_data, // 실험실 데이터
     api_data, // 축산물 이력 API 데이터
-    processed_data_seq, // 처리(딥에이징) 회차
-    processed_minute, // 처리 시간(분)
-    processed_img_path, // 처리육 이미지 경로
+    processed_img_path,
   } = dataProps;
-
-  const [processedMinute, setProcessedMinute] = useState(processed_minute);
   //탭 정보
-  const tabFields = [rawField, deepAgingField, heatedField, labField, apiField];
+  const tabFields = [rawField, apiField];
   // 탭별 데이터 -> datas는 불변 , input text를 바꾸고 서버에 전송
-  const datas = [raw_data, processed_data, heated_data, lab_data, api_data];
+  const datas = [raw_data, api_data];
 
-  useEffect(() => {
-    options = processed_data_seq;
-  }, []);
-
-  // 처리육 및 실험 회차 토글
-  const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('');
-  const [heatedToggle, setHeatedToggle] = useState(options[0]);
-  const [heatedToggleValue, setHeatedToggleValue] = useState('');
-  const [labToggle, setLabToggle] = useState(options[0]);
-  const [labToggleValue, setLabToggleValue] = useState('');
-
-  // "원육","처리육","가열육","실험실+전자혀","축산물 이력",별 수정 및 추가 input text
+  // "원육", "축산물 이력",별 수정 및 추가 input text
   const [rawInput, setRawInput] = useState({});
-  const [processedInput, setProcessedInput] = useState({});
-  const [heatInput, setHeatInput] = useState({});
-  const [labInput, setLabInput] = useState({});
   const [apiInput, setApiInput] = useState(api_data);
   // setInputFields를 통해 인덱스 값으로 수정할 Field를 접근
   const setInputFields = [
     { value: rawInput, setter: setRawInput },
-    { value: processedInput, setter: setProcessedInput },
-    { value: heatInput, setter: setHeatInput },
-    { value: labInput, setter: setLabInput },
     { value: apiInput, setter: setApiInput },
   ];
 
@@ -131,11 +90,10 @@ const DataView = ({ dataProps }) => {
     setIsEdited(true);
   };
 
-  const len = processed_data_seq.length;
-
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
   // UserContext에서 유저 정보 불러오기
   const user = useUser();
+
   // 수정 완료 버튼 클릭 시 ,수정된 data api로 전송
   const onClickSubmitBtn = async () => {
     setIsEdited(false);
@@ -148,7 +106,7 @@ const DataView = ({ dataProps }) => {
     //로그인한 유저 정보
     const userId = user.userId;
 
-    //4. 원육 데이터 수정 API
+    //1. 원육 데이터 수정 API
     addSensoryRawData(rawInput, 0, meatId)
       .then((response) => {
         console.log('원육 수정 POST요청 성공:', response);
@@ -159,36 +117,6 @@ const DataView = ({ dataProps }) => {
       });
   };
 
-  // 처리육 이미지 먼저 업로드 경고 창 필요 여부
-  const [modal, setModal] = useState(false);
-
-  // input 변화 감지 함수
-  const handleInputChange = (e, idx, valueIdx) => {
-    // e : event 객체, idx : setInputFields의 인덱스, valueIdx : 수정한 input의 딥에이징 회차 (0:원육, 1~n: n회차 처리육)
-    // input 변화 값
-    const value = e.target.value;
-
-    // idx === 1은 processedInput field임을 의미
-    if (idx === 1) {
-      // 해당 딥에에징 회차의 이미지가 입력되어있지 않으면 경고 창 띄우기
-      if (imgArr[valueIdx + 1] === null || imgArr[valueIdx + 1] === undefined) {
-        console.log('처리육 이미지를 먼저 업로드 하세요!');
-        setModal(true);
-        return <InputTransitionsModal setModal={setModal} />;
-      }
-    }
-
-    // input 변화가 생기면 수정한 값으로 업데이트
-    let temp = setInputFields[idx].value[valueIdx];
-    if (!isNaN(+value)) {
-      temp = { ...temp, [e.target.name]: value };
-      setInputFields[idx].setter((currentField) => ({
-        ...currentField,
-        [valueIdx]: temp,
-      }));
-      console.log('result', temp, valueIdx);
-    }
-  };
   const handleRawInputChange = (e, field) => {
     const { name, value } = e.target;
     setRawInput((prev) => ({
@@ -196,15 +124,6 @@ const DataView = ({ dataProps }) => {
       [name]: value,
     }));
   };
-
-  const [imgArr, setImgArr] = useState([raw_img_path]);
-  useEffect(() => {
-    processed_img_path.length !== 0
-      ? //{}이 아닌 경우
-        setImgArr([...imgArr, ...processed_img_path])
-      : //{}인 경우 -> 1회차 처리육 정보 입력을 위해 null 생성
-        setImgArr([...imgArr, null]);
-  }, []);
 
   // "원육","처리육","가열육","실험실","축산물 이력" 탭 값 설정
   const [value, setValue] = useState(0);
@@ -284,10 +203,6 @@ const DataView = ({ dataProps }) => {
           raw_data={raw_data}
           setIsLimitedToChangeImage={setIsLimitedToChangeImage}
           butcheryYmd={api_data['butcheryYmd']}
-          processedInput={processedInput}
-          processed_data={processed_data}
-          processedMinute={processedMinute}
-          processed_data_seq={processed_data_seq}
         />
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard
@@ -359,53 +274,3 @@ export default DataView;
 
 // 토글 버튼
 let options = ['원육'];
-
-const rawField = ['marbling', 'color', 'texture', 'surfaceMoisture', 'overall'];
-const deepAgingField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'createdAt',
-  'seqno',
-  'minute',
-  'period',
-];
-const heatedField = [
-  'flavor',
-  'juiciness',
-  'tenderness',
-  'umami',
-  'palatability',
-];
-const labField = [
-  'L',
-  'a',
-  'b',
-  'DL',
-  'CL',
-  'RW',
-  'ph',
-  'WBSF',
-  'cardepsin_activity',
-  'MFI',
-  'sourness',
-  'bitterness',
-  'umami',
-  'richness',
-  'Collagen',
-];
-const apiField = [
-  'birthYmd',
-  'butcheryYmd',
-  'farmAddr',
-  'farmerName',
-  'gradeNm',
-  'primalValue',
-  'secondaryValue',
-  'sexType',
-  'species',
-  'statusType',
-  'traceNum',
-];

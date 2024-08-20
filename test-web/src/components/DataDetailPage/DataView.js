@@ -35,6 +35,7 @@ import AgingInfoRegister from './AgingInfoRegister';
 import AgingInfoDeleter from './AgingInfoDelete';
 import style from './style/dataviewstyle';
 import { divStyle } from './style/dataviewstyle';
+import { rawField, deepAgingField, heatedField, labField, apiField } from './constants/infofield';
 
 const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,10 +58,6 @@ const DataView = ({ dataProps }) => {
     processed_img_path, // 처리육 이미지 경로
     processed_date,
   } = dataProps;
-
-  // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
-  // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
-  // console.log(`1회차 실험육 데이터: ${JSON.stringify(lab_data[1])}`);
 
   const [processedMinute, setProcessedMinute] = useState(processed_minute);
   //탭 정보
@@ -738,57 +735,3 @@ export default DataView;
 
 // 토글 버튼
 let options = ['원육'];
-
-const rawField = ['marbling', 'color', 'texture', 'surfaceMoisture', 'overall'];
-const deepAgingField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'createdAt',
-  'seqno',
-  'minute',
-  'period',
-];
-const heatedField = [
-  'flavor',
-  'juiciness',
-  'umami',
-  'palatability',
-  'tenderness0',
-  'tenderness3',
-  'tenderness7',
-  'tenderness14',
-  'tenderness21',
-];
-const labField = [
-  'L',
-  'a',
-  'b',
-  'DL',
-  'CL',
-  'RW',
-  'ph',
-  'WBSF',
-  'cardepsin_activity',
-  'MFI',
-  'sourness',
-  'bitterness',
-  'umami',
-  'richness',
-  'Collagen',
-];
-const apiField = [
-  'birthYmd',
-  'butcheryYmd',
-  'farmAddr',
-  'farmerName',
-  'gradeNm',
-  'primalValue',
-  'secondaryValue',
-  'sexType',
-  'species',
-  'statusType',
-  'traceNum',
-];
