@@ -45,4 +45,4 @@ def create_meat_lbp_garbor_images():
     print(lbp_result)
     gabor_result = gabor_texture_analysis(s3_conn, img, meat_id, seqno)
     pprint.pprint(gabor_result)
-    return gabor_result
+    return lbp_result, gabor_result
