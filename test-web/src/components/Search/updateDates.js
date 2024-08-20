@@ -1,5 +1,5 @@
 // import timezone
-import { TIME_ZONE } from '../../../config';
+import { TIME_ZONE } from '../../config';
 
 const updateDates = (duration) => {
   const s = new Date();
@@ -21,6 +21,7 @@ const updateDates = (duration) => {
   const end = new Date(new Date().getTime() + TIME_ZONE)
     .toISOString()
     .slice(0, -5);
+
   return { start, end };
 };
 

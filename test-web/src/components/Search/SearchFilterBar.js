@@ -20,7 +20,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 
-import updateDates from './helper/updateDates';
+import updateDates from './updateDates';
 import style from './style/searchfilterbarstyle';
 const navy = '#0F3659';
 
@@ -69,7 +69,7 @@ const SearchFilterBar = () => {
     if (!isDur) {
       // 직접 입력할 시
       newStartDate = calenderStart;
-      newEndDate = calenderEnd ? dayjs(calenderEnd).add(1, 'day') : calenderEnd;
+      newEndDate = calenderEnd;
       // setDuration(null)
     } else {
       // 탭으로 클릭할 시
@@ -81,13 +81,15 @@ const SearchFilterBar = () => {
         newEndDate = dayjs(end);
       }
     }
-    const queryParams = new URLSearchParams();
+
+    let queryString = '';
 
     if (newStartDate) {
-      queryParams.set('start', newStartDate.format('YYYY-MM-DD'));
+      queryString += `start=${newStartDate.format('YYYY-MM-DDTHH:mm:ss')}`;
     }
     if (newEndDate) {
-      queryParams.set('end', newEndDate.format('YYYY-MM-DD'));
+      if (queryString) queryString += '&';
+      queryString += `end=${newEndDate.format('YYYY-MM-DDTHH:mm:ss')}`;
     }
     // 이전 설정값 저장
     setInitialDuration(duration);
@@ -95,7 +97,7 @@ const SearchFilterBar = () => {
     setInitialCalenderEnd(calenderEnd);
     setInitialIsDur(isDur);
     // URL 업데이트
-    navigate(`${location.pathname}?${queryParams.toString()}`);
+    navigate(`${location.pathname}?${queryString}`);
   };
 
   const handleReset = () => {
