@@ -19,6 +19,7 @@ import { FaBoxOpen } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import SearchById from '../components/DataListView/SearchById';
 import DataSingle from '../components/DataListView/DataSingle';
+import style from './style/dashboardstyle';
 
 const navy = '#0F3659';
 
@@ -134,7 +135,7 @@ const Dashboard = () => {
           <Button
             style={
               value === 'reject'
-                ? styles.tabBtnCilcked
+                ? style.tabBtnCilcked
                 : { color: `${navy}`, border: `1px solid ${navy}` }
             }
             value="reject"
@@ -150,10 +151,10 @@ const Dashboard = () => {
       </Box>
 
       {/**이동 탭 (목록, 통계 , 반려) */}
-      <Box sx={styles.fixedTab}>
+      <Box sx={style.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
-            style={value === 'list' ? styles.tabBtnCilcked : styles.tabBtn}
+            style={value === 'list' ? style.tabBtnCilcked : style.tabBtn}
             value="list"
             variant="outlined"
             onClick={(e) => {
@@ -164,7 +165,7 @@ const Dashboard = () => {
           </Button>
           {value !== 'single' && (
             <Button
-              style={value === 'stat' ? styles.tabBtnCilcked : styles.tabBtn}
+              style={value === 'stat' ? style.tabBtnCilcked : style.tabBtn}
               value="stat"
               variant="outlined"
               onClick={(e) => {
@@ -178,7 +179,7 @@ const Dashboard = () => {
       </Box>
 
       {/**검색필터, 엑셀  */}
-      <Box sx={styles.fixed}>
+      <Box sx={style.fixed}>
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
@@ -258,36 +259,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-const styles = {
-  fixed: {
-    zIndex: 1,
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center', // Add this line to vertically align items
-    backgroundColor: 'white',
-    margin: '10px 0px',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  fixedTab: {
-    right: '0',
-    left: '0px',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '30px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  tabBtn: {
-    border: 'none',
-    color: navy,
-  },
-  tabBtnCilcked: {
-    border: `1px solid ${navy}`,
-    color: navy,
-  },
-  titleFont: {},
-};

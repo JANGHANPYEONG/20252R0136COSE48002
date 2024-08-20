@@ -3,6 +3,7 @@ import { Box, IconButton } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.css';
 import { FaArrowLeft } from 'react-icons/fa';
 import DataLoad from '../components/DataDetailPage/DetailDataController';
+import style from './style/dataeditstyle';
 
 const navy = '#0F3659';
 
@@ -69,17 +70,3 @@ const DataEdit = () => {
   );
 };
 export default DataEdit;
-
-const style = {
-  fixed: {
-    marginTop: '80px',
-    right: '0',
-    left: '80px',
-    zIndex: 1,
-    width: 'fit-content',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: '70px',
-  },
-};

@@ -2,6 +2,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import DataLoad from '../components/DataDetailPage/DetailDataController';
 import { Box, IconButton } from '@mui/material';
 import { FaArrowLeft } from 'react-icons/fa';
+import style from './style/dataconfirmstyle';
 
 const navy = '#0F3659';
 
@@ -68,18 +69,3 @@ const DataConfirm = () => {
 };
 
 export default DataConfirm;
-
-const style = {
-  fixed: {
-    position: 'fixed',
-    top: '95px',
-    right: '0',
-    left: '80px',
-    zIndex: 1,
-    width: 'fit-content',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: '70px',
-  },
-};
