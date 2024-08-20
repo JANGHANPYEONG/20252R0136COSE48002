@@ -3,7 +3,12 @@ import { Modal, Button } from 'react-bootstrap';
 
 const navy = '#0F3659';
 
-const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
+const DeepInfoCompleteModal = ({ show, onHide, meatId, seqno, type }) => {
+  // type에 따라 다른 텍스트를 설정
+  const getModalTitle = () => (type === 'add' ? '딥에이징 회차 추가' : '딥에이징 회차 삭제');
+  const getModalMessage = () =>
+    `${meatId} 데이터의 \n 딥에이징 ${seqno}회차가 ${type === 'add' ? '추가' : '삭제'}되었습니다.`;
+
   return (
     <Modal
       show={show}
@@ -24,11 +29,11 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
           style={{
             color: '#151D48',
             fontFamily: 'Poppins',
-            fontSize: `24px`,
+            fontSize: '24px',
             fontWeight: 600,
           }}
         >
-          딥에이징 회차 추가
+          {getModalTitle()}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body
@@ -37,13 +42,11 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
           whiteSpace: 'pre-line',
           color: navy,
           fontSize: '18px',
-          fontWeight: '600',
+          fontWeight: 600,
           width: '100%',
         }}
       >
-        {
-          `${meatId} 데이터의 \n 딥에이징 ${seqno}회차가 추가되었습니다.`
-        }
+        {getModalMessage()}
       </Modal.Body>
       <Modal.Footer style={{ border: 'none', justifyContent: 'center' }}>
         <Button
@@ -60,4 +63,4 @@ const DeepInfoCompletionModal = ({ show, onHide, meatId, seqno }) => {
   );
 };
 
-export default DeepInfoCompletionModal;
+export default DeepInfoCompleteModal;

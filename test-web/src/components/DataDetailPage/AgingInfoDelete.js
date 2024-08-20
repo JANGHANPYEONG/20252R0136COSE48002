@@ -3,7 +3,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import DeepInfoDeleteCompletionModal from './DeepInfoDeleteCompletionModal';
+import DeepInfoCompleteModal from './DeepInfoCompleteModal';
 import deleteDeepAging from '../../API/delete/deleteDeepAging';
 
 const AgingInfoDeleter = ({ handleClose, meatId, processed_data_seq }) => {
@@ -102,11 +102,12 @@ const AgingInfoDeleter = ({ handleClose, meatId, processed_data_seq }) => {
           }}
         />
       )}
-      <DeepInfoDeleteCompletionModal
+      <DeepInfoCompleteModal
         show={showCompletionModal}
         onHide={handleCompletionModalClose}
         meatId={meatId}
         seqno={seqno}
+        type = "delete"
       />
     </div>
   );

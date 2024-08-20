@@ -7,13 +7,8 @@ import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 import { IconButton } from '@mui/material';
 // UserContext
 import { useUser } from '../../../Utils/UserContext';
-// 이미지 수정 api 호출
-import addSensoryRawImg from '../../../API/add/addSensoryRawImg';
-import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
-import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
 
-import { TIME_ZONE } from '../../../config';
-import { computePeriod } from '../computeTime';
+import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
 
 const navy = '#0F3659';
@@ -65,94 +60,30 @@ const MeatImgsCard = ({
   // UserContext에서 유저 정보 불러오기
   const user = useUser();
 
-  /**
-   * 이미지 파일 업로드 한 경우
-   * 1. firebase의 fire storage에 이미지 업로드
-   * 2.1 원육 이미지를 수정한 경우, 원육 수정 API 호출
-   * 2.2 처리육 이미지를 수정한 경우, 처리육 수정 API 호출
-   */
-  const handleImgChange = (newImgFile) => {
-    if (newImgFile) {
-      const fileName = id + '-' + currentIdx + '.png';
-      const folderName = 'sensory_evals';
-      const reader = new FileReader();
-      //로그인한 유저 정보
-      const userId = user.userId;
-      // 수정 시간
-      const createdDate = new Date(new Date().getTime() + TIME_ZONE)
-        .toISOString()
-        .slice(0, -5);
-      // period 계산
-      const elapsedHour = computePeriod(butcheryYmd);
-      // 파일에서 이미지 선택
-      reader.onload = async () => {
-        //업로드 중 메세지를 띄우기 위한 변수
-        setIsUploadingDone(false);
-        // firebase에 업로드
-        await uploadNewImgToFirebase(
-          newImgFile,
-          folderName,
-          fileName,
-          setIsUploadingDone
-        );
-
-        // 원육 이미지 수정 api 호출 currentIdx == 0
-        if (currentIdx === 0) {
-          const response = addSensoryRawImg(
-            raw_data,
-            id,
-            userId,
-            createdDate,
-            elapsedHour
-          );
-
-          response.then((response) => {
-            if (response.statusText === 'NOT FOUND') {
-              setIsLimitedToChangeImage(true); //실패시
-            } else {
-              updatePreviews(reader); //성공시
-              setIsImgChanged(true);
-            }
-            setIsUploadingDone(true); // 업로드 중 화면 중지
-          });
-          // 실패 시
-          console.log('limit to change', response.statusText);
-        } else {
-          // 처리육 수정 api 호출 이미지인 경우 0이상
-          const i = currentIdx - 1;
-          await addSensoryProcessedData(
-            processedInput[i],
-            processed_data[i],
-            processedMinute[i],
-            i,
-            id,
-            userId,
-            createdDate,
-            elapsedHour
-          )
-            // 수정 성공 시
-            .then((response) => {
-              console.log('처리육 이미지 수정 POST요청 성공:', response);
-              updatePreviews(reader);
-              setIsImgChanged(true);
-            })
-            // 수정 실패 시
-            .catch((error) => {
-              console.error('처리육 이미지 수정 POST 요청 오류:', error);
-              setIsLimitedToChangeImage(true); //실패시
-            });
-          setIsUploadingDone(true); // 업로드 중 화면 중지
-        }
-      };
-      reader.readAsDataURL(newImgFile);
-    }
-  };
-
   // 이미지 수정시, 수정 API 호출까지 성공한 경우, 업로드 한 이미지로 미리보기 수정
   const updatePreviews = (reader) => {
     let newImages = imgArr;
     newImages[currentIdx] = reader.result;
     setImgArr(newImages);
+  };
+
+  const handleFileChange = (e) => {
+    handleImgChange({
+      newImgFile: e.target.files[0],
+      currentIdx,
+      imgArr,
+      id,
+      setIsUploadingDone,
+      setIsLimitedToChangeImage,
+      setIsImgChanged,
+      updatePreviews,
+      userId: user.userId,
+      raw_data,
+      processedInput,
+      processed_data,
+      processedMinute,
+      butcheryYmd,
+    });
   };
 
   return (
@@ -196,9 +127,7 @@ const MeatImgsCard = ({
                     accept="image/jpg,impge/png,image/jpeg,image/gif"
                     type="file"
                     ref={fileRef}
-                    onChange={(e) => {
-                      handleImgChange(e.target.files[0]);
-                    }}
+                    onChange={handleFileChange}
                     style={{ marginRight: '20px', display: 'none' }}
                   />
                   {
