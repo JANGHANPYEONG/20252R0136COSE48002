@@ -2,54 +2,40 @@ import StatsTabs from '../components/Stats/StatsTabs';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import SearchFilterBar from '../components/Search/SearchFilterBar';
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TIME_ZONE } from '../config';
 import { Typography } from '@mui/material';
 
 const Stats = () => {
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const { queryStartDate, queryEndDate } = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    return {
+      queryStartDate: searchParams.get('start') || '',
+      queryEndDate: searchParams.get('end') || '',
+    };
+  }, [location.search]);
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
-    const queryStartDate = searchParams.get('startDate');
-    const queryEndDate = searchParams.get('endDate');
-    const queryDuration = searchParams.get('duration');
-
     const now = new Date();
-    let start = new Date(now);
+    let start = new Date('1970-01-01T00:00:00Z');
     let end = new Date(now);
 
-    if (queryDuration) {
-      // duration 파라미터에 따라 시작 날짜 설정
-      switch (queryDuration) {
-        case 'week':
-          start.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          start.setMonth(now.getMonth() - 1);
-          break;
-        case 'quarter':
-          start.setMonth(now.getMonth() - 3);
-          break;
-        case 'year':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
-        case 'total':
-          start = new Date(1970, 0, 1); // 가장 오래된 날짜로 설정
-          break;
-        default:
-          start.setDate(now.getDate() - 7); // 기본값은 1주일
+    if (queryStartDate || queryEndDate) {
+      // startDate 또는 endDate 파라미터가 있을 경우
+      if (queryStartDate) {
+        start = new Date(queryStartDate);
       }
-    } else if (queryStartDate && queryEndDate) {
-      // startDate와 endDate 파라미터가 있을 경우
-      start = new Date(queryStartDate);
-      end = new Date(queryEndDate);
+      if (queryEndDate) {
+        end = new Date(queryEndDate);
+      }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
+      start = new Date(now);
       start.setDate(now.getDate() - 7);
     }
 
@@ -62,7 +48,7 @@ const Stats = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [searchParams]);
+  }, [queryStartDate, queryEndDate, location.search]);
 
   return (
     <Container maxWidth="xl" style={{ height: '80%' }}>

@@ -1,5 +1,5 @@
 // import react
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import mui
 import {
@@ -24,7 +24,7 @@ import updateDates from './helper/updateDates';
 import style from './style/searchfilterbarstyle';
 const navy = '#0F3659';
 
-const SearchFilterBar = ({ setStartDate, setEndDate }) => {
+const SearchFilterBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -34,8 +34,6 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
   const [duration, setDuration] = useState(
     searchParams.get('duration') || 'week'
   );
-  const [durStart, setDurStart] = useState(null);
-  const [durEnd, setDurEnd] = useState(null);
   // 조회 기간 (직접 입력할 시)
   const [calenderStart, setCalenderStart] = useState(
     dayjs(searchParams.get('start') || null)
@@ -50,11 +48,14 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
   const [initialCalenderEnd, setInitialCalenderEnd] = useState(calenderEnd);
   const [initialIsDur, setInitialIsDur] = useState(isDur);
 
-  // console.log(duration);
-
   // 탭으로 클릭시 조회기간 변경
   const handleDr = (event) => {
-    setDuration(event.target.value);
+    const clickedValue = event.target.value;
+    if (duration === clickedValue) {
+      setDuration(null);
+    } else {
+      setDuration(clickedValue);
+    }
     // 직접입력을 null로 바꾸기 (초기화)
     setCalenderStart(null);
     setCalenderEnd(null);
@@ -63,31 +64,37 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
 
   //완료 버튼 클릭하면 변함
   const handleCompleteBtn = () => {
-    const queryParams = new URLSearchParams();
+    let newStartDate, newEndDate;
+
     if (!isDur) {
-      //직접 입력할 시
-      if (calenderStart) {
-        const startVal = `${calenderStart.$y}-${String(calenderStart.$M + 1).padStart(2, '0')}-${String(calenderStart.$D).padStart(2, '0')}T00:00:00`;
-        setStartDate(startVal);
-        queryParams.set('start', calenderStart.format('YYYY-MM-DD'));
-      }
-      if (calenderEnd) {
-        const endVal = `${calenderEnd.$y}-${String(calenderEnd.$M + 1).padStart(2, '0')}-${String(calenderEnd.$D).padStart(2, '0')}T23:59:59`;
-        setEndDate(endVal);
-        queryParams.set('end', calenderEnd.format('YYYY-MM-DD'));
-      }
-      setDuration(null);
+      // 직접 입력할 시
+      newStartDate = calenderStart;
+      newEndDate = calenderEnd ? dayjs(calenderEnd).add(1, 'day') : calenderEnd;
+      // setDuration(null)
     } else {
-      //탭으로 클릭할시
-      queryParams.set('duration', duration);
-      const { start, end } = updateDates(duration);
-      setStartDate(start);
-      setEndDate(end);
+      // 탭으로 클릭할 시
+      if (!duration) {
+        handleReset();
+      } else {
+        const { start, end } = updateDates(duration);
+        newStartDate = dayjs(start);
+        newEndDate = dayjs(end);
+      }
     }
+    const queryParams = new URLSearchParams();
+
+    if (newStartDate) {
+      queryParams.set('start', newStartDate.format('YYYY-MM-DD'));
+    }
+    if (newEndDate) {
+      queryParams.set('end', newEndDate.format('YYYY-MM-DD'));
+    }
+    // 이전 설정값 저장
     setInitialDuration(duration);
     setInitialCalenderStart(calenderStart);
     setInitialCalenderEnd(calenderEnd);
     setInitialIsDur(isDur);
+    // URL 업데이트
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
@@ -96,14 +103,7 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
     setCalenderStart(null);
     setCalenderEnd(null);
     setIsDur(true);
-
-    const { start, end } = updateDates('week');
-    setStartDate(start);
-    setEndDate(end);
-
-    const queryParams = new URLSearchParams();
-    queryParams.set('duration', 'week');
-    navigate(`${location.pathname}?${queryParams.toString()}`);
+    navigate(`${location.pathname}`);
   };
 
   // pop over 결정
@@ -161,76 +161,52 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
             }}
           >
             <Typography>조회기간</Typography>
-            {duration === 'week' ? (
-              <Button variant="contained" value="week" style={style.button}>
-                1주
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="week"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1주
-              </Button>
-            )}
-            {duration === 'month' ? (
-              <Button variant="contained" value="month" style={style.button}>
-                1개월
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="month"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1개월
-              </Button>
-            )}
-            {duration === 'quarter' ? (
-              <Button variant="contained" value="quarter" style={style.button}>
-                1분기
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="quarter"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1분기
-              </Button>
-            )}
-            {duration === 'year' ? (
-              <Button variant="contained" value="year" style={style.button}>
-                1년
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="year"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                1년
-              </Button>
-            )}
-            {duration === 'total' ? (
-              <Button variant="contained" value="total" style={style.button}>
-                전체
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                value="total"
-                style={style.unClickedbutton}
-                onClick={handleDr}
-              >
-                전체
-              </Button>
-            )}
+            <Button
+              variant={duration === 'week' ? 'contained' : 'outlined'}
+              value="week"
+              style={duration === 'week' ? style.button : style.unClickedbutton}
+              onClick={handleDr}
+            >
+              1주
+            </Button>
+            <Button
+              variant={duration === 'month' ? 'contained' : 'outlined'}
+              value="month"
+              style={
+                duration === 'month' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              1개월
+            </Button>
+            <Button
+              variant={duration === 'quarter' ? 'contained' : 'outlined'}
+              value="quarter"
+              style={
+                duration === 'quarter' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              1분기
+            </Button>
+            <Button
+              variant={duration === 'year' ? 'contained' : 'outlined'}
+              value="year"
+              style={duration === 'year' ? style.button : style.unClickedbutton}
+              onClick={handleDr}
+            >
+              1년
+            </Button>
+            <Button
+              variant={duration === 'total' ? 'contained' : 'outlined'}
+              value="total"
+              style={
+                duration === 'total' ? style.button : style.unClickedbutton
+              }
+              onClick={handleDr}
+            >
+              전체
+            </Button>
           </Box>
           <Box style={{ display: 'flex' }}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -241,6 +217,7 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
                     onChange={(newVal) => {
                       setCalenderStart(newVal);
                       setIsDur(false);
+                      setDuration(null);
                     }}
                     value={isDur ? null : calenderStart}
                     label="시작날짜"
@@ -256,6 +233,7 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
                     onChange={(newVal) => {
                       setCalenderEnd(newVal);
                       setIsDur(false);
+                      setDuration(null);
                     }}
                     value={isDur ? null : calenderEnd}
                     label="종료날짜"
@@ -272,7 +250,6 @@ const SearchFilterBar = ({ setStartDate, setEndDate }) => {
           <Box style={{ display: 'flex', justifyContent: 'end' }}>
             <button
               onClick={() => {
-                setIsDur(false);
                 handleCompleteBtn();
                 setAnchorEl(null);
               }}

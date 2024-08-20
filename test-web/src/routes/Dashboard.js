@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 // 검색 필터 컴포넌트
 import SearchFilterBar from '../components/Search/SearchFilterBar';
 // 목록 컴포넌트
@@ -23,85 +23,71 @@ import DataSingle from '../components/DataListView/DataSingle';
 const navy = '#0F3659';
 
 const Dashboard = () => {
-  const [data, setData] = useState(null);
   const [value, setValue] = useState('list');
-  const s = new Date();
-  s.setDate(s.getDate() - 7);
-  const [startDate, setStartDate] = useState(
-    new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5)
-  );
-  const [endDate, setEndDate] = useState(
-    new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5)
-  );
   const [specieValue, setSpecieValue] = useState('전체');
+  const [singleData, setSingleData] = useState(null);
+
+  // 쿼리스트링 추출
+  const location = useLocation();
+
+  const { querypageOffset, queryStartDate, queryEndDate } = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    return {
+      querypageOffset: searchParams.get('pageOffset'),
+      queryStartDate: searchParams.get('start') || '',
+      queryEndDate: searchParams.get('end') || '',
+    };
+  }, [location.search]);
+
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [pageOffset, setPageOffset] = useState(1);
+
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+  };
 
   const handleSpeciesChange = (event) => {
     setSpecieValue(event.target.value);
   };
 
-  // 쿼리스트링 추출
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-
-  const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-  const queryStartDate = new URLSearchParams(searchParams).get('startDate');
-  const queryEndDate = new URLSearchParams(searchParams).get('endDate');
-  const queryDuration = searchParams.get('duration');
-
-  const now = new Date();
-  let start = new Date(now);
-  let end = new Date(now);
+  const handleSingleDataFetch = (fetchedData) => {
+    setSingleData(fetchedData);
+  };
 
   useEffect(() => {
-    if (queryDuration) {
-      // duration 파라미터에 따라 시작 날짜 설정
-      switch (queryDuration) {
-        case 'week':
-          start.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          start.setMonth(now.getMonth() - 1);
-          break;
-        case 'quarter':
-          start.setMonth(now.getMonth() - 3);
-          break;
-        case 'year':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
-        case 'total':
-          start = new Date(1970, 0, 1); // 가장 오래된 날짜로 설정
-          break;
-        default:
-          start.setDate(now.getDate() - 7); // 기본값은 1주일
+    setPageOffset(querypageOffset);
+  }, [querypageOffset]);
+
+  useEffect(() => {
+    const now = new Date();
+    let start = new Date('1970-01-01T00:00:00Z');
+    let end = new Date(now);
+
+    if (queryStartDate || queryEndDate) {
+      // startDate 또는 endDate 파라미터가 있을 경우
+      if (queryStartDate) {
+        start = new Date(queryStartDate);
       }
-    } else if (queryStartDate && queryEndDate) {
-      // startDate와 endDate 파라미터가 있을 경우
-      start = new Date(queryStartDate);
-      end = new Date(queryEndDate);
+      if (queryEndDate) {
+        end = new Date(queryEndDate);
+      }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
+      start = new Date(now);
       start.setDate(now.getDate() - 7);
     }
 
     const formattedStartDate = new Date(start.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
-
     const formattedEndDate = new Date(end.getTime() + TIME_ZONE)
       .toISOString()
       .slice(0, -5);
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [searchParams]);
-
-  const handleDataFetch = (fetchedData) => {
-    setData(fetchedData);
-  };
-
-  const handleValueChange = (newValue) => {
-    setValue(newValue);
-  };
+  }, [queryStartDate, queryEndDate, location.search]);
 
   return (
     <div
@@ -196,14 +182,11 @@ const Dashboard = () => {
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
-          <SearchFilterBar
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-          />
+          <SearchFilterBar />
           {value === 'list' && (
             <>
               <SearchById
-                onDataFetch={handleDataFetch}
+                onDataFetch={handleSingleDataFetch}
                 onValueChange={handleValueChange}
               />
               <Select
@@ -240,7 +223,11 @@ const Dashboard = () => {
       </Box>
 
       {value === 'single' && (
-        <DataSingle startDate={startDate} endDate={endDate} data={data} />
+        <DataSingle
+          startDate={startDate}
+          endDate={endDate}
+          singleData={singleData}
+        />
       )}
 
       {value === 'list' && (
