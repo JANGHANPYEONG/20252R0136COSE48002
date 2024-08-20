@@ -294,6 +294,7 @@ class DeepAgingInfo(Base):
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
+    isCompleted = Column(Integer, server_default='0')
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(

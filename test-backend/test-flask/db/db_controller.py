@@ -285,7 +285,7 @@ def create_raw_meat_deep_aging_info(db_session, meat_id, seqno):
         raise e
 
 
-def create_specific_deep_aging_data(db_session, data):
+def create_specific_deep_aging_data(db_session, data, is_post):
     # 2. 기본 데이터 받아두기
     id = data["meatId"]
     seqno = data["seqno"]
@@ -296,18 +296,30 @@ def create_specific_deep_aging_data(db_session, data):
     )  # DB에 있는 딥에이징 정보
     if not meat:
         return None
-    if deep_aging:
-        return False
-
-    new_deep_aging = {
-        "id": id,
-        "seqno": seqno,
-        "date": data["deepAging"]["date"],
-        "minute": data["deepAging"]["minute"],
-    }
+    
+    if is_post:
+        if deep_aging:
+            return False
+        new_deep_aging = {
+            "id": id,
+            "seqno": seqno,
+            "date": data["deepAging"]["date"],
+            "minute": data["deepAging"]["minute"],
+            "isCompleted": 0
+        }
+    else:
+        if not deep_aging:
+            return False
+        new_deep_aging={
+            "id": id,
+            "seqno": seqno,
+            "date": deep_aging.date,
+            "minute": deep_aging.minute,
+            "isCompleted": data["isCompleted"]
+        }
     try:
         deep_aging_data = DeepAgingInfo(**new_deep_aging)
-        db_session.add(deep_aging_data)
+        db_session.merge(deep_aging_data)
         db_session.commit()
         return f"{id}-{seqno}"
     except Exception as e:
@@ -369,6 +381,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             else:
                 db_session.add(new_sensory_eval)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": meat_id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
         # PATCH 요청
         else:
@@ -403,6 +416,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             else:
                 db_session.merge(new_sensory_eval)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": meat_id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
             
     except Exception as e:
@@ -468,6 +482,7 @@ def create_specific_heatedmeat_seonsory_eval(
         else:
             db_session.merge(new_sensory_data)
         db_session.commit()
+        create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
         return {
             "msg": f"Success to {'POST' if is_post else 'PATCH'} Heatedmeat Sensory Data {id}-{seqno}",
             "code": 200,
@@ -504,6 +519,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.merge(new_probexpt_data)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {
                 "msg": f"Success to PATCH Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}",
                 "code": 200,
@@ -517,6 +533,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.add(new_probexpt_data)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {
                 "msg": f"Success to POST Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}",
                 "code": 200,
@@ -577,6 +594,7 @@ def get_meat(db_session, id):
             "date": convert2string(deep_aging_data.date, 2) if sequence != 0 and deep_aging_data else None,
             "minute": deep_aging_data.minute if sequence != 0 and deep_aging_data else None,
             "seqno": f"{sequence}",
+            "isCompleted": deep_aging_data.isCompleted,
             "sensory_eval": get_SensoryEval(db_session, id, sequence),
             "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
             "probexpt_data": get_ProbexptData(db_session, id, sequence, False),

@@ -360,7 +360,7 @@ def item_encoder(data_dict, item, input_data=None):
         "xai_imagePath",
         "xai_gradeNum_imagePath",
     ]
-    int_cvr = ["period", "minute", "seqno"]
+    int_cvr = ["period", "minute", "seqno", "isCompleted"]
     float_cvr = [
         "marbling",
         "color",
@@ -438,7 +438,7 @@ def item_encoder(data_dict, item, input_data=None):
         "xai_imagePath",
         "xai_gradeNum_imagePath",
     ]
-    int_cvr = ["period", "minute", "seqno"]
+    int_cvr = ["period", "minute", "seqno", "isCompleted"]
     float_cvr = [
         "marbling",
         "color",
