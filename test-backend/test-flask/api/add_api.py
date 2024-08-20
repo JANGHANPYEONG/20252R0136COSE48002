@@ -64,20 +64,31 @@ def add_specific_meat_data():
 
 
 # 특정 육류의 딥 에이징 이력 생성
-@add_api.route("/deep-aging-data", methods=["POST"])
+@add_api.route("/deep-aging-data", methods=["POST", "PATCH"])
 def add_specific_deepAging_data():
     try:
         db_session = current_app.db_session
         data = request.get_json()
-        if not (data["meatId"] and data["seqno"] and data["deepAging"]):
-            return jsonify({"msg": "Failed to Create Deep Aging Data"}), 400
-        deep_aging_id = create_specific_deep_aging_data(db_session, data)
-        if deep_aging_id:
-            return jsonify({"msg": f"Success to Create Deep Aging Data {deep_aging_id}"}), 200
-        elif deep_aging_id is None:
-            return jsonify({"msg": f"Meat {data['meatId']} Does NOT Exists"}), 404
-        else:
-            return jsonify({"msg": f"Seqno {data['seqno']} Deep Aging Info. Already Exists"}), 400
+        if request.method == "POST":
+            if not (data["meatId"] and data["seqno"] and data["deepAging"]):
+                return jsonify({"msg": "Failed to Create Deep Aging Data"}), 400
+            deep_aging_id = create_specific_deep_aging_data(db_session, data, is_post=1)
+            if deep_aging_id:
+                return jsonify({"msg": f"Success to Create Deep Aging Data {deep_aging_id}"}), 200
+            elif deep_aging_id is None:
+                return jsonify({"msg": f"Meat {data['meatId']} Does NOT Exists"}), 404
+            else:
+                return jsonify({"msg": f"Seqno {data['seqno']} Deep Aging Info. Already Exists"}), 400
+        elif request.method == "PATCH":
+            if not (data["meatId"] and data["seqno"] is not None and data["isCompleted"] is not None):
+                return jsonify({"msg": "Failed to Patch Deep Aging Data"}), 400
+            deep_aging_id = create_specific_deep_aging_data(db_session, data, is_post=0)
+            if deep_aging_id:
+                return jsonify({"msg": f"Success to Patch Deep Aging Data {deep_aging_id}"}), 200
+            elif deep_aging_id is None:
+                return jsonify({"msg": f"Meat {data['meatId']} Does NOT Exists"}), 404
+            else:
+                return jsonify({"msg": f"Seqno {data['seqno']} Does NOT Exists"}), 404
 
     except Exception as e:
         logger.exception(str(e))
