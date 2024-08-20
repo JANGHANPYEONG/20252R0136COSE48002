@@ -96,7 +96,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
               ),
             ),
             insertionTongueDataViewModel.isLoading
-                ? const LoadingScreen()
+                ? const Center(child: LoadingScreen())
                 : Container()
           ],
         ),

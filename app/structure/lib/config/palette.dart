@@ -23,6 +23,7 @@ class Palette {
 
   // Error 색 (빨강)
   static const Color error = Color(0xFFFF4949);
+  static const Color onError = Color(0xFFF5A64B);
 
   // 기타 색
   static const Color starYellow = Color(0xFFFFE871); // 별 아이콘 색상

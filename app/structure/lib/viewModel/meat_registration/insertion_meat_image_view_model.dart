@@ -248,10 +248,12 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           _context.go('/home/data-manage-normal/edit');
         });
       } else if (meatModel.seqno == 0) {
-        _context.go('/home/data-manage-researcher/add/raw-meat');
+        // _context.go('/home/data-manage-researcher/add/raw-meat');
+        _context.pop();
       } else {
         // 처리육/가열육
-        _context.go('/home/data-manage-researcher/add/processed-meat');
+        // _context.go('/home/data-manage-researcher/add/processed-meat');
+        _context.pop();
       }
     }
   }

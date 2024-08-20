@@ -21,8 +21,6 @@ class InsertionLabDataViewModel with ChangeNotifier {
   bool isLoading = false;
   String title = '실험 데이터';
 
-  late BuildContext _context;
-
   // 컨트롤러
   TextEditingController l = TextEditingController();
   TextEditingController a = TextEditingController();
@@ -177,9 +175,6 @@ class InsertionLabDataViewModel with ChangeNotifier {
         } else {
           meatModel.updateHeatedProbExpt();
         }
-
-        _context = context;
-        _movePage();
       } else {
         // TODO: 입력한 데이터 삭제해야함
         throw ErrorDescription(response);
@@ -194,15 +189,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
-  }
 
-  void _movePage() {
-    if (meatModel.seqno == 0) {
-      // 원육
-      _context.go('/home/data-manage-researcher/add/raw-meat');
-    } else {
-      // 처리육
-      _context.go('/home/data-manage-researcher/add/processed-meat');
-    }
+    if (context.mounted) context.pop();
   }
 }
