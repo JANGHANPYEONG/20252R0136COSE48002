@@ -143,7 +143,7 @@ class CreationManagementNumScreen extends StatelessWidget {
                       height: 96.h,
                       text: 'QR코드 출력하기',
                       onPressed: () async =>
-                          await creationManagementNumViewModel.printQr(),
+                          creationManagementNumViewModel.clickedQR(),
                     ),
                     SizedBox(height: 16.h),
 

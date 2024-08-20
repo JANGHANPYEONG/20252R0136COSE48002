@@ -126,6 +126,6 @@ class DataAddViewModel with ChangeNotifier {
 
   /// QR 프린트 버튼 클릭
   void clickedQRButton() {
-    context.go('/home/data-manage-researcher/add/qr-list');
+    context.go('/home/data-manage-researcher/add/qr');
   }
 }

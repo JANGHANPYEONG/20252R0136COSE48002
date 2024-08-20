@@ -1,4 +1,5 @@
 import 'package:structure/components/custom_text_button.dart';
+import 'package:structure/components/loading_screen.dart';
 import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -137,9 +138,40 @@ void showPopup(BuildContext context, String contentText, String btnText,
                 onPressed: onTap ??
                     () {
                       context.pop();
-                      // context.pop();
                     },
               ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+// 프린트 중 팝업
+void showPrintPopup(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: Container(
+          width: 640.w,
+          height: 240.h,
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Center(
+                child: Text('프린트가 진행 중입니다.', style: Palette.h4Regular),
+              ),
+              const Expanded(child: Center(child: LoadingScreen())),
             ],
           ),
         ),
