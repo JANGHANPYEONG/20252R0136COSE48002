@@ -35,6 +35,7 @@ const Stats = () => {
       }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
+      start = new Date(now);
       start.setDate(now.getDate() - 7);
     }
 
@@ -47,7 +48,7 @@ const Stats = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [queryStartDate, queryEndDate]);
+  }, [queryStartDate, queryEndDate, location.search]);
 
   return (
     <Container maxWidth="xl" style={{ height: '80%' }}>
