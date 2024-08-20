@@ -7,11 +7,10 @@ import cv2
 from PIL import Image
 from skimage.segmentation import slic
 from skimage.feature import graycomatrix, graycoprops, local_binary_pattern
-from sklearn.cluster import KMeans
 
 import torch
-from torch.utils.data import Dataset
-from torchvision import transforms
+# from torch.utils.data import Dataset
+# from torchvision import transforms
 
 import mlflow
 import mlflow.pytorch
@@ -20,7 +19,6 @@ import io
 
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = "all"
-from utils import ColorPalette
 
 
 ## ---------------- 공통: ndarray to image ---------------- ##
@@ -65,347 +63,216 @@ def serve_mlflow(run_id):
 
 
 ## ---------------- 단면 도출 ---------------- ##
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class MeatDataset(Dataset):
-    def __init__(self, root_dir, transform=None):
-        self.root_dir = root_dir
-        self.transform = transform
-        self.images = []
-        self.labels = []
-        self.image_names = []
+# class MeatDataset(Dataset):
+#     def __init__(self, root_dir, transform=None):
+#         self.root_dir = root_dir
+#         self.transform = transform
+#         self.images = []
+#         self.labels = []
+#         self.image_names = []
         
-        self.classes = ['등심1++', '등심1+', '등심1', '등심2', '등심3']
-        for idx, class_name in enumerate(self.classes):
-            class_dir = os.path.join(root_dir, class_name)
-            for img_name in os.listdir(class_dir):
-                img_path = os.path.join(class_dir, img_name)
-                self.images.append(img_path)
-                self.labels.append(idx)
-                self.image_names.append(img_name)
+#         self.classes = ['등심1++', '등심1+', '등심1', '등심2', '등심3']
+#         for idx, class_name in enumerate(self.classes):
+#             class_dir = os.path.join(root_dir, class_name)
+#             for img_name in os.listdir(class_dir):
+#                 img_path = os.path.join(class_dir, img_name)
+#                 self.images.append(img_path)
+#                 self.labels.append(idx)
+#                 self.image_names.append(img_name)
 
-    def __len__(self):
-        return len(self.images)
+#     def __len__(self):
+#         return len(self.images)
 
-    def __getitem__(self, idx):
-        img_path = self.images[idx]
-        image = Image.open(img_path).convert('RGB')
-        label = self.labels[idx]
-        image_name = self.image_names[idx]
+#     def __getitem__(self, idx):
+#         img_path = self.images[idx]
+#         image = Image.open(img_path).convert('RGB')
+#         label = self.labels[idx]
+#         image_name = self.image_names[idx]
         
-        if self.transform:
-            image, _ = self.transform(image, Image.new('L', image.size))
+#         if self.transform:
+#             image, _ = self.transform(image, Image.new('L', image.size))
         
-        return image, label, image_name
+#         return image, label, image_name
 
-class SegmentationTransform:
-    def __init__(self, output_size=(448, 448)):
-        self.output_size = output_size
+# class SegmentationTransform:
+#     def __init__(self, output_size=(448, 448)):
+#         self.output_size = output_size
     
-    def __call__(self, image, mask):
-        if isinstance(mask, np.ndarray):
-            mask = Image.fromarray(mask.astype(np.uint8))
+#     def __call__(self, image, mask):
+#         if isinstance(mask, np.ndarray):
+#             mask = Image.fromarray(mask.astype(np.uint8))
         
-        image = transforms.Resize(256)(image)
-        mask = transforms.Resize(256, interpolation=Image.NEAREST)(mask)
+#         image = transforms.Resize(256)(image)
+#         mask = transforms.Resize(256, interpolation=Image.NEAREST)(mask)
         
-        pad_width = max(0, self.output_size[0] - image.size[0])
-        pad_height = max(0, self.output_size[1] - image.size[1])
-        pad_left = pad_width // 2
-        pad_top = pad_height // 2
-        pad_right = pad_width - pad_left
-        pad_bottom = pad_height - pad_top
+#         pad_width = max(0, self.output_size[0] - image.size[0])
+#         pad_height = max(0, self.output_size[1] - image.size[1])
+#         pad_left = pad_width // 2
+#         pad_top = pad_height // 2
+#         pad_right = pad_width - pad_left
+#         pad_bottom = pad_height - pad_top
         
-        padding = transforms.Pad((pad_left, pad_top, pad_right, pad_bottom))
-        image = padding(image)
-        mask = padding(mask)
+#         padding = transforms.Pad((pad_left, pad_top, pad_right, pad_bottom))
+#         image = padding(image)
+#         mask = padding(mask)
         
-        if image.size != self.output_size:
-            crop = transforms.CenterCrop(self.output_size)
-            image = crop(image)
-            mask = crop(mask)
+#         if image.size != self.output_size:
+#             crop = transforms.CenterCrop(self.output_size)
+#             image = crop(image)
+#             mask = crop(mask)
         
-        image = transforms.ToTensor()(image)
-        mask = transforms.ToTensor()(mask)
+#         image = transforms.ToTensor()(image)
+#         mask = transforms.ToTensor()(mask)
         
-        return image, mask
+#         return image, mask
 
 
-def apply_mask(image, mask):
-    return image * mask.to(device)
+# def apply_mask(image, mask):
+#     return image * mask.to(device)
 
 
-def extract_section_image(s3_conn, s3_image_path, s3_bucket, meat_id, seqno):
-    # 데이터셋 및 DataLoader 설정
-    transform = SegmentationTransform(output_size=(448, 448))
+# def extract_section_image(s3_conn, s3_image_path, s3_bucket, meat_id, seqno):
+#     # 데이터셋 및 DataLoader 설정
+#     transform = SegmentationTransform(output_size=(448, 448))
     
-    # 사전 학습된 모델 로드
-    run_id = "f702e1cbf98047ccbf9cb7ab5bf79a9e"
-    model = serve_mlflow(run_id)
-    model.eval()
+#     # 사전 학습된 모델 로드
+#     run_id = "f702e1cbf98047ccbf9cb7ab5bf79a9e"
+#     model = serve_mlflow(run_id)
+#     model.eval()
     
-    # S3에서 이미지 다운로드
-    if s3_bucket:
-        s3 = s3_conn
-        bucket_name = s3_bucket
-        object_key = s3_image_path
+#     # S3에서 이미지 다운로드
+#     if s3_bucket:
+#         s3 = s3_conn
+#         bucket_name = s3_bucket
+#         object_key = s3_image_path
 
-        response = s3.get_object(Bucket=bucket_name, Key=object_key)
-        img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
+#         response = s3.get_object(Bucket=bucket_name, Key=object_key)
+#         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         
-    else:
-        img = Image.open(s3_image_path).convert("RGB")
-    # 이미지 변환
-    transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor(),
-    ])
-    img_tensor = transform(img).unsqueeze(0).to(device)
+#     else:
+#         img = Image.open(s3_image_path).convert("RGB")
+#     # 이미지 변환
+#     transform = transforms.Compose([
+#         transforms.Resize((256, 256)),
+#         transforms.ToTensor(),
+#     ])
+#     img_tensor = transform(img).unsqueeze(0).to(device)
     
-    # 모델에 입력
-    with torch.no_grad():
-        output = model(img_tensor)
+#     # 모델에 입력
+#     with torch.no_grad():
+#         output = model(img_tensor)
     
-    # 마스크 생성 (U-Net 출력을 이진 마스크로 변환)
-    mask = (output > 0.5).float().to(device)
+#     # 마스크 생성 (U-Net 출력을 이진 마스크로 변환)
+#     mask = (output > 0.5).float().to(device)
     
-    # 마스크 적용
-    masked_img = apply_mask(img_tensor, mask)
+#     # 마스크 적용
+#     masked_img = apply_mask(img_tensor, mask)
     
-    # 224x224로 center crop
-    crop = transforms.CenterCrop(224)
-    cropped_img = crop(masked_img).squeeze(0)
+#     # 224x224로 center crop
+#     crop = transforms.CenterCrop(224)
+#     cropped_img = crop(masked_img).squeeze(0)
     
-    # 이미지 저장 준비
-    img = cropped_img.cpu().permute(1, 2, 0).clamp(0, 1).numpy()
-    img = (img * 255).astype(np.uint8)
-    img = Image.fromarray(img)
+#     # 이미지 저장 준비
+#     img = cropped_img.cpu().permute(1, 2, 0).clamp(0, 1).numpy()
+#     img = (img * 255).astype(np.uint8)
+#     img = Image.fromarray(img)
 
-    # output_key를 설정
-    output_key = os.path.join('section_images', f"{meat_id}-{seqno}.png")
+#     # output_key를 설정
+#     output_key = os.path.join('section_images', f"{meat_id}-{seqno}.png")
 
-    # 이미지 데이터를 바이트 스트림으로 변환
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
-    img_byte_arr.seek(0)
+#     # 이미지 데이터를 바이트 스트림으로 변환
+#     img_byte_arr = io.BytesIO()
+#     img.save(img_byte_arr, format='PNG')
+#     img_byte_arr.seek(0)
 
-    # S3에 업로드
-    s3.put_object(Bucket=s3_bucket, Key=output_key, Body=img_byte_arr, ContentType='image/png')
+#     # S3에 업로드
+#     s3.put_object(Bucket=s3_bucket, Key=output_key, Body=img_byte_arr, ContentType='image/png')
 
-    print(f"Image processed and saved to S3 at {output_key}")
-    return output_key  ## section_images/asdf-1.png
+#     print(f"Image processed and saved to S3 at {output_key}")
+#     return output_key  ## section_images/asdf-1.png
 
 
 ## ---------------- 단백질, 지방 컬러팔레트 ---------------- ##
-palette = ColorPalette()
 
-def create_slic_color_palette(image, num_segments=256, num_colors=12):  # 이미지 컬러팔레트에 쓰이는 것과 동일
-    # 이미지 사이즈 정보
-    # SLIC 슈퍼픽셀 생성: skimage.segmentation 이용
-    segments = slic(image, n_segments=num_segments, compactness=10, sigma=1, start_label=1)
-    # 실제 생성된 슈퍼픽셀 개수 확인: num_segments로 생성한 개수와 실 생성한 픽셀 수 다름.
-    unique_segments = np.unique(segments)
-    actual_num_segments = len(unique_segments)
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 
-    # 각 슈퍼픽셀의 주요 색상 추출
-    superpixel_colors = np.zeros((actual_num_segments, 3))
-    for i, seg_val in enumerate(unique_segments):
-        mask = segments == seg_val
-        superpixel_colors[i] = image[mask].mean(axis=0)
+#지방, 단백질의 기준 색상
+red_colors = [
+    (202, 89, 72),
+    (184, 74, 63),
+    (166, 60, 53),
+    (152, 47, 46),
+    (139, 47, 44)
+]
+white_colors = [
+    (219, 188, 193), 
+    (176, 165, 172), 
+    (232, 211, 217),
+    (217, 191, 192), 
+    (243, 221, 221)
+]
 
-    # 슈퍼픽셀의 주요 색상으로 이미지 생성
-    superpixel_image = np.zeros_like(image)
-    for i, seg_val in enumerate(unique_segments):
-        mask = segments == seg_val
-        superpixel_image[mask] = superpixel_colors[i]
+# 색상에 가장 가까운 색을 찾고 비율을 계산하는 함수
+def find_closest_color_and_ratio(color, image):
+    color = np.array(color)
+    image_reshaped = image.reshape(-1, 3)
     
-    # K-Means 클러스터링을 사용하여 주요 색상 num_colors개 만큼 추출
-    kmeans = KMeans(n_clusters=num_colors, n_init=10)
-    kmeans.fit(superpixel_colors)
-    colors = kmeans.cluster_centers_
-    labels = kmeans.labels_
-
-    # 각 클러스터의 빈도 계산: count 개념
-    _, counts = np.unique(labels, return_counts=True)
-    counts_sorted_indices = np.argsort(-counts)
-    sorted_palette = colors[counts_sorted_indices]
-    sorted_counts = counts[counts_sorted_indices]
-
-    # 각 색상의 비율 계산: %로 계산
-    total_count = np.sum(sorted_counts.astype(float))
-    proportions = sorted_counts / total_count
-
-    return sorted_palette, proportions, segments, superpixel_image
-
-
-@jit(nopython=True)
-def calculate_distance(color1, color2):
-    return np.sqrt(np.sum((color1 - color2)**2))
-
-@jit(nopython=True)
-def find_closest_color(color, color_list):
-    distances = np.sqrt(np.sum((color_list - color)**2, axis=1))
-    return np.min(distances)
-
-def determine_color(palette_as_list, proportions):
-    protein_count = 0  # 단백질 개수
-    fat_count = 0      # 지방 개수
-    background_count = 0  # 배경 개수
-
-    protein_proportion = 0
-    fat_proportion = 0
-
-    for i in range(0, len(palette_as_list)):
-        background = find_closest_color(palette_as_list[i], palette.black)
-        if background < 40:
-            background_count += 1
-        else:
-            red_distance = find_closest_color(palette_as_list[i], palette.reds)
-            white_distance = find_closest_color(palette_as_list[i], palette.whites)
-
-            if red_distance < white_distance:
-                protein_count += 1
-                protein_proportion += proportions[i]
-            else:
-                fat_count += 1
-                fat_proportion += proportions[i]
-                
-    total = protein_proportion + fat_proportion
-    if total > 0:
-        protein_ratio = protein_proportion / total
-        fat_ratio = fat_proportion / total
-    else:
-        protein_ratio = 0
-        fat_ratio = 0
-
-    protein_ratio *= 100
-    fat_ratio *= 100
+    # 색상 간 거리 계산
+    distances = np.sqrt(np.sum((image_reshaped - color) ** 2, axis=1))
     
-    return round(protein_ratio), round(fat_ratio)
-
-def color_list_distance(pixel, white_exclude_color):
-    for i in range(0, len(white_exclude_color)):
-        dst = calculate_distance(pixel, white_exclude_color[i])
-        if dst <= 40:
-            return 0
-    return 1
-
-
-## ---------------- 전체 컬러팔레트, 지방 단백질 비율 ---------------- ##
-# 최종 함수 (컬러팔레트 리스트 3개, 단&지 비율)
-def final_color_palette_proportion(img):
-    image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    original_sorted_palette, proportions, segments, superpixel_image = create_slic_color_palette(image, num_segments=3000, num_colors = 11)
+    # 최소 거리 색상 선택
+    closest_color_idx = np.argmin(distances)
+    closest_color = image_reshaped[closest_color_idx]
     
-    original_sorted_palette = original_sorted_palette[1:]
-
-    # SLIC 슈퍼픽셀 생성: skimage.segmentation 이용
-    segments = slic(image, n_segments=palette.num_segments, compactness=10, sigma=1, start_label=1)
-    # 실제 생성된 슈퍼픽셀 개수 확인: num_segments로 생성한 개수와 실 생성한 픽셀 수 다름.
-    unique_segments = np.unique(segments)
-    actual_num_segments = len(unique_segments)
-    print(1)
-
-    # 각 슈퍼픽셀의 주요 색상 추출
-    superpixel_colors = np.zeros((actual_num_segments, 3))
-    for i, seg_val in enumerate(unique_segments):
-        mask = segments == seg_val
-        superpixel_colors[i] = image[mask].mean(axis=0)
-
-    # 슈퍼픽셀의 주요 색상으로 이미지 생성
-    superpixel_image = np.zeros_like(image)
-    for i, seg_val in enumerate(unique_segments):
-        mask = segments == seg_val
-        superpixel_image[mask] = superpixel_colors[i]
-    print(2)
-
-    kmeans = KMeans(n_clusters=palette.num_colors, n_init=10)
-    kmeans.fit(superpixel_colors)
-    colors = kmeans.cluster_centers_
-    labels = kmeans.labels_
-    print(3)
-
-    # 각 클러스터의 빈도 계산: count 개념
-    _, counts = np.unique(labels, return_counts=True)
-    counts_sorted_indices = np.argsort(-counts)
-    sorted_palette = colors[counts_sorted_indices]
-    sorted_counts = counts[counts_sorted_indices]
-
-    sorted_palette = sorted_palette[1:]
-    proportions = proportions[1:]
-    print(4)
-
-    # 각 색상의 비율 계산: %로 계산
-    total_count = np.sum(sorted_counts.astype(float))
-    proportions = sorted_counts / total_count
-
-    # n번째 색상에 해당하는 클러스터 인덱스
-    target_cluster_index = counts_sorted_indices[1]
-
-    # 특정 클러스터에 속하는 슈퍼픽셀의 경계만 표시하기 위해 마스크 생성
-    boundary_mask = np.zeros_like(segments, dtype=bool)
-    for i, seg_val in enumerate(unique_segments):
-        if labels[i] == target_cluster_index:
-            boundary_mask |= (segments == seg_val)
-
-    protein_ratio, _ = determine_color(sorted_palette, proportions)
-    print(5)
-
-    # 지방에 해당하는 모든 인덱스를 한 번에 이미지에 표시
-    boundary_mask = np.zeros_like(segments, dtype=bool)
-    for t in palette.white_idx_list:
-        # 지방색상에 해당하는 클러스터 인덱스
-        target_cluster_index = counts_sorted_indices[t]
-
-        # 특정 클러스터에 속하는 슈퍼픽셀의 경계 마스크 업데이트
-        for i, seg_val in enumerate(unique_segments):
-            if labels[i] == target_cluster_index:
-                boundary_mask |= (segments == seg_val)
-    print(5)
-
-    # 경계 내의 픽셀 색상을 추출하여 검정색과 제외 색상을 제외하고 주요 색상 5개 추출
-    fat_region_pixels = image[boundary_mask]
-    non_excluded_pixels = [
-        pixel for pixel in fat_region_pixels 
-        if calculate_distance(pixel, palette.black[0]) > 40 and color_list_distance(pixel, palette.white_exclude_color)
-    ]
-    #바깥 영역의 픽셀을 추출
-    outside_mask = ~boundary_mask
-    outside_pixels = image[outside_mask]
-    outside_non_excluded_pixels = [
-        pixel for pixel in outside_pixels 
-        if calculate_distance(pixel, palette.black[0]) > 40 and color_list_distance(pixel, palette.red_exclude_color)
-    ]
-
-    # whites에 가까운 색상을 찾기
-    whites_proximity_pixels = [
-        pixel for pixel in non_excluded_pixels
-        if find_closest_color(pixel, palette.whites_list_select) < 30
-    ]
-
-    #지방 주요 색상 5개를 추출 
-    n_clusters_white = min(5, len(whites_proximity_pixels))
-    if n_clusters_white > 0:
-        kmeans = KMeans(n_clusters=n_clusters_white, n_init=10)
-        kmeans.fit(whites_proximity_pixels)
-        fat_colors = kmeans.cluster_centers_
-    else:
-        fat_colors = []
-
-    #단백질 주요 색상 5개 추출
-    n_clusters_red = min(5, len(outside_non_excluded_pixels))
-    if n_clusters_red > 0:
-        kmeans = KMeans(n_clusters=n_clusters_red, n_init=10)
-        kmeans.fit(outside_non_excluded_pixels)
-        protein_colors = kmeans.cluster_centers_
-    else:
-        protein_colors = []
+    # 해당 색상과 유사한 픽셀의 수 계산
+    threshold = 100
+    similar_pixels = np.sum(distances < threshold)
     
+    # 전체 픽셀 수
+    total_pixels = image_reshaped.shape[0]
+    
+    # 비율 계산
+    ratio = similar_pixels / total_pixels
+    return closest_color, ratio
+
+#결과값 : (rgb값 + 비율)의 리스트
+def extract_palette_and_ratios(image, colors):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    palette_and_ratios = []
+    for color in colors:
+        closest_color, ratio = find_closest_color_and_ratio(color, image)
+        palette_and_ratios.append((closest_color.tolist(), ratio))
+    
+    return palette_and_ratios
+
+#총합 비율과 컬러팔레트(리스트)를 구하는 함수
+def display_palette_with_ratios(image):
+    red_palette_and_ratios = extract_palette_and_ratios(image, red_colors)
+    white_palette_and_ratios = extract_palette_and_ratios(image, white_colors)
+    total_palette = red_palette_and_ratios + white_palette_and_ratios
+    red_proportion = []
+    white_proportion = []
+    for red_color in total_palette[:5]:
+        sum = 0
+        sum += red_color[1]
+        red_proportion.append(red_color)
+    red_ratio = sum
+    for white_color in total_palette[5:]:
+        sum = 0
+        sum += white_color[1]
+        white_proportion.append(white_color)
+    white_ratio = sum
     result = {
-        "fat_color_palette": fat_colors,
-        "protein_color_palette": protein_colors,
-        "total_color_palette": original_sorted_palette,
-        "protein_ratio": protein_ratio
+        "red_ratio": red_ratio,
+        "white_ratio": white_ratio,
+        "red_proportion": [red[0] for red in red_proportion],
+        "white_proportion": [white[0] for white in white_proportion],
+        "total_proportion": total_palette
     }
     return result
 

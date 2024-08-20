@@ -1,10 +1,8 @@
 # 서버 메인 파일
 import sys
-from threading import Thread
 
 from flask import Flask, current_app
 from flask_cors import CORS
-from celery import Celery
 from dotenv import load_dotenv
 import os
 
@@ -30,14 +28,6 @@ if not db_uri:
 app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
-
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
-
 db = SQLAlchemy(app)
 CORS(app)
 
@@ -62,12 +52,6 @@ def initialize_services(app):
         
         # Firestore 초기화
         current_app.firestore_db = firebase_conn.firebase_db
-        
-        # consumer = create_consumer()
-        # # Kafka consumer를 별도의 스레드에서 실행
-        # kafka_thread = Thread(target=process_messages, args=(s3_conn, consumer))
-        # kafka_thread.daemon = True  # 메인 스레드가 종료되면 이 스레드도 종료됩니다
-        # kafka_thread.start()
     
     
 # 서비스 초기화

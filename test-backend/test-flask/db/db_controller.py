@@ -394,7 +394,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             # db_session.merge(new_sensory_eval)
 
             if need_img:
-                image_path = transfer_folder_image(
+                transfer_folder_image(
                     s3_conn,
                     firestore_conn,
                     db_session,
@@ -402,12 +402,6 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
                     new_sensory_eval,
                     "sensory_evals",
                 )
-                try:
-                    async_process_image.delay(image_path, meat_id, seqno)
-                    print(f"Image processing task sent to Celery for meat_id: {meat_id}, seqno: {seqno}")
-                except Exception as e:
-                    print(f"Failed to send message to Celery: {str(e)}")
-
             else:
                 db_session.merge(new_sensory_eval)
             db_session.commit()

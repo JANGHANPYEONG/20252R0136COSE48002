@@ -15,7 +15,7 @@ def create_meat_palette():
     
     img = s3_conn.download_image(f"sensory_evals/{meat_id}-{seqno}.png")
     print("Success to Download Image From S3")
-    result = final_color_palette_proportion(img)
+    result = display_palette_with_ratios(img)
     return jsonify({"meatId": meat_id, "seqno": seqno, "result": result})
 
 
@@ -41,8 +41,8 @@ def create_meat_lbp_garbor_images():
     
     img = s3_conn.download_image(f"sensory_evals/{meat_id}-{seqno}.png")
     
-    # lbp_result = lbp_calculate(s3_conn, img, meat_id, seqno)
-    # print(lbp_result)
+    lbp_result = lbp_calculate(s3_conn, img, meat_id, seqno)
+    print(lbp_result)
     gabor_result = gabor_texture_analysis(s3_conn, img, meat_id, seqno)
     pprint.pprint(gabor_result)
     return gabor_result
