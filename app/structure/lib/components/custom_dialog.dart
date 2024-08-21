@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:structure/components/image_card.dart';
 import 'package:structure/components/round_button.dart';
 import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
@@ -287,15 +286,7 @@ void showSaveImageDialog(
               SizedBox(height: 16.h),
 
               // 이미지
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20.r),
-                child: Image.file(
-                  File(imgPath),
-                  width: 640.w,
-                  height: 640.w,
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
+              ImageCard(imagePath: imgPath),
               SizedBox(height: 32.h),
 
               // 버튼
