@@ -1113,10 +1113,17 @@ def _getPredictionData(db_session, id, seqno):
     if result:
         return jsonify(result), 200
     else:
-        return jsonify({"msg": "No data in AI Sensory Evaluation. Request POST to create AI prediction"}), 404
+        return jsonify({"msg": "No data in Meat or AI Sensory Evaluation. Request POST to create AI prediction"}), 404
 
 
 def get_AI_SensoryEval(db_session, id, seqno):
+    meat = db_session.query(Meat).filter_by(id=id).first()
+    sensory_data = db_session.query(SensoryEval).filter(
+        SensoryEval.id == id, SensoryEval.seqno
+    )
+    if meat is None and sensory_data is None:
+        db_session.close()
+        return None 
     ai_sensoryEval = (
         db_session.query(AI_SensoryEval)
         .filter(
