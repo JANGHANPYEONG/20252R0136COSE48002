@@ -12,8 +12,8 @@ const DataPredict = () => {
   // 쿼리스트링 추출
   const searchParams = useLocation().search;
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-  const startDate = new URLSearchParams(searchParams).get('startDate');
-  const endDate = new URLSearchParams(searchParams).get('endDate');
+  const startDate = new URLSearchParams(searchParams).get('start');
+  const endDate = new URLSearchParams(searchParams).get('end');
   console.log('예측', { pageOffset, startDate, endDate });
 
   return (
@@ -24,7 +24,7 @@ const DataPredict = () => {
           <Link
             to={{
               pathname: '/PA',
-              search: `?pageOffset=${pageOffset}&startDate=${startDate}&endDate=${endDate}`,
+              search: `?pageOffset=${pageOffset}&start=${startDate}&end=${endDate}`,
             }}
             style={{
               textDecorationLine: 'none',
