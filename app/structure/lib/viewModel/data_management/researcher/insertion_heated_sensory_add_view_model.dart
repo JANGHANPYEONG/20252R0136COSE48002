@@ -34,18 +34,22 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
   //연도 기본 값
-  num tenderness3 = 1.0;
-  num tenderness7 = 1.0;
-  num tenderness14 = 1.0;
-  num tenderness21 = 1.0;
+  double tenderness3 = 1.0;
+  double tenderness7 = 1.0;
+  double tenderness14 = 1.0;
+  double tenderness21 = 1.0;
 
   void _initialize() {
     seqNo = meatModel.seqno;
     processCreatedAt = meatModel.deepAgingCreatedAt!;
-    tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
-    tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
-    tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;
-    tenderness21 = meatModel.heatedSensoryEval?['tenderness21'] ?? 1.0;
+    tenderness3 =
+        double.parse('${meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0}');
+    tenderness7 =
+        double.parse('${meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0}');
+    tenderness14 =
+        double.parse('${meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0}');
+    tenderness21 =
+        double.parse('${meatModel.heatedSensoryEval?['tenderness21'] ?? 1.0}');
 
     calculateDiff();
     checkTenderness();
@@ -69,7 +73,6 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
       check = true;
       notifyListeners();
     }
-    print(check);
   }
 
   void checkDateBool() {
