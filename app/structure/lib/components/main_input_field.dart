@@ -141,8 +141,8 @@ class _MainInputFieldState extends State<MainInputField> {
             suffixIcon: widget.obscureText == true
                 ? IconButton(
                     icon: _isObscure
-                        ? const Icon(Icons.visibility)
-                        : const Icon(Icons.visibility_off),
+                        ? const Icon(Icons.visibility_off)
+                        : const Icon(Icons.visibility),
                     color: Palette.onSecondary,
                     padding: EdgeInsets.zero,
                     onPressed: () {

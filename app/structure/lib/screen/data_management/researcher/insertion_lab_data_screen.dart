@@ -53,18 +53,17 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                             mainText: 'L ',
                             subText: '명도',
                             // isL: true,
+                            controller: insertionLabDataViewModel.l,
+                            onChangeFunc: (_) =>
+                                insertionLabDataViewModel.inputCheck(),
                             validateFunc: (value) {
                               double parsedValue =
-                                  double.tryParse(value!) ?? 0.0;
+                                  double.tryParse(value!) ?? 1.0;
                               if (parsedValue < 1 || parsedValue > 30) {
                                 return "1~30 사이의 값을 입력하세요.";
                               }
                               return null;
                             },
-                            // type: 'L',
-                            controller: insertionLabDataViewModel.l,
-                            onChangeFunc: (_) =>
-                                insertionLabDataViewModel.inputCheck(),
                             formKey: _formKey,
                             onEditingComplete: () {
                               _formKey.currentState?.validate();
@@ -78,7 +77,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                             unit: '',
                             validateFunc: (value) {
                               double parsedValue =
-                                  double.tryParse(value!) ?? 0.0;
+                                  double.tryParse(value!) ?? 1.0;
                               if (parsedValue < 1 || parsedValue > 30) {
                                 return "1~30 사이의 값을 입력하세요.";
                               }
@@ -103,7 +102,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                                 insertionLabDataViewModel.inputCheck(),
                             validateFunc: (value) {
                               double parsedValue =
-                                  double.tryParse(value!) ?? 0.0;
+                                  double.tryParse(value!) ?? 1.0;
                               if (parsedValue < 1 || parsedValue > 30) {
                                 return "1~30 사이의 값을 입력하세요.";
                               }
@@ -212,7 +211,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                                 insertionLabDataViewModel.inputCheck(),
                             validateFunc: (value) {
                               double parsedValue =
-                                  double.tryParse(value!) ?? 0.0;
+                                  double.tryParse(value!) ?? 1.0;
                               if (parsedValue < 1 || parsedValue > 6) {
                                 return "0~6 사이의 값을 입력하세요.";
                               }
@@ -254,7 +253,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                                 insertionLabDataViewModel.inputCheck(),
                             validateFunc: (value) {
                               double parsedValue =
-                                  double.tryParse(value!) ?? 0.0;
+                                  double.tryParse(value!) ?? 1.0;
                               if (parsedValue < 1 || parsedValue > 250) {
                                 return "1~250 사이의 값을 입력하세요.";
                               }
@@ -301,7 +300,8 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                         width: double.infinity,
                         height: 96.h,
                         text: '저장',
-                        onPressed: insertionLabDataViewModel.inputComplete
+                        onPressed: insertionLabDataViewModel.inputComplete &&
+                                _formKey.currentState!.validate()
                             ? () async =>
                                 insertionLabDataViewModel.saveData(context)
                             : null,

@@ -74,48 +74,54 @@ class _DataFieldState extends State<DataField> {
         SizedBox(height: 16.h),
 
         // 입력 textfield
-        SizedBox(
-          height: 88.h,
-          child: TextFormField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            textInputAction:
-                widget.isFinal ? TextInputAction.done : TextInputAction.next,
-            textAlign: TextAlign.left,
-            validator: widget.validateFunc,
-            onEditingComplete: widget.onEditingComplete,
-            cursorColor: Palette.primary,
-            keyboardType: TextInputType.number,
-            onChanged: widget.onChangeFunc,
-            decoration: InputDecoration(
-              errorStyle: const TextStyle(color: Colors.red),
-              contentPadding: EdgeInsets.symmetric(horizontal: 24.w),
-              filled: true,
-              fillColor: _isFocused ? Colors.white : Colors.grey[200], // 배경색 설정
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.r),
-                borderSide: BorderSide.none, // 기본 테두리 없음
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.r),
-                borderSide: const BorderSide(
-                  color: Palette.primary, // 초록색 테두리 설정
-                  width: 1, // 테두리 두께 설정
-                ),
-              ),
-              suffixIcon: widget.unit != null
-                  ? Container(
-                      width: 24.w, // 필요한 너비로 조정
-                      height: 24.h,
-                      alignment: Alignment.center, // 오른쪽 끝에 맞춤
-                      child: Text(
-                        widget.unit!,
-                        style: Palette.h4Regular
-                            .copyWith(color: Palette.secondary),
-                      ),
-                    )
-                  : null,
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          textInputAction:
+              widget.isFinal ? TextInputAction.done : TextInputAction.next,
+          textAlign: TextAlign.left,
+          validator: widget.validateFunc,
+          onEditingComplete: widget.onEditingComplete,
+          cursorColor: Palette.primary,
+          keyboardType: TextInputType.number,
+          onChanged: widget.onChangeFunc,
+          decoration: InputDecoration(
+            filled: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 24.w),
+            fillColor: _isFocused ? Colors.white : Colors.grey[200], // 배경색 설정
+            errorStyle: Palette.h6.copyWith(color: Palette.error),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
             ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
+            ),
+
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: BorderSide.none, // 기본 테두리 없음
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(
+                color: Palette.primary, // 초록색 테두리 설정
+                width: 1, // 테두리 두께 설정
+              ),
+            ),
+            suffixIcon: widget.unit != null
+                ? Container(
+                    width: 24.w, // 필요한 너비로 조정
+                    height: 24.h,
+                    alignment: Alignment.center, // 오른쪽 끝에 맞춤
+                    child: Text(
+                      widget.unit!,
+                      style:
+                          Palette.h4Regular.copyWith(color: Palette.secondary),
+                    ),
+                  )
+                : null,
           ),
         ),
       ],
