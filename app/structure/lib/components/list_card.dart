@@ -8,7 +8,6 @@ class ListCard extends StatelessWidget {
   final String dayTime;
   final String statusType;
   final int? dDay;
-  final int? updatedAt;
 
   const ListCard({
     super.key,
@@ -17,7 +16,6 @@ class ListCard extends StatelessWidget {
     required this.dayTime,
     required this.statusType,
     this.dDay,
-    this.updatedAt,
   });
 
   @override
@@ -80,23 +78,17 @@ class ListCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Center(
-                        child: statusType != '반려' && dDay! >= 0
+                        child: dDay! >= 0
                             ? Text(
                                 'D-$dDay',
                                 style: Palette.h7,
                                 textAlign: TextAlign.center,
                               )
-                            : statusType != '반려' && dDay! < 0
-                                ? Text(
-                                    '종료',
-                                    style: Palette.h7,
-                                    textAlign: TextAlign.center,
-                                  )
-                                : Text(
-                                    'D-$updatedAt',
-                                    style: Palette.h7,
-                                    textAlign: TextAlign.center,
-                                  ),
+                            : Text(
+                                '종료',
+                                style: Palette.h7,
+                                textAlign: TextAlign.center,
+                              ),
                       ),
                     ),
                   )

@@ -5,7 +5,7 @@ import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/custom_divider.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/config/palette.dart';
-import 'package:structure/viewModel/my_page/user_info_view_model.dart';
+import 'package:structure/viewModel/my_page/my_page_view_model.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
@@ -17,7 +17,7 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   @override
   Widget build(BuildContext context) {
-    UserInfoViewModel userInfoViewModel = context.watch<UserInfoViewModel>();
+    MyPageViewModel myPageViewModel = context.watch<MyPageViewModel>();
 
     return Scaffold(
       appBar: const CustomAppBar(title: '마이페이지'),
@@ -47,7 +47,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         width: 80.w,
                         child: Text('이름', style: Palette.h6SemiBoldOnSecondary),
                       ),
-                      Text(userInfoViewModel.userName, style: Palette.h5),
+                      Text(myPageViewModel.userName, style: Palette.h5),
                       SizedBox(width: 16.w),
 
                       // 직위 컨테이너
@@ -56,15 +56,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         alignment: Alignment.center,
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         decoration: BoxDecoration(
-                          color: userInfoViewModel.userType == 'Normal'
+                          color: myPageViewModel.userType == 'Normal'
                               ? Palette.userNormalCardBg
-                              : userInfoViewModel.userType != 'Researcher'
+                              : myPageViewModel.userType != 'Researcher'
                                   ? Palette.userManagerCardBg
                                   : Palette.userResearcherCardBg,
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
-                          userInfoViewModel.userType,
+                          myPageViewModel.userType,
                           style: Palette.h7,
                         ),
                       ),
@@ -83,7 +83,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           style: Palette.h6SemiBoldOnSecondary,
                         ),
                       ),
-                      Text(userInfoViewModel.createdAt, style: Palette.h5),
+                      Text(myPageViewModel.createdAt, style: Palette.h5),
                     ],
                   ),
                 )
@@ -97,7 +97,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   width: 80.w,
                   child: Text('이메일', style: Palette.h6SemiBoldOnSecondary),
                 ),
-                Text(userInfoViewModel.userId, style: Palette.h5),
+                Text(myPageViewModel.userId, style: Palette.h5),
               ],
             ),
             SizedBox(height: 32.h),
@@ -107,7 +107,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             // 상세 정보
             InkWell(
               onTap: () {
-                userInfoViewModel.clickedEdit(context);
+                myPageViewModel.clickedEdit();
               },
               borderRadius: BorderRadius.circular(20.r),
               child: Container(
@@ -141,7 +141,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Text(
-                      userInfoViewModel.homeAdress,
+                      myPageViewModel.homeAdress,
                       style: Palette.h5,
                     ),
                   ),
@@ -157,7 +157,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   child: Text('회사명', style: Palette.h6SemiBoldOnSecondary),
                 ),
                 Text(
-                  userInfoViewModel.company,
+                  myPageViewModel.company,
                   style: Palette.h5,
                 ),
               ],
@@ -177,7 +177,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                       ),
                       Text(
-                        userInfoViewModel.department,
+                        myPageViewModel.department,
                         style: Palette.h5,
                       ),
                     ],
@@ -194,7 +194,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                       ),
                       Text(
-                        userInfoViewModel.jobTitle,
+                        myPageViewModel.jobTitle,
                         style: Palette.h5,
                       ),
                     ],
@@ -208,7 +208,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
             // 비밀번호 변경
             InkWell(
-              onTap: () => userInfoViewModel.clickedChangePW(context),
+              onTap: () => myPageViewModel.clickedChangePW(),
               borderRadius: BorderRadius.circular(20.r),
               child: SizedBox(
                 width: double.infinity,
@@ -237,7 +237,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
             // 회원 탈퇴
             InkWell(
-              onTap: () => userInfoViewModel.clickedDeleteUser(context),
+              onTap: () => myPageViewModel.clickedDeleteUser(),
               borderRadius: BorderRadius.circular(20.r),
               child: SizedBox(
                 width: double.infinity,
@@ -273,8 +273,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 width: double.infinity,
                 height: 96.h,
                 text: '로그아웃',
-                onPressed: () async =>
-                    userInfoViewModel.clickedSignOut(context),
+                onPressed: () async => myPageViewModel.clickedSignOut(),
               ),
             ),
           ],

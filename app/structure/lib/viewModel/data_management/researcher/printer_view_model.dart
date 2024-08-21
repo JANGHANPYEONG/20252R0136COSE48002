@@ -16,7 +16,6 @@ class PrinterViewModel extends ChangeNotifier {
   PrinterViewModel(this.meatModel, this.context) {
     _initialize();
   }
-  bool isLoading = true;
   bool isScanning = false;
 
   // Bluetooth
@@ -28,9 +27,6 @@ class PrinterViewModel extends ChangeNotifier {
 
   void _initialize() async {
     await scan();
-
-    isLoading = false;
-    notifyListeners();
   }
 
   /// 등록된 블루투스 기기 스캔
@@ -60,16 +56,30 @@ class PrinterViewModel extends ChangeNotifier {
 
   /// 프린터 선택
   void selectPrinter(int index) async {
-    isDeviceConnected = false;
     isScanning = false;
+    isDeviceConnected = false;
     notifyListeners();
+
+    showPrinterConnectPopup(context);
 
     // 프린터 선택
     selectedDevice = devices[index].split('(')[0].trim();
     // 프린터 주소 추출
     final address = devices[index].split('(')[1].replaceAll(')', '').trim();
-    // 프린터 연결
-    isDeviceConnected = await bixolonPrinter.connectPrinter(address);
+    try {
+      // 프린터 연결
+      isDeviceConnected = await bixolonPrinter
+          .connectPrinter(address)
+          .timeout(const Duration(seconds: 4));
+
+      if (context.mounted) context.pop();
+    } catch (e) {
+      if (context.mounted) {
+        context.pop();
+        showPrinterConnectErrorPopup(context);
+      }
+    }
+
     notifyListeners();
   }
 

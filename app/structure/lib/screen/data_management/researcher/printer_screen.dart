@@ -23,76 +23,68 @@ class _PrinterScreenState extends State<PrinterScreen> {
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'QR 프린트'),
-      body: Stack(
-        children: [
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 40.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Container(
+        margin: EdgeInsets.symmetric(horizontal: 40.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 24.h),
+
+            // 프린터 리스트
+            Row(
               children: [
-                SizedBox(height: 24.h),
-
-                // 프린터 리스트
-                Row(
-                  children: [
-                    // 리스트 dropdown
-                    Expanded(
-                      child: CustomDropdown(
-                        hintText:
-                            Text('프린터를 선택하세요', style: Palette.h4OnSecondary),
-                        value: printerViewModel.selectedDevice ??
-                            (printerViewModel.devices.isEmpty
-                                ? '프린터를 찾을 수 없습니다'
-                                : '프린터를 선택하세요'),
-                        itemList: printerViewModel.deviceNames,
-                        onChanged: (_, index) =>
-                            printerViewModel.selectPrinter(index),
-                      ),
-                    ),
-
-                    // 새로고침 버튼
-                    IconButton(
-                      onPressed: () async => await printerViewModel.scan(),
-                      icon: printerViewModel.isScanning
-                          ? SizedBox(
-                              width: 32.w,
-                              height: 32.w,
-                              child: const LoadingScreen())
-                          : const Icon(Icons.refresh),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 32.h),
-
-                // QR 미리보기
-                Text('미리보기', style: Palette.h4),
-                SizedBox(height: 16.h),
-
-                ImageCard(imagePath: printerViewModel.meatModel.imagePath),
-                const Spacer(),
-
-                Container(
-                  margin: EdgeInsets.only(bottom: 40.h),
-                  child: MainButton(
-                    width: double.infinity,
-                    height: 96.h,
-                    text: printerViewModel.selectedDevice == null
-                        ? '프린터 선택'
-                        : printerViewModel.isDeviceConnected
-                            ? '프린트'
-                            : '프린터 연결',
-                    onPressed: printerViewModel.isDeviceConnected
-                        ? () => printerViewModel.printQR()
-                        : null,
+                // 리스트 dropdown
+                Expanded(
+                  child: CustomDropdown(
+                    hintText: Text('프린터를 선택하세요', style: Palette.h4OnSecondary),
+                    value: printerViewModel.selectedDevice ??
+                        (printerViewModel.devices.isEmpty
+                            ? '프린터를 찾을 수 없습니다'
+                            : '프린터를 선택하세요'),
+                    itemList: printerViewModel.deviceNames,
+                    onChanged: (_, index) =>
+                        printerViewModel.selectPrinter(index),
                   ),
-                )
+                ),
+
+                // 새로고침 버튼
+                IconButton(
+                  onPressed: () async => await printerViewModel.scan(),
+                  icon: printerViewModel.isScanning
+                      ? SizedBox(
+                          width: 32.w,
+                          height: 32.w,
+                          child: const LoadingScreen())
+                      : const Icon(Icons.refresh),
+                ),
               ],
             ),
-          ),
-          printerViewModel.isLoading
-              ? const Center(child: LoadingScreen())
-              : Container()
-        ],
+            SizedBox(height: 32.h),
+
+            // QR 미리보기
+            Text('미리보기', style: Palette.h4),
+            SizedBox(height: 16.h),
+
+            ImageCard(imagePath: printerViewModel.meatModel.imagePath),
+            const Spacer(),
+
+            Container(
+              margin: EdgeInsets.only(bottom: 40.h),
+              child: MainButton(
+                width: double.infinity,
+                height: 96.h,
+                text: printerViewModel.selectedDevice == null
+                    ? '프린터 선택'
+                    : printerViewModel.isDeviceConnected
+                        ? '프린트'
+                        : '프린터 연결',
+                onPressed: printerViewModel.isDeviceConnected
+                    ? () => printerViewModel.printQR()
+                    : null,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

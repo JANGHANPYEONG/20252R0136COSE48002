@@ -63,7 +63,9 @@ class DeleteUserViewModel with ChangeNotifier {
     final response = await RemoteDataSource.deleteUser(userModel.userId!);
 
     if (response != 200) {
-      // TODO : 에러 메시지 팝업
+      isLoading = false;
+      notifyListeners();
+      _showSnackBar('오류가 발생했습니다.');
       throw ErrorDescription(response);
     }
 
