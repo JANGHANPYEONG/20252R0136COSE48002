@@ -9,15 +9,12 @@ class DataField extends StatefulWidget {
   final String subText;
   final String? unit;
   final TextEditingController controller;
-  final bool? isPercent;
   final bool? isL;
   final bool? isA;
-  final String? type;
   final void Function(String)? onChangeFunc;
   final bool isFinal;
   final GlobalKey<FormState>? formKey;
   final String? Function(String?)? validateFunc;
-  final List<TextInputFormatter>? formatter;
   final VoidCallback? onEditingComplete;
   const DataField({
     super.key,
@@ -25,15 +22,12 @@ class DataField extends StatefulWidget {
     required this.subText,
     this.unit,
     required this.controller,
-    this.isPercent,
     this.isL,
     this.isA,
-    this.type,
     this.isFinal = false,
     this.onChangeFunc,
     this.formKey,
     this.validateFunc,
-    this.formatter,
     this.onEditingComplete,
   });
 
@@ -89,45 +83,7 @@ class _DataFieldState extends State<DataField> {
                 widget.isFinal ? TextInputAction.done : TextInputAction.next,
             textAlign: TextAlign.left,
             validator: widget.validateFunc,
-            inputFormatters: widget.formatter,
             onEditingComplete: widget.onEditingComplete,
-            // const [
-            // if (widget.isPercent != null && widget.isPercent == true)
-            //   _PercentageInputFormatter(),
-            // if (widget.type == 'L')
-            //   const RangeInputFormatter(
-            //       minValue: 30, maxValue: 60, length: 2),
-            // // _InputValueLCheck(),
-            // if (widget.type == 'a')
-            //   const RangeInputFormatter(
-            //       minValue: 1, maxValue: 30, length: 1),
-            // if (widget.type == 'b')
-            //   const RangeInputFormatter(
-            //       minValue: 1, maxValue: 30, length: 1),
-            // if (widget.type == 'ph')
-            //   const RangeInputFormatter(
-            //       minValue: 0, maxValue: 14, length: 1),
-            // if (widget.type == 'WSBF')
-            //   const RangeInputFormatter(
-            //       minValue: 1, maxValue: 6, length: 0),
-            // if (widget.type == 'Cathepsin')
-            //   const RangeInputFormatter(
-            //       minValue: 0, maxValue: 10000, length: 1),
-            // if (widget.type == 'MFI')
-            //   const RangeInputFormatter(
-            //       minValue: 1, maxValue: 250, length: 1),
-            // if (widget.type == 'Collagen')
-            //   const RangeInputFormatter(
-            //       minValue: 0, maxValue: 10, length: 1),
-            // if (widget.type == 'tongue')
-            //   const RangeInputFormatter(
-            //       minValue: -10, maxValue: 10, length: 2),
-            // if ((widget.isPercent == null || widget.isPercent == false) &&
-            //     (widget.isL == null || widget.isL == false))
-            //   FilteringTextInputFormatter.allow(
-            //     RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
-            //   ),
-            // ],
             cursorColor: Palette.primary,
             keyboardType: TextInputType.number,
             onChanged: widget.onChangeFunc,
@@ -167,41 +123,41 @@ class _DataFieldState extends State<DataField> {
   }
 }
 
-class _PercentageInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    double parsedValue = double.tryParse(newValue.text) ?? 0.0;
+// class _PercentageInputFormatter extends TextInputFormatter {
+//   @override
+//   TextEditingValue formatEditUpdate(
+//       TextEditingValue oldValue, TextEditingValue newValue) {
+//     double parsedValue = double.tryParse(newValue.text) ?? 0.0;
 
-    if (parsedValue < 0 || parsedValue > 100 || newValue.text.length > 7) {
-      return oldValue;
-      // return newValue;
-    }
+//     if (parsedValue < 0 || parsedValue > 100 || newValue.text.length > 7) {
+//       return oldValue;
+//       // return newValue;
+//     }
 
-    return newValue;
-  }
-}
+//     return newValue;
+//   }
+// }
 
-class RangeInputFormatter extends TextInputFormatter {
-  final int minValue;
-  final int maxValue;
-  final int length;
-  const RangeInputFormatter({
-    required this.minValue,
-    required this.maxValue,
-    required this.length,
-  });
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.length >= length) {
-      double? parsedValue = double.tryParse(newValue.text);
-      if (parsedValue == null ||
-          parsedValue < minValue ||
-          parsedValue > maxValue) {
-        return oldValue;
-      }
-    }
-    return newValue;
-  }
-}
+// class RangeInputFormatter extends TextInputFormatter {
+//   final int minValue;
+//   final int maxValue;
+//   final int length;
+//   const RangeInputFormatter({
+//     required this.minValue,
+//     required this.maxValue,
+//     required this.length,
+//   });
+//   @override
+//   TextEditingValue formatEditUpdate(
+//       TextEditingValue oldValue, TextEditingValue newValue) {
+//     if (newValue.text.length >= length) {
+//       double? parsedValue = double.tryParse(newValue.text);
+//       if (parsedValue == null ||
+//           parsedValue < minValue ||
+//           parsedValue > maxValue) {
+//         return oldValue;
+//       }
+//     }
+//     return newValue;
+//   }
+// }

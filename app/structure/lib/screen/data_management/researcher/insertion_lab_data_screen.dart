@@ -5,7 +5,6 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
@@ -54,7 +53,6 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                             mainText: 'L ',
                             subText: '명도',
                             // isL: true,
-                            formatter: null,
                             validateFunc: (value) {
                               double parsedValue =
                                   double.tryParse(value!) ?? 0.0;
@@ -63,7 +61,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                               }
                               return null;
                             },
-                            type: 'L',
+                            // type: 'L',
                             controller: insertionLabDataViewModel.l,
                             onChangeFunc: (_) =>
                                 insertionLabDataViewModel.inputCheck(),
@@ -76,7 +74,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'a ',
                             subText: '적색도',
-                            type: 'a',
+                            // type: 'a',
                             unit: '',
                             validateFunc: (value) {
                               double parsedValue =
@@ -98,7 +96,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'b ',
                             subText: '황색도',
-                            type: 'b',
+                            // type: 'b',
                             unit: '',
                             controller: insertionLabDataViewModel.b,
                             onChangeFunc: (_) =>
@@ -120,7 +118,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'DL ',
                             subText: '육즙감량',
-                            isPercent: true,
+                            // isPercent: true,
                             unit: '%',
                             controller: insertionLabDataViewModel.dl,
                             onChangeFunc: (_) =>
@@ -142,7 +140,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'CL ',
                             subText: '가열감량',
-                            isPercent: true,
+                            // isPercent: true,
                             unit: '%',
                             controller: insertionLabDataViewModel.cl,
                             onChangeFunc: (_) =>
@@ -164,7 +162,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'RW ',
                             subText: '압착감량',
-                            isPercent: true,
+                            // isPercent: true,
                             unit: '%',
                             controller: insertionLabDataViewModel.rw,
                             onChangeFunc: (_) =>
@@ -186,7 +184,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'pH ',
                             subText: '산도',
-                            type: 'ph',
+                            // type: 'ph',
                             controller: insertionLabDataViewModel.ph,
                             onChangeFunc: (_) =>
                                 insertionLabDataViewModel.inputCheck(),
@@ -207,7 +205,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'WBSF ',
                             subText: '전단가',
-                            type: 'WSBF',
+                            // type: 'WSBF',
                             unit: 'kgf',
                             controller: insertionLabDataViewModel.wbsf,
                             onChangeFunc: (_) =>
@@ -229,7 +227,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'Cathepsin',
                             subText: '카텝신활성도',
-                            type: 'Cathepsin',
+                            // type: 'Cathepsin',
                             controller: insertionLabDataViewModel.ct,
                             onChangeFunc: (_) =>
                                 insertionLabDataViewModel.inputCheck(),
@@ -250,7 +248,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'MFI ',
                             subText: '근소편화지수',
-                            type: 'MFI',
+                            // type: 'MFI',
                             controller: insertionLabDataViewModel.mfi,
                             onChangeFunc: (_) =>
                                 insertionLabDataViewModel.inputCheck(),
@@ -271,7 +269,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                           DataField(
                             mainText: 'Collagen ',
                             subText: '콜라겐',
-                            type: 'Collagen',
+                            // type: 'Collagen',
                             controller: insertionLabDataViewModel.collagen,
                             isFinal: true,
                             onChangeFunc: (_) =>

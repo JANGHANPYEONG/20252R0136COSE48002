@@ -44,45 +44,100 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                   SizedBox(height: 24.h),
 
                   // 신맛
-                  DataField(
-                    mainText: 'Sourness',
-                    subText: '신맛',
-                    type: 'tongue',
-                    controller: insertionTongueDataViewModel.sourness,
-                    onChangeFunc: (_) =>
-                        insertionTongueDataViewModel.inputCheck(),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        DataField(
+                          mainText: 'Sourness',
+                          subText: '신맛',
+                          // type: 'tongue',
+                          controller: insertionTongueDataViewModel.sourness,
+                          onChangeFunc: (_) =>
+                              insertionTongueDataViewModel.inputCheck(),
+                          validateFunc: (value) {
+                            double parsedValue = double.tryParse(value!) ?? 0.0;
+                            if (parsedValue < -10 || parsedValue > 10) {
+                              return "-10~10 사이의 값을 입력하세요.";
+                            }
+                            return null;
+                          },
+                          formKey: _formKey,
+                          onEditingComplete: () {
+                            _formKey.currentState?.validate();
+                          },
+                        ),
+                        SizedBox(height: 32.h),
+                        // 진한맛
+                        DataField(
+                          mainText: 'Bitterness',
+                          subText: '진한맛',
+                          // type: 'tongue',
+                          controller: insertionTongueDataViewModel.bitterness,
+                          onChangeFunc: (_) =>
+                              insertionTongueDataViewModel.inputCheck(),
+                          validateFunc: (value) {
+                            double parsedValue = double.tryParse(value!) ?? 0.0;
+                            if (parsedValue < -10 || parsedValue > 10) {
+                              return "-10~10 사이의 값을 입력하세요.";
+                            }
+                            return null;
+                          },
+                          formKey: _formKey,
+                          onEditingComplete: () {
+                            _formKey.currentState?.validate();
+                          },
+                        ),
+
+                        SizedBox(height: 32.h),
+
+                        // 감칠맛
+                        DataField(
+                          mainText: 'Umami',
+                          subText: '감칠맛',
+                          // type: 'tongue',
+                          controller: insertionTongueDataViewModel.umami,
+                          onChangeFunc: (_) =>
+                              insertionTongueDataViewModel.inputCheck(),
+                          validateFunc: (value) {
+                            double parsedValue = double.tryParse(value!) ?? 0.0;
+                            if (parsedValue < -10 || parsedValue > 10) {
+                              return "-10~10 사이의 값을 입력하세요.";
+                            }
+                            return null;
+                          },
+                          formKey: _formKey,
+                          onEditingComplete: () {
+                            _formKey.currentState?.validate();
+                          },
+                        ),
+                        SizedBox(height: 32.h),
+
+                        // 후미
+                        DataField(
+                          isFinal: true,
+                          mainText: 'Richness',
+                          subText: '후미',
+                          // type: 'tongue',
+                          controller: insertionTongueDataViewModel.richness,
+                          onChangeFunc: (_) =>
+                              insertionTongueDataViewModel.inputCheck(),
+                          validateFunc: (value) {
+                            double parsedValue = double.tryParse(value!) ?? 0.0;
+                            if (parsedValue < -10 || parsedValue > 10) {
+                              return "-10~10 사이의 값을 입력하세요.";
+                            }
+                            return null;
+                          },
+                          formKey: _formKey,
+                          onEditingComplete: () {
+                            _formKey.currentState?.validate();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 32.h),
 
-                  // 진한맛
-                  DataField(
-                      mainText: 'Bitterness',
-                      subText: '진한맛',
-                      type: 'tongue',
-                      controller: insertionTongueDataViewModel.bitterness,
-                      onChangeFunc: (_) =>
-                          insertionTongueDataViewModel.inputCheck()),
-                  SizedBox(height: 32.h),
-
-                  // 감칠맛
-                  DataField(
-                      mainText: 'Umami',
-                      subText: '감칠맛',
-                      type: 'tongue',
-                      controller: insertionTongueDataViewModel.umami,
-                      onChangeFunc: (_) =>
-                          insertionTongueDataViewModel.inputCheck()),
-                  SizedBox(height: 32.h),
-
-                  // 후미
-                  DataField(
-                      isFinal: true,
-                      mainText: 'Richness',
-                      subText: '후미',
-                      type: 'tongue',
-                      controller: insertionTongueDataViewModel.richness,
-                      onChangeFunc: (_) =>
-                          insertionTongueDataViewModel.inputCheck()),
                   const Spacer(),
 
                   // 데이터 저장 버튼
