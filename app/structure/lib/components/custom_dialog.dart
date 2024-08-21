@@ -44,8 +44,7 @@ void showDataRegisterDialog(
 }
 
 /// 데이터 입력 미완료 dialog
-void showDataNotCompleteDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+void showDataNotCompleteDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -59,8 +58,7 @@ void showDataNotCompleteDialog(
 }
 
 /// 데이터 입력 완료 dialog
-void showDataCompleteDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+void showDataCompleteDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -75,7 +73,7 @@ void showDataCompleteDialog(
 
 /// 중복 이메일 dialog
 void showDuplicateIdSigninDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+    BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -104,8 +102,7 @@ void showDeleteIdDialog(
 }
 
 /// 중복 이메일 dialog
-void showLogoutDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+void showLogoutDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,

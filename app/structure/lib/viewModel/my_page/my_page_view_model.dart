@@ -56,7 +56,7 @@ class MyPageViewModel with ChangeNotifier {
 
   /// 로그아웃 버튼 클릭
   Future<void> clickedSignOut() async {
-    showLogoutDialog(context, logoutCancel, logout);
+    showLogoutDialog(context, logout);
   }
 
   /// 로그아웃 팝업 취소 클릭

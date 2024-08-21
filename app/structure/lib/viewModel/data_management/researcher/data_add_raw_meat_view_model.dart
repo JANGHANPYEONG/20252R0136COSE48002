@@ -67,11 +67,11 @@ class DataAddRawMeatViewModel with ChangeNotifier {
         meatModel.heatedSensoryCompleted &&
         meatModel.heatedTongueCompleted &&
         meatModel.heatedLabCompleted) {
-      showDataCompleteDialog(context, null, () async {
+      showDataCompleteDialog(context, () async {
         await deepAgingComplete(context);
       });
     } else {
-      showDataNotCompleteDialog(context, null, () async {
+      showDataNotCompleteDialog(context, () async {
         await deepAgingComplete(context);
       });
     }

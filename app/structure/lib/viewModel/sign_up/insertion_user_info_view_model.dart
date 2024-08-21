@@ -134,12 +134,12 @@ class InsertionUserInfoViewModel with ChangeNotifier {
       emailCheckLoading = false;
       notifyListeners();
 
-      //이메일 중복인 경우
+      // 이메일 중복인 경우
       if (!isUnique) {
         // 중복 popup 창 띄우기
         _context = context;
         if (context.mounted) {
-          showDuplicateIdSigninDialog(context, context.pop, moveSignIn);
+          showDuplicateIdSigninDialog(context, moveSignIn);
         }
       }
     } else {
