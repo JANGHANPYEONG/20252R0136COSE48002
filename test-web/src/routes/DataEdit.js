@@ -3,7 +3,7 @@ import { Box, IconButton } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.css';
 import { FaArrowLeft } from 'react-icons/fa';
 import DataLoad from '../components/DataDetailPage/DetailDataController';
-import style from './style/dataeditstyle';
+import style from './style/datadetailroutestyle';
 
 const navy = '#0F3659';
 
@@ -13,7 +13,6 @@ const DataEdit = () => {
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
   const startDate = new URLSearchParams(searchParams).get('start');
   const endDate = new URLSearchParams(searchParams).get('end');
-  console.log('수정 및 조회', { pageOffset, startDate, endDate });
 
   //관리번호
   const idParam = useParams();
@@ -24,6 +23,8 @@ const DataEdit = () => {
         width: '100%',
         height: '100%',
         padding: '45px 80px',
+        // display: 'flex',
+        // flexDirection: 'column',
       }}
     >
       <Box>
@@ -64,9 +65,12 @@ const DataEdit = () => {
           </Link>
         </div>
       </Box>
-      {/**상세 조회 데이터 fetch */}
-      <DataLoad id={idParam.id} page={'수정및조회'} />
+      <Box style={{ marginTop: '-40px' }}>
+        {/**상세 조회 데이터 fetch */}
+        <DataLoad id={idParam.id} page={'수정및조회'} />
+      </Box>
     </Box>
   );
 };
+
 export default DataEdit;
