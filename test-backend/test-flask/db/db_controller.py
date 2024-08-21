@@ -1126,23 +1126,20 @@ def get_AI_SensoryEval(db_session, id, seqno):
         .first()
     )
     if ai_sensoryEval:
-        ai_sensoryEval_history = to_dict(ai_sensoryEval)
-        ai_sensoryEval_history["createdAt"] = convert2string(
-            ai_sensoryEval_history["createdAt"], 1
-        )
+        ai_sensoryEval.createdAt = convert2string(ai_sensoryEval.createdAt, 1)
         db_session.close()
         result = {
-            "meatId": ai_sensoryEval_history["id"],
-            "seqno": ai_sensoryEval_history["seqno"],
-            "createdAt": ai_sensoryEval_history["createdAt"],
-            "xaiGrade": gradeNum[ai_sensoryEval_history["xaiGradeNum"]],
-            "xaiGradeImagePath": ai_sensoryEval_history["id"],
-            "xaiImagePath": ai_sensoryEval_history["xai_gradeNum_imagePath"],
-            "marbling": ai_sensoryEval_history["marbling"],
-            "color": ai_sensoryEval_history["color"],
-            "texture": ai_sensoryEval_history["texture"],
-            "surfaceMoisture": ai_sensoryEval_history["surfaceMoisture"],
-            "overall": ai_sensoryEval_history["overall"]
+            "meatId": ai_sensoryEval.id,
+            "seqno": ai_sensoryEval.seqno,
+            "createdAt": ai_sensoryEval.createdAt,
+            "xaiGrade": gradeNum[ai_sensoryEval.xaiGradeNum],
+            "xaiGradeImagePath": ai_sensoryEval.xai_gradeNum_imagePath,
+            "xaiImagePath": ai_sensoryEval.xai_imagePath,
+            "marbling": ai_sensoryEval.marbling,
+            "color": ai_sensoryEval.color,
+            "texture": ai_sensoryEval.texture,
+            "surfaceMoisture": ai_sensoryEval.surfaceMoisture,
+            "overall": ai_sensoryEval.overall
         }
         return result
     else:
