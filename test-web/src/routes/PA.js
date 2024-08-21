@@ -9,6 +9,8 @@ import { TIME_ZONE } from '../config';
 import { useLocation } from 'react-router-dom';
 import SearchById from '../components/DataListView/SearchById';
 import PASingle from '../components/DataListView/PASingle';
+import style from './style/pastyle';
+import updateDates from '../Utils/updateDates';
 
 const navy = '#0F3659';
 
@@ -29,8 +31,10 @@ const PA = () => {
     };
   }, [location.search]);
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const s = new Date();
+  s.setDate(s.getDate() - 7);
+  const [startDate, setStartDate] = useState(s.toISOString().slice(0, -5));
+  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, -5));
   const [pageOffset, setPageOffset] = useState(1);
 
   const handleValueChange = (newValue) => {
@@ -110,10 +114,10 @@ const PA = () => {
         </span>
       </Box>
       {/**이동 탭 (목록, 통계 , 반려) */}
-      <Box sx={styles.fixedTab}>
+      <Box sx={style.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
-            style={value === 'list' ? styles.tabBtnCilcked : styles.tabBtn}
+            style={value === 'list' ? style.tabBtnCilcked : style.tabBtn}
             value="list"
             variant="outlined"
             onClick={(e) => {
@@ -125,7 +129,7 @@ const PA = () => {
         </div>
       </Box>
       {/**검색 필터 */}
-      <Box sx={styles.fixed}>
+      <Box sx={style.fixed}>
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
@@ -164,36 +168,3 @@ const PA = () => {
   );
 };
 export default PA;
-
-const styles = {
-  fixed: {
-    zIndex: 1,
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    backgroundColor: 'white',
-    margin: '10px 0px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  fixedTab: {
-    right: '0',
-    left: '0px',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '30px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  tabBtn: {
-    border: 'none',
-    color: navy,
-  },
-  tabBtnCilcked: {
-    border: `1px solid ${navy}`,
-    color: navy,
-  },
-};
