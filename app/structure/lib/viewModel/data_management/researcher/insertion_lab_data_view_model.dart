@@ -21,6 +21,8 @@ class InsertionLabDataViewModel with ChangeNotifier {
   bool isLoading = false;
   String title = '실험 데이터';
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   // 컨트롤러
   TextEditingController l = TextEditingController();
   TextEditingController a = TextEditingController();
@@ -85,7 +87,8 @@ class InsertionLabDataViewModel with ChangeNotifier {
         wbsf.text.isNotEmpty &&
         ct.text.isNotEmpty &&
         mfi.text.isNotEmpty &&
-        collagen.text.isNotEmpty;
+        collagen.text.isNotEmpty &&
+        formKey.currentState!.validate();
   }
 
   // 데이터를 객체에 할당 - 이후 POST
@@ -190,5 +193,13 @@ class InsertionLabDataViewModel with ChangeNotifier {
     notifyListeners();
 
     if (context.mounted) context.pop();
+  }
+
+  String? validate(String? value, double min, double max) {
+    double parsedValue = double.tryParse(value!) ?? 1.0;
+    if (parsedValue < min || parsedValue > max) {
+      return '$min~$max 사이의 값을 입력하세요.';
+    }
+    return null;
   }
 }

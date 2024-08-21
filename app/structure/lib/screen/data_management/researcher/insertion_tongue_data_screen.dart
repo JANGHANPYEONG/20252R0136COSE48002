@@ -22,8 +22,6 @@ class InsertionTongueDataScreen extends StatefulWidget {
 }
 
 class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     InsertionTongueDataViewModel insertionTongueDataViewModel =
@@ -45,7 +43,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
 
                   // 신맛
                   Form(
-                    key: _formKey,
+                    key: insertionTongueDataViewModel.formKey,
                     child: Column(
                       children: [
                         DataField(
@@ -55,16 +53,13 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                           controller: insertionTongueDataViewModel.sourness,
                           onChangeFunc: (_) =>
                               insertionTongueDataViewModel.inputCheck(),
-                          validateFunc: (value) {
-                            double parsedValue = double.tryParse(value!) ?? 0.0;
-                            if (parsedValue < -10 || parsedValue > 10) {
-                              return "-10~10 사이의 값을 입력하세요.";
-                            }
-                            return null;
-                          },
-                          formKey: _formKey,
+                          validateFunc: (value) => insertionTongueDataViewModel
+                              .validate(value, -10, 10),
+                          formKey: insertionTongueDataViewModel.formKey,
                           onEditingComplete: () {
-                            _formKey.currentState?.validate();
+                            insertionTongueDataViewModel.formKey.currentState
+                                ?.validate();
+                            FocusScope.of(context).nextFocus();
                           },
                         ),
                         SizedBox(height: 32.h),
@@ -76,19 +71,15 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                           controller: insertionTongueDataViewModel.bitterness,
                           onChangeFunc: (_) =>
                               insertionTongueDataViewModel.inputCheck(),
-                          validateFunc: (value) {
-                            double parsedValue = double.tryParse(value!) ?? 0.0;
-                            if (parsedValue < -10 || parsedValue > 10) {
-                              return "-10~10 사이의 값을 입력하세요.";
-                            }
-                            return null;
-                          },
-                          formKey: _formKey,
+                          validateFunc: (value) => insertionTongueDataViewModel
+                              .validate(value, -10, 10),
+                          formKey: insertionTongueDataViewModel.formKey,
                           onEditingComplete: () {
-                            _formKey.currentState?.validate();
+                            insertionTongueDataViewModel.formKey.currentState
+                                ?.validate();
+                            FocusScope.of(context).nextFocus();
                           },
                         ),
-
                         SizedBox(height: 32.h),
 
                         // 감칠맛
@@ -99,16 +90,13 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                           controller: insertionTongueDataViewModel.umami,
                           onChangeFunc: (_) =>
                               insertionTongueDataViewModel.inputCheck(),
-                          validateFunc: (value) {
-                            double parsedValue = double.tryParse(value!) ?? 0.0;
-                            if (parsedValue < -10 || parsedValue > 10) {
-                              return "-10~10 사이의 값을 입력하세요.";
-                            }
-                            return null;
-                          },
-                          formKey: _formKey,
+                          validateFunc: (value) => insertionTongueDataViewModel
+                              .validate(value, -10, 10),
+                          formKey: insertionTongueDataViewModel.formKey,
                           onEditingComplete: () {
-                            _formKey.currentState?.validate();
+                            insertionTongueDataViewModel.formKey.currentState
+                                ?.validate();
+                            FocusScope.of(context).nextFocus();
                           },
                         ),
                         SizedBox(height: 32.h),
@@ -122,22 +110,18 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                           controller: insertionTongueDataViewModel.richness,
                           onChangeFunc: (_) =>
                               insertionTongueDataViewModel.inputCheck(),
-                          validateFunc: (value) {
-                            double parsedValue = double.tryParse(value!) ?? 0.0;
-                            if (parsedValue < -10 || parsedValue > 10) {
-                              return "-10~10 사이의 값을 입력하세요.";
-                            }
-                            return null;
-                          },
-                          formKey: _formKey,
+                          validateFunc: (value) => insertionTongueDataViewModel
+                              .validate(value, -10, 10),
+                          formKey: insertionTongueDataViewModel.formKey,
                           onEditingComplete: () {
-                            _formKey.currentState?.validate();
+                            insertionTongueDataViewModel.formKey.currentState
+                                ?.validate();
+                            FocusScope.of(context).unfocus();
                           },
                         ),
                       ],
                     ),
                   ),
-
                   const Spacer(),
 
                   // 데이터 저장 버튼

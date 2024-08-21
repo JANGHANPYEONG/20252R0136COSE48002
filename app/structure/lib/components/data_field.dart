@@ -1,6 +1,5 @@
 import 'package:structure/components/data_title.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/config/palette.dart';
 
@@ -98,7 +97,6 @@ class _DataFieldState extends State<DataField> {
               borderRadius: BorderRadius.circular(20.r),
               borderSide: const BorderSide(color: Palette.error),
             ),
-
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.r),
               borderSide: BorderSide.none, // 기본 테두리 없음
