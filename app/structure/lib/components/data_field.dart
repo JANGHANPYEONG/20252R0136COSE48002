@@ -16,7 +16,9 @@ class DataField extends StatefulWidget {
   final void Function(String)? onChangeFunc;
   final bool isFinal;
   final GlobalKey<FormState>? formKey;
-
+  final String? Function(String?)? validateFunc;
+  final List<TextInputFormatter>? formatter;
+  final VoidCallback? onEditingComplete;
   const DataField({
     super.key,
     required this.mainText,
@@ -30,6 +32,9 @@ class DataField extends StatefulWidget {
     this.isFinal = false,
     this.onChangeFunc,
     this.formKey,
+    this.validateFunc,
+    this.formatter,
+    this.onEditingComplete,
   });
 
   @override
@@ -83,43 +88,46 @@ class _DataFieldState extends State<DataField> {
             textInputAction:
                 widget.isFinal ? TextInputAction.done : TextInputAction.next,
             textAlign: TextAlign.left,
-            inputFormatters: const [
-              // if (widget.isPercent != null && widget.isPercent == true)
-              //   _PercentageInputFormatter(),
-              // if (widget.type == 'L')
-              //   const RangeInputFormatter(
-              //       minValue: 30, maxValue: 60, length: 2),
-              // // _InputValueLCheck(),
-              // if (widget.type == 'a')
-              //   const RangeInputFormatter(
-              //       minValue: 1, maxValue: 30, length: 1),
-              // if (widget.type == 'b')
-              //   const RangeInputFormatter(
-              //       minValue: 1, maxValue: 30, length: 1),
-              // if (widget.type == 'ph')
-              //   const RangeInputFormatter(
-              //       minValue: 0, maxValue: 14, length: 1),
-              // if (widget.type == 'WSBF')
-              //   const RangeInputFormatter(
-              //       minValue: 1, maxValue: 6, length: 0),
-              // if (widget.type == 'Cathepsin')
-              //   const RangeInputFormatter(
-              //       minValue: 0, maxValue: 10000, length: 1),
-              // if (widget.type == 'MFI')
-              //   const RangeInputFormatter(
-              //       minValue: 1, maxValue: 250, length: 1),
-              // if (widget.type == 'Collagen')
-              //   const RangeInputFormatter(
-              //       minValue: 0, maxValue: 10, length: 1),
-              // if (widget.type == 'tongue')
-              //   const RangeInputFormatter(
-              //       minValue: -10, maxValue: 10, length: 2),
-              // if ((widget.isPercent == null || widget.isPercent == false) &&
-              //     (widget.isL == null || widget.isL == false))
-              //   FilteringTextInputFormatter.allow(
-              //     RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
-              //   ),
-            ],
+            validator: widget.validateFunc,
+            inputFormatters: widget.formatter,
+            onEditingComplete: widget.onEditingComplete,
+            // const [
+            // if (widget.isPercent != null && widget.isPercent == true)
+            //   _PercentageInputFormatter(),
+            // if (widget.type == 'L')
+            //   const RangeInputFormatter(
+            //       minValue: 30, maxValue: 60, length: 2),
+            // // _InputValueLCheck(),
+            // if (widget.type == 'a')
+            //   const RangeInputFormatter(
+            //       minValue: 1, maxValue: 30, length: 1),
+            // if (widget.type == 'b')
+            //   const RangeInputFormatter(
+            //       minValue: 1, maxValue: 30, length: 1),
+            // if (widget.type == 'ph')
+            //   const RangeInputFormatter(
+            //       minValue: 0, maxValue: 14, length: 1),
+            // if (widget.type == 'WSBF')
+            //   const RangeInputFormatter(
+            //       minValue: 1, maxValue: 6, length: 0),
+            // if (widget.type == 'Cathepsin')
+            //   const RangeInputFormatter(
+            //       minValue: 0, maxValue: 10000, length: 1),
+            // if (widget.type == 'MFI')
+            //   const RangeInputFormatter(
+            //       minValue: 1, maxValue: 250, length: 1),
+            // if (widget.type == 'Collagen')
+            //   const RangeInputFormatter(
+            //       minValue: 0, maxValue: 10, length: 1),
+            // if (widget.type == 'tongue')
+            //   const RangeInputFormatter(
+            //       minValue: -10, maxValue: 10, length: 2),
+            // if ((widget.isPercent == null || widget.isPercent == false) &&
+            //     (widget.isL == null || widget.isL == false))
+            //   FilteringTextInputFormatter.allow(
+            //     RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
+            //   ),
+            // ],
             cursorColor: Palette.primary,
             keyboardType: TextInputType.number,
             onChanged: widget.onChangeFunc,
@@ -152,22 +160,6 @@ class _DataFieldState extends State<DataField> {
                     )
                   : null,
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '비어있음';
-              }
-
-              double? parsedValue = double.tryParse(value);
-              if (parsedValue == null) {
-                return '숫자 입력';
-              }
-
-              if (parsedValue < 1 || parsedValue > 100) {
-                return '올바르지 않은 입력';
-              }
-
-              return null; // 값이 올바르면 null 반환
-            },
           ),
         ),
       ],
@@ -187,15 +179,6 @@ class _PercentageInputFormatter extends TextInputFormatter {
     }
 
     return newValue;
-  }
-}
-
-int percentCheck(value) {
-  double parsedValue = double.tryParse(value.text) ?? 0.0;
-  if (parsedValue < 0 || parsedValue > 100) {
-    return 0;
-  } else {
-    return 1;
   }
 }
 
