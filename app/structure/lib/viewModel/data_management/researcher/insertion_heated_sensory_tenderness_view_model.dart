@@ -11,10 +11,10 @@ import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
 
-class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
+class InsertionHeatedSensoryTendernessViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
-  InsertionHeatedSensoryAddViewModel(this.meatModel, this.userModel) {
+  InsertionHeatedSensoryTendernessViewModel(this.meatModel, this.userModel) {
     _initialize();
   }
 
