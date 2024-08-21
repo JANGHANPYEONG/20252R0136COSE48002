@@ -9,27 +9,26 @@ class DataField extends StatefulWidget {
   final String subText;
   final String? unit;
   final TextEditingController controller;
-  final bool? isPercent;
   final bool? isL;
   final bool? isA;
-  final String? type;
   final void Function(String)? onChangeFunc;
   final bool isFinal;
   final GlobalKey<FormState>? formKey;
-
+  final String? Function(String?)? validateFunc;
+  final VoidCallback? onEditingComplete;
   const DataField({
     super.key,
     required this.mainText,
     required this.subText,
     this.unit,
     required this.controller,
-    this.isPercent,
     this.isL,
     this.isA,
-    this.type,
     this.isFinal = false,
     this.onChangeFunc,
     this.formKey,
+    this.validateFunc,
+    this.onEditingComplete,
   });
 
   @override
@@ -75,77 +74,54 @@ class _DataFieldState extends State<DataField> {
         SizedBox(height: 16.h),
 
         // 입력 textfield
-        SizedBox(
-          height: 88.h,
-          child: TextFormField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            textInputAction:
-                widget.isFinal ? TextInputAction.done : TextInputAction.next,
-            textAlign: TextAlign.left,
-            inputFormatters: [
-              if (widget.isPercent != null && widget.isPercent == true)
-                _PercentageInputFormatter(),
-              if (widget.type == 'L')
-                const RangeInputFormatter(
-                    minValue: 30, maxValue: 60, length: 2),
-              // _InputValueLCheck(),
-              if (widget.type == 'a')
-                const RangeInputFormatter(minValue: 1, maxValue: 30, length: 1),
-              if (widget.type == 'b')
-                const RangeInputFormatter(minValue: 1, maxValue: 30, length: 1),
-              if (widget.type == 'ph')
-                const RangeInputFormatter(minValue: 0, maxValue: 14, length: 1),
-              if (widget.type == 'WSBF')
-                const RangeInputFormatter(minValue: 1, maxValue: 6, length: 0),
-              if (widget.type == 'Cathepsin')
-                const RangeInputFormatter(
-                    minValue: 0, maxValue: 10000, length: 1),
-              if (widget.type == 'MFI')
-                const RangeInputFormatter(
-                    minValue: 1, maxValue: 250, length: 1),
-              if (widget.type == 'Collagen')
-                const RangeInputFormatter(minValue: 0, maxValue: 10, length: 1),
-              if (widget.type == 'tongue')
-                const RangeInputFormatter(
-                    minValue: -10, maxValue: 10, length: 2),
-              if ((widget.isPercent == null || widget.isPercent == false) &&
-                  (widget.isL == null || widget.isL == false))
-                FilteringTextInputFormatter.allow(
-                  RegExp(r'^-?\d{0,8}(\.\d{0,4})?'),
-                ),
-            ],
-            cursorColor: Palette.primary,
-            keyboardType: TextInputType.number,
-            onChanged: widget.onChangeFunc,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 24.w),
-              filled: true,
-              fillColor: _isFocused ? Colors.white : Colors.grey[200], // 배경색 설정
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.r),
-                borderSide: BorderSide.none, // 기본 테두리 없음
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.r),
-                borderSide: const BorderSide(
-                  color: Palette.primary, // 초록색 테두리 설정
-                  width: 1, // 테두리 두께 설정
-                ),
-              ),
-              suffixIcon: widget.unit != null
-                  ? Container(
-                      width: 24.w, // 필요한 너비로 조정
-                      height: 24.h,
-                      alignment: Alignment.center, // 오른쪽 끝에 맞춤
-                      child: Text(
-                        widget.unit!,
-                        style: Palette.h4Regular
-                            .copyWith(color: Palette.secondary),
-                      ),
-                    )
-                  : null,
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          textInputAction:
+              widget.isFinal ? TextInputAction.done : TextInputAction.next,
+          textAlign: TextAlign.left,
+          validator: widget.validateFunc,
+          onEditingComplete: widget.onEditingComplete,
+          cursorColor: Palette.primary,
+          keyboardType: TextInputType.number,
+          onChanged: widget.onChangeFunc,
+          decoration: InputDecoration(
+            filled: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 24.w),
+            fillColor: _isFocused ? Colors.white : Colors.grey[200], // 배경색 설정
+            errorStyle: Palette.h6.copyWith(color: Palette.error),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
             ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(color: Palette.error),
+            ),
+
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: BorderSide.none, // 기본 테두리 없음
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+              borderSide: const BorderSide(
+                color: Palette.primary, // 초록색 테두리 설정
+                width: 1, // 테두리 두께 설정
+              ),
+            ),
+            suffixIcon: widget.unit != null
+                ? Container(
+                    width: 24.w, // 필요한 너비로 조정
+                    height: 24.h,
+                    alignment: Alignment.center, // 오른쪽 끝에 맞춤
+                    child: Text(
+                      widget.unit!,
+                      style:
+                          Palette.h4Regular.copyWith(color: Palette.secondary),
+                    ),
+                  )
+                : null,
           ),
         ),
       ],
@@ -153,40 +129,41 @@ class _DataFieldState extends State<DataField> {
   }
 }
 
-class _PercentageInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    double parsedValue = double.tryParse(newValue.text) ?? 0.0;
+// class _PercentageInputFormatter extends TextInputFormatter {
+//   @override
+//   TextEditingValue formatEditUpdate(
+//       TextEditingValue oldValue, TextEditingValue newValue) {
+//     double parsedValue = double.tryParse(newValue.text) ?? 0.0;
 
-    if (parsedValue < 0 || parsedValue > 100 || newValue.text.length > 7) {
-      return oldValue;
-    }
+//     if (parsedValue < 0 || parsedValue > 100 || newValue.text.length > 7) {
+//       return oldValue;
+//       // return newValue;
+//     }
 
-    return newValue;
-  }
-}
+//     return newValue;
+//   }
+// }
 
-class RangeInputFormatter extends TextInputFormatter {
-  final int minValue;
-  final int maxValue;
-  final int length;
-  const RangeInputFormatter({
-    required this.minValue,
-    required this.maxValue,
-    required this.length,
-  });
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.length >= length) {
-      double? parsedValue = double.tryParse(newValue.text);
-      if (parsedValue == null ||
-          parsedValue < minValue ||
-          parsedValue > maxValue) {
-        return oldValue;
-      }
-    }
-    return newValue;
-  }
-}
+// class RangeInputFormatter extends TextInputFormatter {
+//   final int minValue;
+//   final int maxValue;
+//   final int length;
+//   const RangeInputFormatter({
+//     required this.minValue,
+//     required this.maxValue,
+//     required this.length,
+//   });
+//   @override
+//   TextEditingValue formatEditUpdate(
+//       TextEditingValue oldValue, TextEditingValue newValue) {
+//     if (newValue.text.length >= length) {
+//       double? parsedValue = double.tryParse(newValue.text);
+//       if (parsedValue == null ||
+//           parsedValue < minValue ||
+//           parsedValue > maxValue) {
+//         return oldValue;
+//       }
+//     }
+//     return newValue;
+//   }
+// }

@@ -198,9 +198,13 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
       filteredList = filteredList.where((data) {
         return (data['userId'] == userModel.userId);
       }).toList();
-    } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
+    } else if (dataSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
-        return (data['userType'] == userModel.type);
+        return (data['Type'] == 'Normal');
+      }).toList();
+    } else if (dataSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['Type'] == 'Researcher');
       }).toList();
     }
   }
@@ -417,6 +421,7 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   // 관리 번호 검색 시에 호출된다.
   void onChanged(String? value) {
+    print("dfs");
     isLoading = true;
     notifyListeners();
 
@@ -462,13 +467,10 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
       print(meatId);
       // API 호출
       final response = await RemoteDataSource.getMeatData(meatId);
-      print("ef");
-      print(response);
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response);
         if (context.mounted) context.go('/home/data-manage-researcher/add');
       } else {
-        print(response);
         throw Error();
       }
     } catch (e) {
@@ -482,7 +484,7 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   // 검색어를 포함하는 문자열을 반환한다. (QR 시에도 호출된다.)
   void _filterStrings(bool isQr) {
-    if (isQr = false) {
+    if (isQr == false) {
       selectedList = filteredList.where((map) {
         String id = map['meatId'] ?? '';
         return id.contains(insertedText);

@@ -62,7 +62,6 @@ class _DataManagementApproveDataTabScreenState
                           textAlign: TextAlign.left,
                           style: Palette.h5Secondary,
                         ),
-
                         // 필터 버튼
                         InkWell(
                           onTap: () => dataManagementApproveDataTabViewModel
@@ -227,28 +226,38 @@ class _DataManagementApproveDataTabScreenState
                         thumbVisibility: true,
                         controller: dataManagementApproveDataTabViewModel
                             .scrollController,
-                        child: ListView.separated(
-                          controller: dataManagementApproveDataTabViewModel
-                              .scrollController,
-                          itemCount: dataManagementApproveDataTabViewModel
-                              .selectedList.length,
-                          itemBuilder: (context, index) => ListCard(
-                            onTap: () async =>
-                                await dataManagementApproveDataTabViewModel
-                                    .onTapApproveCard(index, context),
-                            meatId: dataManagementApproveDataTabViewModel
-                                .selectedList[index]['meatId']!,
-                            dayTime: Usefuls.parseDate(
-                                dataManagementApproveDataTabViewModel
-                                    .selectedList[index]['createdAt']!),
-                            statusType: dataManagementApproveDataTabViewModel
-                                .selectedList[index]['statusType']!,
-                          ),
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const CustomDivider(),
-                        ),
+                        child: dataManagementApproveDataTabViewModel
+                                .selectedList.isEmpty
+                            ? Center(
+                                child: Text(
+                                "데이터가 없습니다.",
+                                style: Palette.h4Regular,
+                              ))
+                            : ListView.separated(
+                                controller:
+                                    dataManagementApproveDataTabViewModel
+                                        .scrollController,
+                                itemCount: dataManagementApproveDataTabViewModel
+                                    .selectedList.length,
+                                itemBuilder: (context, index) => ListCard(
+                                  onTap: () async =>
+                                      await dataManagementApproveDataTabViewModel
+                                          .onTapApproveCard(index, context),
+                                  meatId: dataManagementApproveDataTabViewModel
+                                      .selectedList[index]['meatId']!,
+                                  dayTime: Usefuls.parseDate(
+                                      dataManagementApproveDataTabViewModel
+                                          .selectedList[index]['createdAt']!),
+                                  statusType:
+                                      dataManagementApproveDataTabViewModel
+                                          .selectedList[index]['statusType']!,
+                                ),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const CustomDivider(),
+                              ),
                       ),
                     ),
                     SizedBox(height: 40.h),

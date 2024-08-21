@@ -52,7 +52,6 @@ class _DataManagementAddAdditionalInfoTabScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // 데이터 개수 텍스트
                         Text(
                           '${dataManagementAddAdditionalInfoTabViewModel.selectedList.length}개의 데이터',
                           textAlign: TextAlign.left,
@@ -180,6 +179,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                           child: MainTextField(
                             width: double.infinity,
                             height: 80.h,
+                            mainText: '관리번호 입력',
                             validateFunc: null,
                             onSaveFunc: null,
                             controller:
@@ -191,7 +191,6 @@ class _DataManagementAddAdditionalInfoTabScreenState
                             onChangeFunc: (value) =>
                                 dataManagementAddAdditionalInfoTabViewModel
                                     .onChanged(value),
-                            mainText: '관리번호 입력',
                             hideFloatingLabel: true,
                             canAlert: true,
                             prefixIcon: const Icon(
@@ -238,25 +237,36 @@ class _DataManagementAddAdditionalInfoTabScreenState
                         thumbVisibility: true,
                         controller: dataManagementAddAdditionalInfoTabViewModel
                             .scrollController,
-                        child: ListView.separated(
-                          controller:
-                              dataManagementAddAdditionalInfoTabViewModel
-                                  .scrollController,
-                          itemCount: dataManagementAddAdditionalInfoTabViewModel
-                              .selectedList.length,
-                          itemBuilder: (context, index) => ListCardDataManage(
-                            onTap: () async =>
-                                await dataManagementAddAdditionalInfoTabViewModel
-                                    .onTap(index, context),
-                            idx: index + 1,
-                            meatId: dataManagementAddAdditionalInfoTabViewModel
-                                .selectedList[index]['meatId']!,
-                          ),
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const CustomDivider(),
-                        ),
+                        child: dataManagementAddAdditionalInfoTabViewModel
+                                .selectedList.isEmpty
+                            ? Center(
+                                child: Text(
+                                "데이터가 없습니다.",
+                                style: Palette.h4Regular,
+                              ))
+                            : ListView.separated(
+                                controller:
+                                    dataManagementAddAdditionalInfoTabViewModel
+                                        .scrollController,
+                                itemCount:
+                                    dataManagementAddAdditionalInfoTabViewModel
+                                        .selectedList.length,
+                                itemBuilder: (context, index) =>
+                                    ListCardDataManage(
+                                  onTap: () async =>
+                                      await dataManagementAddAdditionalInfoTabViewModel
+                                          .onTap(index, context),
+                                  idx: index + 1,
+                                  meatId:
+                                      dataManagementAddAdditionalInfoTabViewModel
+                                          .selectedList[index]['meatId']!,
+                                ),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const CustomDivider(),
+                              ),
                       ),
                     ),
                     SizedBox(height: 40.h),

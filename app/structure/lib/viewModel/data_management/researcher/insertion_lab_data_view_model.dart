@@ -80,7 +80,6 @@ class InsertionLabDataViewModel with ChangeNotifier {
         b.text.isNotEmpty &&
         dl.text.isNotEmpty &&
         cl.text.isNotEmpty &&
-        cl.text.isNotEmpty &&
         rw.text.isNotEmpty &&
         ph.text.isNotEmpty &&
         wbsf.text.isNotEmpty &&

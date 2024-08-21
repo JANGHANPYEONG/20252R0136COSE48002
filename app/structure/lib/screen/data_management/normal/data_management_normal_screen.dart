@@ -56,12 +56,11 @@ class _DataManagementNormalScreenState
                       children: [
                         // 데이터 개수 텍스트
                         SizedBox(
-                          child: Text(
-                            '${dataManagementNormalViewModel.selectedList.length}개의 데이터',
-                            textAlign: TextAlign.left,
-                            style: Palette.h5Secondary,
-                          ),
-                        ),
+                            child: Text(
+                          '${dataManagementNormalViewModel.selectedList.length}개의 데이터',
+                          textAlign: TextAlign.left,
+                          style: Palette.h5Secondary,
+                        )),
 
                         // 필터 버튼
                         InkWell(
@@ -199,40 +198,51 @@ class _DataManagementNormalScreenState
                         thumbVisibility: true,
                         controller:
                             dataManagementNormalViewModel.scrollController,
-                        child: ListView.separated(
-                          controller:
-                              dataManagementNormalViewModel.scrollController,
-                          itemCount:
-                              dataManagementNormalViewModel.selectedList.length,
-                          itemBuilder: (context, index) => ListCard(
-                            onTap: () async =>
-                                await dataManagementNormalViewModel.onTap(
-                                    index, context),
-                            meatId: dataManagementNormalViewModel
-                                .selectedList[index]["meatId"]!,
-                            dayTime: dataManagementNormalViewModel
-                                .selectedList[index]["createdAt"]!,
-                            statusType: dataManagementNormalViewModel
-                                .selectedList[index]["statusType"]!,
-                            dDay: 3 -
-                                Usefuls.calculateDateDifference(
-                                  Usefuls.dateShortToDateLong(
-                                      dataManagementNormalViewModel
-                                                      .selectedList[index]
-                                                  ['statusType']! ==
-                                              '반려'
-                                          ? dataManagementNormalViewModel
-                                              .selectedList[index]["updatedAt"]!
-                                          : dataManagementNormalViewModel
-                                                  .selectedList[index]
-                                              ["createdAt"]!),
+                        child: dataManagementNormalViewModel
+                                .selectedList.isEmpty
+                            ? Center(
+                                child: Text(
+                                  '데이터가 없습니다.',
+                                  style: Palette.h4Regular,
                                 ),
-                          ),
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const CustomDivider(),
-                        ),
+                              )
+                            : ListView.separated(
+                                controller: dataManagementNormalViewModel
+                                    .scrollController,
+                                itemCount: dataManagementNormalViewModel
+                                    .selectedList.length,
+                                itemBuilder: (context, index) => ListCard(
+                                  onTap: () async =>
+                                      await dataManagementNormalViewModel.onTap(
+                                          index, context),
+                                  meatId: dataManagementNormalViewModel
+                                      .selectedList[index]['meatId']!,
+                                  dayTime: dataManagementNormalViewModel
+                                      .selectedList[index]['createdAt']!,
+                                  statusType: dataManagementNormalViewModel
+                                      .selectedList[index]['statusType']!,
+                                  dDay: 3 -
+                                      Usefuls.calculateDateDifference(
+                                        Usefuls.dateShortToDateLong(
+                                          dataManagementNormalViewModel
+                                                          .selectedList[index]
+                                                      ['statusType']! ==
+                                                  '반려'
+                                              ? dataManagementNormalViewModel
+                                                      .selectedList[index]
+                                                  ['updatedAt']!
+                                              : dataManagementNormalViewModel
+                                                      .selectedList[index]
+                                                  ['createdAt']!,
+                                        ),
+                                      ),
+                                ),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const CustomDivider(),
+                              ),
                       ),
                     ),
                     SizedBox(height: 40.h),
