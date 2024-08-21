@@ -7,9 +7,16 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircularProgressIndicator(
-      color: Palette.primary,
-      value: value,
+    return Stack(
+      children: [
+        const ModalBarrier(dismissible: false),
+        Center(
+          child: CircularProgressIndicator(
+            color: Palette.primary,
+            value: value,
+          ),
+        ),
+      ],
     );
   }
 }

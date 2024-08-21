@@ -21,6 +21,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   bool isLoading = false;
   String title = '전자혀 데이터';
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   // 컨트롤러
   TextEditingController sourness = TextEditingController();
   TextEditingController bitterness = TextEditingController();
@@ -65,7 +67,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     inputComplete = sourness.text.isNotEmpty &&
         bitterness.text.isNotEmpty &&
         umami.text.isNotEmpty &&
-        richness.text.isNotEmpty;
+        richness.text.isNotEmpty &&
+        formKey.currentState!.validate();
   }
 
   // 데이터를 객체에 할당 - 이후 POST
@@ -157,5 +160,13 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     notifyListeners();
 
     if (context.mounted) context.pop();
+  }
+
+  String? validate(String? value, double min, double max) {
+    double parsedValue = double.tryParse(value!) ?? 0.0;
+    if (parsedValue < min || parsedValue > max) {
+      return '$min~$max 사이의 값을 입력하세요.';
+    }
+    return null;
   }
 }
