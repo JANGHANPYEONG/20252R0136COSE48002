@@ -452,19 +452,23 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   /// 데이터 필드를 클릭 시에 호출된다.
   Future<void> onTap(int idx, BuildContext context) async {
+    print("ontap");
     String meatId = '';
     isLoading = true;
     notifyListeners();
 
     try {
       meatId = selectedList[idx]['meatId']!; // meatId 선택
-
+      print(meatId);
       // API 호출
       final response = await RemoteDataSource.getMeatData(meatId);
+      print("ef");
+      print(response);
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response);
         if (context.mounted) context.go('/home/data-manage-researcher/add');
       } else {
+        print(response);
         throw Error();
       }
     } catch (e) {

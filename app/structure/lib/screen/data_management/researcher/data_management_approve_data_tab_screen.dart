@@ -192,8 +192,8 @@ class _DataManagementApproveDataTabScreenState
                                           .textClear(context);
                                     },
                                     icon: const Icon(
-                                      Icons.cancel,
-                                      color: Palette.primaryContainer,
+                                      Icons.cancel_outlined,
+                                      color: Palette.secondary,
                                     ),
                                   )
                                 : null,

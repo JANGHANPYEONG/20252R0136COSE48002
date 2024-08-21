@@ -5,6 +5,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -18,7 +19,7 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   bool isLoading = false;
-  // late BuildContext _context;
+  late BuildContext _context;
   int? seqNo = 0;
 
   //날짜
@@ -33,17 +34,14 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   //딥에이징 등록 후 3, 7, 14, 21일차인지 여부
   bool check = false;
   //연도 기본 값
-  double tenderness3 = 1.0;
-  double tenderness7 = 1.0;
-  double tenderness14 = 1.0;
-  double tenderness21 = 1.0;
+  num tenderness3 = 1.0;
+  num tenderness7 = 1.0;
+  num tenderness14 = 1.0;
+  num tenderness21 = 1.0;
 
   void _initialize() {
-    print("시작");
     seqNo = meatModel.seqno;
     processCreatedAt = meatModel.deepAgingCreatedAt!;
-    print("aaaaa");
-    print(meatModel.heatedSensoryEval);
     tenderness3 = meatModel.heatedSensoryEval?['tenderness3'] ?? 1.0;
     tenderness7 = meatModel.heatedSensoryEval?['tenderness7'] ?? 1.0;
     tenderness14 = meatModel.heatedSensoryEval?['tenderness14'] ?? 1.0;
@@ -63,7 +61,6 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
         .difference(DateTime.parse(processCreatedAt))
         .inDays
         .toString());
-    // print("dateDiff :::: $dateDiff");
     notifyListeners();
   }
 
@@ -72,12 +69,10 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
       check = true;
       notifyListeners();
     }
-    print("Dcdlc");
     print(check);
   }
 
   void checkDateBool() {
-    print("dateDiff : :$dateDiff");
     if (dateDiff >= 21) {
       checkDate[0] = true;
       checkDate[1] = true;
@@ -93,8 +88,6 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     } else if (dateDiff >= 3) {
       checkDate[0] = true;
     }
-    print("ddd");
-    print(checkDate);
     notifyListeners();
   }
 
@@ -119,6 +112,9 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
   }
 
   Future<void> saveData(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+
     meatModel.heatedSensoryEval!['tenderness3'] = tenderness3;
     meatModel.heatedSensoryEval!['tenderness7'] = tenderness7;
     meatModel.heatedSensoryEval!['tenderness14'] = tenderness14;
@@ -130,7 +126,8 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
           'heatedmeat-eval', meatModel.toJsonHeatedSensory());
       if (response == 200) {
         meatModel.updateHeatedSeonsory();
-        // _context = context;
+        _context = context;
+        _movePage();
       } else {
         throw ErrorDescription(response);
       }
@@ -141,5 +138,9 @@ class InsertionHeatedSensoryAddViewModel with ChangeNotifier {
     meatModel.checkCompleted();
     isLoading = false;
     notifyListeners();
+  }
+
+  void _movePage() {
+    _context.pop();
   }
 }

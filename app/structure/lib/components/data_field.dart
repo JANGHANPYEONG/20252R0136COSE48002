@@ -106,6 +106,9 @@ class _DataFieldState extends State<DataField> {
                     minValue: 1, maxValue: 250, length: 1),
               if (widget.type == 'Collagen')
                 const RangeInputFormatter(minValue: 0, maxValue: 10, length: 1),
+              if (widget.type == 'tongue')
+                const RangeInputFormatter(
+                    minValue: -10, maxValue: 10, length: 2),
               if ((widget.isPercent == null || widget.isPercent == false) &&
                   (widget.isL == null || widget.isL == false))
                 FilteringTextInputFormatter.allow(

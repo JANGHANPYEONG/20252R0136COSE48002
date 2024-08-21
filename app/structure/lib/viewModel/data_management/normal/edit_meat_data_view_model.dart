@@ -106,8 +106,6 @@ class EditMeatDataViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      print("dfsfd");
-      print(meatModel);
       final response = await RemoteDataSource.rejectMeatData(meatModel.meatId!);
       if (response == 200) {
         isLoading = false;

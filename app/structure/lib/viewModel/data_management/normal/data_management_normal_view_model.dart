@@ -441,6 +441,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
       meatId = selectedList[idx]['meatId']!;
 
       final response = await RemoteDataSource.getMeatData(meatId);
+
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response); // 불러온 정보 저장
         meatModel.fromJsonDeepAged(0);

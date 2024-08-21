@@ -45,6 +45,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                   DataField(
                     mainText: 'Sourness',
                     subText: '신맛',
+                    type: 'tongue',
                     controller: insertionTongueDataViewModel.sourness,
                     onChangeFunc: (_) =>
                         insertionTongueDataViewModel.inputCheck(),
@@ -55,6 +56,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                   DataField(
                       mainText: 'Bitterness',
                       subText: '진한맛',
+                      type: 'tongue',
                       controller: insertionTongueDataViewModel.bitterness,
                       onChangeFunc: (_) =>
                           insertionTongueDataViewModel.inputCheck()),
@@ -64,6 +66,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                   DataField(
                       mainText: 'Umami',
                       subText: '감칠맛',
+                      type: 'tongue',
                       controller: insertionTongueDataViewModel.umami,
                       onChangeFunc: (_) =>
                           insertionTongueDataViewModel.inputCheck()),
@@ -74,6 +77,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                       isFinal: true,
                       mainText: 'Richness',
                       subText: '후미',
+                      type: 'tongue',
                       controller: insertionTongueDataViewModel.richness,
                       onChangeFunc: (_) =>
                           insertionTongueDataViewModel.inputCheck()),

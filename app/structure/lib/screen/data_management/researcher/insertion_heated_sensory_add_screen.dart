@@ -131,21 +131,24 @@ class _InsertionHeatedSensoryAddScreenState
                                                 .onChangedTenderness21(value),
                                       ),
                                       SizedBox(height: 16.h),
-                                      // 데이터 저장 버튼
-                                      Container(
-                                        margin: EdgeInsets.only(bottom: 40.h),
-                                        child: MainButton(
-                                          width: double.infinity,
-                                          height: 96.h,
-                                          text: '저장',
-                                          onPressed: () =>
-                                              insertionHeatedSensoryAddViewModel
-                                                  .saveData(context),
-                                        ),
-                                      ),
                                     ],
                                   )
                                 : Container(),
+                            SizedBox(
+                              height: 16.h,
+                            ),
+                            // 데이터 저장 버튼
+                            Container(
+                              margin: EdgeInsets.only(bottom: 40.h),
+                              child: MainButton(
+                                width: double.infinity,
+                                height: 96.h,
+                                text: '저장',
+                                onPressed: () =>
+                                    insertionHeatedSensoryAddViewModel
+                                        .saveData(context),
+                              ),
+                            ),
                           ],
                         )
                       : const Text("tenderness 등록 가능한 날이 아닙니다!"),

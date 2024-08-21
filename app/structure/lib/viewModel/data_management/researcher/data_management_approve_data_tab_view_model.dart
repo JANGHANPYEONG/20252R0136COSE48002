@@ -504,12 +504,12 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
   void _filterStrings(bool isQr) {
     if (isQr = false) {
       selectedList = filteredList.where((map) {
-        String id = map['id'] ?? '';
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     } else {
       selectedList = entireList.where((map) {
-        String id = map['id'] ?? '';
+        String id = map['meatId'] ?? '';
         return id.contains(insertedText);
       }).toList();
     }

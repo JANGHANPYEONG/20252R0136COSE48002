@@ -617,10 +617,10 @@ class MeatModel with ChangeNotifier {
         heatedSensoryEval!['flavor'] != null &&
         heatedSensoryEval!['juiciness'] != null &&
         heatedSensoryEval!['tenderness0'] != null &&
-        heatedSensoryEval!['tenderness3'] != null &&
-        heatedSensoryEval!['tenderness7'] != null &&
-        heatedSensoryEval!['tenderness14'] != null &&
-        heatedSensoryEval!['tenderness21'] != null &&
+        // heatedSensoryEval!['tenderness3'] != null &&
+        // heatedSensoryEval!['tenderness7'] != null &&
+        // heatedSensoryEval!['tenderness14'] != null &&
+        // heatedSensoryEval!['tenderness21'] != null &&
         heatedSensoryEval!['umami'] != null &&
         heatedSensoryEval!['palatability'] != null);
 
