@@ -1,6 +1,6 @@
 import { apiIP } from '../../config';
 
-// 원육 수정 POST API (이미지 수정)
+// 원육 수정 PATCH API (이미지 수정)
 export const addSensoryRawImg = async (
   raw_data, // 원육 데이터
   id, // 이력번호

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 // react-bootstrap
-import { Card } from 'react-bootstrap';
+import { Card, OverlayTrigger } from 'react-bootstrap';
 // icons
 import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
 // mui
@@ -10,6 +10,7 @@ import { useUser } from '../../../Utils/UserContext';
 
 import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
+import { Tooltip } from '@mui/material';
 
 const navy = '#0F3659';
 
@@ -27,6 +28,7 @@ const MeatImgsCard = ({
   processed_data, // 처리육 데이터
   processedMinute, // 처리 시간 (분)
   processed_data_seq, // 회차 정보
+  isPost,
 }) => {
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
@@ -81,8 +83,10 @@ const MeatImgsCard = ({
       raw_data,
       processedInput,
       processed_data,
+      processed_data_seq,
       processedMinute,
       butcheryYmd,
+      isPost,
     });
   };
 
@@ -156,35 +160,50 @@ const MeatImgsCard = ({
           </div>
         </Card.Text>
         {/**이미지 */}
+
         <Card.Text>
-          <div style={style.imgContainer}>
-            {
-              // 실제 이미지
-              imgArr[currentIdx] ? (
-                isImgChanged === true ? (
-                  /*이미지 미리 보기*/
-                  <img
-                    ng-src="data:image/jpeg;base64,{{image}}"
-                    src={imgArr[currentIdx]}
-                    alt={`Image ${currentIdx + 1}`}
-                    style={style.imgWrapper}
-                  />
-                ) : (
-                  <img
-                    ng-src="data:image/jpeg;base64,{{image}}"
-                    src={imgArr[currentIdx] + '?time=' + new Date()}
-                    alt={`Image ${currentIdx + 1}`}
-                    style={style.imgWrapper}
-                  />
-                )
-              ) : (
-                <div style={style.imgNotExistWrapper}>
-                  이미지가 존재하지 않습니다.
-                </div>
-              )
+          <OverlayTrigger
+            placement="right"
+            delay={{ show: 250, hide: 400 }}
+            overlay={
+              <Tooltip id="button-tooltip">
+                {' '}
+                <img
+                  src={imgArr[currentIdx]}
+                  alt={`Image ${currentIdx + 1}`}
+                  style={style.imgWrapper}
+                />
+              </Tooltip>
             }
-          </div>
+          >
+            <div style={style.imgContainer}>
+              {
+                // 실제 이미지
+                imgArr[currentIdx] ? (
+                  isImgChanged === true ? (
+                    /*이미지 미리 보기*/
+                    <img
+                      src={imgArr[currentIdx]}
+                      alt={`Image ${currentIdx + 1}`}
+                      style={style.imgWrapper}
+                    />
+                  ) : (
+                    <img
+                      src={imgArr[currentIdx] + '?time=' + new Date()}
+                      alt={`Image ${currentIdx + 1}`}
+                      style={style.imgWrapper}
+                    />
+                  )
+                ) : (
+                  <div style={style.imgNotExistWrapper}>
+                    이미지가 존재하지 않습니다.
+                  </div>
+                )
+              }
+            </div>
+          </OverlayTrigger>
         </Card.Text>
+
         {/**페이지네이션 */}
         <Card.Text style={style.paginationBtnWrapper}>
           <IconButton

@@ -17,11 +17,17 @@ const handleImgChange = async ({
   raw_data,
   processedInput,
   processed_data,
+  processed_data_seq,
   processedMinute,
   butcheryYmd,
+  isPost,
 }) => {
   if (newImgFile) {
-    const fileName = id + '-' + currentIdx + '.png';
+    const existSeq = processed_data_seq
+      .filter((item) => item.includes('회')) // '회'가 포함된 항목만 필터링
+      .map((item) => parseInt(item.replace('회', '')));
+
+    const fileName = id + '-' + existSeq[currentIdx - 1] + '.png';
     const folderName = 'sensory_evals';
     const reader = new FileReader();
     const createdDate = new Date(new Date().getTime() + TIME_ZONE)
@@ -52,16 +58,15 @@ const handleImgChange = async ({
         });
       } else {
         const i = currentIdx - 1;
-        await addSensoryProcessedData(
+        const response = addSensoryProcessedData(
           processedInput[i],
-          processed_data[i],
-          processedMinute[i],
-          i,
+          existSeq[i],
           id,
           userId,
-          createdDate,
-          elapsedHour
-        )
+          isPost,
+          true
+        );
+        response
           .then((response) => {
             updatePreviews(reader);
             setIsImgChanged(true);
