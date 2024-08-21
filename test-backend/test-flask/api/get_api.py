@@ -13,6 +13,7 @@ from db.db_controller import (
     _getMeatDataByRangeStatusType,
     _getTexanomyData,
     _getPredictionData,
+    get_OpenCVresult
 )
 from utils import *
 
@@ -324,4 +325,28 @@ def getPredictionData():
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
             505,
+        )
+        
+
+# opencv 결과 조회    
+@get_api.route("/opencv-image", methods=["GET"])
+def getOpenCVData():
+    try:
+        db_session = current_app.db_session
+        s3_conn = current_app.s3_conn
+        meat_id = request.args.get("meatId")
+        if meat_id:
+            result = get_OpenCVresult(db_session, meat_id)
+            if result:
+                return jsonify({"msg": "Success to get OpenCV Result", "result": result}), 200
+            else:
+                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 400
+        return jsonify({"msg": f"Meat Data {meat_id} Does Not Exist"}), 400
+    except Exception as e:
+        logger.exception(str(e))
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
         )

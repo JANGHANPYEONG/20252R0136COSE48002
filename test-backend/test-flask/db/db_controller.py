@@ -7,6 +7,7 @@ import json
 from utils import *
 
 from .db_model import *
+from opencv_utils import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)
@@ -2067,3 +2068,48 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
 
     db_session.close()
     return stats
+
+
+def get_OpenCVresult(db_session, meat_id):
+    meat = db_session.query(Meat).get(meat_id)
+    try:
+        opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
+        if opencv_result:
+            db_session.close()
+            return opencv_result
+
+    except Exception as e:
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
+    
+    
+def process_opencv_image(db_session, s3_conn, meat_id, segment_object):
+    try:
+        segment_img = s3_conn.download_image(segment_object)
+        opencv_data = {}
+        
+        # 단면 이미지 url 불러오기
+        segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
+        opencv_data["section_imagePath"] = segment_image_path
+        opencv_data["createdAt"] = convert2string(datetime.now(), 1)
+        opencv_data["id"] = meat_id
+        opencv_data["seqno"] = "0"
+        
+        # openCV 전처리 순서대로 진행
+        color_palette = display_palette_with_ratios(segment_img)
+        texture_result = create_texture_info(segment_img)
+        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=0)
+        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=0)
+        
+        # opencv DB에 저장
+        opencv_data = {**opencv_data, **color_palette, **texture_result, **lbp_result, **gabor_result}
+        new_opencv = OpenCVImagesInfo(**opencv_data)
+        db_session.add(new_opencv)
+        db_session.commit()
+        
+        db_session.close()
+        return opencv_data
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
