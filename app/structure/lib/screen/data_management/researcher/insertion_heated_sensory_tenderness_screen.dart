@@ -9,7 +9,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:structure/components/custom_app_bar.dart';
 import 'package:structure/components/data_title.dart';
-import 'package:structure/components/main_button.dart';
 import 'package:structure/components/part_eval.dart';
 import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/data_management/researcher/insertion_heated_sensory_tenderness_view_model.dart';
@@ -150,22 +149,6 @@ class _InsertionHeatedSensoryTendernessScreenState
                           ),
                         ),
                       ),
-
-                if (insertionHeatedSensoryTendernessViewModel.check)
-                  const Spacer(),
-
-                // 데이터 저장 버튼
-                if (insertionHeatedSensoryTendernessViewModel.check)
-                  Container(
-                    margin: EdgeInsets.only(bottom: 40.h),
-                    child: MainButton(
-                      width: double.infinity,
-                      height: 96.h,
-                      text: '저장',
-                      onPressed: () => insertionHeatedSensoryTendernessViewModel
-                          .saveData(context),
-                    ),
-                  ),
               ],
             ),
           )
