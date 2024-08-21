@@ -1,25 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+// mui
+import { Box, Button, Select, MenuItem, CircularProgress } from '@mui/material';
+// style
+import style from './style/dashboardstyle';
+// icon, timezone
+import { FaBoxOpen } from 'react-icons/fa';
+import { TIME_ZONE } from '../config';
 // 검색 필터 컴포넌트
 import SearchFilterBar from '../components/Search/SearchFilterBar';
-// 목록 컴포넌트
+// 육류 목록 컴포넌트
 import DataListComp from '../components/DataListView/DataListComp';
-// 목록 통계 컴포넌트
+// 목록 현황 컴포넌트
 import DataStat from '../components/Charts/DataStat';
 // 반려 데이터 목록 컴포넌트
 import RejectedDataListComp from '../components/DataListView/RejectedDataListComp';
 // 엑셀 파일 export/ import 컴포넌트
 import ExcelController from '../components/DataListView/ExcelController';
-import StatsExport from '../components/DataListView/StatsExport_';
-// mui
-import { Box, Button, Select, MenuItem } from '@mui/material';
-// import timezone
-import { TIME_ZONE } from '../config';
-// import icon
-import { FaBoxOpen } from 'react-icons/fa';
-import { useLocation } from 'react-router-dom';
+// import StatsExport from '../components/DataListView/StatsExport_';
+// ID 검색 컴포넌트
 import SearchById from '../components/DataListView/SearchById';
 import DataSingle from '../components/DataListView/DataSingle';
-import style from './style/dashboardstyle';
+// 구간 계산 함수
+import updateDates from '../Utils/updateDates';
 
 const navy = '#0F3659';
 
@@ -27,45 +30,40 @@ const Dashboard = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
   const [singleData, setSingleData] = useState(null);
-
-  // 쿼리스트링 추출
-  const location = useLocation();
-
-  const { querypageOffset, queryStartDate, queryEndDate } = useMemo(() => {
-    const searchParams = new URLSearchParams(location.search);
-    return {
-      querypageOffset: searchParams.get('pageOffset'),
-      queryStartDate: searchParams.get('start') || '',
-      queryEndDate: searchParams.get('end') || '',
-    };
-  }, [location.search]);
-
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleValueChange = (newValue) => {
-    setValue(newValue);
-  };
-
-  const handleSpeciesChange = (event) => {
-    setSpecieValue(event.target.value);
-  };
-
-  const handleSingleDataFetch = (fetchedData) => {
-    setSingleData(fetchedData);
-  };
+  // 쿼리스트링 추출
+  const location = useLocation();
+  const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
+    useMemo(() => {
+      const searchParams = new URLSearchParams(location.search);
+      return {
+        querypageOffset: searchParams.get('pageOffset'),
+        queryStartDate: searchParams.get('start') || '',
+        queryEndDate: searchParams.get('end') || '',
+        queryDuration: searchParams.get('duration') || '',
+      };
+    }, [location.search]);
 
   useEffect(() => {
     setPageOffset(querypageOffset);
   }, [querypageOffset]);
 
   useEffect(() => {
+    setIsLoading(true);
     const now = new Date();
     let start = new Date('1970-01-01T00:00:00Z');
     let end = new Date(now);
 
-    if (queryStartDate || queryEndDate) {
+    if (queryDuration) {
+      const { start: durationStart, end: durationEnd } =
+        updateDates(queryDuration);
+      start = new Date(durationStart);
+      end = new Date(durationEnd);
+    } else if (queryStartDate || queryEndDate) {
       // startDate 또는 endDate 파라미터가 있을 경우
       if (queryStartDate) {
         start = new Date(queryStartDate);
@@ -88,7 +86,33 @@ const Dashboard = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [queryStartDate, queryEndDate, location.search]);
+    setIsLoading(false);
+  }, [queryStartDate, queryEndDate, queryDuration, location.search]);
+
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleSpeciesChange = (event) => {
+    setSpecieValue(event.target.value);
+  };
+
+  const handleSingleDataFetch = (fetchedData) => {
+    setSingleData(fetchedData);
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div
@@ -219,7 +243,7 @@ const Dashboard = () => {
               specieValue={specieValue}
             />
           )}
-          {value === 'stat' && <StatsExport />}
+          {/* {value === 'stat' && <StatsExport />} */}
         </div>
       </Box>
 

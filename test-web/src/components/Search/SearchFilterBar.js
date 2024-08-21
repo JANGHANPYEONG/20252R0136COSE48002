@@ -1,5 +1,5 @@
 // import react
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import mui
 import {
@@ -20,7 +20,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 
-import updateDates from './updateDates';
 import style from './style/searchfilterbarstyle';
 const navy = '#0F3659';
 
@@ -64,40 +63,28 @@ const SearchFilterBar = () => {
 
   //완료 버튼 클릭하면 변함
   const handleCompleteBtn = () => {
-    let newStartDate, newEndDate;
-
+    const queryParams = new URLSearchParams();
     if (!isDur) {
-      // 직접 입력할 시
-      newStartDate = calenderStart;
-      newEndDate = calenderEnd;
-      // setDuration(null)
-    } else {
-      // 탭으로 클릭할 시
-      if (!duration) {
-        handleReset();
-      } else {
-        const { start, end } = updateDates(duration);
-        newStartDate = dayjs(start);
-        newEndDate = dayjs(end);
+      //직접 입력할 시
+      if (calenderStart) {
+        const newStartDate = `${calenderStart.$y}-${String(calenderStart.$M + 1).padStart(2, '0')}-${String(calenderStart.$D).padStart(2, '0')}T00:00:00`;
+        queryParams.set('start', newStartDate);
       }
+      if (calenderEnd) {
+        const newEndDate = `${calenderEnd.$y}-${String(calenderEnd.$M + 1).padStart(2, '0')}-${String(calenderEnd.$D).padStart(2, '0')}T23:59:59`;
+        queryParams.set('end', newEndDate);
+      }
+      setDuration(null);
+    } else {
+      //탭으로 클릭할시
+      queryParams.set('duration', duration);
     }
-
-    let queryString = '';
-
-    if (newStartDate) {
-      queryString += `start=${newStartDate.format('YYYY-MM-DDTHH:mm:ss')}`;
-    }
-    if (newEndDate) {
-      if (queryString) queryString += '&';
-      queryString += `end=${newEndDate.format('YYYY-MM-DDTHH:mm:ss')}`;
-    }
-    // 이전 설정값 저장
     setInitialDuration(duration);
     setInitialCalenderStart(calenderStart);
     setInitialCalenderEnd(calenderEnd);
     setInitialIsDur(isDur);
     // URL 업데이트
-    navigate(`${location.pathname}?${queryString}`);
+    navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
   const handleReset = () => {
@@ -125,6 +112,18 @@ const SearchFilterBar = () => {
 
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
+
+  useEffect(() => {
+    const durationFromURL = searchParams.get('duration');
+    if (durationFromURL) {
+      setDuration(durationFromURL);
+      setIsDur(true);
+    } else if (searchParams.get('start') && searchParams.get('end')) {
+      setCalenderStart(dayjs(searchParams.get('start')));
+      setCalenderEnd(dayjs(searchParams.get('end')));
+      setIsDur(false);
+    }
+  }, [location.search]);
 
   return (
     <div>
