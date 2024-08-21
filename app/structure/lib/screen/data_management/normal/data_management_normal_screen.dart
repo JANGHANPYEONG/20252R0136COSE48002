@@ -202,9 +202,10 @@ class _DataManagementNormalScreenState
                                 .selectedList.isEmpty
                             ? Center(
                                 child: Text(
-                                "데이터가 없습니다.",
-                                style: Palette.h4Regular,
-                              ))
+                                  '데이터가 없습니다.',
+                                  style: Palette.h4Regular,
+                                ),
+                              )
                             : ListView.separated(
                                 controller: dataManagementNormalViewModel
                                     .scrollController,
@@ -215,31 +216,26 @@ class _DataManagementNormalScreenState
                                       await dataManagementNormalViewModel.onTap(
                                           index, context),
                                   meatId: dataManagementNormalViewModel
-                                      .selectedList[index]["meatId"]!,
+                                      .selectedList[index]['meatId']!,
                                   dayTime: dataManagementNormalViewModel
-                                      .selectedList[index]["createdAt"]!,
+                                      .selectedList[index]['createdAt']!,
                                   statusType: dataManagementNormalViewModel
-                                      .selectedList[index]["statusType"]!,
+                                      .selectedList[index]['statusType']!,
                                   dDay: 3 -
                                       Usefuls.calculateDateDifference(
                                         Usefuls.dateShortToDateLong(
-                                            dataManagementNormalViewModel
-                                                    .selectedList[index]
-                                                ["createdAt"]!),
-                                      ),
-                                  //반려중일때만 updatedAt이 들어가도록
-
-                                  updatedAt: dataManagementNormalViewModel
-                                                  .selectedList[index]
-                                              ["statusType"]! ==
-                                          '반려'
-                                      ? 3 -
-                                          Usefuls.calculateDateDifference(
-                                              Usefuls.dateShortToDateLong(
-                                                  dataManagementNormalViewModel
+                                          dataManagementNormalViewModel
                                                           .selectedList[index]
-                                                      ["updatedAt"]!))
-                                      : null,
+                                                      ['statusType']! ==
+                                                  '반려'
+                                              ? dataManagementNormalViewModel
+                                                      .selectedList[index]
+                                                  ['updatedAt']!
+                                              : dataManagementNormalViewModel
+                                                      .selectedList[index]
+                                                  ['createdAt']!,
+                                        ),
+                                      ),
                                 ),
                                 keyboardDismissBehavior:
                                     ScrollViewKeyboardDismissBehavior.onDrag,

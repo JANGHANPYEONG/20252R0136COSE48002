@@ -98,7 +98,10 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         showSaveImageDialog(
           context,
           tempImgPath,
-          () => context.pop(),
+          () {
+            context.pop();
+            pickImage(context);
+          },
           () {
             isLoading = true; // 로딩 활성화
             notifyListeners();

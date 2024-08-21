@@ -25,6 +25,8 @@ class ImageCard extends StatelessWidget {
             // s3에 업로드 된 이미지 (수정)
             ? Image.network(
                 imagePath!,
+                width: 640.w,
+                height: 640.w,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) {
@@ -42,7 +44,26 @@ class ImageCard extends StatelessWidget {
 
             // 이미지 촬영 중 임시저장 된 사진
             : imagePath != null && imagePath!.isNotEmpty
-                ? Image.file(File(imagePath!), fit: BoxFit.cover)
+                ? Image.file(
+                    File(imagePath!),
+                    width: 640.w,
+                    height: 640.w,
+                    fit: BoxFit.cover,
+                    frameBuilder: (BuildContext context, Widget child,
+                        int? frame, bool wasSynchronouslyLoaded) {
+                      if (wasSynchronouslyLoaded) return child;
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: frame != null
+                            ? child
+                            : SizedBox(
+                                width: 640.w,
+                                height: 640.w,
+                                child: const Center(child: LoadingScreen()),
+                              ),
+                      );
+                    },
+                  )
                 : const ImageError(isError: false),
       ),
     );

@@ -13,6 +13,7 @@ class MeatModel with ChangeNotifier {
   /* 육류 기본 정보 */
   String? meatId; // 육류 id
   String? createdAt; // 육류 정보 생성 날짜
+  String? updatedAt; // 육류 정보 수정 날짜
   // 정보를 등록한 사용자 정보
   String? userId; // 육류를 등록한 사용자 id
   String? userName; // 육류 등록한 사용자 이름
@@ -479,6 +480,7 @@ class MeatModel with ChangeNotifier {
     // 기본 데이터
     meatId = jsonData['meatId'];
     createdAt = jsonData['createdAt'];
+    updatedAt = jsonData['updatedAt'];
     userId = jsonData['userId'];
     userName = jsonData['userName'];
     statusType = jsonData['statusType'];

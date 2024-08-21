@@ -69,11 +69,11 @@ class DataAddProcessedMeatViewModel with ChangeNotifier {
         meatModel.heatedTongueCompleted &&
         meatModel.heatedLabCompleted;
     if (popup == true) {
-      showDataCompleteDialog(context, null, () async {
+      showDataCompleteDialog(context, () async {
         await deepAgingComplete(context);
       });
     } else {
-      showDataNotCompleteDialog(context, null, () async {
+      showDataNotCompleteDialog(context, () async {
         await deepAgingComplete(context);
       });
     }

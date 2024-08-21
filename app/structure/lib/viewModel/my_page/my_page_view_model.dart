@@ -3,13 +3,16 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/config/usefuls.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/model/user_model.dart';
 
-class UserInfoViewModel with ChangeNotifier {
+class MyPageViewModel with ChangeNotifier {
   UserModel userModel;
-  UserInfoViewModel(this.userModel) {
+  BuildContext context;
+
+  MyPageViewModel(this.userModel, this.context) {
     _initialize();
   }
 
@@ -52,7 +55,17 @@ class UserInfoViewModel with ChangeNotifier {
   }
 
   /// 로그아웃 버튼 클릭
-  Future<void> clickedSignOut(BuildContext context) async {
+  Future<void> clickedSignOut() async {
+    showLogoutDialog(context, logout);
+  }
+
+  /// 로그아웃 팝업 취소 클릭
+  void logoutCancel() {
+    context.pop();
+  }
+
+  /// 로그아웃 팝업 로그아웃 클릭
+  void logout() async {
     await FirebaseAuth.instance.signOut();
     await LocalDataSource.saveDataToLocal(
         jsonEncode({'auto': null}), 'auto.json');
@@ -63,7 +76,7 @@ class UserInfoViewModel with ChangeNotifier {
   }
 
   /// 상세 정보 변경 클릭
-  void clickedEdit(BuildContext context) async {
+  void clickedEdit() async {
     await GoRouter.of(context)
         .push('/home/my-page/user-detail')
         .then((_) => _initialize());
@@ -71,12 +84,12 @@ class UserInfoViewModel with ChangeNotifier {
   }
 
   /// 비밀번호 변경 클릭
-  void clickedChangePW(BuildContext context) {
+  void clickedChangePW() {
     context.go('/home/my-page/change-pw');
   }
 
   /// 회원 탈퇴 클릭
-  void clickedDeleteUser(BuildContext context) {
+  void clickedDeleteUser() {
     context.go('/home/my-page/delete-user');
   }
 }

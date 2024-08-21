@@ -80,6 +80,21 @@ void showUserTypeErrorPopup(BuildContext context) {
   showPopup(context, userTypeErrorText, '');
 }
 
+/// 프린트 진행 중 popup
+void showPrintPopup(BuildContext context) {
+  showLoadingPopup(context, '프린트가 진행 중입니다.');
+}
+
+/// 프린터 연결 중 popup
+void showPrinterConnectPopup(BuildContext context) {
+  showLoadingPopup(context, '프린터에 연결 중입니다.');
+}
+
+/// 프린터 연결 실패 popup
+void showPrinterConnectErrorPopup(BuildContext context) {
+  showPopup(context, '프린터에 연결하지 못했습니다.', '확인');
+}
+
 /// 약관 popup
 void showTermsPopup(BuildContext context) {
   showDialog(
@@ -148,8 +163,8 @@ void showPopup(BuildContext context, String contentText, String btnText,
   );
 }
 
-// 프린트 중 팝업
-void showPrintPopup(BuildContext context) {
+// Loading screen popup
+void showLoadingPopup(BuildContext context, String text) {
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -169,7 +184,7 @@ void showPrintPopup(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Center(
-                child: Text('프린트가 진행 중입니다.', style: Palette.h4Regular),
+                child: Text(text, style: Palette.h4Regular),
               ),
               const Expanded(child: Center(child: LoadingScreen())),
             ],
