@@ -218,20 +218,15 @@ class _DataManagementNormalScreenState
                                 Usefuls.calculateDateDifference(
                                   Usefuls.dateShortToDateLong(
                                       dataManagementNormalViewModel
-                                          .selectedList[index]["createdAt"]!),
+                                                      .selectedList[index]
+                                                  ['statusType']! ==
+                                              '반려'
+                                          ? dataManagementNormalViewModel
+                                              .selectedList[index]["updatedAt"]!
+                                          : dataManagementNormalViewModel
+                                                  .selectedList[index]
+                                              ["createdAt"]!),
                                 ),
-                            //반려중일때만 updatedAt이 들어가도록
-
-                            updatedAt: dataManagementNormalViewModel
-                                        .selectedList[index]["statusType"]! ==
-                                    '반려'
-                                ? 3 -
-                                    Usefuls.calculateDateDifference(
-                                        Usefuls.dateShortToDateLong(
-                                            dataManagementNormalViewModel
-                                                    .selectedList[index]
-                                                ["updatedAt"]!))
-                                : null,
                           ),
                           keyboardDismissBehavior:
                               ScrollViewKeyboardDismissBehavior.onDrag,

@@ -433,14 +433,12 @@ class DataManagementNormalViewModel with ChangeNotifier {
 
   // 데이터 필드를 클릭 시에 호출된다.
   Future<void> onTap(int idx, BuildContext context) async {
-    String meatId = '';
     isLoading = true;
     notifyListeners();
 
     try {
-      meatId = selectedList[idx]['meatId']!;
-
-      final response = await RemoteDataSource.getMeatData(meatId);
+      final response =
+          await RemoteDataSource.getMeatData(selectedList[idx]['meatId']!);
 
       if (response is Map<String, dynamic>) {
         meatModel.fromJson(response); // 불러온 정보 저장
