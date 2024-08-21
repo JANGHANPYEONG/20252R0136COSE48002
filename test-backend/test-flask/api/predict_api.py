@@ -82,8 +82,8 @@ def predict_sensory_eval():
     try:
         db_session = current_app.db_session
         s3_conn = current_app.s3_conn
-        meat_id = request.args.get("meatId")
-        seqno = request.args.get("seqno")
+        meat_id = safe_str(request.args.get("meatId"))
+        seqno = safe_int(request.args.get("seqno"))
         img = s3_conn.download_image(f"sensory_evals/{meat_id}-{seqno}.png")
         segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id)
         

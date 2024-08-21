@@ -329,7 +329,7 @@ def getPredictionData():
 def getOpenCVData():
     try:
         db_session = current_app.db_session
-        meat_id = request.args.get("meatId")
+        meat_id = safe_str(request.args.get("meatId"))
         if meat_id:
             result = get_OpenCVresult(db_session, meat_id)
             if result:
