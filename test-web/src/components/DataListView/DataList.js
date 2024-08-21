@@ -62,7 +62,6 @@ const DataList = ({
     }
   };
 
-
   return (
     <Box
       style={{ backgroundColor: 'white', borderRadius: '5px', height: '100%' }}
@@ -145,18 +144,18 @@ const DataList = ({
                         pageProp === 'pa'
                           ? {
                               pathname: `/dataPA/${content.meatId}`,
-                              search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
+                              search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
                             }
                           : (pageProp === 'list' || 'reject') &&
                               (content.statusType === '대기중' ||
                                 content.statusType === '반려')
                             ? {
                                 pathname: `/DataConfirm/${content.meatId}`,
-                                search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
+                                search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
                               }
                             : {
                                 pathname: `/dataView/${content.meatId}`,
-                                search: `?pageOffset=${offset}&startDate=${startDate}&endDate=${endDate}`,
+                                search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
                               }
                       }
                     >

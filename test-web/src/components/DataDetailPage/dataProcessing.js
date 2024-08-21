@@ -40,7 +40,6 @@ const convertToApiData = (
     userName: userName,
     userType: userType,
   };
-  console.log('apidata2 : ', apiData);
   return apiData;
 };
 

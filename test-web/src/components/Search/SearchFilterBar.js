@@ -1,5 +1,5 @@
 // import react
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import mui
 import {
@@ -112,18 +112,6 @@ const SearchFilterBar = () => {
 
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
-
-  useEffect(() => {
-    const durationFromURL = searchParams.get('duration');
-    if (durationFromURL) {
-      setDuration(durationFromURL);
-      setIsDur(true);
-    } else if (searchParams.get('start') && searchParams.get('end')) {
-      setCalenderStart(dayjs(searchParams.get('start')));
-      setCalenderEnd(dayjs(searchParams.get('end')));
-      setIsDur(false);
-    }
-  }, [location.search]);
 
   return (
     <div>
