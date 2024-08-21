@@ -1,5 +1,7 @@
 import os
 import pprint
+
+from flask import jsonify
 import numpy as np
 import boto3
 
@@ -139,7 +141,7 @@ def apply_mask(image, mask):
     return image * mask.to(device)
 
 
-def extract_section_image(s3_conn, s3_image_object, meat_id):
+def extract_section_image(s3_image_object, meat_id):
     # 데이터셋 및 DataLoader 설정
     transform = SegmentationTransform(output_size=(448, 448))
     
@@ -151,7 +153,7 @@ def extract_section_image(s3_conn, s3_image_object, meat_id):
     s3_bucket = os.getenv("S3_BUCKET_NAME")
     
     # S3에서 이미지 다운로드
-    if s3_bucket:
+    try:
         s3 = boto3.client(
                 service_name="s3",
                 region_name=os.getenv("S3_REGION_NAME"),
@@ -163,9 +165,8 @@ def extract_section_image(s3_conn, s3_image_object, meat_id):
         response = s3.get_object(Bucket=s3_bucket, Key=object_key)
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
-        
-    else:
-        img = Image.open(s3_image_path).convert("RGB")
+    except Exception as e:
+        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     # 이미지 변환
     img_tensor, _ = transform(img, Image.new('L', img.size))
@@ -359,8 +360,6 @@ def lbp_calculate(s3_conn, image, meat_id, seqno):
     image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
     image_name2 = f'openCV_images/{meat_id}-{seqno}-lbp2-{i+1}.png'
     
-    print(image_name1, image_name2)
-    
     lbp_image1 = ndarray_to_image(s3_conn, lbp1, image_name1)
     lbp_image2 = ndarray_to_image(s3_conn, lbp2, image_name2)
     
@@ -414,7 +413,6 @@ def gabor_texture_analysis(s3_conn, image, id, seqno):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
-    pprint.pprint(features)
     print("Success to create gabor_texture")
     
     tmp = {}

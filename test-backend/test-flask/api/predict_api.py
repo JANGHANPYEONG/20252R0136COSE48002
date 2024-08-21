@@ -59,8 +59,7 @@ def create_raw_meat_opencv_info():
         db_session = current_app.db_session
         s3_conn = current_app.s3_conn
         meat_id = request.args.get("meatId")
-        img = s3_conn.download_image(f"sensory_evals/{meat_id}-0.png")
-        segment_img_object = extract_section_image(s3_conn, f"sensory_evals/{meat_id}-0.png", meat_id)
+        segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-0.png", meat_id)
         
         if segment_img_object:
             result = process_opencv_image(db_session, s3_conn, meat_id, segment_img_object)
@@ -86,7 +85,7 @@ def predict_sensory_eval():
         meat_id = request.args.get("meatId")
         seqno = request.args.get("seqno")
         img = s3_conn.download_image(f"sensory_evals/{meat_id}-{seqno}.png")
-        segment_img_object = extract_section_image(s3_conn, f"sensory_evals/{meat_id}-{seqno}.png", meat_id)
+        segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id)
         
 
 

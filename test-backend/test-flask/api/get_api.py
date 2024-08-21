@@ -304,27 +304,27 @@ def getTexanomyData():
 
 
 # 예측 데이터 조회
-@get_api.route("/predict-data", methods=["GET", "POST"])
+@get_api.route("/predict-data", methods=["GET"])
 def getPredictionData():
     try:
         if request.method == "GET":
             db_session = current_app.db_session
-            id = safe_str(request.args.get("id"))
-            seqno = safe_str(request.args.get("seqno"))
-            if id and seqno:
-                return _getPredictionData(db_session, id, seqno)
+            meat_id = safe_str(request.args.get("meatId"))
+            seqno = safe_int(request.args.get("seqno"))
+            if meat_id and seqno is not None:
+                return _getPredictionData(db_session, meat_id, seqno)
             else:
-                return jsonify("No id or seqno parameter"), 401
+                return jsonify("Invalid id or seqno parameter"), 404
 
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify({"msg": "Invalid Route, Please Try Again."}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
         
 
