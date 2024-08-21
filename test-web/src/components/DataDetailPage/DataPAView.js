@@ -252,38 +252,48 @@ const DataPAView = ({ dataProps }) => {
               title="처리육"
               style={{ backgroundColor: 'white' }}
             >
-              <Autocomplete
-                id={'controllable-states-processed'}
-                label="처리상태"
-                value={processed_toggle}
-                onChange={(event, newValue) => {
-                  setProcessedToggle(newValue);
-                }}
-                inputValue={processedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setProcessedToggleValue(newInputValue);
-                  /*이미지 변경 */
-                  setPreviewImage(
-                    processed_img_path[parseInt(newInputValue) - 1]
-                      ? processed_img_path[parseInt(newInputValue) - 1]
-                      : null
-                  );
-                }}
-                options={options.slice(1)}
-                size="small"
-                sx={{ width: 300, marginBottom: '10px' }}
-                renderInput={(params) => <TextField {...params} />}
-              />
-              <ProcessedTableStatic
-                processedMinute={processed_minute}
-                processedToggleValue={processedToggleValue}
-                processed_data={processed_data}
-              />
-              <PredictedProcessedTablePA
-                seqno={parseInt(processedToggleValue)}
-                processed_data={processed_data}
-                dataPA={dataPA}
-              />
+              {processed_data && processed_data.length > 0 ? (
+                <>
+                  <Autocomplete
+                    id={'controllable-states-processed'}
+                    label="처리상태"
+                    value={processed_toggle}
+                    onChange={(event, newValue) => {
+                      setProcessedToggle(newValue);
+                    }}
+                    inputValue={processedToggleValue}
+                    onInputChange={(event, newInputValue) => {
+                      setProcessedToggleValue(newInputValue);
+                      /*이미지 변경 */
+                      setPreviewImage(
+                        processed_img_path[parseInt(newInputValue) - 1]
+                          ? processed_img_path[parseInt(newInputValue) - 1]
+                          : null
+                      );
+                    }}
+                    options={options.slice(1)}
+                    size="small"
+                    sx={{ width: 300, marginBottom: '10px' }}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  <ProcessedTableStatic
+                    processedMinute={processed_minute}
+                    processedToggleValue={processedToggleValue}
+                    processed_data={processed_data}
+                    processed_data_seq={processed_data_seq}
+                  />
+                  <PredictedProcessedTablePA
+                    seqno={parseInt(processedToggleValue)}
+                    processed_data={processed_data}
+                    processed_data_seq={processed_data_seq}
+                    dataPA={dataPA}
+                  />
+                </>
+              ) : (
+                <div style={divStyle.errorContainer}>
+                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
+                </div>
+              )}
             </Tab>
           </Tabs>
         </Card>
@@ -410,6 +420,18 @@ const divStyle = {
   },
   loadingText: {
     fontSize: '25px',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    height: '65vh',
+    minHeight: '500px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: '16px',
     textAlign: 'center',
   },
 };

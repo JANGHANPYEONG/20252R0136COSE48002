@@ -17,7 +17,6 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
       sx={{ width: 'fitContent', overflow: 'auto', marginTop: '40px' }}
     >
       <Table sx={{ minWidth: 300 }} size="small" aria-label="a dense table">
-        <TableHead></TableHead>
         <TableBody>
           {rawPAField.map((f, idx) => {
             return (
@@ -25,10 +24,7 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
                 <TableCell key={'raw-' + idx + 'col1'}>
                   {rawPADBFieldToSematicWord[f]}
                 </TableCell>
-                <TableCell
-                  key={'raw-' + idx + 'col2'}
-                  style={{ display: 'flex' }}
-                >
+                <TableCell key={'raw-' + idx + 'col2'}>
                   <div>
                     {dataPA
                       ? f === 'xai_gradeNum'

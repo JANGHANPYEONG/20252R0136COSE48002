@@ -16,7 +16,10 @@ const ProcessedTableStatic = ({
   processedMinute,
   processedToggleValue,
   processed_data,
+  processed_data_seq,
 }) => {
+  const len = processed_data_seq.length - 2;
+
   return (
     <TableContainer
       key="processedmeat"
@@ -32,14 +35,11 @@ const ProcessedTableStatic = ({
             </TableCell>
             {
               // 2회차 이상부터
-              Array.from(
-                { length: Number(processedToggleValue.slice(0, -1)) - 1 },
-                (_, arr_idx) => (
-                  <TableCell align="right" style={{ background: '#cfd8dc' }}>
-                    {arr_idx + 2}회차
-                  </TableCell>
-                )
-              )
+              Array.from({ length: len }, (_, arr_idx) => (
+                <TableCell align="right" style={{ background: '#cfd8dc' }}>
+                  {arr_idx + 2}회차
+                </TableCell>
+              ))
             }
           </TableRow>
         </TableHead>
@@ -66,20 +66,17 @@ const ProcessedTableStatic = ({
               </TableCell>
               {
                 //2회차 부터
-                Array.from(
-                  { length: Number(processedToggleValue.slice(0, -1)) - 1 },
-                  (_, arr_idx) => (
-                    <TableCell align="right">
-                      {f === 'minute'
+                Array.from({ length: len }, (_, arr_idx) => (
+                  <TableCell align="right">
+                    {f === 'minute'
+                      ? processedMinute[arr_idx + 1]
                         ? processedMinute[arr_idx + 1]
-                          ? processedMinute[arr_idx + 1]
-                          : ''
-                        : processed_data[arr_idx + 1]?.[f]
-                          ? processed_data[arr_idx + 1]?.[f]
-                          : ''}
-                    </TableCell>
-                  )
-                )
+                        : ''
+                      : processed_data[arr_idx + 1]?.[f]
+                        ? processed_data[arr_idx + 1]?.[f]
+                        : ''}
+                  </TableCell>
+                ))
               }
             </TableRow>
           ))}

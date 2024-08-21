@@ -2,35 +2,36 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import DataLoad from '../components/DataDetailPage/DetailDataController';
 import { Box, IconButton } from '@mui/material';
 import { FaArrowLeft } from 'react-icons/fa';
-import style from './style/dataconfirmstyle';
-
+import style from './style/datadetailroutestyle';
 const navy = '#0F3659';
 
 const DataConfirm = () => {
-  const idParam = useParams();
   // 쿼리스트링 추출
   const searchParams = useLocation().search;
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-  const startDate = new URLSearchParams(searchParams).get('startDate');
-  const endDate = new URLSearchParams(searchParams).get('endDate');
+  const startDate = new URLSearchParams(searchParams).get('start');
+  const endDate = new URLSearchParams(searchParams).get('end');
+
+  //관리번호
+  const idParam = useParams();
+
   return (
     <Box
       style={{
-        display: 'flex',
         width: '100%',
         height: '100%',
-        padding: '100px 80px',
+        padding: '45px 80px',
+        // display: 'flex',
+        // flexDirection: 'column',
       }}
     >
-      <Box sx={style.fixed}>
-        <div
-          style={{ display: 'flex', alignItems: 'center', marginLeft: '10px' }}
-        >
-          {/**데이터 목록으로 돌아가기 위한 컴포넌트 */}
+      <Box>
+        {/**데이터 목록으로 돌아가기 위한 컴포넌트 */}
+        <div style={style.fixed}>
           <Link
             to={{
               pathname: '/DataManage',
-              search: `?pageOffset=${pageOffset}&startDate=${startDate}&endDate=${endDate}`,
+              search: `?pageOffset=${pageOffset}&start=${startDate}&end=${endDate}`,
             }}
             style={{
               textDecorationLine: 'none',
@@ -49,21 +50,23 @@ const DataConfirm = () => {
             >
               <FaArrowLeft />
             </IconButton>
+            <span
+              style={{
+                textDecoration: 'none',
+                color: `${navy}`,
+                fontSize: '30px',
+                fontWeight: '600',
+              }}
+            >
+              {idParam.id}
+            </span>
           </Link>
-          <span
-            style={{
-              textDecoration: 'none',
-              color: `${navy}`,
-              fontSize: '30px',
-              fontWeight: '600',
-            }}
-          >
-            {idParam.id}
-          </span>
         </div>
       </Box>
-      {/**상세 조회 데이터 fetch */}
-      <DataLoad id={idParam.id} page={'검토'} />
+      <Box style={{ marginTop: '-40px' }}>
+        {/**상세 조회 데이터 fetch */}
+        <DataLoad id={idParam.id} page={'검토'} />
+      </Box>
     </Box>
   );
 };

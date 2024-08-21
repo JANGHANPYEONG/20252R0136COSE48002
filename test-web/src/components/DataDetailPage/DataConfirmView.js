@@ -37,7 +37,7 @@ import { rawField, apiField } from './constants/infofield';
 
 const navy = '#0F3659';
 
-const DataView = ({ dataProps }) => {
+const DataConfirmView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageOffset = searchParams.get('pageOffset');
 
@@ -145,7 +145,7 @@ const DataView = ({ dataProps }) => {
         </div>
       )}
       {user.type === 'Manager' && (
-        <div style={style.confirmEditBtnWrapper}>
+        <div style={style.editBtnWrapper}>
           <IconButton
             style={style.acceptBtn}
             onClick={() => setConfirmVal('confirm')}
@@ -160,6 +160,23 @@ const DataView = ({ dataProps }) => {
             <FaRegTimesCircle />
             반려
           </IconButton>
+          {edited ? (
+            <button
+              type="button"
+              style={style.completeBtn}
+              onClick={onClickSubmitBtn}
+            >
+              완료
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={style.editBtn}
+              onClick={onClickEditBtn}
+            >
+              수정
+            </button>
+          )}
         </div>
       )}
 
@@ -251,26 +268,11 @@ const DataView = ({ dataProps }) => {
           </Tabs>
         </Card>
       </div>
-      <div style={style.editBtnWrapper}>
-        {edited ? (
-          <button
-            type="button"
-            style={style.completeBtn}
-            onClick={onClickSubmitBtn}
-          >
-            완료
-          </button>
-        ) : (
-          <button type="button" style={style.editBtn} onClick={onClickEditBtn}>
-            수정
-          </button>
-        )}
-      </div>
     </div>
   );
 };
 
-export default DataView;
+export default DataConfirmView;
 
 // 토글 버튼
 let options = ['원육'];

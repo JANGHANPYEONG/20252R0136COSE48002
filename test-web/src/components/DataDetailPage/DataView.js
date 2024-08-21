@@ -43,6 +43,7 @@ import {
   apiField,
 } from './constants/infofield';
 let isMethodPostPro = false;
+
 const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageOffset = searchParams.get('pageOffset');
@@ -491,48 +492,6 @@ const DataView = ({ dataProps }) => {
           />
         </Modal.Body>
       </Modal>
-      <div style={{ width: '100%', position: 'relative' }}>
-        <Button
-          className="mb-3"
-          onClick={handleInfoRegisterShow}
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 160,
-            display: 'inline-flex',
-            paddingX: `${(12 / 1920) * 100}vw`,
-            paddingY: `${(16 / 1080) * 100}vh`,
-            alignItems: 'center',
-            gap: `${(8 / 1920) * 100}vw`,
-            borderRadius: `${(10 / 1920) * 100}vw`,
-            background: '#32CD32',
-            borderColor: '#32CD32',
-          }}
-        >
-          딥에이징 회차 추가
-        </Button>
-      </div>
-      <div style={{ width: '100%', position: 'relative' }}>
-        <Button
-          className="mb-3"
-          onClick={handleInfoDeleteShow}
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 10,
-            display: 'inline-flex',
-            paddingX: `${(12 / 1920) * 100}vw`,
-            paddingY: `${(16 / 1080) * 100}vh`,
-            alignItems: 'center',
-            gap: `${(8 / 1920) * 100}vw`,
-            borderRadius: `${(10 / 1920) * 100}vw`,
-            background: 'red',
-            borderColor: 'red',
-          }}
-        >
-          딥에이징 회차 삭제
-        </Button>
-      </div>
       <div style={{ width: '100%', marginTop: '40px' }}>
         {!isUploadingDone && (
           <div style={divStyle.loadingBackground}>
@@ -550,6 +509,31 @@ const DataView = ({ dataProps }) => {
             />
           )
         }
+        <div style={style.editBtnWrapper}>
+          <button onClick={handleInfoRegisterShow} style={style.addButton}>
+            회차 추가
+          </button>
+          <button onClick={handleInfoDeleteShow} style={style.deleteButton}>
+            회차 삭제
+          </button>
+          {edited ? (
+            <button
+              type="button"
+              style={style.completeBtn}
+              onClick={onClickSubmitBtn}
+            >
+              완료
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={style.editBtn}
+              onClick={onClickEditBtn}
+            >
+              수정
+            </button>
+          )}
+        </div>
         <div style={style.singleDataWrapper}>
           {/* 1. 관리번호 육류에 대한 사진*/}
           <MeatImgsCard
@@ -670,25 +654,6 @@ const DataView = ({ dataProps }) => {
               </Tab>
             </Tabs>
           </Card>
-        </div>
-        <div style={style.editBtnWrapper}>
-          {edited ? (
-            <button
-              type="button"
-              style={style.completeBtn}
-              onClick={onClickSubmitBtn}
-            >
-              완료
-            </button>
-          ) : (
-            <button
-              type="button"
-              style={style.editBtn}
-              onClick={onClickEditBtn}
-            >
-              수정
-            </button>
-          )}
         </div>
       </div>
     </>

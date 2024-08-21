@@ -2,22 +2,10 @@ import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, Box } from '@mui/material';
 import { Select, MenuItem } from '@mui/material';
-import SensFreshMeat from './Charts/BoxPlot/SensFreshMeat';
-import SensProcMeat from './Charts/BoxPlot/SensProcMeat';
-import SensHeatedMeat from './Charts/BoxPlot/SensHeatedMeat';
-import TasteFreshMeat from './Charts/BoxPlot/TasteFreshMeat';
-import TasteProcMeat from './Charts/BoxPlot/TasteProcMeat';
-import SensFreshMap from './Charts/HeatMap/SensFreshMap';
-import SensHeatedMap from './Charts/HeatMap/SensHeatedMap';
-import TasteFreshMap from './Charts/HeatMap/TasteFreshMap';
-import TasteProcMap from './Charts/HeatMap/TasteProcMap';
 import TasteTime from './Charts/Time/TasteTime';
-import SensProcMap from './Charts/HeatMap/SensProcMap';
-import TasteFreshCorr from './Charts/Corr/TasteFreshCorr';
-import SenseProcCorr from './Charts/Corr/SensProcCorr';
-import SenseHeatedCorr from './Charts/Corr/SensHeatedCorr';
-import SenseFreshCorr from './Charts/Corr/SensFreshCorr';
-import TasteProcCorr from './Charts/Corr/TasteProcCorr';
+import CorrelationChart from './Charts/Corr/CorrelationChart';
+import HeatMapChart from './Charts/HeatMap/HeatMapChart';
+import BoxPlotChart from './Charts/BoxPlot/BoxPlotChart';
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -181,176 +169,73 @@ const StatsTabs = ({ startDate, endDate }) => {
 
       {/* BoxPlot(통계) */}
       <CustomTabPanel value={value} index={0}>
-        {meatState === '원육' ? (
-          <>
-            <SensFreshMeat
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <TasteFreshMeat
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-          </>
-        ) : meatState === '처리육' ? (
-          <>
-            <SensProcMeat
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <TasteProcMeat
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-          </>
-        ) : meatState === '가열육' ? (
-          <>
-            <SensHeatedMeat
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            {/* 가열육에 대한 맛 컴포넌트가 없다면 다음 줄을 제거하거나 다른 적절한 컴포넌트로 대체하세요 */}
-            {/* <TasteFreshMeat
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            /> */}
-          </>
-        ) : null}
+        <BoxPlotChart
+          key={`sens-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+          meatState={meatState}
+          dataType="sensory"
+          startDate={startDate}
+          endDate={endDate}
+          animalType={animalType}
+          grade={grade}
+        />
+        {meatState !== '가열육' && (
+          <BoxPlotChart
+            key={`taste-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+            meatState={meatState}
+            dataType="taste"
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
+        )}
       </CustomTabPanel>
 
       {/* HeatMap(분포) */}
       <CustomTabPanel value={value} index={1}>
-        {meatState === '원육' ? (
-          <>
-            <SensFreshMap
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <TasteFreshMap
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-          </>
-        ) : meatState === '처리육' ? (
-          <>
-            <SensProcMap
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <TasteProcMap
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-          </>
-        ) : meatState === '가열육' ? (
-          <>
-            <SensHeatedMap
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            {/* 가열육에 대한 맛 컴포넌트가 없다면 다음 줄을 제거하거나 다른 적절한 컴포넌트로 대체하세요 */}
-            {/* <TasteFreshMeat
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            /> */}
-          </>
-        ) : null}
+        <HeatMapChart
+          key={`sens-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+          meatState={meatState}
+          dataType="sensory"
+          startDate={startDate}
+          endDate={endDate}
+          animalType={animalType}
+          grade={grade}
+        />
+        {meatState !== '가열육' && (
+          <HeatMapChart
+            key={`taste-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+            meatState={meatState}
+            dataType="taste"
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
+        )}
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={2}>
-        {meatState === '원육' ? (
-          <>
-            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-              <SenseFreshCorr
-                key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-                startDate={startDate}
-                endDate={endDate}
-                animalType={animalType}
-                grade={grade}
-              />
-            </div>
-            <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-              <TasteFreshCorr
-                key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-                startDate={startDate}
-                endDate={endDate}
-                animalType={animalType}
-                grade={grade}
-              />
-            </div>
-          </>
-        ) : meatState === '처리육' ? (
-          <>
-            <SenseProcCorr
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            <TasteProcCorr
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-          </>
-        ) : meatState === '가열육' ? (
-          <>
-            <SenseHeatedCorr
-              key={`sens-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            />
-            {/* 가열육에 대한 맛 컴포넌트가 없다면 다음 줄을 제거하거나 다른 적절한 컴포넌트로 대체하세요 */}
-            {/* <TasteFreshMeat
-              key={`taste-${startDate}-${endDate}-${animalType}-${grade}`}
-              startDate={startDate}
-              endDate={endDate}
-              animalType={animalType}
-              grade={grade}
-            /> */}
-          </>
-        ) : null}
+        <CorrelationChart
+          key={`sens-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+          meatState={meatState}
+          dataType="sensory"
+          startDate={startDate}
+          endDate={endDate}
+          animalType={animalType}
+          grade={grade}
+        />
+        {meatState !== '가열육' && (
+          <CorrelationChart
+            key={`taste-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+            meatState={meatState}
+            dataType="taste"
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
+        )}
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={3}>

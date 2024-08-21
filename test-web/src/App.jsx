@@ -51,7 +51,7 @@ function App() {
     },
     {
       path: '/dataPA/:id',
-      title: 'PA-one | DeePlant',
+      title: 'DataPredict | DeePlant',
       component: <DataPredict />,
     },
     {

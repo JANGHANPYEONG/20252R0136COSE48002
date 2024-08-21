@@ -1,5 +1,5 @@
 // import timezone
-import { TIME_ZONE } from '../../config';
+import { TIME_ZONE } from '../config';
 
 const updateDates = (duration) => {
   const s = new Date();

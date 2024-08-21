@@ -1,60 +1,62 @@
 import { useState, useEffect, useMemo } from 'react';
-import SearchFilterBar from '../components/Search/SearchFilterBar';
-// 데이터 목록
-import PADataListComp from '../components/DataListView/PADataListComp';
-// mui
-import { Box, Button, Select, MenuItem } from '@mui/material';
-// import timezone
-import { TIME_ZONE } from '../config';
 import { useLocation } from 'react-router-dom';
+// mui
+import { Box, Button, Select, MenuItem, CircularProgress } from '@mui/material';
+// style
+import style from './style/pastyle';
+// timezone
+import { TIME_ZONE } from '../config';
+// 검색 필터 컴포넌트
+import SearchFilterBar from '../components/Search/SearchFilterBar';
+// 예측 육류 목록 컴포넌트
+import PADataListComp from '../components/DataListView/PADataListComp';
+// ID 검색 컴포넌트
 import SearchById from '../components/DataListView/SearchById';
 import PASingle from '../components/DataListView/PASingle';
+// 구간 계산 함수
+import updateDates from '../Utils/updateDates';
 
 const navy = '#0F3659';
 
 // 예측 목록 페이지
 const PA = () => {
   const [value, setValue] = useState('list');
-  const [singleData, setSingleData] = useState(null);
   const [specieValue, setSpecieValue] = useState('전체');
-
-  // 쿼리스트링 추출
-  const location = useLocation();
-  const { querypageOffset, queryStartDate, queryEndDate } = useMemo(() => {
-    const searchParams = new URLSearchParams(location.search);
-    return {
-      querypageOffset: searchParams.get('pageOffset'),
-      queryStartDate: searchParams.get('start') || '',
-      queryEndDate: searchParams.get('end') || '',
-    };
-  }, [location.search]);
-
+  const [singleData, setSingleData] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleValueChange = (newValue) => {
-    setValue(newValue);
-  };
-
-  const handleSpeciesChange = (event) => {
-    setSpecieValue(event.target.value);
-  };
-
-  const handleSingleDataFetch = (fetchedData) => {
-    setSingleData(fetchedData);
-  };
+  // 쿼리스트링 추출
+  const location = useLocation();
+  const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
+    useMemo(() => {
+      const searchParams = new URLSearchParams(location.search);
+      return {
+        querypageOffset: searchParams.get('pageOffset'),
+        queryStartDate: searchParams.get('start') || '',
+        queryEndDate: searchParams.get('end') || '',
+        queryDuration: searchParams.get('duration') || '',
+      };
+    }, [location.search]);
 
   useEffect(() => {
     setPageOffset(querypageOffset);
   }, [querypageOffset]);
 
   useEffect(() => {
+    setIsLoading(true);
     const now = new Date();
     let start = new Date('1970-01-01T00:00:00Z');
     let end = new Date(now);
 
-    if (queryStartDate || queryEndDate) {
+    if (queryDuration) {
+      const { start: durationStart, end: durationEnd } =
+        updateDates(queryDuration);
+      start = new Date(durationStart);
+      end = new Date(durationEnd);
+    } else if (queryStartDate || queryEndDate) {
       // startDate 또는 endDate 파라미터가 있을 경우
       if (queryStartDate) {
         start = new Date(queryStartDate);
@@ -77,7 +79,33 @@ const PA = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [queryStartDate, queryEndDate, location.search]);
+    setIsLoading(false);
+  }, [queryStartDate, queryEndDate, queryDuration, location.search]);
+
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleSpeciesChange = (event) => {
+    setSpecieValue(event.target.value);
+  };
+
+  const handleSingleDataFetch = (fetchedData) => {
+    setSingleData(fetchedData);
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div
@@ -110,10 +138,10 @@ const PA = () => {
         </span>
       </Box>
       {/**이동 탭 (목록, 통계 , 반려) */}
-      <Box sx={styles.fixedTab}>
+      <Box sx={style.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
-            style={value === 'list' ? styles.tabBtnCilcked : styles.tabBtn}
+            style={value === 'list' ? style.tabBtnCilcked : style.tabBtn}
             value="list"
             variant="outlined"
             onClick={(e) => {
@@ -125,7 +153,7 @@ const PA = () => {
         </div>
       </Box>
       {/**검색 필터 */}
-      <Box sx={styles.fixed}>
+      <Box sx={style.fixed}>
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
@@ -164,36 +192,3 @@ const PA = () => {
   );
 };
 export default PA;
-
-const styles = {
-  fixed: {
-    zIndex: 1,
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    backgroundColor: 'white',
-    margin: '10px 0px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  fixedTab: {
-    right: '0',
-    left: '0px',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '30px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  tabBtn: {
-    border: 'none',
-    color: navy,
-  },
-  tabBtnCilcked: {
-    border: `1px solid ${navy}`,
-    color: navy,
-  },
-};
