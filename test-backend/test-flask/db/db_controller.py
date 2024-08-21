@@ -1131,7 +1131,20 @@ def get_AI_SensoryEval(db_session, id, seqno):
             ai_sensoryEval_history["createdAt"], 1
         )
         db_session.close()
-        return ai_sensoryEval_history
+        result = {
+            "meatId": ai_sensoryEval_history["id"],
+            "seqno": ai_sensoryEval_history["seqno"],
+            "createdAt": ai_sensoryEval_history["createdAt"],
+            "xaiGrade": gradeNum[ai_sensoryEval_history["xaiGradeNum"]],
+            "xaiGradeImagePath": ai_sensoryEval_history["id"],
+            "xaiImagePath": ai_sensoryEval_history["xai_gradeNum_imagePath"],
+            "marbling": ai_sensoryEval_history["marbling"],
+            "color": ai_sensoryEval_history["color"],
+            "texture": ai_sensoryEval_history["texture"],
+            "surfaceMoisture": ai_sensoryEval_history["surfaceMoisture"],
+            "overall": ai_sensoryEval_history["overall"]
+        }
+        return result
     else:
         db_session.close()
         return None
