@@ -2071,7 +2071,6 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
 
 
 def get_OpenCVresult(db_session, meat_id):
-    meat = db_session.query(Meat).get(meat_id)
     try:
         opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
         if opencv_result:

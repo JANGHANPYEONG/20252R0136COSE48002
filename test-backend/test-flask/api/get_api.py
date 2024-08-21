@@ -333,14 +333,13 @@ def getPredictionData():
 def getOpenCVData():
     try:
         db_session = current_app.db_session
-        s3_conn = current_app.s3_conn
         meat_id = request.args.get("meatId")
         if meat_id:
             result = get_OpenCVresult(db_session, meat_id)
             if result:
                 return jsonify({"msg": "Success to get OpenCV Result", "result": result}), 200
             else:
-                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 400
+                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 404
         return jsonify({"msg": f"Meat Data {meat_id} Does Not Exist"}), 400
     except Exception as e:
         logger.exception(str(e))
