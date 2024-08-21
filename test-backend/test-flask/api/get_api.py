@@ -307,17 +307,13 @@ def getTexanomyData():
 @get_api.route("/predict-data", methods=["GET"])
 def getPredictionData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            meat_id = safe_str(request.args.get("meatId"))
-            seqno = safe_int(request.args.get("seqno"))
-            if meat_id and seqno is not None:
-                return _getPredictionData(db_session, meat_id, seqno)
-            else:
-                return jsonify("Invalid id or seqno parameter"), 404
-
+        db_session = current_app.db_session
+        meat_id = safe_str(request.args.get("meatId"))
+        seqno = safe_int(request.args.get("seqno"))
+        if meat_id and seqno is not None:
+            return _getPredictionData(db_session, meat_id, seqno)
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 400
+            return jsonify("Invalid id or seqno parameter"), 404
     except Exception as e:
         logger.exception(str(e))
         return (
