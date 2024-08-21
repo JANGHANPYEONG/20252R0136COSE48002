@@ -1,17 +1,21 @@
 const navy = '#0F3659';
 export const style = {
   singleDataWrapper: {
-    marginTop: '40px',
+    height: 'fit-content',
+    marginTop: '10px',
     display: 'flex',
     justifyContent: 'space-between',
+    width: '100%',
   },
   editBtnWrapper: {
     padding: '0px',
-    margin: '10px 0px 0px',
+    margin: '0px',
     paddingRight: '10px',
     width: '100%',
     display: 'flex',
     justifyContent: 'end',
+    borderBottomLeftRadius: '10px',
+    borderBottomRightRadius: '10px',
     minWidth: '1140px',
   },
   dataFieldColumn: {
@@ -39,9 +43,10 @@ export const style = {
   dataContainer: {
     height: '33px',
     borderBottom: '0.8px solid #e0e0e0',
-    width: '60px',
+    width: '',
     borderRight: '0.8px solid #e0e0e0',
     padding: '4px 5px',
+    display: 'flex',
   },
   completeBtn: {
     border: `1px solid ${navy}`,
@@ -58,17 +63,6 @@ export const style = {
     width: '60px',
     height: '35px',
   },
-  confirmEditBtnWrapper: {
-    paddingTop: '0px',
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'end',
-    marginTop: 'auto',
-    paddingRight: '20px',
-    borderBottomLeftRadius: '10px',
-    borderBottomRightRadius: '10px',
-    minWidth: '1140px',
-  },
   acceptBtn: {
     backgroundColor: '#00e676',
     color: 'white',
@@ -84,24 +78,31 @@ export const style = {
     borderRadius: '5px',
     width: '80px',
     height: '35px',
-    marginLeft: '20px',
+    marginLeft: '10px',
+    marginRight: '10px',
+  },
+  addButton: {
+    backgroundColor: '#32CD32',
+    color: 'white',
+    fontSize: '15px',
+    borderRadius: '5px',
+    width: '100px',
+    height: '35px',
+    marginRight: '10px',
+    border: 'none',
+  },
+  deleteButton: {
+    backgroundColor: '#e53935',
+    color: 'white',
+    fontSize: '15px',
+    borderRadius: '5px',
+    width: '100px',
+    height: '35px',
+    marginRight: '10px',
+    border: 'none',
   },
 };
 export const divStyle = {
-  currDiv: {
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '10px',
-    borderRadius: '5px',
-    color: navy,
-  },
-  notCurrDiv: {
-    height: '100%',
-    width: 'fit-content',
-    borderRadius: '5px',
-    padding: '10px',
-    color: '#b0bec5',
-  },
   loadingBackground: {
     position: 'absolute',
     width: '100vw',
