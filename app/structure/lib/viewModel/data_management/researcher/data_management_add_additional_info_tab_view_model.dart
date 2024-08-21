@@ -194,13 +194,30 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   // 데이터 종류에 따라 필터링 진행. (전체 / 나의 데이터 / 일반 데이터/ 연구 데이터)
   void setData() {
+    // if (dataSelectedIdx == 1) {
+    //   filteredList = filteredList.where((data) {
+    //     return (data['userId'] == userModel.userId);
+    //   }).toList();
+    // } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
+    //   filteredList = filteredList.where((data) {
+    //     return (data['userType'] == userModel.type);
+    //   }).toList();
+    // }
     if (dataSelectedIdx == 1) {
       filteredList = filteredList.where((data) {
+        print("usertype");
+        print(data);
+
+        print(data['Type']);
         return (data['userId'] == userModel.userId);
       }).toList();
-    } else if (dataSelectedIdx == 2 || dataSelectedIdx == 3) {
+    } else if (dataSelectedIdx == 2) {
       filteredList = filteredList.where((data) {
-        return (data['userType'] == userModel.type);
+        return (data['Type'] == 'Normal');
+      }).toList();
+    } else if (dataSelectedIdx == 3) {
+      filteredList = filteredList.where((data) {
+        return (data['Type'] == 'Researcher');
       }).toList();
     }
   }
