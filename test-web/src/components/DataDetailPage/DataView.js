@@ -42,6 +42,7 @@ import {
   labField,
   apiField,
 } from './constants/infofield';
+let isMethodPostPro = false;
 
 const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,7 +78,7 @@ const DataView = ({ dataProps }) => {
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
+  const [processedToggleValue,setProcessedToggleValue] = useState('1회');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
   const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
@@ -261,6 +262,9 @@ const DataView = ({ dataProps }) => {
     // 3. 처리육 관능검사 데이터 생성/수정 API POST/PATCH
     dict = {};
     const pro_len = len === 1 ? len : len - 1;
+    const existSeq = processed_data_seq
+      .filter((item) => item.includes('회')) // '회'가 포함된 항목만 필터링
+      .map((item) => parseInt(item.replace('회', '')));
     for (let i = 0; i < pro_len; i++) {
       const isMethodPost = await isPost(
         [
@@ -269,6 +273,7 @@ const DataView = ({ dataProps }) => {
           processed_data[i]?.texture,
           processed_data[i]?.surfaceMoisture,
           processed_data[i]?.overall,
+          processed_data[i]?.imagePath,
         ],
         [
           processedInput[i]?.marbling,
@@ -276,17 +281,21 @@ const DataView = ({ dataProps }) => {
           processedInput[i]?.texture,
           processedInput[i]?.surfaceMoisture,
           processedInput[i]?.overall,
+          processed_data[i]?.imagePath,
         ],
         isProcessedPosted[i + 1]
       );
+      console.log(i, isMethodPost);
       if (isMethodPost === undefined) continue;
       else if (isMethodPost) dict = { ...dict, [i + 1]: isMethodPost };
+
       addSensoryProcessedData(
         processedInput[i],
-        i,
+        existSeq[i],
         meatId,
         currentUserId,
-        isMethodPost
+        isMethodPost,
+        false
       )
         .then((response) => {
           if (response.ok)
@@ -301,6 +310,7 @@ const DataView = ({ dataProps }) => {
             error
           );
         });
+      isMethodPostPro = isMethodPost;
     }
     setIsProcessedPosted({ ...isProcessedPosted, ...dict });
   };
@@ -540,6 +550,7 @@ const DataView = ({ dataProps }) => {
             processed_data={processed_data}
             processedMinute={processedMinute}
             processed_data_seq={processed_data_seq}
+            ispost={isMethodPostPro}
           />
           {/* 2. QR코드와 데이터에 대한 기본 정보*/}
           <QRInfoCard
@@ -580,24 +591,6 @@ const DataView = ({ dataProps }) => {
               >
                 {processed_data.length !== 0 ? (
                   <>
-                    <Autocomplete
-                      id={'controllable-states-processed'}
-                      label="처리상태"
-                      value={processed_toggle}
-                      onChange={(event, newValue) => {
-                        setProcessedToggle(newValue);
-                      }}
-                      inputValue={processedToggleValue}
-                      onInputChange={(event, newInputValue) => {
-                        setProcessedToggleValue(
-                          newInputValue
-                        ); /*이미지 바꾸기 */
-                      }}
-                      options={options.slice(1)}
-                      size="small"
-                      sx={{ width: 'fit-content', marginBottom: '10px' }}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
                     <ProcessedTable
                       edited={edited}
                       modal={modal}
@@ -627,23 +620,6 @@ const DataView = ({ dataProps }) => {
                 title="가열육"
                 style={{ backgroundColor: 'white' }}
               >
-                <Autocomplete
-                  value={heatedToggle}
-                  size="small"
-                  onChange={(event, newValue) => {
-                    setHeatedToggle(newValue);
-                  }}
-                  inputValue={heatedToggleValue}
-                  onInputChange={(event, newInputValue) => {
-                    setHeatedToggleValue(newInputValue);
-                  }}
-                  id={'controllable-states-heated'}
-                  options={options}
-                  sx={{ width: 'fit-content', marginBottom: '10px' }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="처리상태" />
-                  )}
-                />
                 <HeatTable
                   edited={edited}
                   heatInput={heatInput}
@@ -659,23 +635,6 @@ const DataView = ({ dataProps }) => {
                 title="실험실"
                 style={{ backgroundColor: 'white' }}
               >
-                <Autocomplete
-                  value={labToggle}
-                  size="small"
-                  onChange={(event, newValue) => {
-                    setLabToggle(newValue);
-                  }}
-                  inputValue={labToggleValue}
-                  onInputChange={(event, newInputValue) => {
-                    setLabToggleValue(newInputValue);
-                  }}
-                  id={'controllable-states-api'}
-                  options={options}
-                  sx={{ width: 'fit-content', marginBottom: '10px' }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="처리상태" />
-                  )}
-                />
                 <LabTable
                   edited={edited}
                   labInput={labInput}
