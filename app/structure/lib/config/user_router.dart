@@ -65,7 +65,7 @@ import 'package:structure/viewModel/meat_registration/insertion_meat_image_view_
 import 'package:structure/viewModel/my_page/change_password_view_model.dart';
 import 'package:structure/viewModel/my_page/delete_user_view_model.dart';
 import 'package:structure/viewModel/my_page/user_detail_view_model.dart';
-import 'package:structure/viewModel/my_page/user_info_view_model.dart';
+import 'package:structure/viewModel/my_page/my_page_view_model.dart';
 import 'package:structure/viewModel/sign_in/password_reset_view_model.dart';
 import 'package:structure/viewModel/sign_up/insertion_user_detail_view_model.dart';
 import 'package:structure/viewModel/sign_up/insertion_user_info_view_model.dart';
@@ -221,7 +221,7 @@ class UserRouter {
             GoRoute(
               path: 'my-page',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => UserInfoViewModel(userModel),
+                create: (context) => MyPageViewModel(userModel, context),
                 child: const MyPageScreen(),
               ),
               routes: [

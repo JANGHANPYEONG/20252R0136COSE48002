@@ -104,6 +104,21 @@ void showDeleteIdDialog(
   );
 }
 
+/// 중복 이메일 dialog
+void showLogoutDialog(
+    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '로그아웃 하시겠습니까?',
+    '',
+    '취소',
+    '로그아웃',
+    null,
+    rightFunc,
+  );
+}
+
 /// 임시저장 dialog
 void showTemporarySaveDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
