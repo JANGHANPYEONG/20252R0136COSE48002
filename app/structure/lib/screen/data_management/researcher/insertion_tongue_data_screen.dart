@@ -22,6 +22,8 @@ class InsertionTongueDataScreen extends StatefulWidget {
 }
 
 class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     InsertionTongueDataViewModel insertionTongueDataViewModel =
