@@ -11,6 +11,7 @@ import { useUser } from '../../../Utils/UserContext';
 import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
 import { Tooltip } from '@mui/material';
+import opencvpreview from '../../../src_assets/opencvpreview.png';
 
 const navy = '#0F3659';
 
@@ -29,7 +30,19 @@ const MeatImgsCard = ({
   processedMinute, // 처리 시간 (분)
   processed_data_seq, // 회차 정보
   isPost,
+  opencvDataProps,
 }) => {
+  const {
+    segmentImage,
+    proteinColorPalette,
+    fatColorPalette,
+    totalColorPalette,
+    proteinRate,
+    fatRate,
+  } = opencvDataProps || {};
+
+  console.log('opencvDataProps', opencvDataProps);
+
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
   useEffect(() => {
@@ -67,6 +80,7 @@ const MeatImgsCard = ({
     let newImages = imgArr;
     newImages[currentIdx] = reader.result;
     setImgArr(newImages);
+    console.log('opencvDataProps', opencvDataProps);
   };
 
   const handleFileChange = (e) => {
@@ -169,7 +183,7 @@ const MeatImgsCard = ({
               <Tooltip id="button-tooltip">
                 {' '}
                 <img
-                  src={imgArr[currentIdx]}
+                  src={opencvpreview}
                   alt={`Image ${currentIdx + 1}`}
                   style={style.imgWrapper}
                 />
