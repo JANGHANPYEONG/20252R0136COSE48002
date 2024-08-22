@@ -27,8 +27,8 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
                 <TableCell key={'raw-' + idx + 'col2'}>
                   <div>
                     {dataPA
-                      ? f === 'xai_gradeNum'
-                        ? dataPA['xai_gradeNum'] === 0
+                      ? f === 'xaiGrade'
+                        ? dataPA['xaiGrade'] === 0
                           ? '0'
                           : dataPA[f]
                         : dataPA[f]
@@ -39,7 +39,7 @@ const PredictedRawTable = ({ raw_data, dataPA }) => {
 
                   {
                     // 오차 계산
-                    f !== 'xai_gradeNum' && (
+                    f !== 'xaiGrade' && (
                       <div style={{ marginLeft: '10px' }}>
                         {dataPA ? (
                           dataPA[f] ? (

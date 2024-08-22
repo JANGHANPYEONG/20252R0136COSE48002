@@ -20,7 +20,7 @@ import { useUser } from '../../Utils/UserContext';
 const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
   const {
-    id, // 이력번호
+    meatId, // 이력번호
     userId, // 로그인한 사용자 id
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
@@ -37,10 +37,11 @@ const DataPAView = ({ dataProps }) => {
   useEffect(() => {
     options = processed_data_seq;
   }, []);
+  const first = `${processed_data_seq[1]}`;
 
   // 처리육 토글
-  const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
+  const [processed_toggle, setProcessedToggle] = useState(first);
+  const [processedToggleValue, setProcessedToggleValue] = useState(first);
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
@@ -53,13 +54,14 @@ const DataPAView = ({ dataProps }) => {
   const getPredictedData = async (seqno) => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/get/predict-data?id=${id}&seqno=${seqno}`
+        `http://${apiIP}/meat/get/predict-data?meatId=${meatId}&seqno=${seqno}`
       );
       if (!response.ok) {
-        throw new Error('Network response was not ok', id, '-', seqno);
+        throw new Error('Network response was not ok', meatId, '-', seqno);
       }
       const json = await response.json();
       setDataPA(json);
+
       setDataXAIImg(json.xai_imagePath);
       setGradeXAIImg(json.xai_gradeNum_imagePath);
       return json;
@@ -89,27 +91,24 @@ const DataPAView = ({ dataProps }) => {
     // 로딩 화면 표시 시작
     SetIsPredictedDone(false);
     //모든 육류 데이터 (원육, n회차 이미지)에 대해 예측
-    for (let i = 0; i < len; i++) {
-      let req = {
-        ['id']: id,
-        ['seqno']: i,
-        ['userId']: userId,
-        ['period']: Math.round(elapsedHour),
-      };
-      try {
-        await fetch(`http://${apiIP}/meat/get/predict-data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(req),
-        });
-        // 예측 정보 로드
-        await getPredictedData(i);
-      } catch (err) {
-        console.error(err);
-      }
+    let req = {
+      ['meatId']: meatId,
+      ['seqno']: parseInt(processedToggleValue),
+    };
+    try {
+      await fetch(`http://${apiIP}/meat/predict/sensory-eval`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req),
+      });
+      // 예측 정보 로드
+      await getPredictedData(parseInt(processedToggleValue));
+    } catch (err) {
+      console.error(err);
     }
+
     // 로딩 화면 표시 종료
     SetIsPredictedDone(true);
   };
@@ -118,12 +117,14 @@ const DataPAView = ({ dataProps }) => {
   const handleSelect = async (key) => {
     // 예측 데이터 로드
     await getPredictedData(key);
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
     // 원본 이미지 바꾸기
     key === '0'
       ? setPreviewImage(raw_img_path)
       : setPreviewImage(
-          processed_img_path[parseInt(processedToggleValue) - 1]
-            ? processed_img_path[parseInt(processedToggleValue) - 1]
+          processed_img_path[targetIndex]
+            ? processed_img_path[targetIndex]
             : null
         );
   };
@@ -137,6 +138,14 @@ const DataPAView = ({ dataProps }) => {
   useEffect(() => {
     getPredictedData(0);
   }, []);
+
+  useEffect(() => {
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
+    setPreviewImage(
+      processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+    );
+  }, [processedToggleValue]);
 
   return (
     <div style={{ width: '100%' }}>
@@ -221,7 +230,7 @@ const DataPAView = ({ dataProps }) => {
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard
           qrImagePath={qrImagePath}
-          id={id}
+          id={meatId}
           userId={userId}
           createdAt={createdAt}
           page="predict"
@@ -260,16 +269,12 @@ const DataPAView = ({ dataProps }) => {
                     value={processed_toggle}
                     onChange={(event, newValue) => {
                       setProcessedToggle(newValue);
+                      setProcessedToggleValue(newValue);
                     }}
                     inputValue={processedToggleValue}
                     onInputChange={(event, newInputValue) => {
+          
                       setProcessedToggleValue(newInputValue);
-                      /*이미지 변경 */
-                      setPreviewImage(
-                        processed_img_path[parseInt(newInputValue) - 1]
-                          ? processed_img_path[parseInt(newInputValue) - 1]
-                          : null
-                      );
                     }}
                     options={options.slice(1)}
                     size="small"
@@ -284,6 +289,7 @@ const DataPAView = ({ dataProps }) => {
                   />
                   <PredictedProcessedTablePA
                     seqno={parseInt(processedToggleValue)}
+                    processedToggleValue={processedToggleValue}
                     processed_data={processed_data}
                     processed_data_seq={processed_data_seq}
                     dataPA={dataPA}
