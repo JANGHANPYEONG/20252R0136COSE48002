@@ -101,7 +101,6 @@ class _DataAddScreenState extends State<DataAddScreen> {
                                     '${dataAddViewModel.meatModel.deepAgingInfo![index + 1]['minute']}분',
                                 butcheryDate: dataAddViewModel.meatModel
                                     .deepAgingInfo![index + 1]['date'],
-                                // TODO : complete check
                                 completed: int.parse(
                                     '${dataAddViewModel.meatModel.deepAgingInfo![index + 1]['isCompleted']}'),
                                 onTap: () async => await dataAddViewModel

@@ -73,7 +73,6 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                       ),
 
                       // 달력
-                      // TODO : 날짜 선택시 닫기
                       if (addDeepAgingDataViewModel.isSelectedDate)
                         CustomTableCalendar(
                           focusedDay: addDeepAgingDataViewModel.focused,
@@ -89,7 +88,6 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                       SizedBox(height: 16.h),
 
                       // 초음파 처리 시간 입력
-                      // TODO : 온탭시 닫기
                       Row(
                         children: [
                           Expanded(

@@ -5,7 +5,6 @@
 //
 
 import 'package:intl/intl.dart';
-import 'package:structure/model/meat_model.dart';
 
 class Usefuls {
   /// 현재 날짜를 불러오는 함수
@@ -65,22 +64,6 @@ class Usefuls {
         "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}";
 
     return formattedDate;
-  }
-
-  /// period 계산하는 함수
-  /// 현재 날짜 - 도축 날짜
-  // TODO : 삭제
-  static int getMeatPeriod(MeatModel meatModel) {
-    if (meatModel.butcheryYmd == null) return 0;
-    DateTime butcheryDate = DateTime.parse(meatModel.butcheryYmd!);
-    DateTime currentDate = DateTime.now();
-
-    Duration difference = currentDate.difference(butcheryDate);
-    int period = difference.inHours;
-    if (period < 0) {
-      return 0;
-    }
-    return period;
   }
 
   /// 시간 차이 계산

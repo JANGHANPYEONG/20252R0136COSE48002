@@ -28,6 +28,7 @@ class DataAddViewModel with ChangeNotifier {
   String speciesValue = '-';
   String secondary = '-';
   String total = '-';
+
   //스크롤바
   final scrollController = ScrollController();
 

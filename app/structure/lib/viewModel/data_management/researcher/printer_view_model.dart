@@ -43,7 +43,9 @@ class PrinterViewModel extends ChangeNotifier {
           .toList();
       deviceNames =
           devices.map((device) => device.split('(')[0].trim()).toList();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
 
     // 만약 프린터가 하나만 발견된다면 바로 연결까지 진행
     if (devices.length == 1) {

@@ -421,7 +421,6 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   // 관리 번호 검색 시에 호출된다.
   void onChanged(String? value) {
-    print("dfs");
     isLoading = true;
     notifyListeners();
 
@@ -457,14 +456,13 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
   /// 데이터 필드를 클릭 시에 호출된다.
   Future<void> onTap(int idx, BuildContext context) async {
-    print("ontap");
     String meatId = '';
     isLoading = true;
     notifyListeners();
 
     try {
       meatId = selectedList[idx]['meatId']!; // meatId 선택
-      print(meatId);
+
       // API 호출
       final response = await RemoteDataSource.getMeatData(meatId);
       if (response is Map<String, dynamic>) {
