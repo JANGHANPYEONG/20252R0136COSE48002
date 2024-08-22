@@ -38,8 +38,7 @@ class _CameraScreenState extends State<CameraScreen> {
               width: 640.w,
               height: 640.w,
               padding: EdgeInsets.symmetric(horizontal: 40.w),
-              child: const Positioned.fill(
-                  child: CameraGuide(color: Colors.white)),
+              child: const CameraGuide(color: Colors.white),
             ),
           ),
 
@@ -61,7 +60,7 @@ class _CameraScreenState extends State<CameraScreen> {
                             ? Icons.flash_on_outlined
                             : Icons.flash_off_outlined,
                         size: 40.sp,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
@@ -71,7 +70,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       icon: Icon(
                         Icons.cameraswitch_outlined,
                         size: 40.sp,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
@@ -79,7 +78,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       icon: Icon(
                         Icons.help_outline_outlined,
                         size: 40.sp,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
@@ -89,7 +88,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       icon: Icon(
                         Icons.close,
                         size: 40.sp,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                   ],

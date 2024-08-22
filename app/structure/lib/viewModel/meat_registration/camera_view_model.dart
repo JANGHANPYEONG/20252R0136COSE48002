@@ -92,9 +92,9 @@ class CameraViewModel with ChangeNotifier {
   /// 카메라 전환
   void changeCameraDirection() {
     if (controller.description.lensDirection == CameraLensDirection.back) {
-      controller.setDescription(_cameras[0]);
-    } else {
       controller.setDescription(_cameras[1]);
+    } else {
+      controller.setDescription(_cameras[0]);
     }
   }
 
