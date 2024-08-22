@@ -200,7 +200,7 @@ export const rawPAField = [
   'texture',
   'surfaceMoisture',
   'overall',
-  'xai_gradeNum',
+  'xaiGrade',
 ];
 
 export const rawPADBFieldToSematicWord = {
@@ -209,7 +209,7 @@ export const rawPADBFieldToSematicWord = {
   texture: '조직감',
   surfaceMoisture: '표면육즙',
   overall: '기호도',
-  xai_gradeNum: '예상등급',
+  xaiGrade: '예상등급',
 };
 
 export const deepAgingPAField = [
@@ -218,7 +218,7 @@ export const deepAgingPAField = [
   'texture',
   'surfaceMoisture',
   'overall',
-  'xai_gradeNum',
+  'xaiGrade',
 ];
 
 export const deepAgingPADBFieldToSemanticWord = {
@@ -227,5 +227,5 @@ export const deepAgingPADBFieldToSemanticWord = {
   texture: '조직감',
   surfaceMoisture: '표면육즙',
   overall: '기호도',
-  xai_gradeNum: '예상등급',
+  xaiGrade: '예상등급',
 };

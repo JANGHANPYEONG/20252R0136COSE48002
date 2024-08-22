@@ -17,9 +17,14 @@ const PredictedProcessedTablePA = ({
   processed_data,
   processed_data_seq,
   dataPA,
+  processedToggleValue
 }) => {
   const processedDataIdx = seqno - 1;
   const len = processed_data_seq.length - 2;
+  const target = processedToggleValue; //n회
+  const targetIndex = processed_data_seq.indexOf(target) - 1;
+
+  //console.log('real', dataPA['xaiGrade'])
   return (
     <TableContainer
       key="processedmeat"
@@ -31,16 +36,16 @@ const PredictedProcessedTablePA = ({
           <TableRow>
             <TableCell style={{ background: '#cfd8dc' }}>{}</TableCell>
             <TableCell align="right" style={{ background: '#cfd8dc' }}>
-              1회차
+              {processedToggleValue}차 예측
             </TableCell>
-            {
+            {/* {
               // 2회차 이상부터
               Array.from({ length: len }, (_, arr_idx) => (
                 <TableCell align="right" style={{ background: '#cfd8dc' }}>
-                  {arr_idx + 2}회차
+                  {processed_data_seq[arr_idx + 2]}차
                 </TableCell>
               ))
-            }
+            } */}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -57,8 +62,8 @@ const PredictedProcessedTablePA = ({
                   {
                     // 1회차
                     dataPA
-                      ? f === 'xai_gradeNum'
-                        ? dataPA['xai_gradeNum'] === 0
+                      ? f === 'xaiGrade'
+                        ? dataPA['xaiGrade'] === 0
                           ? '0'
                           : dataPA[f]
                         : dataPA[f]
@@ -70,7 +75,7 @@ const PredictedProcessedTablePA = ({
 
                 {
                   // 오차 계산
-                  f !== 'xai_gradeNum' && f !== 'seqno' && f !== 'period' && (
+                  f !== 'xaiGrade' && f !== 'seqno' && f !== 'period' && (
                     <div style={{ marginLeft: '10px' }}>
                       {dataPA ? (
                         dataPA[f] ? (
@@ -111,72 +116,7 @@ const PredictedProcessedTablePA = ({
                   )
                 }
               </TableCell>
-              {
-                //2회차 부터
-                Array.from({ length: len }, (_, arr_idx) => (
-                  <TableCell align="right">
-                    <div>
-                      {
-                        // 1회차
-                        dataPA
-                          ? f === 'xai_gradeNum'
-                            ? dataPA['xai_gradeNum'] === 0
-                              ? '0'
-                              : dataPA[arr_idx]
-                            : dataPA[arr_idx]
-                              ? dataPA[arr_idx].toFixed(2)
-                              : ''
-                          : ''
-                      }
-                    </div>
-
-                    {
-                      // 오차 계산
-                      f !== 'xai_gradeNum' &&
-                        f !== 'seqno' &&
-                        f !== 'period' && (
-                          <div style={{ marginLeft: '10px' }}>
-                            {dataPA ? (
-                              dataPA[arr_idx] ? (
-                                <span
-                                  style={
-                                    dataPA[arr_idx].toFixed(2) -
-                                      processed_data[processedDataIdx]?.[f] >
-                                    0
-                                      ? { color: 'red' }
-                                      : { color: 'blue' }
-                                  }
-                                >
-                                  {
-                                    dataPA[f].toFixed(2) -
-                                      processed_data[processedDataIdx]?.[f] >
-                                    0
-                                      ? '(+' +
-                                        (
-                                          dataPA[f].toFixed(2) -
-                                          processed_data[processedDataIdx]?.[f]
-                                        ).toFixed(2) +
-                                        ')' /*플러스인 경우 */
-                                      : '(' +
-                                        (
-                                          dataPA[f].toFixed(2) -
-                                          processed_data[processedDataIdx]?.[f]
-                                        ).toFixed(2) +
-                                        ')' /*미이너스인 경우 */
-                                  }
-                                </span>
-                              ) : (
-                                <span></span>
-                              )
-                            ) : (
-                              ''
-                            )}
-                          </div>
-                        )
-                    }
-                  </TableCell>
-                ))
-              }
+              
             </TableRow>
           ))}
         </TableBody>

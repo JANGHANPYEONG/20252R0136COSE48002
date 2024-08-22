@@ -19,6 +19,8 @@ const ProcessedTableStatic = ({
   processed_data_seq,
 }) => {
   const len = processed_data_seq.length - 2;
+  const target = processedToggleValue; //n회
+  const targetIndex = processed_data_seq.indexOf(target) - 1;
 
   return (
     <TableContainer
@@ -31,16 +33,16 @@ const ProcessedTableStatic = ({
           <TableRow>
             <TableCell style={{ background: '#cfd8dc' }}>{}</TableCell>
             <TableCell align="right" style={{ background: '#cfd8dc' }}>
-              1회차
+              {processedToggleValue}차
             </TableCell>
-            {
+            {/* {
               // 2회차 이상부터
               Array.from({ length: len }, (_, arr_idx) => (
                 <TableCell align="right" style={{ background: '#cfd8dc' }}>
-                  {arr_idx + 2}회차
+                  {processed_data_seq[arr_idx + 2]}차
                 </TableCell>
               ))
-            }
+            } */}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -56,15 +58,15 @@ const ProcessedTableStatic = ({
                 {
                   // 1회차
                   f === 'minute'
-                    ? processedMinute[0]
-                      ? processedMinute[0]
+                    ? processedMinute[targetIndex]
+                      ? processedMinute[targetIndex]
                       : ''
-                    : processed_data[0]?.[f]
-                      ? processed_data[0]?.[f]
+                    : processed_data[targetIndex]?.[f]
+                      ? processed_data[targetIndex]?.[f]
                       : ''
                 }
               </TableCell>
-              {
+              {/* {
                 //2회차 부터
                 Array.from({ length: len }, (_, arr_idx) => (
                   <TableCell align="right">
@@ -77,7 +79,7 @@ const ProcessedTableStatic = ({
                         : ''}
                   </TableCell>
                 ))
-              }
+              } */}
             </TableRow>
           ))}
         </TableBody>
