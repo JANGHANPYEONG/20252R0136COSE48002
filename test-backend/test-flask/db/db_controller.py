@@ -7,6 +7,7 @@ import json
 from utils import *
 
 from .db_model import *
+from opencv_utils import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)
@@ -1112,10 +1113,17 @@ def _getPredictionData(db_session, id, seqno):
     if result:
         return jsonify(result), 200
     else:
-        return jsonify({"msg": "No data in AI Sensory Evaluate DB"}), 404
+        return jsonify({"msg": "No data in Meat or AI Sensory Evaluation. Request POST to create AI prediction"}), 404
 
 
 def get_AI_SensoryEval(db_session, id, seqno):
+    meat = db_session.query(Meat).filter_by(id=id).first()
+    sensory_data = db_session.query(SensoryEval).filter(
+        SensoryEval.id == id, SensoryEval.seqno
+    )
+    if meat is None and sensory_data is None:
+        db_session.close()
+        return None 
     ai_sensoryEval = (
         db_session.query(AI_SensoryEval)
         .filter(
@@ -1125,12 +1133,22 @@ def get_AI_SensoryEval(db_session, id, seqno):
         .first()
     )
     if ai_sensoryEval:
-        ai_sensoryEval_history = to_dict(ai_sensoryEval)
-        ai_sensoryEval_history["createdAt"] = convert2string(
-            ai_sensoryEval_history["createdAt"], 1
-        )
+        ai_sensoryEval.createdAt = convert2string(ai_sensoryEval.createdAt, 1)
         db_session.close()
-        return ai_sensoryEval_history
+        result = {
+            "meatId": ai_sensoryEval.id,
+            "seqno": ai_sensoryEval.seqno,
+            "createdAt": ai_sensoryEval.createdAt,
+            "xaiGrade": gradeNum[ai_sensoryEval.xaiGradeNum],
+            "xaiGradeImagePath": ai_sensoryEval.xai_gradeNum_imagePath,
+            "xaiImagePath": ai_sensoryEval.xai_imagePath,
+            "marbling": ai_sensoryEval.marbling,
+            "color": ai_sensoryEval.color,
+            "texture": ai_sensoryEval.texture,
+            "surfaceMoisture": ai_sensoryEval.surfaceMoisture,
+            "overall": ai_sensoryEval.overall
+        }
+        return result
     else:
         db_session.close()
         return None
@@ -2067,3 +2085,47 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
 
     db_session.close()
     return stats
+
+
+def get_OpenCVresult(db_session, meat_id):
+    try:
+        opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
+        if opencv_result:
+            db_session.close()
+            return opencv_result
+
+    except Exception as e:
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
+    
+    
+def process_opencv_image(db_session, s3_conn, meat_id, segment_object):
+    try:
+        segment_img = s3_conn.download_image(segment_object)
+        opencv_data = {}
+        
+        # 단면 이미지 url 불러오기
+        segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
+        opencv_data["section_imagePath"] = segment_image_path
+        opencv_data["createdAt"] = convert2string(datetime.now(), 1)
+        opencv_data["id"] = meat_id
+        opencv_data["seqno"] = "0"
+        
+        # openCV 전처리 순서대로 진행
+        color_palette = display_palette_with_ratios(segment_img)
+        texture_result = create_texture_info(segment_img)
+        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=0)
+        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=0)
+        
+        # opencv DB에 저장
+        opencv_data = {**opencv_data, **color_palette, **texture_result, **lbp_result, **gabor_result}
+        new_opencv = OpenCVImagesInfo(**opencv_data)
+        db_session.add(new_opencv)
+        db_session.commit()
+        
+        db_session.close()
+        return opencv_data
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
