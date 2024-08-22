@@ -50,6 +50,21 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        applicationVariants.all { variant -> 
+            variant.outputs.all { output -> 
+                def apk = output.outputFile
+                def versionName = defaultConfig.versionName
+                def newName
+                if (apk != null && apk.name.startsWith('app-release')) {
+                    newName = apk.name.replace('app-release', 'deepaging_' + versionName)
+                } else {
+                    newName = apk.name
+                }
+                outputFileName = newName
+            }
+
+        }
     }
 
     buildTypes {
