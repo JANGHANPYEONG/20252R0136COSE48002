@@ -144,18 +144,21 @@ const DataList = ({
                         pageProp === 'pa'
                           ? {
                               pathname: `/dataPA/${content.meatId}`,
-                              search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                              // search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                              search: `?start=${startDate}&end=${endDate}`,
                             }
                           : (pageProp === 'list' || 'reject') &&
                               (content.statusType === '대기중' ||
                                 content.statusType === '반려')
                             ? {
                                 pathname: `/DataConfirm/${content.meatId}`,
-                                search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                                // search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                                search: `?start=${startDate}&end=${endDate}`,
                               }
                             : {
                                 pathname: `/dataView/${content.meatId}`,
-                                search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                                // search: `?pageOffset=${offset}&start=${startDate}&end=${endDate}`,
+                                search: `?start=${startDate}&end=${endDate}`,
                               }
                       }
                     >

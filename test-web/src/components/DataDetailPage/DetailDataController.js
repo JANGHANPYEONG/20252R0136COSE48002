@@ -14,7 +14,6 @@ const DataLoad = ({ id, page }) => {
   // 육류 상세 데이터 API fetch
   const { data, isLoading, isError } = useDetailMeatData(id);
 
-
   //데이터 전처리
   useEffect(() => {
     if (data !== null && data !== undefined) {
@@ -26,7 +25,15 @@ const DataLoad = ({ id, page }) => {
   if (isLoading)
     return (
       // 데이터가 로드되지 않은 경우 로딩중 반환
-      <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh', // 화면 전체 높이
+          width: '100%',
+        }}
+      >
         <Spinner animation="border" />
       </div>
     );

@@ -33,7 +33,8 @@ const DataPredict = () => {
           <Link
             to={{
               pathname: '/PA',
-              search: `?pageOffset=${pageOffset}&start=${startDate}&end=${endDate}`,
+              search: `?start=${startDate}&end=${endDate}`,
+              // search: `?pageOffset=${pageOffset}&start=${startDate}&end=${endDate}`,
             }}
             style={{
               textDecorationLine: 'none',

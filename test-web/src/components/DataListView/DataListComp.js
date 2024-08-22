@@ -22,10 +22,6 @@ const DataListComp = ({
   // 한 페이지당 보여줄 개수
   const [count, setCount] = useState(5);
 
-  // useEffect(() => {
-  //   setCurrentPage(1);
-  // }, [startDate, endDate, pageOffset]);
-
   // API fetch 데이터 전처리
   const processMeatDatas = (data) => {
     if (!data || !data.id_list || !data.meat_dict) {
@@ -46,6 +42,13 @@ const DataListComp = ({
 
     setMeatList(meatData);
   };
+
+  // useEffect(() => {
+  //   if (pageOffset) {
+  //     setCurrentPage(pageOffset + 1);
+  //   }
+  //   console.log(currentPage, 'asd');
+  // }, [pageOffset]);
 
   // API fetch
   const { data, isLoading, isError } = useMeatList(
@@ -117,8 +120,8 @@ const DataListComp = ({
       <Box sx={style.paginationBar}>
         <div style={style.paginationContainer}>
           <Pagination
-            totalDatas={totalData}
             count={count}
+            totalDatas={totalData}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
           />
