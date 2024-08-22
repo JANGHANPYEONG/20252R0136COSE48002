@@ -81,7 +81,6 @@ class InsertionTraceNumViewModel with ChangeNotifier {
   }
 
   // 바코드 관련 기능을 정의.
-  // TODO
   void getBarcodeValue(dynamic event) {
     textEditingController.text = event.toString();
     reset();
