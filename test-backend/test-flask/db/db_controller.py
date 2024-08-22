@@ -2089,10 +2089,20 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
 
 def get_OpenCVresult(db_session, meat_id):
     try:
+        result = {}
         opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
         if opencv_result:
+            result["meatId"] = meat_id
+            result["createdAt"] = convert2string(opencv_result.createdAt, 1)
+            result["segmentImage"] = opencv_result.section_imagePath
+            result["proteinColorPalette"] = opencv_result.protein_palette
+            result["fatColorPalette"] = opencv_result.fat_palette
+            result["totalColorPalette"] = opencv_result.full_palette
+            result["proteinRate"] = opencv_result.protein_rate
+            result["fatRate"] = opencv_result.fat_rate
+            
             db_session.close()
-            return opencv_result
+            return result
 
     except Exception as e:
         db_session.close()
