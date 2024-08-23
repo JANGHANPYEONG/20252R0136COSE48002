@@ -5,7 +5,7 @@
 //
 //
 
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -109,7 +109,7 @@ class _GetQrState extends State<GetQr> {
                       height: 90.h,
                       padding: EdgeInsets.all(5.w),
                       decoration: BoxDecoration(
-                        color: Palette.confirmCardBg,
+                        color: Palette.primary,
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Container(

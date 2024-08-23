@@ -6,6 +6,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -20,7 +21,7 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   bool isLoading = false;
   String title = '전자혀 데이터';
 
-  late BuildContext _context;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // 컨트롤러
   TextEditingController sourness = TextEditingController();
@@ -66,7 +67,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     inputComplete = sourness.text.isNotEmpty &&
         bitterness.text.isNotEmpty &&
         umami.text.isNotEmpty &&
-        richness.text.isNotEmpty;
+        richness.text.isNotEmpty &&
+        formKey.currentState!.validate();
   }
 
   // 데이터를 객체에 할당 - 이후 POST
@@ -147,8 +149,8 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
-      debugPrint("Error1: $e");
-      // if (context.mounted) showErrorPopup(context);
+      debugPrint("Error: $e");
+      if (context.mounted) showErrorPopup(context);
     }
 
     // 완료 검사
@@ -157,17 +159,14 @@ class InsertionTongueDataViewModel with ChangeNotifier {
     isLoading = false;
     notifyListeners();
 
-    _context = context;
-    _movePage();
+    if (context.mounted) context.pop();
   }
 
-  void _movePage() {
-    if (meatModel.seqno == 0) {
-      // 원육
-      _context.go('/home/data-manage-researcher/add/raw-meat');
-    } else {
-      // 처리육
-      _context.go('/home/data-manage-researcher/add/processed-meat');
+  String? validate(String? value, double min, double max) {
+    double parsedValue = double.tryParse(value!) ?? 0.0;
+    if (parsedValue < min || parsedValue > max) {
+      return '$min~$max 사이의 값을 입력하세요.';
     }
+    return null;
   }
 }

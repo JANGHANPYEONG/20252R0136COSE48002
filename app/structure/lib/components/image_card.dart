@@ -4,7 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:structure/components/loading_screen.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class ImageCard extends StatelessWidget {
   final String? imagePath;
@@ -16,8 +16,7 @@ class ImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40.w),
+    return SizedBox(
       width: 640.w,
       height: 640.w,
       child: ClipRRect(
@@ -26,6 +25,8 @@ class ImageCard extends StatelessWidget {
             // s3에 업로드 된 이미지 (수정)
             ? Image.network(
                 imagePath!,
+                width: 640.w,
+                height: 640.w,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) {
@@ -43,7 +44,26 @@ class ImageCard extends StatelessWidget {
 
             // 이미지 촬영 중 임시저장 된 사진
             : imagePath != null && imagePath!.isNotEmpty
-                ? Image.file(File(imagePath!), fit: BoxFit.cover)
+                ? Image.file(
+                    File(imagePath!),
+                    width: 640.w,
+                    height: 640.w,
+                    fit: BoxFit.cover,
+                    frameBuilder: (BuildContext context, Widget child,
+                        int? frame, bool wasSynchronouslyLoaded) {
+                      if (wasSynchronouslyLoaded) return child;
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: frame != null
+                            ? child
+                            : SizedBox(
+                                width: 640.w,
+                                height: 640.w,
+                                child: const Center(child: LoadingScreen()),
+                              ),
+                      );
+                    },
+                  )
                 : const ImageError(isError: false),
       ),
     );
@@ -62,24 +82,24 @@ class ImageError extends StatelessWidget {
       child: DottedBorder(
         radius: Radius.circular(20.r),
         borderType: BorderType.RRect,
-        color: Palette.imageErrorColor,
+        color: Palette.onSecondary,
         strokeWidth: 2.sp,
         dashPattern: [12.w, 12.w],
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Center(
+            Center(
               child: Icon(
                 Icons.error_outline,
-                color: Palette.imageErrorColor,
-                size: 48,
+                color: Palette.onSecondary,
+                size: 80.w,
               ),
             ),
             SizedBox(height: 16.h),
             Text(
               isError ? '이미지 로드에 실패하였습니다' : '이미지가 존재하지 않습니다',
-              style: const TextStyle(color: Palette.imageErrorColor),
+              style: const TextStyle(color: Palette.onSecondary),
             ),
           ],
         ),

@@ -1,6 +1,6 @@
-import 'dart:io';
-
-import 'package:structure/config/pallete.dart';
+import 'package:structure/components/image_card.dart';
+import 'package:structure/components/round_button.dart';
+import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -44,8 +44,7 @@ void showDataRegisterDialog(
 }
 
 /// 데이터 입력 미완료 dialog
-void showDataNotCompleteDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+void showDataNotCompleteDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -59,8 +58,7 @@ void showDataNotCompleteDialog(
 }
 
 /// 데이터 입력 완료 dialog
-void showDataCompleteDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+void showDataCompleteDialog(BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -75,7 +73,7 @@ void showDataCompleteDialog(
 
 /// 중복 이메일 dialog
 void showDuplicateIdSigninDialog(
-    BuildContext context, VoidCallback? leftFunc, VoidCallback? rightFunc) {
+    BuildContext context, VoidCallback? rightFunc) {
   showCustomDialog(
     context,
     null,
@@ -99,6 +97,20 @@ void showDeleteIdDialog(
     '취소',
     '탈퇴',
     leftFunc,
+    rightFunc,
+  );
+}
+
+/// 중복 이메일 dialog
+void showLogoutDialog(BuildContext context, VoidCallback? rightFunc) {
+  showCustomDialog(
+    context,
+    null,
+    '로그아웃 하시겠습니까?',
+    '',
+    '취소',
+    '로그아웃',
+    null,
     rightFunc,
   );
 }
@@ -155,60 +167,74 @@ void showCustomDialog(
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
-        insetPadding: EdgeInsets.all(30.w),
+        insetPadding: EdgeInsets.all(40.w),
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20.r))),
-        child: SizedBox(
-          height: iconPath != null ? 504.h : 332.h,
-          width: 650.w,
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 40.w),
+          height: iconPath != null ? 504.h : 336.h,
+          width: 640.w,
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                iconPath != null
-                    ? SizedBox(
-                        height: 140.h,
-                        width: 140.w,
-                        child: Image.asset(
-                          iconPath,
-                        ),
-                      )
-                    : Container(),
-                SizedBox(height: 25.h),
+                // 아이콘
+                if (iconPath != null)
+                  SizedBox(
+                    height: 144.h,
+                    width: 144.w,
+                    child: Image.asset(iconPath),
+                  ),
+                SizedBox(height: 24.h),
+
+                // 제목
                 Text(
                   titleText,
-                  style: Palette.dialogContentBold,
+                  style: Palette.h4,
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 14.h),
+                SizedBox(height: 16.h),
+
+                // 설명
                 Text(
                   contentText,
                   textAlign: TextAlign.center,
-                  style: Palette.dialogContentSmall,
+                  style: Palette.h5OnSecondary,
                 ),
                 iconPath != null
-                    ? SizedBox(height: 74.h)
-                    : SizedBox(height: 50.h),
+                    ? SizedBox(height: 72.h)
+                    : SizedBox(height: 48.h),
+
+                // 버튼
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // 왼쪽 버튼
-                    DialogButton(
-                      buttonFunc: leftButtonFunc ??
-                          () {
-                            Navigator.pop(context);
-                          },
-                      buttonText: leftButtonText,
-                      isLeft: true,
+                    Expanded(
+                      child: RoundButton(
+                        width: double.infinity,
+                        height: 96.h,
+                        text: Text(leftButtonText, style: Palette.h4Secondary),
+                        bgColor: Palette.onPrimary,
+                        onPress: leftButtonFunc ?? () => Navigator.pop(context),
+                      ),
                     ),
-                    SizedBox(width: 20.w),
+                    SizedBox(width: 16.w),
 
                     // 오른쪽 버튼
-                    DialogButton(
-                      buttonFunc: rightButtonFunc,
-                      buttonText: rightButtonText,
-                      isLeft: false,
+                    Expanded(
+                      child: RoundButton(
+                        width: double.infinity,
+                        height: 96.h,
+                        text: Text(
+                          rightButtonText,
+                          style: Palette.h4.copyWith(color: Colors.white),
+                        ),
+                        bgColor: Colors.black,
+                        onPress: rightButtonFunc,
+                      ),
                     ),
                   ],
                 )
@@ -221,106 +247,77 @@ void showCustomDialog(
   );
 }
 
-// 버튼
-class DialogButton extends StatelessWidget {
-  const DialogButton({
-    super.key,
-    required this.buttonFunc,
-    required this.buttonText,
-    required this.isLeft,
-  });
-
-  final VoidCallback? buttonFunc;
-  final String buttonText;
-  final bool isLeft;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 275.w,
-      height: 96.h,
-      child: TextButton(
-        onPressed: buttonFunc,
-        style: ButtonStyle(
-          backgroundColor: isLeft
-              ? WidgetStateProperty.all<Color>(Palette.popupLeftBtnBg)
-              : WidgetStateProperty.all<Color>(
-                  Palette.popupRightBtnBg,
-                ),
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-          ),
-          minimumSize: WidgetStateProperty.all<Size>(Size(230.w, 104.h)),
-        ),
-        child: Text(buttonText,
-            style: isLeft
-                ? Palette.dialogLeftBtnTitle
-                : Palette.dialogRightBtnTitle),
-      ),
-    );
-  }
-}
-
 /// 사진 저장 dialog
-void showSaveImageDialog(BuildContext context, String imgPath,
-    VoidCallback leftButtonFunc, VoidCallback rightButtonFunc) {
+void showSaveImageDialog(
+  BuildContext context,
+  String imgPath,
+  VoidCallback leftButtonFunc,
+  VoidCallback rightButtonFunc,
+) {
   showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
-        insetPadding: EdgeInsets.all(16.w),
+        insetPadding: EdgeInsets.all(24.w),
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.r))),
-        child: SizedBox(
-          height: 900.h,
-          width: 650.w,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('사진 저장', style: Palette.dialogContentBold),
-                SizedBox(height: 16.h),
-                Text(
-                  '사진을 저장할까요? 마음에 안드신다면 재촬영이 가능해요.\n재촬영시 아래 사진은 삭제됩니다.',
-                  style: Palette.dialogContentSmall,
-                ),
-                SizedBox(height: 16.h),
+        child: Container(
+          height: 960.h,
+          width: 648.w,
+          margin: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(child: Text('사진을 저장할까요?', style: Palette.h4)),
+              SizedBox(height: 16.h),
 
-                // 이미지
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20.r),
-                  child: Image.file(File(imgPath),
-                      width: 570.w, height: 570.w, fit: BoxFit.fitWidth),
-                ),
-                SizedBox(height: 32.h),
+              Text(
+                '마음에 안드신다면 재촬영이 가능해요.\n재촬영시 아래 사진은 삭제됩니다.',
+                style: Palette.h5OnSecondary,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16.h),
 
-                // 버튼
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 왼쪽 버튼
-                    // width: 275
-                    DialogButton(
-                      buttonFunc: leftButtonFunc,
-                      buttonText: '재촬영',
-                      isLeft: true,
+              // 이미지
+              ImageCard(imagePath: imgPath),
+              SizedBox(height: 32.h),
+
+              // 버튼
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 왼쪽 버튼
+                  Expanded(
+                    child: RoundButton(
+                      width: double.infinity,
+                      height: 96.h,
+                      text: Text('재촬영', style: Palette.h4Secondary),
+                      bgColor: Palette.onPrimary,
+                      onPress: leftButtonFunc,
                     ),
-                    SizedBox(width: 16.w),
+                  ),
+                  SizedBox(width: 16.w),
 
-                    // 오른쪽 버튼
-                    DialogButton(
-                      buttonFunc: rightButtonFunc,
-                      buttonText: '저장하기',
-                      isLeft: false,
+                  // 오른쪽 버튼
+                  Expanded(
+                    child: RoundButton(
+                      width: double.infinity,
+                      height: 96.h,
+                      text: Text(
+                        '저장하기',
+                        style: Palette.h4.copyWith(color: Colors.white),
+                      ),
+                      bgColor: Colors.black,
+                      onPress: rightButtonFunc,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       );

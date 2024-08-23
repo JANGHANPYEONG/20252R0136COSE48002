@@ -13,7 +13,7 @@ import 'package:structure/components/custom_table_calendar.dart';
 import 'package:structure/components/loading_screen.dart';
 import 'package:structure/components/main_button.dart';
 import 'package:structure/components/main_text_field.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/viewModel/data_management/researcher/add_deep_aging_data_view_model.dart';
 
 class AddDeepAgingDataScreen extends StatefulWidget {
@@ -30,129 +30,124 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
         context.watch<AddDeepAgingDataViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CustomAppBar(
-        title: '딥에이징 데이터',
-        backButton: true,
-        closeButton: false,
-      ),
+      appBar: const CustomAppBar(title: '딥에이징 데이터'),
+      resizeToAvoidBottomInset: false,
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        child: Padding(
-          padding: EdgeInsets.all(40.w),
-          child: Stack(
-            children: [
-              Column(
+        child: Stack(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 40.w),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.h),
+
+                      // 딥에이징 일자
+                      Text('딥에이징 일자', style: Palette.h4),
+                      SizedBox(height: 16.h),
+
+                      // 딥에이징 일자 container
+                      GestureDetector(
+                        onTap: () {
+                          addDeepAgingDataViewModel.changeState('선택');
+                        },
+                        child: Container(
+                          height: 88.h,
+                          decoration: BoxDecoration(
+                            color: Palette.onPrimaryContainer,
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.only(left: 24.w),
+                          child: Text(
+                            addDeepAgingDataViewModel.selectedDate,
+                            textAlign: TextAlign.center,
+                            style: Palette.h5,
+                          ),
+                        ),
+                      ),
+
+                      // 달력
+                      if (addDeepAgingDataViewModel.isSelectedDate)
+                        CustomTableCalendar(
+                          focusedDay: addDeepAgingDataViewModel.focused,
+                          selectedDay: addDeepAgingDataViewModel.selected,
+                          onDaySelected: (selectedDay, focusedDay) =>
+                              addDeepAgingDataViewModel.onDaySelected(
+                                  selectedDay, focusedDay),
+                        ),
+                      SizedBox(height: 32.h),
+
+                      // 초음파 처리 시간
+                      Text('초음파 처리 시간', style: Palette.h4),
+                      SizedBox(height: 16.h),
+
+                      // 초음파 처리 시간 입력
+                      Row(
                         children: [
-                          // 딥에이징 일자
-                          Text('딥에이징 일자', style: Palette.h4),
-                          SizedBox(height: 25.h),
-
-                          // 딥에이징 일자 container
-                          GestureDetector(
-                            onTap: () {
-                              addDeepAgingDataViewModel.changeState('선택');
-                            },
-                            child: Container(
+                          Expanded(
+                            flex: 3,
+                            // 딥에이징 처리 시간
+                            child: MainTextField(
+                              width: double.infinity,
                               height: 88.h,
-                              decoration: BoxDecoration(
-                                color: Palette.fieldEmptyBg,
-                                borderRadius: BorderRadius.circular(20.w),
-                              ),
-                              alignment: Alignment.centerLeft,
-                              padding: EdgeInsets.only(left: 25.w),
-                              child: Text(
-                                addDeepAgingDataViewModel.selectedDate,
-                                textAlign: TextAlign.center,
-                                style: Palette.h5,
-                              ),
+                              mainText: '',
+                              validateFunc: null,
+                              onSaveFunc: null,
+                              onChangeFunc: (value) =>
+                                  addDeepAgingDataViewModel.changeState(value!),
+                              canAlert: true,
+                              controller: addDeepAgingDataViewModel
+                                  .textEditingController,
+                              formatter: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9]'))
+                              ],
+                              isNum: 1,
                             ),
                           ),
+                          SizedBox(width: 16.w),
 
-                          // 달력
-                          if (addDeepAgingDataViewModel.isSelectedDate)
-                            CustomTableCalendar(
-                              focusedDay: addDeepAgingDataViewModel.focused,
-                              selectedDay: addDeepAgingDataViewModel.selected,
-                              onDaySelected: (selectedDay, focusedDay) =>
-                                  addDeepAgingDataViewModel.onDaySelected(
-                                      selectedDay, focusedDay),
-                            ),
-                          SizedBox(height: 50.h),
-
-                          // 초음파 처리 시간
-                          Text('초음파 처리 시간', style: Palette.h4),
-                          SizedBox(height: 25.h),
-
-                          // 초음파 처리 시간 입력
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                // 딥에이징 처리 시간
-                                child: MainTextField(
-                                  validateFunc: null,
-                                  onSaveFunc: null,
-                                  onChangeFunc: (value) =>
-                                      addDeepAgingDataViewModel
-                                          .changeState(value!),
-                                  mainText: '',
-                                  width: 229.w,
-                                  height: 88.h,
-                                  canAlert: true,
-                                  controller: addDeepAgingDataViewModel
-                                      .textEditingController,
-                                  formatter: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[0-9]'))
-                                  ],
-                                  isNum: 1,
-                                ),
-                              ),
-
-                              // 분 text
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 12.0),
-                                  child: Text('분', style: Palette.h4),
-                                ),
-                              ),
-                              const Expanded(
-                                  flex: 3, child: SizedBox(width: 20.0))
-                            ],
+                          // 분 text
+                          Expanded(
+                            flex: 2,
+                            child: Text('분', style: Palette.h4),
                           ),
+                          const Expanded(
+                            flex: 3,
+                            child: SizedBox(width: double.infinity),
+                          )
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 20.0),
+                  const Spacer(),
 
                   // 저장 버튼
-                  MainButton(
-                    mode: 1,
-                    text: '저장',
-                    width: 658.w,
-                    height: 96.h,
-                    onPressed: addDeepAgingDataViewModel.isInsertedMinute
-                        ? () async =>
-                            addDeepAgingDataViewModel.saveData(context)
-                        : null,
+                  Container(
+                    margin: EdgeInsets.only(bottom: 40.h),
+                    child: MainButton(
+                      width: double.infinity,
+                      height: 96.h,
+                      text: '저장',
+                      onPressed: addDeepAgingDataViewModel.isInsertedMinute
+                          ? () async =>
+                              addDeepAgingDataViewModel.saveData(context)
+                          : null,
+                    ),
                   ),
                 ],
               ),
-              addDeepAgingDataViewModel.isLoading
-                  ? const Center(child: LoadingScreen())
-                  : Container()
-            ],
-          ),
+            ),
+            addDeepAgingDataViewModel.isLoading
+                ? const Center(child: LoadingScreen())
+                : Container()
+          ],
         ),
       ),
     );

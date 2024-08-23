@@ -18,23 +18,25 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
     _initialize();
   }
   bool isLoading = false;
-  late BuildContext _context;
 
   // 관능평가 값
   // 초기 값은 1(최하)로 설정
   double flavor = 1;
   double juiciness = 1;
-  double tenderness = 1;
+  double tenderness0 = 1;
   double umami = 1;
   double palatability = 1;
 
   // 초기 할당 (객체에 값이 존재시 할당)
   void _initialize() {
-    flavor = meatModel.heatedSensoryEval?['flavor'] ?? 1;
-    juiciness = meatModel.heatedSensoryEval?['juiciness'] ?? 1;
-    tenderness = meatModel.heatedSensoryEval?['tenderness'] ?? 1;
-    umami = meatModel.heatedSensoryEval?['umami'] ?? 1;
-    palatability = meatModel.heatedSensoryEval?['palatability'] ?? 1;
+    flavor = double.parse('${meatModel.heatedSensoryEval?['flavor'] ?? 1.0}');
+    juiciness =
+        double.parse('${meatModel.heatedSensoryEval?['juiciness'] ?? 1.0}');
+    tenderness0 =
+        double.parse('${meatModel.heatedSensoryEval?['tenderness0'] ?? 1.0}');
+    umami = double.parse('${meatModel.heatedSensoryEval?['umami'] ?? 1.0}');
+    palatability =
+        double.parse('${meatModel.heatedSensoryEval?['palatability'] ?? 1.0}');
 
     notifyListeners();
   }
@@ -53,7 +55,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
 
   /// 관능평가 연도 데이터 할당
   void onChangedTenderness(dynamic value) {
-    tenderness = double.parse(value.toStringAsFixed(1));
+    tenderness0 = double.parse(value.toStringAsFixed(1));
     notifyListeners();
   }
 
@@ -89,7 +91,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
     // 가열육 관능평가 데이터 입력
     meatModel.heatedSensoryEval!['flavor'] = flavor;
     meatModel.heatedSensoryEval!['juiciness'] = juiciness;
-    meatModel.heatedSensoryEval!['tenderness'] = tenderness;
+    meatModel.heatedSensoryEval!['tenderness0'] = tenderness0;
     meatModel.heatedSensoryEval!['umami'] = umami;
     meatModel.heatedSensoryEval!['palatability'] = palatability;
 
@@ -106,9 +108,6 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
 
       if (response == 200) {
         meatModel.updateHeatedSeonsory();
-
-        _context = context;
-        _movePage();
       } else {
         // TODO : 입력한 데이터 초기화
         throw ErrorDescription(response);
@@ -122,15 +121,12 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
+
+    if (context.mounted) context.pop();
   }
 
-  void _movePage() {
-    if (meatModel.seqno == 0) {
-      // 원육
-      _context.go('/home/data-manage-researcher/add/raw-meat');
-    } else {
-      // 처리육
-      _context.go('/home/data-manage-researcher/add/processed-meat');
-    }
+  void clickedTendernessAdd(BuildContext context) {
+    context.go(
+        '/home/data-manage-researcher/add/processed-meat/heated-sensory/heated-sensory-add');
   }
 }

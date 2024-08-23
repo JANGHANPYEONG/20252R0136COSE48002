@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class DateContainer extends StatelessWidget {
   final String dateString;
@@ -23,20 +23,18 @@ class DateContainer extends StatelessWidget {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Container(
-        width: 282.w,
+        width: double.infinity,
         height: 64.h,
         decoration: BoxDecoration(
-          color: dateStatus ? Palette.fieldEmptyBg : Palette.dataMngCardBg,
+          color: dateStatus ? Palette.onPrimaryContainer : Palette.onPrimary,
           borderRadius: BorderRadius.circular(20.r),
-          border: showDecoration
-              ? Border.all(color: Palette.checkSpeciesColor)
-              : null,
+          border: showDecoration ? Border.all(color: Palette.primary) : null,
         ),
         alignment: Alignment.centerLeft,
-        padding: EdgeInsets.only(left: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Text(
           dateString,
-          style: dateStatus ? Palette.h5 : Palette.h5LightGrey,
+          style: dateStatus ? Palette.h5 : Palette.h5OnSecondary,
         ),
       ),
     );

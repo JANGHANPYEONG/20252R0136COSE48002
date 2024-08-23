@@ -11,7 +11,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/components/custom_pop_up.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/dataSource/local_data_source.dart';
@@ -98,7 +98,10 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         showSaveImageDialog(
           context,
           tempImgPath,
-          () => context.pop(),
+          () {
+            context.pop();
+            pickImage(context);
+          },
           () {
             isLoading = true; // 로딩 활성화
             notifyListeners();
@@ -248,10 +251,12 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           _context.go('/home/data-manage-normal/edit');
         });
       } else if (meatModel.seqno == 0) {
-        _context.go('/home/data-manage-researcher/add/raw-meat');
+        // _context.go('/home/data-manage-researcher/add/raw-meat');
+        _context.pop();
       } else {
         // 처리육/가열육
-        _context.go('/home/data-manage-researcher/add/processed-meat');
+        // _context.go('/home/data-manage-researcher/add/processed-meat');
+        _context.pop();
       }
     }
   }

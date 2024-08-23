@@ -6,10 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
+import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 import 'package:structure/model/user_model.dart';
@@ -17,10 +18,10 @@ import 'package:structure/model/user_model.dart';
 class CreationManagementNumViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
+  BuildContext context;
 
-  CreationManagementNumViewModel(this.meatModel, this.userModel) {
+  CreationManagementNumViewModel(this.meatModel, this.userModel, this.context) {
     _initialize();
-    _listenToPrinterStatus();
   }
   bool isLoading = true;
 
@@ -31,8 +32,6 @@ class CreationManagementNumViewModel with ChangeNotifier {
   Future<void> _initialize() async {
     isLoading = true;
     notifyListeners();
-
-    // TODO : 실패 화면
 
     // 관리번호 생성
     await _createManagementNum();
@@ -115,7 +114,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       await uploadQRCodeImageToStorage();
     } catch (e) {
       debugPrint('Error uploading image to firebase: $e');
-      // TODO : 에러 페이지
+      if (context.mounted) context.go('/home/registration-fail');
     }
   }
 
@@ -137,6 +136,14 @@ class CreationManagementNumViewModel with ChangeNotifier {
     final storageRef =
         FirebaseStorage.instance.ref().child('qr_codes/$managementNum.png');
     await storageRef.putData(bytes);
+
+    // 프린트를 위해 이미지 위치 저장
+    final directory = await getTemporaryDirectory();
+    final imgPath = '${directory.path}/qr-${DateTime.now()}.jpeg';
+    meatModel.imagePath = imgPath;
+
+    final imgFile = File(imgPath);
+    await imgFile.writeAsBytes(bytes);
   }
 
   /// 3. 육류 정보를 서버로 전송
@@ -151,51 +158,25 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
       if (response1 == 200 && response2 == 200) {
         // 육류 등록 성공
-        // 로딩상태 비활성화
+        // 임시저장된 데이터 삭제
+        await LocalDataSource.deleteLocalData(meatModel.userId!);
+
         isLoading = false;
         notifyListeners();
       } else {
         throw ErrorDescription(response2);
       }
     } catch (e) {
-      // TODO : 에러 메시지 팝업
       debugPrint('Error: $e');
+      if (context.mounted) context.go('/home/registration-fail');
     }
   }
 
-  // 프린터 조작
-  static const platform = MethodChannel('com.example.structure/printer');
-  String _printerStatus = 'Unknown';
-
-  static const EventChannel _printerStatusChannel =
-      EventChannel('com.example.structure/printerStatus');
-
-  // 프린터 상태 업데이트
-  void _listenToPrinterStatus() {
-    _printerStatusChannel.receiveBroadcastStream().listen(
-      (dynamic status) {
-        _printerStatus = status;
-        if (_printerStatus == "CONNECTED") {
-          // 프린트
-          platform.invokeMethod('printQr', {'qrData': managementNum});
-        }
-      },
-      onError: (dynamic error) {
-        debugPrint('Received error: ${error.message}');
-      },
-    );
+  void clickedQR() {
+    context.go('/home/success-registration/qr');
   }
 
-  Future<void> printQr() async {
-    try {
-      // 프린터 연결
-      await platform.invokeMethod('connect');
-    } on PlatformException catch (e) {
-      debugPrint("Failed to connect to the printer: '${e.message}'.");
-    }
-  }
-
-  void clickedHomeButton(BuildContext context) {
+  void clickedHomeButton() {
     context.go('/home');
   }
 }

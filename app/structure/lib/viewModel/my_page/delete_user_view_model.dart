@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_dialog.dart';
 import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/labels.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
@@ -27,7 +27,7 @@ class DeleteUserViewModel with ChangeNotifier {
   String? pwValidate(String? value) {
     isActivateButton = true;
     notifyListeners();
-    print('isActive: $isActivateButton');
+
     if (value!.isEmpty) {
       _isValidPw = false;
       return '비밀번호를 입력하세요.';
@@ -63,7 +63,9 @@ class DeleteUserViewModel with ChangeNotifier {
     final response = await RemoteDataSource.deleteUser(userModel.userId!);
 
     if (response != 200) {
-      // TODO : 에러 메시지 팝업
+      isLoading = false;
+      notifyListeners();
+      _showSnackBar('오류가 발생했습니다.');
       throw ErrorDescription(response);
     }
 
@@ -125,7 +127,7 @@ class DeleteUserViewModel with ChangeNotifier {
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
-        backgroundColor: Palette.alertBg,
+        backgroundColor: Palette.error,
       ),
     );
   }

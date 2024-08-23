@@ -96,8 +96,6 @@ class MeatRegistrationViewModel with ChangeNotifier {
 
   /// 관리번호 생성 버튼
   void clickCreateBtn(BuildContext context) async {
-    // 임시저장된 데이터 삭제
-    await LocalDataSource.deleteLocalData(meatModel.userId!);
     // 페이지 이동
     if (context.mounted) context.go('/home/success-registration');
   }

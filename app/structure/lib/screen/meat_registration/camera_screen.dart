@@ -18,33 +18,34 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   @override
   Widget build(BuildContext context) {
+    CameraViewModel cameraViewModel = context.watch<CameraViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
           // 카메라 화면
-          context.watch<CameraViewModel>().isLoaded
+          cameraViewModel.isLoaded
               ? Positioned.fill(
-                  child: CameraPreview(
-                      context.watch<CameraViewModel>().controller),
+                  child: CameraPreview(cameraViewModel.controller),
                 )
               : const Center(child: LoadingScreen()),
 
           // 사진 가이드
           Align(
             alignment: Alignment.center,
-            child: SizedBox(
-              width: 560.w,
-              height: 620.h,
-              child: const Positioned.fill(
-                  child: CameraGuide(color: Colors.white)),
+            child: Container(
+              width: 640.w,
+              height: 640.w,
+              padding: EdgeInsets.symmetric(horizontal: 40.w),
+              child: const CameraGuide(color: Colors.white),
             ),
           ),
 
           // 상단 메뉴 버튼
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(0, 16.h, 0, 0),
+              padding: EdgeInsets.only(top: 24.h),
               child: Align(
                 alignment: Alignment.topCenter,
                 child: Row(
@@ -52,32 +53,32 @@ class _CameraScreenState extends State<CameraScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        context.read<CameraViewModel>().toggleFlash();
+                        cameraViewModel.toggleFlash();
                       },
                       icon: Icon(
-                        context.read<CameraViewModel>().isFlashOn
+                        cameraViewModel.isFlashOn
                             ? Icons.flash_on_outlined
                             : Icons.flash_off_outlined,
-                        size: 42.sp,
-                        color: Colors.black,
+                        size: 40.sp,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
                       onPressed: () {
-                        context.read<CameraViewModel>().changeCameraDirection();
+                        cameraViewModel.changeCameraDirection();
                       },
                       icon: Icon(
                         Icons.cameraswitch_outlined,
-                        size: 42.sp,
-                        color: Colors.black,
+                        size: 40.sp,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
                       onPressed: () {},
                       icon: Icon(
                         Icons.help_outline_outlined,
-                        size: 42.sp,
-                        color: Colors.black,
+                        size: 40.sp,
+                        color: Colors.white,
                       ),
                     ),
                     IconButton(
@@ -86,8 +87,8 @@ class _CameraScreenState extends State<CameraScreen> {
                       },
                       icon: Icon(
                         Icons.close,
-                        size: 42.sp,
-                        color: Colors.black,
+                        size: 40.sp,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -105,10 +106,9 @@ class _CameraScreenState extends State<CameraScreen> {
                 child: GestureDetector(
                   onTap: () {
                     // 사진 찍기 함수 호출
-                    context.read<CameraViewModel>().takePicture(context);
+                    cameraViewModel.takePicture(context);
                   },
-                  child: CamShutter(
-                      isReady: context.read<CameraViewModel>().canTakePicture),
+                  child: CamShutter(isReady: cameraViewModel.canTakePicture),
                 ),
               ),
             ),

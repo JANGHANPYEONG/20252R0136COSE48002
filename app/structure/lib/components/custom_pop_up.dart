@@ -1,4 +1,6 @@
-import 'package:structure/config/pallete.dart';
+import 'package:structure/components/custom_text_button.dart';
+import 'package:structure/components/loading_screen.dart';
+import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -78,25 +80,40 @@ void showUserTypeErrorPopup(BuildContext context) {
   showPopup(context, userTypeErrorText, '');
 }
 
+/// 프린트 진행 중 popup
+void showPrintPopup(BuildContext context) {
+  showLoadingPopup(context, '프린트가 진행 중입니다.');
+}
+
+/// 프린터 연결 중 popup
+void showPrinterConnectPopup(BuildContext context) {
+  showLoadingPopup(context, '프린터에 연결 중입니다.');
+}
+
+/// 프린터 연결 실패 popup
+void showPrinterConnectErrorPopup(BuildContext context) {
+  showPopup(context, '프린터에 연결하지 못했습니다.', '확인');
+}
+
 /// 약관 popup
 void showTermsPopup(BuildContext context) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return Dialog(
+        insetPadding: EdgeInsets.all(24.w),
         child: Stack(
           children: [
             Container(
-              width: 638.w,
-              height: 638.h,
-              padding: EdgeInsets.only(
-                  left: 50.w, right: 50.w, top: 58.h, bottom: 30.h),
+              width: 640.w,
+              height: 800.h,
+              padding: EdgeInsets.all(40.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: SingleChildScrollView(
-                child: Text(terms, style: Palette.popupContent),
+                child: Text(terms, style: Palette.h4Regular),
               ),
             ),
           ],
@@ -113,45 +130,65 @@ void showPopup(BuildContext context, String contentText, String btnText,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
-        child: Stack(
-          children: [
-            Container(
-              width: 638.w,
-              height: 233.h,
-              padding: EdgeInsets.only(
-                  left: 50.w, right: 50.w, top: 58.h, bottom: 30.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20.r),
+        child: Container(
+          width: 640.w,
+          height: 240.h,
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child:
+                    Center(child: Text(contentText, style: Palette.h4Regular)),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(contentText, style: Palette.popupContent),
-                    ],
-                  ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      InkWell(
-                          onTap: onTap ??
-                              () {
-                                context.pop();
-                                context.pop();
-                                // Navigator.pop(context, true);
-                                // context.pop();
-                                // Navigator.pop(context);
-                              },
-                          child: Text(btnText, style: Palette.popupBtn)),
-                    ],
-                  ),
-                ],
+              CustomTextButton(
+                title: btnText,
+                textStyle: Palette.h5.copyWith(color: Palette.primary),
+                onPressed: onTap ??
+                    () {
+                      context.pop();
+                    },
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+// Loading screen popup
+void showLoadingPopup(BuildContext context, String text) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: Container(
+          width: 640.w,
+          height: 240.h,
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Center(
+                child: Text(text, style: Palette.h4Regular),
+              ),
+              const Expanded(child: Center(child: LoadingScreen())),
+            ],
+          ),
         ),
       );
     },

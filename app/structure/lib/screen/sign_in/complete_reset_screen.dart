@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/components/main_button.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class CompleteResetScreen extends StatelessWidget {
   const CompleteResetScreen({super.key});
@@ -10,68 +10,72 @@ class CompleteResetScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                Center(
-                  child: Transform.translate(
-                    offset: Offset(0, 96.h),
-                    child: Stack(
+      body: Container(
+        margin: EdgeInsets.symmetric(horizontal: 40.w),
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  Center(
+                    child: Transform.translate(
+                      offset: Offset(0, 96.h),
+                      child: Stack(
+                        children: [
+                          // 완료 아이콘
+                          const Positioned(
+                            left: 0,
+                            bottom: 0,
+                            child: Icon(
+                              Icons.auto_awesome,
+                              color: Palette.starYellow,
+                            ),
+                          ),
+                          Icon(
+                            Icons.check_circle,
+                            size: 120.w,
+                            color: Palette.primary,
+                          ),
+                          const Positioned(
+                            right: 0,
+                            child: Icon(
+                              Icons.auto_awesome,
+                              color: Palette.starYellow,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 변경 완료 텍스트
+                  Container(
+                    margin: EdgeInsets.only(top: 188.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Positioned(
-                          left: 0.w,
-                          bottom: 0,
-                          child: const Icon(
-                            Icons.auto_awesome,
-                            color: Palette.starIcon,
-                          ),
-                        ),
-                        Icon(
-                          Icons.check_circle,
-                          size: 120.w,
-                          color: Palette.mainBtnAtvBg,
-                        ),
-                        const Positioned(
-                          right: 0,
-                          child: Icon(
-                            Icons.auto_awesome,
-                            color: Palette.starIcon,
-                          ),
-                        ),
+                        Text('비밀번호 변경 메일이\n전송되었습니다 !', style: Palette.h2),
+                        SizedBox(height: 16.h),
+                        Text('이메일을 확인해주세요.', style: Palette.h5Secondary),
                       ],
                     ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 46.w, top: 182.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('비밀번호 변경 메일이\n전송되었습니다 !', style: Palette.h2),
-                      SizedBox(
-                        height: 13.h,
-                      ),
-                      Text('이메일을 확인해주세요.', style: Palette.h5Grey),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            margin: EdgeInsets.only(bottom: 40.h),
-            child: MainButton(
-              onPressed: () => context.go('/sign-in'),
-              text: '확인',
-              width: 640.w,
-              height: 96.h,
-              mode: 1,
-            ),
-          )
-        ],
+
+            // 확인 버튼
+            Container(
+              margin: EdgeInsets.only(bottom: 40.h),
+              child: MainButton(
+                width: double.infinity,
+                height: 96.h,
+                text: '확인',
+                onPressed: () => context.go('/sign-in'),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

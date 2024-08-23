@@ -13,7 +13,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class ListCardDataManage extends StatelessWidget {
   final int idx;
@@ -34,24 +34,23 @@ class ListCardDataManage extends StatelessWidget {
       borderRadius: BorderRadius.circular(20.r),
       child: Container(
         padding: EdgeInsets.all(16.w),
-        height: 72.h,
+        height: 80.h,
         child: Row(
           children: [
             // idx
             SizedBox(
-              width: 60.w,
-              child: Text(idx.toString(), style: Palette.filterContent),
+              width: 56.w,
+              child: Text(idx.toString(), style: Palette.h5OnSecondary),
             ),
 
             // 관리번호
-            Text(meatId,
-                style: Palette.meatNumStyle, textAlign: TextAlign.left),
+            Text(meatId, style: Palette.h5SemiBold, textAlign: TextAlign.left),
             const Spacer(),
 
             // 오른쪽 화살표
             Icon(
               Icons.arrow_forward_ios_outlined,
-              size: 30.sp,
+              size: 32.sp,
               color: Colors.grey,
             )
           ],

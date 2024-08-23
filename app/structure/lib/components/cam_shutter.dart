@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class CamShutter extends StatelessWidget {
   final bool isReady;
@@ -19,15 +19,15 @@ class CamShutter extends StatelessWidget {
         ),
         Image.asset(
           'assets/images/cam-shutter-out.png',
-          width: 130.w,
-          height: 130.w,
-          color: isReady ? Palette.fieldAtvBorder : Palette.alertColor,
+          width: 128.w,
+          height: 128.w,
+          color: isReady ? Palette.primary : Palette.error,
         ),
         Image.asset(
           'assets/images/cam-shutter-in.png',
-          width: 42.w,
-          height: 42.w,
-          color: isReady ? Palette.fieldAtvBorder : Palette.alertColor,
+          width: 40.w,
+          height: 40.w,
+          color: isReady ? Palette.primary : Palette.error,
         ),
       ],
     );

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
@@ -29,8 +29,6 @@ class SignInViewModel with ChangeNotifier {
   // firbase authentic
   final _authentication = FirebaseAuth.instance;
 
-  late BuildContext _context;
-
   // 자동로그인 버튼 클릭 시
   void clickedAutoLogin(bool value) {
     isAutoLogin = value;
@@ -52,8 +50,8 @@ class SignInViewModel with ChangeNotifier {
     try {
       // 로그인 시도
       await _authentication.signInWithEmailAndPassword(
-        email: userId,
-        password: userPw,
+        email: userId.trim(),
+        password: userPw.trim(),
       );
 
       // 이메일 validation
@@ -71,7 +69,7 @@ class SignInViewModel with ChangeNotifier {
           // 자동 로그인 설정
           if (isAutoLogin) {
             await LocalDataSource.saveDataToLocal(
-                jsonEncode({'auto': userModel.userId}), 'auto.json');
+                jsonEncode({'auto': userModel.userId?.trim()}), 'auto.json');
           } else {
             await LocalDataSource.saveDataToLocal(
                 jsonEncode({'auto': null}), 'auto.json');
@@ -82,8 +80,7 @@ class SignInViewModel with ChangeNotifier {
           notifyListeners();
 
           // 페이지 이동
-          _context = context;
-          _movePage();
+          if (context.mounted) context.go('/home');
         } else {
           throw Error();
         }
@@ -116,7 +113,7 @@ class SignInViewModel with ChangeNotifier {
           SnackBar(
             duration: const Duration(seconds: 1),
             content: Text(errorMessage),
-            backgroundColor: Palette.alertBg,
+            backgroundColor: Palette.error,
           ),
         );
       }
@@ -145,7 +142,7 @@ class SignInViewModel with ChangeNotifier {
     // 로그인 API 호출
     try {
       // 유저 정보 가져오기 시도
-      dynamic userInfo = await RemoteDataSource.login(userId)
+      dynamic userInfo = await RemoteDataSource.login(userId.trim())
           .timeout(const Duration(seconds: 10));
       if (userInfo is Map<String, dynamic>) {
         // 200 OK
@@ -164,8 +161,16 @@ class SignInViewModel with ChangeNotifier {
     }
   }
 
-  void _movePage() {
-    _context.go('/home');
+  /// 비밀번호 변경 페이지 이동
+  void resetPassword(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (context.mounted) context.go('/sign-in/password_reset');
+  }
+
+  /// 회원가입 변경 페이지 이동
+  void signUp(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (context.mounted) context.go('/sign-in/sign-up');
   }
 }
 

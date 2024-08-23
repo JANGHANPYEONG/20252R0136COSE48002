@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 
 class RoundButton extends StatelessWidget {
   final Text text;
@@ -27,9 +27,10 @@ class RoundButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPress,
         style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(16.w),
           elevation: 0,
           foregroundColor: fgColor,
-          backgroundColor: bgColor ?? Palette.mainButtonColor,
+          backgroundColor: bgColor ?? Palette.secondary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.r),
             side: fgColor != null

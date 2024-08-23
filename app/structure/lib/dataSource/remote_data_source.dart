@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
-  static String baseUrl = dotenv.env['API']!;
+  static String baseUrl = dotenv.env['API_URL']!;
 
   /* 사용자 관련 API */
   /// 유저 회원가입 (POST)
@@ -166,17 +166,16 @@ class RemoteDataSource {
     return response;
   }
 
-  /// 딥에이징 데이터 삭제 (GET)
+  /// 딥에이징 데이터 삭제 (DELETE)
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨
-  // TODO : Patch로 변경, meatId 변경
   static Future<dynamic> deleteDeepAging(String meatId, int seqno) async {
     dynamic response =
         await _deleteApi('meat/delete/deep-aging?meatId=$meatId&seqno=$seqno');
     return response;
   }
 
-  /// 육류 데이터 승인 (GET)
+  /// 육류 데이터 승인 (PATCH)
   ///
   /// meatId에 해당하는 육류 데이터를 승인
   static Future<dynamic> confirmMeatData(String meatId) async {
@@ -185,7 +184,7 @@ class RemoteDataSource {
     return response;
   }
 
-  /// 육류 데이터 반려 (GET)
+  /// 육류 데이터 반려 (PATCH)
   ///
   /// meatId에 해당하는 육류 데이터를 반려
   static Future<dynamic> rejectMeatData(String meatId) async {
@@ -199,22 +198,6 @@ class RemoteDataSource {
   /// 종 - 대분할 - 소분할
   static Future<dynamic> getMeatSpecies() async {
     dynamic response = await _getApi('meat/get/default-data');
-    return response;
-  }
-
-  /* 삭제 예정 */
-  /// 일반 데이터와 연구 데이터 조회 (GET)
-  // TODO : 삭제
-  static Future<dynamic> getNormalResearchMeatData(String userType) async {
-    String endPoint = 'meat/get/by-user-type?userType=$userType';
-    dynamic response = await _getApi(endPoint);
-    return response;
-  }
-
-  /// 유저 정보 조회 (GET)
-  // TODO : 삭제
-  static Future<dynamic> getUserInfo(String userId) async {
-    dynamic response = await _getApi('user/get?userId=$userId');
     return response;
   }
 

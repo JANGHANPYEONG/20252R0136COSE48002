@@ -15,17 +15,17 @@
 //
 //
 import 'package:structure/components/custom_dialog.dart';
-import 'package:structure/config/pallete.dart';
+import 'package:structure/config/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:structure/config/userfuls.dart';
+import 'package:structure/config/usefuls.dart';
 
 class DeepAgingCard extends StatelessWidget {
   final bool isRaw;
   final String deepAgingNum;
   final String mainText;
   final String butcheryDate;
-  final bool completed;
+  final int completed;
   final VoidCallback onTap;
   final VoidCallback? delete;
   const DeepAgingCard({
@@ -41,6 +41,13 @@ class DeepAgingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> completedText = ['미완료', '진행중', '완료'];
+    final List<Color> completedColor = [
+      Palette.error,
+      Palette.onError,
+      Palette.primary
+    ];
+
     return Stack(
       children: [
         SizedBox(
@@ -52,14 +59,14 @@ class DeepAgingCard extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r),
               ),
-              side: const BorderSide(color: Color(0xFFEAEAEA)),
+              side: const BorderSide(color: Palette.onPrimaryContainer),
             ),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Row(
                 children: [
                   SizedBox(
-                    width: 340.w,
+                    width: 344.w,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,31 +78,29 @@ class DeepAgingCard extends StatelessWidget {
                               Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20.r),
-                                  color:
-                                      const Color.fromARGB(255, 232, 229, 255),
+                                  color: Palette.deepAgingNumBG,
                                 ),
-                                width: 84.w,
+                                width: 80.w,
                                 height: 32.h,
-                                child: Center(child: Text(deepAgingNum)),
+                                child: Center(
+                                  child: Text(
+                                    deepAgingNum,
+                                    style: Palette.h5SemiBold.copyWith(
+                                        color: Palette.deepAgingNumText),
+                                  ),
+                                ),
                               ),
-                            if (!isRaw) SizedBox(width: 10.w),
+                            if (!isRaw) SizedBox(width: 16.w),
 
                             // 도축/등록 날짜
                             Text(Usefuls.butcheryDateToDateShort(butcheryDate),
-                                style: Palette.h5Grey),
+                                style: Palette.h5OnSecondary),
                           ],
                         ),
                         SizedBox(height: 16.h),
 
                         // Main text
-                        Text(
-                          mainText,
-                          style: TextStyle(
-                            fontSize: 36.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                          ),
-                        ),
+                        Text(mainText, style: Palette.h3),
                       ],
                     ),
                   ),
@@ -108,18 +113,14 @@ class DeepAgingCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('추가정보 입력', style: Palette.h5LightGrey),
+                        Text('추가정보 입력', style: Palette.h5OnSecondary),
                         SizedBox(height: 16.h),
 
                         // 데이터 입력 확인
                         Text(
-                          completed ? '완료' : '미완료',
-                          style: TextStyle(
-                            fontSize: 28.sp,
-                            fontWeight: FontWeight.w700,
-                            color: completed
-                                ? const Color.fromARGB(255, 56, 197, 95)
-                                : const Color.fromARGB(255, 255, 73, 73),
+                          completedText[completed],
+                          style: Palette.h4.copyWith(
+                            color: completedColor[completed],
                           ),
                         ),
                       ],
@@ -140,8 +141,8 @@ class DeepAgingCard extends StatelessWidget {
               onPressed: () => showDeepAgingDeleteDialog(context, delete),
               icon: Icon(
                 Icons.delete,
-                size: 30.sp,
-                color: Palette.greyTextColor,
+                size: 32.sp,
+                color: Palette.onSecondary,
               ),
             ),
           )

@@ -50,8 +50,7 @@ class UserDetailViewModel with ChangeNotifier {
       context,
       MaterialPageRoute(
         builder: (_) => KpostalView(
-          appBar: const CustomAppBar(
-              title: '주소검색', backButton: true, closeButton: false),
+          appBar: const CustomAppBar(title: '주소검색'),
           useLocalServer: false,
           callback: (Kpostal result) {
             mainAddress.text = result.jibunAddress;
@@ -96,7 +95,6 @@ class UserDetailViewModel with ChangeNotifier {
           showSuccessChangeUserInfo(context, () {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
-            // context.go('/home/my-page');
           });
         }
       } else {
@@ -113,8 +111,6 @@ class UserDetailViewModel with ChangeNotifier {
     if (userModel.alarm != null) {
       isChecked = userModel.alarm!;
     }
-    // isChecked =
-    print('체크 : $isChecked');
     if (userModel.homeAdress != null && userModel.homeAdress!.isNotEmpty) {
       int index = userModel.homeAdress!.indexOf('/');
       if (index != -1 && userModel.homeAdress!.substring(0, index).isNotEmpty) {
