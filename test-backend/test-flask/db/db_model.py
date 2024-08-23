@@ -294,6 +294,7 @@ class DeepAgingInfo(Base):
         primary_key=True,
     )  # 육류 관리번호
     seqno = Column(Integer, primary_key=True)  # 가공 횟수
+    isCompleted = Column(Integer, server_default='0')
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno"),
         ForeignKeyConstraint(
@@ -583,6 +584,7 @@ class OpenCVImagesInfo(Base):
     fat_palette = Column(JSONB)
     protein_palette = Column(JSONB)
     protein_rate = Column(Float)
+    fat_rate = Column(Float)
     
     # 4. 학습에 필요한 이미지 URL JSONB
     lbp_images = Column(JSONB)
@@ -606,6 +608,7 @@ class OpenCVImagesInfo(Base):
             onupdate="CASCADE"
         ),
         CheckConstraint('"protein_rate" >= 0 and "protein_rate" <= 100', name="check_protein_rate"),
+        CheckConstraint('"fat_rate" >= 0 and "fat_rate" <= 100', name="check_fat_rate"),
         CheckConstraint('"contrast" >= 0', name="check_texture_contrast"),
         CheckConstraint('"dissimilarity" >= 0', name="check_texture_dissimilarity"),
         CheckConstraint('"homogeneity" >= 0', name="check_texture_homogeneity"),

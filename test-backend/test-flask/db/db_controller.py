@@ -7,6 +7,7 @@ import json
 from utils import *
 
 from .db_model import *
+from opencv_utils import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)
@@ -285,7 +286,7 @@ def create_raw_meat_deep_aging_info(db_session, meat_id, seqno):
         raise e
 
 
-def create_specific_deep_aging_data(db_session, data):
+def create_specific_deep_aging_data(db_session, data, is_post):
     # 2. 기본 데이터 받아두기
     id = data["meatId"]
     seqno = data["seqno"]
@@ -296,18 +297,30 @@ def create_specific_deep_aging_data(db_session, data):
     )  # DB에 있는 딥에이징 정보
     if not meat:
         return None
-    if deep_aging:
-        return False
-
-    new_deep_aging = {
-        "id": id,
-        "seqno": seqno,
-        "date": data["deepAging"]["date"],
-        "minute": data["deepAging"]["minute"],
-    }
+    
+    if is_post:
+        if deep_aging:
+            return False
+        new_deep_aging = {
+            "id": id,
+            "seqno": seqno,
+            "date": data["deepAging"]["date"],
+            "minute": data["deepAging"]["minute"],
+            "isCompleted": 0
+        }
+    else:
+        if not deep_aging:
+            return False
+        new_deep_aging={
+            "id": id,
+            "seqno": seqno,
+            "date": deep_aging.date,
+            "minute": deep_aging.minute,
+            "isCompleted": data["isCompleted"]
+        }
     try:
         deep_aging_data = DeepAgingInfo(**new_deep_aging)
-        db_session.add(deep_aging_data)
+        db_session.merge(deep_aging_data)
         db_session.commit()
         return f"{id}-{seqno}"
     except Exception as e:
@@ -369,6 +382,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             else:
                 db_session.add(new_sensory_eval)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": meat_id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {"msg": f"Success to Create Sensory Evaluation {meat_id}-{seqno}", "code": 200}
         # PATCH 요청
         else:
@@ -403,6 +417,7 @@ def create_specific_sensory_eval(db_session, s3_conn, firestore_conn, data, is_p
             else:
                 db_session.merge(new_sensory_eval)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": meat_id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {"msg": f"Success to Update Sensory Evaluation {meat_id}-{seqno}", "code": 200}
             
     except Exception as e:
@@ -426,6 +441,11 @@ def create_specific_heatedmeat_seonsory_eval(
     try:
         sensory_data = data["heatedmeatSensoryData"]
         sensory_data["filmedAt"] = data["filmedAt"]
+        sensory_data["tenderness"] = {}
+        for key in ["0", "3", "7", "14", "21"]:
+                if sensory_data[f"tenderness{key}"] is not None:
+                    sensory_data["tenderness"] = {**sensory_data["tenderness"], **{key: sensory_data[f"tenderness{key}"]}}
+                del sensory_data[f"tenderness{key}"]
         existed_sensory_data = get_HeatedmeatSensoryEval(db_session, id, seqno)
 
         if existed_sensory_data: # 수정
@@ -438,7 +458,6 @@ def create_specific_heatedmeat_seonsory_eval(
             sensory_data["userId"] = existed_sensory_data["userId"]
             sensory_data["createdAt"] = existed_sensory_data["createdAt"]
             sensory_data["period"] = existed_sensory_data["period"]
-            sensory_data["tenderness"] = {**existed_sensory_data["tenderness"], **sensory_data["tenderness"]}
             new_sensory_data = create_HeatemeatSensoryEval(sensory_data, id, seqno)
             # db_session.merge(new_sensory_data)
 
@@ -464,6 +483,7 @@ def create_specific_heatedmeat_seonsory_eval(
         else:
             db_session.merge(new_sensory_data)
         db_session.commit()
+        create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
         return {
             "msg": f"Success to {'POST' if is_post else 'PATCH'} Heatedmeat Sensory Data {id}-{seqno}",
             "code": 200,
@@ -500,6 +520,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.merge(new_probexpt_data)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {
                 "msg": f"Success to PATCH Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}",
                 "code": 200,
@@ -513,6 +534,7 @@ def create_specific_probexpt_data(db_session, data, is_post):
             new_probexpt_data = create_ProbexptData(probexpt_data, id, seqno, is_heated)
             db_session.add(new_probexpt_data)
             db_session.commit()
+            create_specific_deep_aging_data(db_session, {"meatId": id, "seqno": seqno, "isCompleted": 1}, is_post=0)
             return {
                 "msg": f"Success to POST Probexpt Data {id}-{seqno}-{'heated' if is_heated else 'unheated'}",
                 "code": 200,
@@ -573,6 +595,7 @@ def get_meat(db_session, id):
             "date": convert2string(deep_aging_data.date, 2) if sequence != 0 and deep_aging_data else None,
             "minute": deep_aging_data.minute if sequence != 0 and deep_aging_data else None,
             "seqno": f"{sequence}",
+            "isCompleted": deep_aging_data.isCompleted,
             "sensory_eval": get_SensoryEval(db_session, id, sequence),
             "heatedmeat_sensory_eval": get_HeatedmeatSensoryEval(db_session, id, sequence),
             "probexpt_data": get_ProbexptData(db_session, id, sequence, False),
@@ -630,6 +653,13 @@ def get_HeatedmeatSensoryEval(db_session, id, seqno):
     )
     if heated_meat_data:
         heated_meat = to_dict(heated_meat_data)
+        tender = heated_meat["tenderness"]
+        for key in ["0", "3", "7", "14", "21"]:
+            if key in tender.keys():
+                heated_meat[f"tenderness{key}"] = tender[key]
+            else:
+                heated_meat[f"tenderness{key}"] = None
+        del heated_meat["tenderness"]
         heated_meat["meatId"] = heated_meat.pop("id")
         heated_meat["filmedAt"] = convert2string(heated_meat["filmedAt"], 1)
         heated_meat["createdAt"] = convert2string(heated_meat["createdAt"], 1)
@@ -836,8 +866,8 @@ def get_all_user(db_session):
     try:
         users = db_session.query(User).all()
         for user in users:
-            time = convert2datetime(user.createdAt, 1)
-            user.createdAt = convert2string(time, 0)
+            # time = convert2datetime(user.createdAt, 1)
+            user.createdAt = convert2string(user.createdAt, 1)
         
         db_session.close()
         return users
@@ -850,8 +880,8 @@ def get_user(db_session, user_id):
     try:
         user_data = db_session.query(User).filter(User.userId == user_id).first()
         if user_data is not None:
-            time = convert2datetime(user_data.createdAt, 1)
-            user_data.createdAt = convert2string(time, 0)
+            # time = convert2datetime(user_data.createdAt, 1)
+            user_data.createdAt = convert2string(user_data.createdAt, 1)
         
         db_session.close()
         return user_data
@@ -1083,10 +1113,17 @@ def _getPredictionData(db_session, id, seqno):
     if result:
         return jsonify(result), 200
     else:
-        return jsonify({"msg": "No data in AI Sensory Evaluate DB"}), 404
+        return jsonify({"msg": "No data in Meat or AI Sensory Evaluation. Request POST to create AI prediction"}), 404
 
 
 def get_AI_SensoryEval(db_session, id, seqno):
+    meat = db_session.query(Meat).filter_by(id=id).first()
+    sensory_data = db_session.query(SensoryEval).filter(
+        SensoryEval.id == id, SensoryEval.seqno
+    )
+    if meat is None and sensory_data is None:
+        db_session.close()
+        return None 
     ai_sensoryEval = (
         db_session.query(AI_SensoryEval)
         .filter(
@@ -1096,12 +1133,22 @@ def get_AI_SensoryEval(db_session, id, seqno):
         .first()
     )
     if ai_sensoryEval:
-        ai_sensoryEval_history = to_dict(ai_sensoryEval)
-        ai_sensoryEval_history["createdAt"] = convert2string(
-            ai_sensoryEval_history["createdAt"], 1
-        )
+        ai_sensoryEval.createdAt = convert2string(ai_sensoryEval.createdAt, 1)
         db_session.close()
-        return ai_sensoryEval_history
+        result = {
+            "meatId": ai_sensoryEval.id,
+            "seqno": ai_sensoryEval.seqno,
+            "createdAt": ai_sensoryEval.createdAt,
+            "xaiGrade": gradeNum[ai_sensoryEval.xaiGradeNum],
+            "xaiGradeImagePath": ai_sensoryEval.xai_gradeNum_imagePath,
+            "xaiImagePath": ai_sensoryEval.xai_imagePath,
+            "marbling": ai_sensoryEval.marbling,
+            "color": ai_sensoryEval.color,
+            "texture": ai_sensoryEval.texture,
+            "surfaceMoisture": ai_sensoryEval.surfaceMoisture,
+            "overall": ai_sensoryEval.overall
+        }
+        return result
     else:
         db_session.close()
         return None
@@ -1413,35 +1460,6 @@ def get_num_of_processed_raw(db_session, start, end):
     except Exception as e:
         db_session.close()
         raise Exception("Something Wrong with DB" + str(e))
-
-
-def get_num_of_cattle_pig(db_session, start, end):
-    # 기간 설정
-    start = convert2datetime(start, 1)  # Start Time
-    end = convert2datetime(end, 1)  # End Time
-    if start is None or end is None:
-        return jsonify({"msg": "Wrong start or end data"}), 404
-
-    cow_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 0,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .count()
-    )
-    pig_count = (
-        Meat.query.join(CategoryInfo)
-        .filter(
-            CategoryInfo.speciesId == 1,
-            Meat.createdAt.between(start, end),
-            Meat.statusType == 2,
-        )
-        .count()
-    )
-    db_session.close()
-    return jsonify({"cattle_count": cow_count, "pig_count": pig_count}), 200
 
 
 def get_num_of_primal_part(db_session, start, end):
@@ -1904,7 +1922,7 @@ def get_sensory_of_raw_heatedmeat(db_session, start, end, species, grade, is_raw
                 if grade < 5 else value_query
             )
             if field == "tenderness":
-                values = [value[0]["0"] for value in value_query.all() if value[0] is not None]
+                values = [value[0]['0'] for value in value_query.all() if value[0] is not None and "0" in value[0].keys()]
             else:
                 values = [value[0] for value in value_query.all() if value[0] is not None]
 
@@ -2067,3 +2085,57 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
 
     db_session.close()
     return stats
+
+
+def get_OpenCVresult(db_session, meat_id):
+    try:
+        result = {}
+        opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
+        if opencv_result:
+            result["meatId"] = meat_id
+            result["createdAt"] = convert2string(opencv_result.createdAt, 1)
+            result["segmentImage"] = opencv_result.section_imagePath
+            result["proteinColorPalette"] = opencv_result.protein_palette
+            result["fatColorPalette"] = opencv_result.fat_palette
+            result["totalColorPalette"] = opencv_result.full_palette
+            result["proteinRate"] = opencv_result.protein_rate
+            result["fatRate"] = opencv_result.fat_rate
+            
+            db_session.close()
+            return result
+
+    except Exception as e:
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
+    
+    
+def process_opencv_image(db_session, s3_conn, meat_id, segment_object):
+    try:
+        segment_img = s3_conn.download_image(segment_object)
+        opencv_data = {}
+        
+        # 단면 이미지 url 불러오기
+        segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
+        opencv_data["section_imagePath"] = segment_image_path
+        opencv_data["createdAt"] = convert2string(datetime.now(), 1)
+        opencv_data["id"] = meat_id
+        opencv_data["seqno"] = "0"
+        
+        # openCV 전처리 순서대로 진행
+        color_palette = display_palette_with_ratios(segment_img)
+        texture_result = create_texture_info(segment_img)
+        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=0)
+        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=0)
+        
+        # opencv DB에 저장
+        opencv_data = {**opencv_data, **color_palette, **texture_result, **lbp_result, **gabor_result}
+        new_opencv = OpenCVImagesInfo(**opencv_data)
+        db_session.add(new_opencv)
+        db_session.commit()
+        
+        db_session.close()
+        return opencv_data
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))

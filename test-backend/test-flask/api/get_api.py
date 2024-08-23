@@ -13,6 +13,7 @@ from db.db_controller import (
     _getMeatDataByRangeStatusType,
     _getTexanomyData,
     _getPredictionData,
+    get_OpenCVresult
 )
 from utils import *
 
@@ -303,25 +304,44 @@ def getTexanomyData():
 
 
 # 예측 데이터 조회
-@get_api.route("/predict-data", methods=["GET", "POST"])
+@get_api.route("/predict-data", methods=["GET"])
 def getPredictionData():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            id = safe_str(request.args.get("id"))
-            seqno = safe_str(request.args.get("seqno"))
-            if id and seqno:
-                return _getPredictionData(db_session, id, seqno)
-            else:
-                return jsonify("No id or seqno parameter"), 401
-
+        db_session = current_app.db_session
+        meat_id = safe_str(request.args.get("meatId"))
+        seqno = safe_int(request.args.get("seqno"))
+        if meat_id and seqno is not None:
+            return _getPredictionData(db_session, meat_id, seqno)
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            return jsonify("Invalid id or seqno parameter"), 404
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
+        )
+        
+
+# opencv 결과 조회    
+@get_api.route("/opencv-image", methods=["GET"])
+def getOpenCVData():
+    try:
+        db_session = current_app.db_session
+        meat_id = safe_str(request.args.get("meatId"))
+        if meat_id:
+            result = get_OpenCVresult(db_session, meat_id)
+            if result:
+                return jsonify(result), 200
+            else:
+                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 404
+        return jsonify({"msg": f"Meat Data {meat_id} Does Not Exist"}), 400
+    except Exception as e:
+        logger.exception(str(e))
+        return (
+            jsonify(
+                {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
+            ),
+            500,
         )

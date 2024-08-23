@@ -62,6 +62,7 @@ jobs:
           mkdir deploy
           cp -r test-backend/test-flask/* deploy/
           cp test-backend/test-flask/appspec.yml deploy/
+          cp test-backend/test-flask/.env deploy/
           cd deploy
           zip -r ../deploy.zip .
 

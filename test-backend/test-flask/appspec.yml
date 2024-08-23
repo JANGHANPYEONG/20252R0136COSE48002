@@ -7,20 +7,28 @@ files:
 
 permissions:
   - object: /home/ubuntu/deeplant-admin
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+    type:
+      - directory
+      - file
 
 hooks:
   ApplicationStop:
     - location: scripts/application_stop.sh
-      runas: ubuntu
+      timeout: 600
   BeforeInstall:
     - location: scripts/before_install.sh
-      runas: ubuntu
+      timeout: 600
   AfterInstall:
     - location: scripts/after_install.sh
-      runas: ubuntu
+      timeout: 600
   ApplicationStart:
-    - location: scripts/start_flask.sh
-      runas: ubuntu
+    - location: scripts/register_flask_service.sh
+      timeout: 600
+    - location: scripts/start_user_count_service.sh
+      timeout: 600
   ValidateService:
     - location: scripts/validate_service.sh
-      runas: ubuntu
+      timeout: 600

@@ -12,13 +12,14 @@ from db.db_model import initialize_db
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 환경 변수 다운로드
 load_dotenv()  
 
 app = Flask(__name__)
-    
+
 # RDS DB 연결
 db_uri = os.getenv("DB_URI")
 if not db_uri:
@@ -28,7 +29,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 CORS(app)
-
 
 def initialize_services(app):
     with app.app_context():
@@ -63,6 +63,7 @@ from api.get_api import get_api
 from api.update_api import update_api
 from api.delete_api import delete_api
 from api.statistic_api import statistic_api
+from api.predict_api import predict_api
     
 app.register_blueprint(user_api, url_prefix="/user")  # user 관련 API
 app.register_blueprint(add_api, url_prefix="/meat/add")  # 육류 정보 생성 API
@@ -70,6 +71,7 @@ app.register_blueprint(get_api, url_prefix="/meat/get")  # 육류 정보 조회 
 app.register_blueprint(update_api, url_prefix="/meat/update")  # 육류 정보 수정 API
 app.register_blueprint(delete_api, url_prefix="/meat/delete")  # 육류 정보 삭제 API
 app.register_blueprint(statistic_api, url_prefix="/meat/statistic")  # 통계 데이터 조회 API
+app.register_blueprint(predict_api, url_prefix="/meat/predict") # 예측 데이터 조회 API
 
 @app.route("/")
 def hello_world():
@@ -77,5 +79,4 @@ def hello_world():
 
 # Flask 실행
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
-    
+    app.run(debug=True, port=8080, host="0.0.0.0")
