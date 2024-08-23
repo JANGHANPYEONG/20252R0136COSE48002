@@ -42,11 +42,13 @@ const DataPAView = ({ dataProps }) => {
   // 처리육 토글
   const [processed_toggle, setProcessedToggle] = useState(first);
   const [processedToggleValue, setProcessedToggleValue] = useState(first);
+  const [tab, setTab] = useState(0);
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
   const [dataXAIImg, setDataXAIImg] = useState(null);
   const [gradeXAIImg, setGradeXAIImg] = useState(null);
+  const [imgPath, setImgPath] = useState(raw_img_path);
 
   // fetch 한 예측 데이터 저장
   const [dataPA, setDataPA] = useState(null);
@@ -117,6 +119,7 @@ const DataPAView = ({ dataProps }) => {
   const handleSelect = async (key) => {
     // 예측 데이터 로드
     await getPredictedData(key);
+    setTab(key);
     const target = processedToggleValue; //n회
     const targetIndex = processed_data_seq.indexOf(target) - 1;
     // 원본 이미지 바꾸기
@@ -134,6 +137,19 @@ const DataPAView = ({ dataProps }) => {
     getPredictedData(parseInt(processedToggleValue));
   }, [processedToggleValue]);
 
+  useEffect(() => {
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
+    if (tab === '0') {
+      setImgPath(raw_img_path);
+    } else {
+      setImgPath(
+        processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+      );
+    }
+  }, [processedToggleValue, tab]);
+
+
   // 초기에 원육 예측 데이터 로드
   useEffect(() => {
     getPredictedData(0);
@@ -145,7 +161,9 @@ const DataPAView = ({ dataProps }) => {
     setPreviewImage(
       processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
     );
-  }, [processedToggleValue]);
+  }, [processedToggleValue, tab]);
+
+
 
   return (
     <div style={{ width: '100%' }}>
@@ -177,7 +195,7 @@ const DataPAView = ({ dataProps }) => {
                 <div style={style.imgWrapper}>
                   {previewImage ? (
                     <img
-                      src={previewImage + '?n=' + Math.random()}
+                      src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
                     />
                   ) : (
@@ -273,7 +291,6 @@ const DataPAView = ({ dataProps }) => {
                     }}
                     inputValue={processedToggleValue}
                     onInputChange={(event, newInputValue) => {
-          
                       setProcessedToggleValue(newInputValue);
                     }}
                     options={options.slice(1)}
