@@ -42,7 +42,7 @@ const DataPAView = ({ dataProps }) => {
   // 처리육 토글
   const [processed_toggle, setProcessedToggle] = useState(first);
   const [processedToggleValue, setProcessedToggleValue] = useState(first);
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState('0');
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
