@@ -1,7 +1,8 @@
+//승인되지 않은 원육 데이터 수정
 import { apiIP } from '../../config';
-import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
-export default async function addSensoryRawData(rawInput, i, meatId) {
-  const [yy, mm, dd] = computeCurrentDate();
+import { computeCurrentDate } from '../../components/DataDetailPage/computeTime';
+
+export const addSensoryRawData = async (rawInput, i, meatId) => {
   const dataSet = {
     marbling: parseFloat(rawInput.marbling),
     color: parseFloat(rawInput.color),
@@ -14,7 +15,7 @@ export default async function addSensoryRawData(rawInput, i, meatId) {
     ['meatId']: meatId,
     ['seqno']: i,
     ['imgAdded']: false,
-    ['filmedAt']: '2024-07-08T12:12:12',
+    ['filmedAt']: rawInput.filmedAt,
     ['sensoryData']: dataSet,
   };
 
@@ -38,4 +39,5 @@ export default async function addSensoryRawData(rawInput, i, meatId) {
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryRawData

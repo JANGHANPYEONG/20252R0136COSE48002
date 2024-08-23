@@ -2,9 +2,15 @@ const http = require('http');
 const express = require('express');
 const path = require('path');
 const axios = require('axios');
+const dotenv = require('dotenv')
+
+dotenv.config();
 
 const app = express();
-const port = 5001;
+const port = process.env.REACT_APP_PORT;
+
+const server = process.env.REACT_APP_SERVER_API;
+const serverPort = process.env.REACT_APP_SERVER_PORT;
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
@@ -17,7 +23,7 @@ app.get('/ping', (req, res) => {
 // Route to proxy API requests to Flask backend
 app.get('/api/*', (req, res) => {
   const apiEndpoint = req.url.replace(/^\/api/, ''); // Remove '/api' prefix
-  const apiUrl = `http://localhost:5000${apiEndpoint}`; // Adjust as per your Flask backend URL
+  const apiUrl = `http://${server}:${serverPort}${apiEndpoint}`; // Adjust as per your Flask backend URL
 
   axios
     .get(apiUrl)
@@ -42,5 +48,5 @@ app.get('/*', (req, res) => {
 
 // Start the server
 http.createServer(app).listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
+  console.log(`App listening at http://${server}:${port}`);
 });

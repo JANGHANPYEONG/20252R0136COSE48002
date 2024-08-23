@@ -1,11 +1,7 @@
 import { apiIP } from '../config';
 
 // 데이터 상태 변경 함수 updateDataStatus를 export
-export default async function updateDataStatus(
-  confirmVal,
-  meatId,
-  setStateChanged
-) {
+export const updateDataStatus = async (confirmVal, meatId, setStateChanged) => {
   try {
     const response = await fetch(
       //query parameter : confirmVal, id
@@ -26,4 +22,5 @@ export default async function updateDataStatus(
   } catch (err) {
     console.error(err);
   }
-}
+};
+export default updateDataStatus;

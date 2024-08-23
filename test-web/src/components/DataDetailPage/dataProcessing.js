@@ -1,5 +1,5 @@
 // 축산물 이력 데이터를 json 객체로 변환하는 함수
-function convertToApiData(
+const convertToApiData = (
   birthYmd,
   butcheryYmd,
   company,
@@ -18,7 +18,7 @@ function convertToApiData(
   userId,
   userName,
   userType
-) {
+) => {
   // JSON 객체
   const apiData = {
     birthYmd: birthYmd,
@@ -40,12 +40,11 @@ function convertToApiData(
     userName: userName,
     userType: userType,
   };
-  console.log('apidata2 : ', apiData);
   return apiData;
-}
+};
 
 // 데이터 전처리
-export default function dataProcessing(items) {
+const dataProcessing = (items) => {
   // 3-1. 축산물 이력 데이터 json 객체로 만들기
   const apiData = convertToApiData(
     items.birthYmd,
@@ -76,7 +75,6 @@ export default function dataProcessing(items) {
   let processedData = [];
   let heatedData = [
     deepAgingInfo[0] ? deepAgingInfo[0].heatedmeat_sensory_eval || {} : {},
-
   ];
   let labData = [deepAgingInfo[0] ? deepAgingInfo[0].probexpt_data || {} : {}];
   let processedMinute = [];
@@ -85,11 +83,13 @@ export default function dataProcessing(items) {
   let processedDataSeq = ['원육'];
   // 처리육 이미지
   let processedDataImgPath = [];
+  let processedDate = [];
 
   // n회차 처리육에 대한 회차별 정보
   for (let i = 1; i < deepAgingInfo.length; i++) {
+    console.log('deeapginginfo:', deepAgingInfo);
     if (deepAgingInfo[i]) {
-      processedDataSeq = [...processedDataSeq, `${i}회`];
+      processedDataSeq = [...processedDataSeq, `${deepAgingInfo[i].seqno}회`];
       processedData = [...processedData, deepAgingInfo[i].sensory_eval || {}];
       heatedData = [
         ...heatedData,
@@ -101,6 +101,7 @@ export default function dataProcessing(items) {
         ...processedDataImgPath,
         deepAgingInfo[i]?.sensory_eval?.imagePath || 'null',
       ];
+      processedDate = [...processedDate, deepAgingInfo[i].date || {}];
     }
   }
 
@@ -113,7 +114,6 @@ export default function dataProcessing(items) {
     raw_data: deepAgingInfo[0] ? deepAgingInfo[0].sensory_eval || {} : {},
     raw_img_path: deepAgingInfo[0]
       ? deepAgingInfo[0].sensory_eval?.imagePath || {}
-
       : {},
     processed_data: processedData,
     heated_data: heatedData,
@@ -122,7 +122,9 @@ export default function dataProcessing(items) {
     processed_data_seq: processedDataSeq,
     processed_minute: processedMinute,
     processed_img_path: processedDataImgPath,
+    processed_date: processedDate,
   };
 
   return data;
-}
+};
+export default dataProcessing;

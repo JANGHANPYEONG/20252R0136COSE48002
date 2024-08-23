@@ -1,24 +1,26 @@
 import { apiIP } from '../../config';
 
-// 원육 수정 POST API (이미지 수정)
-export default async function addSensoryRawImg(
+// 원육 수정 PATCH API (이미지 수정)
+export const addSensoryRawImg = async (
   raw_data, // 원육 데이터
   id, // 이력번호
-  userId, // 로그인한 사용자 id
-  createdDate, // 생성 시간
-  elapsedHour // 경과 시간
-) {
-  //request body에 보낼 데이터 전처리
-  let req = {
-    ...raw_data,
+  userId // 로그인한 사용자 id
+) => {
+  const sensoryData = {
+    marbling: raw_data.marbling,
+    color: raw_data.color,
+    texture: raw_data.texture,
+    surfaceMoisture: raw_data.surfaceMoisture,
+    overall: raw_data.overall,
   };
-  req = {
-    ...req,
-    ['id']: id,
-    ['createdAt']: createdDate,
+  //request body에 보낼 데이터 전처리
+  const req = {
+    sensoryData: sensoryData,
+    ['meatId']: id,
     ['userId']: userId,
     ['seqno']: 0,
-    ['period']: Math.round(elapsedHour),
+    ['imgAdded']: true,
+    ['filmedAt']: raw_data.filmedAt,
   };
 
   // /meat/add/sensory-eval로 원육 수정 데이터 API 전송
@@ -35,4 +37,5 @@ export default async function addSensoryRawImg(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryRawImg;

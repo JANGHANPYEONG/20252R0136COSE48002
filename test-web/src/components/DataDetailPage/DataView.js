@@ -4,16 +4,19 @@ import { useSearchParams } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import Button from 'react-bootstrap/Button';
+// userContext
+import { useUser } from '../../Utils/UserContext';
 // modal component
-import InputTransitionsModal from './InputWarningComp';
+import InputTransitionsModal from './InputTransitionsModal';
 // mui
 import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from './tablesComps/rawTable';
-import ProcessedTable from './tablesComps/processedTable';
-import HeatTable from './tablesComps/heatTable';
-import LabTable from './tablesComps/labTable';
-import ApiTable from './tablesComps/apiTable';
+import RawTable from './TablesComps/RawTable';
+import ProcessedTable from './TablesComps/ProcessedTable';
+import HeatTable from './TablesComps/HeatTable';
+import LabTable from './TablesComps/LabTable';
+import ApiTable from './TablesComps/ApiTable';
 // import timezone
 import { TIME_ZONE } from '../../config';
 import Spinner from 'react-bootstrap/Spinner';
@@ -21,16 +24,27 @@ import Spinner from 'react-bootstrap/Spinner';
 import addHeatedData from '../../API/add/addHeatedData';
 import addProbexptData from '../../API/add/addProbexptData';
 import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
-import RestrictedModal from './restrictedModal';
+import RestrictedModal from './RestrictedModal';
 // import card
-import QRInfoCard from './cardComps/QRInfoCard';
-import MeatImgsCard from './cardComps/MeatImgsCard';
-import { computePeriod } from './computePeriod';
+import QRInfoCard from './CardComps/QRInfoCard';
+import MeatImgsCard from './CardComps/MeatImgsCard';
+import { computePeriod } from './computeTime';
 import isPost from '../../API/isPost';
+import { Modal } from 'react-bootstrap';
+import AgingInfoRegister from './AgingInfoRegister';
+import AgingInfoDeleter from './AgingInfoDelete';
+import style from './style/dataviewstyle';
+import { divStyle } from './style/dataviewstyle';
+import {
+  rawField,
+  deepAgingField,
+  heatedField,
+  labField,
+  apiField,
+} from './constants/infofield';
+let isMethodPostPro = false;
 
-const navy = '#0F3659';
-
-function DataView({ dataProps }) {
+const DataView = ({ dataProps }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageOffset = searchParams.get('pageOffset');
 
@@ -49,11 +63,8 @@ function DataView({ dataProps }) {
     processed_data_seq, // 처리(딥에이징) 회차
     processed_minute, // 처리 시간(분)
     processed_img_path, // 처리육 이미지 경로
+    processed_date,
   } = dataProps;
-
-  // console.log(`1회차 가열육 데이터: ${JSON.stringify(heated_data[1])}`);
-  // console.log(`1회차 처리육 데이터: ${JSON.stringify(processed_data[0])}`);
-  // console.log(`1회차 실험육 데이터: ${JSON.stringify(lab_data[1])}`);
 
   const [processedMinute, setProcessedMinute] = useState(processed_minute);
   //탭 정보
@@ -67,7 +78,7 @@ function DataView({ dataProps }) {
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
+  const [processedToggleValue,setProcessedToggleValue] = useState('1회');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
   const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
@@ -87,11 +98,17 @@ function DataView({ dataProps }) {
     { value: labInput, setter: setLabInput },
     { value: apiInput, setter: setApiInput },
   ];
+  const [infoRegisterShow, setInfoRegisterShow] = useState(false);
+  const [infoDeleteShow, setInfoDeleteShow] = useState(false);
 
   const [isProcessedPosted, setIsProcessedPosted] = useState({});
   const [isLabPosted, setIsLabPosted] = useState({});
   const [isHeatedPosted, setIsHeatedPosted] = useState({});
 
+  const handleInfoRegisterShow = () => setInfoRegisterShow(true);
+  const handleInfoRegisterClose = () => setInfoRegisterShow(false);
+  const handleInfoDeleteShow = () => setInfoDeleteShow(true);
+  const handleInfoDeleteClose = () => setInfoDeleteShow(false);
   // input field별 value prop으로 만들기
   useEffect(() => {
     tabFields.map((t, index) => {
@@ -120,6 +137,9 @@ function DataView({ dataProps }) {
 
   const [isLimitedToChangeImage, setIsLimitedToChangeImage] = useState(false);
 
+  // UserContext에서 유저 정보 불러오기
+  const user = useUser();
+
   // 수정 완료 버튼 클릭 시 수정된 data API로 전송
   const onClickSubmitBtn = async () => {
     setIsEdited(false);
@@ -130,9 +150,7 @@ function DataView({ dataProps }) {
     // period 계산
     const elapsedHour = computePeriod(apiInput['butcheryYmd']);
     //로그인한 유저 정보
-    const currentUserId = JSON.parse(localStorage.getItem('UserInfo'))[
-      'userId'
-    ];
+    const currentUserId = user.userId;
 
     // 1. 가열육 관능검사 데이터 생성/수정 API POST/PATCH
     let dict = {};
@@ -142,15 +160,23 @@ function DataView({ dataProps }) {
           heated_data[i]?.flavor,
           heated_data[i]?.juiciness,
           heated_data[i]?.palatability,
-          heated_data[i]?.tenderness,
           heated_data[i]?.umami,
+          heated_data[i]?.tenderness0,
+          heated_data[i]?.tenderness3,
+          heated_data[i]?.tenderness7,
+          heated_data[i]?.tenderness14,
+          heated_data[i]?.tenderness21,
         ],
         [
           heatInput[i]?.flavor,
           heatInput[i]?.juiciness,
           heatInput[i]?.palatability,
-          heatInput[i]?.tenderness,
           heatInput[i]?.umami,
+          heatInput[i]?.tenderness0,
+          heatInput[i]?.tenderness3,
+          heatInput[i]?.tenderness7,
+          heatInput[i]?.tenderness14,
+          heatInput[i]?.tenderness21,
         ],
         isHeatedPosted[i]
       );
@@ -236,6 +262,9 @@ function DataView({ dataProps }) {
     // 3. 처리육 관능검사 데이터 생성/수정 API POST/PATCH
     dict = {};
     const pro_len = len === 1 ? len : len - 1;
+    const existSeq = processed_data_seq
+      .filter((item) => item.includes('회')) // '회'가 포함된 항목만 필터링
+      .map((item) => parseInt(item.replace('회', '')));
     for (let i = 0; i < pro_len; i++) {
       const isMethodPost = await isPost(
         [
@@ -244,6 +273,7 @@ function DataView({ dataProps }) {
           processed_data[i]?.texture,
           processed_data[i]?.surfaceMoisture,
           processed_data[i]?.overall,
+          processed_data[i]?.imagePath,
         ],
         [
           processedInput[i]?.marbling,
@@ -251,17 +281,21 @@ function DataView({ dataProps }) {
           processedInput[i]?.texture,
           processedInput[i]?.surfaceMoisture,
           processedInput[i]?.overall,
+          processed_data[i]?.imagePath,
         ],
         isProcessedPosted[i + 1]
       );
+      console.log(i, isMethodPost);
       if (isMethodPost === undefined) continue;
       else if (isMethodPost) dict = { ...dict, [i + 1]: isMethodPost };
+
       addSensoryProcessedData(
         processedInput[i],
-        i,
+        existSeq[i],
         meatId,
         currentUserId,
-        isMethodPost
+        isMethodPost,
+        false
       )
         .then((response) => {
           if (response.ok)
@@ -276,6 +310,7 @@ function DataView({ dataProps }) {
             error
           );
         });
+      isMethodPostPro = isMethodPost;
     }
     setIsProcessedPosted({ ...isProcessedPosted, ...dict });
   };
@@ -406,360 +441,226 @@ function DataView({ dataProps }) {
   const [isUploadingDone, setIsUploadingDone] = useState(true);
 
   return (
-    <div style={{ width: '100%', marginTop: '40px' }}>
-      {!isUploadingDone && (
-        <div style={divStyle.loadingBackground}>
-          <Spinner />
-          <span style={divStyle.loadingText}>이미지를 업로드 중 입니다..</span>
-        </div>
-      )}
-      {
-        // 이미지 수정 불가능 팝업 - 일반 사용자임을 알리거나 서버를 확인하라는 경고 메시지
-        isLimitedToChangeImage && (
-          <RestrictedModal
-            setIsLimitedToChangeImage={setIsLimitedToChangeImage}
+    <>
+      <Modal
+        show={infoRegisterShow}
+        onHide={handleInfoRegisterClose}
+        backdrop="true"
+        keyboard={false}
+        centered
+      >
+        <Modal.Body>
+          <Modal.Title
+            style={{
+              color: '#151D48',
+              fontFamily: 'Poppins',
+              fontSize: `24px`,
+              fontWeight: 600,
+            }}
+          >
+            딥에이징 회차 추가
+          </Modal.Title>
+          <AgingInfoRegister
+            handleClose={handleInfoRegisterClose}
+            processed_data_seq={processed_data_seq}
+            meatId={meatId}
           />
-        )
-      }
-      <div style={style.singleDataWrapper}>
-        {/* 1. 관리번호 육류에 대한 사진*/}
-        <MeatImgsCard
-          edited={edited}
-          page={'수정및조회'}
-          raw_img_path={raw_img_path}
-          processed_img_path={processed_img_path}
-          setIsUploadingDone={setIsUploadingDone}
-          id={meatId}
-          raw_data={raw_data}
-          setIsLimitedToChangeImage={setIsLimitedToChangeImage}
-          butcheryYmd={api_data['butcheryYmd']}
-          processedInput={processedInput}
-          processed_data={processed_data}
-          processedMinute={processedMinute}
-        />
-        {/* 2. QR코드와 데이터에 대한 기본 정보*/}
-        <QRInfoCard
-          qrImagePath={qrImagePath}
-          id={meatId}
-          userId={userId}
-          createdAt={createdAt}
-        />
-        {/* 3. 세부 데이터 정보*/}
-        <Card
-          style={{
-            width: '27vw',
-            margin: '0px 10px',
-            boxShadow: 24,
-            minWidth: '360px',
-            height: '65vh',
-            minHeight: '500px',
-            // display: 'flex',
-            // flexDirection: 'column',
-          }}
-        >
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            defaultActiveKey="rawMeat"
-            aria-label="tabs"
-            className="mb-3"
-            style={{ backgroundColor: 'white', width: '100%' }}
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={infoDeleteShow}
+        onHide={handleInfoDeleteClose}
+        backdrop="true"
+        keyboard={false}
+        centered
+      >
+        <Modal.Body>
+          <Modal.Title
+            style={{
+              color: '#151D48',
+              fontFamily: 'Poppins',
+              fontSize: `24px`,
+              fontWeight: 600,
+            }}
           >
-            <Tab value="raw" eventKey="rawMeat" title="원육">
-              <RawTable data={rawInput} />
-            </Tab>
-            <Tab
-              value="proc"
-              eventKey="processedMeat"
-              title="처리육"
-              style={{ backgroundColor: 'white' }}
-            >
-              {processed_data.length !== 0 ? (
-                <>
-                  <Autocomplete
-                    id={'controllable-states-processed'}
-                    label="처리상태"
-                    value={processed_toggle}
-                    onChange={(event, newValue) => {
-                      setProcessedToggle(newValue);
-                    }}
-                    inputValue={processedToggleValue}
-                    onInputChange={(event, newInputValue) => {
-                      setProcessedToggleValue(newInputValue); /*이미지 바꾸기 */
-                    }}
-                    options={options.slice(1)}
-                    size="small"
-                    sx={{ width: 'fit-content', marginBottom: '10px' }}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                  <ProcessedTable
-                    edited={edited}
-                    modal={modal}
-                    setModal={setModal}
-                    processed_img_path={processed_img_path}
-                    processedMinute={processedMinute}
-                    setProcessedMinute={setProcessedMinute}
-                    processedInput={processedInput}
-                    processed_data={processed_data}
-                    processedToggleValue={processedToggleValue}
-                    handleInputChange={handleInputChange}
-                  />
-                </>
-              ) : (
-                <div style={divStyle.errorContainer}>
-                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              value="heat"
-              eventKey="heatedMeat"
-              title="가열육"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={heatedToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setHeatedToggle(newValue);
-                }}
-                inputValue={heatedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setHeatedToggleValue(newInputValue);
-                }}
-                id={'controllable-states-heated'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <HeatTable
-                edited={edited}
-                heatInput={heatInput}
-                heated_data={heated_data}
-                heatedToggleValue={heatedToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab>
-            <Tab
-              value="lab"
-              eventKey="labData"
-              title="실험실"
-              style={{ backgroundColor: 'white' }}
-            >
-              <Autocomplete
-                value={labToggle}
-                size="small"
-                onChange={(event, newValue) => {
-                  setLabToggle(newValue);
-                }}
-                inputValue={labToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setLabToggleValue(newInputValue);
-                }}
-                id={'controllable-states-api'}
-                options={options}
-                sx={{ width: 'fit-content', marginBottom: '10px' }}
-                renderInput={(params) => (
-                  <TextField {...params} label="처리상태" />
-                )}
-              />
-              <LabTable
-                edited={edited}
-                labInput={labInput}
-                lab_data={lab_data}
-                labToggleValue={labToggleValue}
-                handleInputChange={handleInputChange}
-              />
-            </Tab>
-            <Tab
-              value="api"
-              eventKey="api"
-              title="축산물 이력"
-              style={{ backgroundColor: 'white' }}
-            >
-              <ApiTable api_data={api_data} />
-            </Tab>
-          </Tabs>
-        </Card>
-      </div>
-      <div style={style.editBtnWrapper}>
-        {edited ? (
-          <button
-            type="button"
-            style={style.completeBtn}
-            onClick={onClickSubmitBtn}
-          >
-            완료
-          </button>
-        ) : (
-          <button type="button" style={style.editBtn} onClick={onClickEditBtn}>
-            수정
-          </button>
+            딥에이징 회차 삭제
+          </Modal.Title>
+          <AgingInfoDeleter
+            handleClose={handleInfoDeleteClose}
+            meatId={meatId}
+            processed_data_seq={processed_data_seq}
+          />
+        </Modal.Body>
+      </Modal>
+      <div style={{ width: '100%', marginTop: '40px' }}>
+        {!isUploadingDone && (
+          <div style={divStyle.loadingBackground}>
+            <Spinner />
+            <span style={divStyle.loadingText}>
+              이미지를 업로드 중 입니다..
+            </span>
+          </div>
         )}
+        {
+          // 이미지 수정 불가능 팝업 - 일반 사용자임을 알리거나 서버를 확인하라는 경고 메시지
+          isLimitedToChangeImage && (
+            <RestrictedModal
+              setIsLimitedToChangeImage={setIsLimitedToChangeImage}
+            />
+          )
+        }
+        <div style={style.editBtnWrapper}>
+          <button onClick={handleInfoRegisterShow} style={style.addButton}>
+            회차 추가
+          </button>
+          <button onClick={handleInfoDeleteShow} style={style.deleteButton}>
+            회차 삭제
+          </button>
+          {edited ? (
+            <button
+              type="button"
+              style={style.completeBtn}
+              onClick={onClickSubmitBtn}
+            >
+              완료
+            </button>
+          ) : (
+            <button
+              type="button"
+              style={style.editBtn}
+              onClick={onClickEditBtn}
+            >
+              수정
+            </button>
+          )}
+        </div>
+        <div style={style.singleDataWrapper}>
+          {/* 1. 관리번호 육류에 대한 사진*/}
+          <MeatImgsCard
+            edited={edited}
+            page={'수정및조회'}
+            raw_img_path={raw_img_path}
+            processed_img_path={processed_img_path}
+            setIsUploadingDone={setIsUploadingDone}
+            id={meatId}
+            raw_data={raw_data}
+            setIsLimitedToChangeImage={setIsLimitedToChangeImage}
+            butcheryYmd={api_data['butcheryYmd']}
+            processedInput={processedInput}
+            processed_data={processed_data}
+            processedMinute={processedMinute}
+            processed_data_seq={processed_data_seq}
+            ispost={isMethodPostPro}
+          />
+          {/* 2. QR코드와 데이터에 대한 기본 정보*/}
+          <QRInfoCard
+            qrImagePath={qrImagePath}
+            id={meatId}
+            userId={userId}
+            createdAt={createdAt}
+          />
+          {/* 3. 세부 데이터 정보*/}
+          <Card
+            style={{
+              width: '27vw',
+              margin: '0px 10px',
+              boxShadow: 24,
+              minWidth: '360px',
+              height: '65vh',
+              minHeight: '500px',
+              // display: 'flex',
+              // flexDirection: 'column',
+            }}
+          >
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              defaultActiveKey="rawMeat"
+              aria-label="tabs"
+              className="mb-3"
+              style={{ backgroundColor: 'white', width: '100%' }}
+            >
+              <Tab value="raw" eventKey="rawMeat" title="원육">
+                <RawTable data={rawInput} />
+              </Tab>
+              <Tab
+                value="proc"
+                eventKey="processedMeat"
+                title="처리육"
+                style={{ backgroundColor: 'white' }}
+              >
+                {processed_data.length !== 0 ? (
+                  <>
+                    <ProcessedTable
+                      edited={edited}
+                      modal={modal}
+                      setModal={setModal}
+                      processed_img_path={processed_img_path}
+                      processedMinute={processedMinute}
+                      setProcessedMinute={setProcessedMinute}
+                      processedInput={processedInput}
+                      processed_data={processed_data}
+                      processedToggleValue={processedToggleValue}
+                      handleInputChange={handleInputChange}
+                      processed_date={processed_date}
+                      processed_data_seq={processed_data_seq}
+                    />
+                  </>
+                ) : (
+                  <div style={divStyle.errorContainer}>
+                    <div style={divStyle.errorText}>
+                      처리육 데이터가 없습니다
+                    </div>
+                  </div>
+                )}
+              </Tab>
+              <Tab
+                value="heat"
+                eventKey="heatedMeat"
+                title="가열육"
+                style={{ backgroundColor: 'white' }}
+              >
+                <HeatTable
+                  edited={edited}
+                  heatInput={heatInput}
+                  heated_data={heated_data}
+                  heatedToggleValue={heatedToggleValue}
+                  handleInputChange={handleInputChange}
+                  processed_data_seq={processed_data_seq}
+                />
+              </Tab>
+              <Tab
+                value="lab"
+                eventKey="labData"
+                title="실험실"
+                style={{ backgroundColor: 'white' }}
+              >
+                <LabTable
+                  edited={edited}
+                  labInput={labInput}
+                  lab_data={lab_data}
+                  labToggleValue={labToggleValue}
+                  handleInputChange={handleInputChange}
+                  processed_data_seq={processed_data_seq}
+                />
+              </Tab>
+              <Tab
+                value="api"
+                eventKey="api"
+                title="축산물 이력"
+                style={{ backgroundColor: 'white' }}
+              >
+                <ApiTable api_data={api_data} />
+              </Tab>
+            </Tabs>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
-}
+};
 
 export default DataView;
 
 // 토글 버튼
 let options = ['원육'];
-
-const rawField = ['marbling', 'color', 'texture', 'surfaceMoisture', 'overall'];
-const deepAgingField = [
-  'marbling',
-  'color',
-  'texture',
-  'surfaceMoisture',
-  'overall',
-  'createdAt',
-  'seqno',
-  'minute',
-  'period',
-];
-const heatedField = [
-  'flavor',
-  'juiciness',
-  'tenderness',
-  'umami',
-  'palatability',
-];
-const labField = [
-  'L',
-  'a',
-  'b',
-  'DL',
-  'CL',
-  'RW',
-  'ph',
-  'WBSF',
-  'cardepsin_activity',
-  'MFI',
-  'sourness',
-  'bitterness',
-  'umami',
-  'richness',
-  'Collagen',
-];
-const apiField = [
-  'birthYmd',
-  'butcheryYmd',
-  'farmAddr',
-  'farmerName',
-  'gradeNm',
-  'primalValue',
-  'secondaryValue',
-  'sexType',
-  'species',
-  'statusType',
-  'traceNum',
-];
-
-const style = {
-  singleDataWrapper: {
-    marginTop: '40px',
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  editBtnWrapper: {
-    padding: '0px',
-    margin: '10px 0px 0px',
-    paddingRight: '10px',
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'end',
-    minWidth: '1140px',
-  },
-  dataFieldColumn: {
-    backgroundColor: '#9e9e9e',
-    height: '33px',
-    borderRight: '1px solid rgb(174, 168, 168)',
-    borderBottom: '1px solid #fafafa',
-    padding: '4px 5px',
-  },
-  dataExpColumn: {
-    backgroundColor: '#757575',
-    height: '33px',
-    borderRight: '1px solid rgb(174, 168, 168)',
-    borderBottom: '1px solid #fafafa',
-    padding: '4px 5px',
-    color: 'white',
-  },
-  dataFieldContainer: {
-    backgroundColor: '#eeeeee',
-    height: '100%',
-    borderRight: '1px solid rgb(174, 168, 168)',
-    borderBottom: '1px solid #fafafa',
-    padding: '4px 5px',
-  },
-  dataContainer: {
-    height: '33px',
-    borderBottom: '0.8px solid #e0e0e0',
-    width: '60px',
-    borderRight: '0.8px solid #e0e0e0',
-    padding: '4px 5px',
-  },
-  completeBtn: {
-    border: `1px solid ${navy}`,
-    color: `${navy}`,
-    borderRadius: '5px',
-    width: '60px',
-    height: '35px',
-  },
-  editBtn: {
-    backgroundColor: `${navy}`,
-    border: 'none',
-    color: 'white',
-    borderRadius: '5px',
-    width: '60px',
-    height: '35px',
-  },
-};
-const divStyle = {
-  currDiv: {
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '10px',
-    borderRadius: '5px',
-    color: navy,
-  },
-  notCurrDiv: {
-    height: '100%',
-    width: 'fit-content',
-    borderRadius: '5px',
-    padding: '10px',
-    color: '#b0bec5',
-  },
-  loadingBackground: {
-    position: 'absolute',
-    width: '100vw',
-    height: '100vh',
-    top: 0,
-    left: 0,
-    backgroundColor: '#ffffffb7',
-    zIndex: 999,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    fontSize: '25px',
-    textAlign: 'center',
-  },
-  errorContainer: {
-    height: '65vh',
-    minHeight: '500px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  errorText: {
-    fontSize: '16px',
-    textAlign: 'center',
-  },
-};

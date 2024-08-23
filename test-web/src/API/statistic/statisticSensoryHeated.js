@@ -11,3 +11,5 @@ export const statisticSensoryHeated = async (
   );
   return response;
 };
+
+export default statisticSensoryHeated;

@@ -3,16 +3,16 @@ import { Box, IconButton } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.css';
 import { FaArrowLeft } from 'react-icons/fa';
 import DataLoad from '../components/DataDetailPage/DetailDataController';
+import style from './style/datadetailroutestyle';
 
 const navy = '#0F3659';
 
-function DataEdit() {
+const DataEdit = () => {
   // 쿼리스트링 추출
   const searchParams = useLocation().search;
   const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-  const startDate = new URLSearchParams(searchParams).get('startDate');
-  const endDate = new URLSearchParams(searchParams).get('endDate');
-  console.log('수정 및 조회', { pageOffset, startDate, endDate });
+  const startDate = new URLSearchParams(searchParams).get('start');
+  const endDate = new URLSearchParams(searchParams).get('end');
 
   //관리번호
   const idParam = useParams();
@@ -23,6 +23,8 @@ function DataEdit() {
         width: '100%',
         height: '100%',
         padding: '45px 80px',
+        // display: 'flex',
+        // flexDirection: 'column',
       }}
     >
       <Box>
@@ -31,7 +33,8 @@ function DataEdit() {
           <Link
             to={{
               pathname: '/DataManage',
-              search: `?pageOffset=${pageOffset}&startDate=${startDate}&endDate=${endDate}`,
+              // search: `?pageOffset=${pageOffset}&start=${startDate}&end=${endDate}`,
+              search: `?start=${startDate}&end=${endDate}`,
             }}
             style={{
               textDecorationLine: 'none',
@@ -63,23 +66,12 @@ function DataEdit() {
           </Link>
         </div>
       </Box>
-      {/**상세 조회 데이터 fetch */}
-      <DataLoad id={idParam.id} page={'수정및조회'} />
+      <Box style={{ marginTop: '-40px' }}>
+        {/**상세 조회 데이터 fetch */}
+        <DataLoad id={idParam.id} page={'수정및조회'} />
+      </Box>
     </Box>
   );
-}
-export default DataEdit;
-
-const style = {
-  fixed: {
-    marginTop: '80px',
-    right: '0',
-    left: '80px',
-    zIndex: 1,
-    width: 'fit-content',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: '70px',
-  },
 };
+
+export default DataEdit;

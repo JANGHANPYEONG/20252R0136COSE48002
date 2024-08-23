@@ -1,49 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserList from '../components/User/UserList';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import { useUser } from '../Utils/UserContext';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+import UserList from '../components/UserManagement/UserMangementField';
+import CustomSnackbar from '../components/Base/CustomSnackbar';
+// import MuiAlert from '@mui/material/Alert';
 
-function UserManagement() {
+// const Alert = React.forwardRef((props, ref) => {
+//   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+// });
+
+const UserManagement = () => {
   const navigate = useNavigate();
   const [hasPermission, setHasPermission] = useState(true);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const UserInfo = JSON.parse(localStorage.getItem('UserInfo'));
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const user = useUser();
   useEffect(() => {
-    if (UserInfo.type !== 'Manager') {
+    if (user.type !== 'Manager') {
       setHasPermission(false);
-      setOpenSnackbar(true);
+      setSnackbarOpen(true);
       setTimeout(() => {
         navigate('/');
-      }, 5000); 
+      }, 2500);
     }
-  }, [UserInfo, navigate]);
+  }, [user, navigate]);
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenSnackbar(false);
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   if (!hasPermission) {
     return (
       <div>
-        <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity="error">
-            권한이 없습니다.
-          </Alert>
-        </Snackbar>
+        <CustomSnackbar
+          open={snackbarOpen}
+          message={'권한이 없습니다.'}
+          severity={'error'}
+          onClose={handleSnackbarClose}
+        />
       </div>
     );
   }
 
   return <UserList />;
-}
+};
 
 export default UserManagement;

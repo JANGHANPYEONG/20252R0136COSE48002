@@ -1,19 +1,23 @@
 import { apiIP } from '../../config';
 
 // 가열육 수정 POST API
-export default async function addHeatedData(
+export const addHeatedData = async (
   data, // 가열육 데이터
   i, // 가열육 seqno
   meatId, // 이력번호
   userId,
   isPost
-) {
+) => {
   const dataset = {
     ['flavor']: parseFloat(data.flavor),
     ['juiciness']: parseFloat(data.juiciness),
-    ['tenderness']: parseFloat(data.tenderness),
     ['umami']: parseFloat(data.umami),
     ['palatability']: parseFloat(data.palatability),
+    ['tenderness0']: parseFloat(data.tenderness0),
+    ['tenderness3']: parseFloat(data.tenderness3),
+    ['tenderness7']: parseFloat(data.tenderness7),
+    ['tenderness14']: parseFloat(data.tenderness14),
+    ['tenderness21']: parseFloat(data.tenderness21),
   };
   //request body에 보낼 데이터 가공
   let req = {
@@ -50,4 +54,5 @@ export default async function addHeatedData(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addHeatedData

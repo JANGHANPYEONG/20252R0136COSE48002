@@ -19,3 +19,4 @@ export const useDetailMeatData = (meatId) => {
     error,
   };
 };
+export default useDetailMeatData;

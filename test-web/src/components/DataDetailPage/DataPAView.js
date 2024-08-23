@@ -3,23 +3,24 @@ import Card from 'react-bootstrap/Card';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Spinner from 'react-bootstrap/Spinner';
-import QRInfoCard from './cardComps/QRInfoCard';
+import QRInfoCard from './CardComps/QRInfoCard';
 //mui
 import './imgRot.css';
 import { TextField, Autocomplete } from '@mui/material';
 // import tables
-import RawTable from './tablesComps/rawTable';
-import PredictedRawTable from './tablesComps/predictedRawTable';
-import ProcessedTableStatic from './tablesComps/processedTableStatic';
-import PredictedProcessedTablePA from './tablesComps/predictedProcessedTablePA';
+import RawTable from './TablesComps/RawTable';
+import PredictedRawTable from './TablesComps/PredictedRawTable';
+import ProcessedTableStatic from './TablesComps/ProcessedTableStatic';
+import PredictedProcessedTablePA from './TablesComps/PredictedProcessedTablePA';
 
-import { computePeriod } from './computePeriod';
+import { computePeriod } from './computeTime';
 import { apiIP } from '../../config';
+import { useUser } from '../../Utils/UserContext';
 
-function DataPAView({ dataProps }) {
+const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
   const {
-    id, // 이력번호
+    meatId, // 이력번호
     userId, // 로그인한 사용자 id
     createdAt, // 생성 시간
     qrImagePath, // QR이미지 경로
@@ -36,15 +37,18 @@ function DataPAView({ dataProps }) {
   useEffect(() => {
     options = processed_data_seq;
   }, []);
+  const first = `${processed_data_seq[1]}`;
 
   // 처리육 토글
-  const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
+  const [processed_toggle, setProcessedToggle] = useState(first);
+  const [processedToggleValue, setProcessedToggleValue] = useState(first);
+  const [tab, setTab] = useState('0');
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
   const [dataXAIImg, setDataXAIImg] = useState(null);
   const [gradeXAIImg, setGradeXAIImg] = useState(null);
+  const [imgPath, setImgPath] = useState(raw_img_path);
 
   // fetch 한 예측 데이터 저장
   const [dataPA, setDataPA] = useState(null);
@@ -52,13 +56,14 @@ function DataPAView({ dataProps }) {
   const getPredictedData = async (seqno) => {
     try {
       const response = await fetch(
-        `http://${apiIP}/meat/get/predict-data?id=${id}&seqno=${seqno}`
+        `http://${apiIP}/meat/get/predict-data?meatId=${meatId}&seqno=${seqno}`
       );
       if (!response.ok) {
-        throw new Error('Network response was not ok', id, '-', seqno);
+        throw new Error('Network response was not ok', meatId, '-', seqno);
       }
       const json = await response.json();
       setDataPA(json);
+
       setDataXAIImg(json.xai_imagePath);
       setGradeXAIImg(json.xai_gradeNum_imagePath);
       return json;
@@ -74,10 +79,13 @@ function DataPAView({ dataProps }) {
   //예측 post 중 로딩 표시
   const [isPredictedDone, SetIsPredictedDone] = useState(true);
 
+  // UserContext에서 유저 정보 불러오기
+  const user = useUser();
+
   //데이터 예측 버튼 클릭 시
   const handlePredictClick = async () => {
     //로그인한 유저 정보
-    const userId = JSON.parse(localStorage.getItem('UserInfo'))['userId'];
+    const userId = user.userId;
     // period 계산
     const elapsedHour = computePeriod(api_data['butcheryYmd']);
     const len = processed_data_seq.length;
@@ -85,27 +93,24 @@ function DataPAView({ dataProps }) {
     // 로딩 화면 표시 시작
     SetIsPredictedDone(false);
     //모든 육류 데이터 (원육, n회차 이미지)에 대해 예측
-    for (let i = 0; i < len; i++) {
-      let req = {
-        ['id']: id,
-        ['seqno']: i,
-        ['userId']: userId,
-        ['period']: Math.round(elapsedHour),
-      };
-      try {
-        await fetch(`http://${apiIP}/meat/get/predict-data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(req),
-        });
-        // 예측 정보 로드
-        await getPredictedData(i);
-      } catch (err) {
-        console.error(err);
-      }
+    let req = {
+      ['meatId']: meatId,
+      ['seqno']: parseInt(processedToggleValue),
+    };
+    try {
+      await fetch(`http://${apiIP}/meat/predict/sensory-eval`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req),
+      });
+      // 예측 정보 로드
+      await getPredictedData(parseInt(processedToggleValue));
+    } catch (err) {
+      console.error(err);
     }
+
     // 로딩 화면 표시 종료
     SetIsPredictedDone(true);
   };
@@ -114,12 +119,15 @@ function DataPAView({ dataProps }) {
   const handleSelect = async (key) => {
     // 예측 데이터 로드
     await getPredictedData(key);
+    setTab(key);
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
     // 원본 이미지 바꾸기
     key === '0'
       ? setPreviewImage(raw_img_path)
       : setPreviewImage(
-          processed_img_path[parseInt(processedToggleValue) - 1]
-            ? processed_img_path[parseInt(processedToggleValue) - 1]
+          processed_img_path[targetIndex]
+            ? processed_img_path[targetIndex]
             : null
         );
   };
@@ -129,10 +137,33 @@ function DataPAView({ dataProps }) {
     getPredictedData(parseInt(processedToggleValue));
   }, [processedToggleValue]);
 
+  useEffect(() => {
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
+    if (tab === '0') {
+      setImgPath(raw_img_path);
+    } else {
+      setImgPath(
+        processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+      );
+    }
+  }, [processedToggleValue, tab]);
+
+
   // 초기에 원육 예측 데이터 로드
   useEffect(() => {
     getPredictedData(0);
   }, []);
+
+  useEffect(() => {
+    const target = processedToggleValue; //n회
+    const targetIndex = processed_data_seq.indexOf(target) - 1;
+    setPreviewImage(
+      processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+    );
+  }, [processedToggleValue, tab]);
+
+
 
   return (
     <div style={{ width: '100%' }}>
@@ -164,7 +195,7 @@ function DataPAView({ dataProps }) {
                 <div style={style.imgWrapper}>
                   {previewImage ? (
                     <img
-                      src={previewImage + '?n=' + Math.random()}
+                      src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
                     />
                   ) : (
@@ -217,7 +248,7 @@ function DataPAView({ dataProps }) {
         {/* 2. QR코드와 데이터에 대한 기본 정보*/}
         <QRInfoCard
           qrImagePath={qrImagePath}
-          id={id}
+          id={meatId}
           userId={userId}
           createdAt={createdAt}
           page="predict"
@@ -248,45 +279,51 @@ function DataPAView({ dataProps }) {
               title="처리육"
               style={{ backgroundColor: 'white' }}
             >
-              <Autocomplete
-                id={'controllable-states-processed'}
-                label="처리상태"
-                value={processed_toggle}
-                onChange={(event, newValue) => {
-                  setProcessedToggle(newValue);
-                }}
-                inputValue={processedToggleValue}
-                onInputChange={(event, newInputValue) => {
-                  setProcessedToggleValue(newInputValue);
-                  /*이미지 변경 */
-                  setPreviewImage(
-                    processed_img_path[parseInt(newInputValue) - 1]
-                      ? processed_img_path[parseInt(newInputValue) - 1]
-                      : null
-                  );
-                }}
-                options={options.slice(1)}
-                size="small"
-                sx={{ width: 300, marginBottom: '10px' }}
-                renderInput={(params) => <TextField {...params} />}
-              />
-              <ProcessedTableStatic
-                processedMinute={processed_minute}
-                processedToggleValue={processedToggleValue}
-                processed_data={processed_data}
-              />
-              <PredictedProcessedTablePA
-                seqno={parseInt(processedToggleValue)}
-                processed_data={processed_data}
-                dataPA={dataPA}
-              />
+              {processed_data && processed_data.length > 0 ? (
+                <>
+                  <Autocomplete
+                    id={'controllable-states-processed'}
+                    label="처리상태"
+                    value={processed_toggle}
+                    onChange={(event, newValue) => {
+                      setProcessedToggle(newValue);
+                      setProcessedToggleValue(newValue);
+                    }}
+                    inputValue={processedToggleValue}
+                    onInputChange={(event, newInputValue) => {
+                      setProcessedToggleValue(newInputValue);
+                    }}
+                    options={options.slice(1)}
+                    size="small"
+                    sx={{ width: 300, marginBottom: '10px' }}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  <ProcessedTableStatic
+                    processedMinute={processed_minute}
+                    processedToggleValue={processedToggleValue}
+                    processed_data={processed_data}
+                    processed_data_seq={processed_data_seq}
+                  />
+                  <PredictedProcessedTablePA
+                    seqno={parseInt(processedToggleValue)}
+                    processedToggleValue={processedToggleValue}
+                    processed_data={processed_data}
+                    processed_data_seq={processed_data_seq}
+                    dataPA={dataPA}
+                  />
+                </>
+              ) : (
+                <div style={divStyle.errorContainer}>
+                  <div style={divStyle.errorText}>처리육 데이터가 없습니다</div>
+                </div>
+              )}
             </Tab>
           </Tabs>
         </Card>
       </div>
     </div>
   );
-}
+};
 
 export default DataPAView;
 
@@ -406,6 +443,18 @@ const divStyle = {
   },
   loadingText: {
     fontSize: '25px',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    height: '65vh',
+    minHeight: '500px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: '16px',
     textAlign: 'center',
   },
 };

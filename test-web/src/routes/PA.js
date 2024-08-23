@@ -1,85 +1,72 @@
-import { useState, useEffect } from 'react';
-import SearchFilterBar from '../components/Search/SearchFilterBar';
-// 데이터 목록
-import PADataListComp from '../components/DataListView/PADataListComp';
-// mui
-import { Box, Button, Select, MenuItem } from '@mui/material';
-// import timezone
-import { TIME_ZONE } from '../config';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+// mui
+import { Box, Button, Select, MenuItem, CircularProgress } from '@mui/material';
+// style
+import style from './style/pastyle';
+// timezone
+import { TIME_ZONE } from '../config';
+// 검색 필터 컴포넌트
+import SearchFilterBar from '../components/Search/SearchFilterBar';
+// 예측 육류 목록 컴포넌트
+import PADataListComp from '../components/DataListView/PADataListComp';
+// ID 검색 컴포넌트
 import SearchById from '../components/DataListView/SearchById';
 import PASingle from '../components/DataListView/PASingle';
+// 구간 계산 함수
+import updateDates from '../Utils/updateDates';
 
 const navy = '#0F3659';
 
 // 예측 목록 페이지
-function PA() {
-  const handleDataFetch = (fetchedData) => {
-    setData(fetchedData);
-  };
-
-  const handleValueChange = (newValue) => {
-    setValue(newValue);
-  };
+const PA = () => {
   const [value, setValue] = useState('list');
-  const [data, setData] = useState(null);
-  /**default 조회 날짜 : 현재 날짜 기준 일주일 전  */
-  const s = new Date();
-  s.setDate(s.getDate() - 7);
-  const [startDate, setStartDate] = useState(
-    new Date(s.getTime() + TIME_ZONE).toISOString().slice(0, -5)
-  );
-  const [endDate, setEndDate] = useState(
-    new Date(new Date().getTime() + TIME_ZONE).toISOString().slice(0, -5)
-  );
+  const [specieValue, setSpecieValue] = useState('전체');
+  const [singleData, setSingleData] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [pageOffset, setPageOffset] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
-  /**설정한 날짜가 있는 경우 쿼리스트링을 통해서 날짜를 저장한 후 추출하여 설정 */
   // 쿼리스트링 추출
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-
-  const pageOffset = new URLSearchParams(searchParams).get('pageOffset');
-  const queryStartDate = new URLSearchParams(searchParams).get('startDate');
-  const queryEndDate = new URLSearchParams(searchParams).get('endDate');
-  const queryDuration = searchParams.get('duration');
-
-  const now = new Date();
-  let start = new Date(now);
-  let end = new Date(now);
-  const [specieValue, setSpecieValue] = useState('전체');
-
-  const handleSpeciesChange = (event) => {
-    setSpecieValue(event.target.value);
-  };
+  const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
+    useMemo(() => {
+      const searchParams = new URLSearchParams(location.search);
+      return {
+        querypageOffset: searchParams.get('pageOffset'),
+        queryStartDate: searchParams.get('start') || '',
+        queryEndDate: searchParams.get('end') || '',
+        queryDuration: searchParams.get('duration') || '',
+      };
+    }, [location.search]);
 
   useEffect(() => {
+    setPageOffset(querypageOffset);
+  }, [querypageOffset]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const now = new Date();
+    let start = new Date('1970-01-01T00:00:00Z');
+    let end = new Date(now);
+
     if (queryDuration) {
-      // duration 파라미터에 따라 시작 날짜 설정
-      switch (queryDuration) {
-        case 'week':
-          start.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          start.setMonth(now.getMonth() - 1);
-          break;
-        case 'quarter':
-          start.setMonth(now.getMonth() - 3);
-          break;
-        case 'year':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
-        case 'total':
-          start = new Date(1970, 0, 1); // 가장 오래된 날짜로 설정
-          break;
-        default:
-          start.setDate(now.getDate() - 7); // 기본값은 1주일
+      const { start: durationStart, end: durationEnd } =
+        updateDates(queryDuration);
+      start = new Date(durationStart);
+      end = new Date(durationEnd);
+    } else if (queryStartDate || queryEndDate) {
+      // startDate 또는 endDate 파라미터가 있을 경우
+      if (queryStartDate) {
+        start = new Date(queryStartDate);
       }
-    } else if (queryStartDate && queryEndDate) {
-      // startDate와 endDate 파라미터가 있을 경우
-      start = new Date(queryStartDate);
-      end = new Date(queryEndDate);
+      if (queryEndDate) {
+        end = new Date(queryEndDate);
+      }
     } else {
       // 기본값 설정 (7일 전부터 현재까지)
+      start = new Date(now);
       start.setDate(now.getDate() - 7);
     }
 
@@ -92,7 +79,33 @@ function PA() {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
-  }, [searchParams]);
+    setIsLoading(false);
+  }, [queryStartDate, queryEndDate, queryDuration, location.search]);
+
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleSpeciesChange = (event) => {
+    setSpecieValue(event.target.value);
+  };
+
+  const handleSingleDataFetch = (fetchedData) => {
+    setSingleData(fetchedData);
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div
@@ -121,14 +134,14 @@ function PA() {
             minWidth: '720px', //720보다 좀 더 작아도 됨
           }}
         >
-          Data prediction
+          Data Prediction
         </span>
       </Box>
       {/**이동 탭 (목록, 통계 , 반려) */}
-      <Box sx={styles.fixedTab}>
+      <Box sx={style.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
-            style={value === 'list' ? styles.tabBtnCilcked : styles.tabBtn}
+            style={value === 'list' ? style.tabBtnCilcked : style.tabBtn}
             value="list"
             variant="outlined"
             onClick={(e) => {
@@ -140,7 +153,7 @@ function PA() {
         </div>
       </Box>
       {/**검색 필터 */}
-      <Box sx={styles.fixed}>
+      <Box sx={style.fixed}>
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
@@ -149,10 +162,10 @@ function PA() {
             setEndDate={setEndDate}
           />
           <SearchById
-            onDataFetch={handleDataFetch}
+            onDataFetch={handleSingleDataFetch}
             onValueChange={handleValueChange}
           />
-           <Select
+          <Select
             labelId="species"
             id="species"
             value={specieValue}
@@ -166,7 +179,7 @@ function PA() {
         </Box>
       </Box>
       {/**데이터 목록 */}
-      {value === 'single' && <PASingle data={data} />}
+      {value === 'single' && <PASingle singleData={singleData} />}
       {value === 'list' && (
         <PADataListComp
           startDate={startDate}
@@ -177,38 +190,5 @@ function PA() {
       )}
     </div>
   );
-}
-export default PA;
-
-const styles = {
-  fixed: {
-    zIndex: 1,
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    backgroundColor: 'white',
-    margin: '10px 0px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  fixedTab: {
-    right: '0',
-    left: '0px',
-    borderRadius: '0',
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '30px',
-    borderBottom: 'solid rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 'thin',
-    minWidth: '720px', // 특정 픽셀 이하로 줄어들지 않도록 설정
-  },
-  tabBtn: {
-    border: 'none',
-    color: navy,
-  },
-  tabBtnCilcked: {
-    border: `1px solid ${navy}`,
-    color: navy,
-  },
 };
+export default PA;

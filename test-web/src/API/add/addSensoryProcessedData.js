@@ -1,16 +1,14 @@
-import { computeCurrentDate } from '../../components/DataDetailPage/computePeriod';
 import { apiIP } from '../../config';
 
 // 처리육 수정 POST API
-export default async function addSensoryProcessedData(
+export const addSensoryProcessedData = async (
   processedInput, // 처리육 데이터 (수정값)
   i, // 처리육 seqno
   meatId, // 이력번호
   userId,
-  isPost
-) {
-  //const [yy, mm, dd] = computeCurrentDate();
-  //console.log("CHECK",processedInput)
+  isPost,
+  isAdded
+) => {
   const dataSet = {
     ['marbling']: parseFloat(processedInput.marbling),
     ['color']: parseFloat(processedInput.color),
@@ -18,6 +16,19 @@ export default async function addSensoryProcessedData(
     ['surfaceMoisture']: parseFloat(processedInput.surfaceMoisture),
     ['overall']: parseFloat(processedInput.overall),
   };
+
+  // 현재 시각을 한국 시간(KST)으로 변환
+  const currentDateTime = new Date();
+  const offsetKST = 9 * 60; // 한국은 UTC+9
+  const kstDateTime = new Date(
+    currentDateTime.getTime() + offsetKST * 60 * 1000
+  );
+
+  // 한국 시간 기준으로 날짜와 시간을 원하는 형식으로 변환
+  const formattedDateTime = kstDateTime
+    .toISOString()
+    .slice(0, 19) // "YYYY-MM-DDTHH:MM:SS" 부분만 가져옴
+    .replace('T', 'T'); // T는 그대로 사용
 
   //request body에 보낼 데이터 전처리
   let req = {
@@ -27,9 +38,9 @@ export default async function addSensoryProcessedData(
     ...req,
     ['meatId']: meatId,
     ['userId']: userId,
-    ['seqno']: i + 1,
-    ['imgAdded']: false,
-    ['filmedAt']: '2024-07-08T12:12:12',
+    ['seqno']: i,
+    ['imgAdded']: isAdded,
+    ['filmedAt']: formattedDateTime,
   };
   if (!isPost) delete req['userId'];
 
@@ -54,4 +65,5 @@ export default async function addSensoryProcessedData(
     console.log('error');
     console.error(err);
   }
-}
+};
+export default addSensoryProcessedData;
