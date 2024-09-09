@@ -1,4 +1,7 @@
 # DB Model Config File
+import time
+from flask import g, request
+from prometheus_client import Counter, Histogram, multiprocess, generate_latest, CollectorRegistry
 from sqlalchemy import (
     Column,
     Integer,
@@ -43,7 +46,39 @@ def initialize_db(app):
         raise
     else:
         print("Connect DB OKAY")
-    # 6. db_session을 반환해 DB 세션 관리
+        
+    # Prometheus 메트릭 설정
+    REQUEST_COUNT = Counter('flask_app_request_count', 'App Request Count', ['method', 'endpoint'])
+    REQUEST_LATENCY = Histogram('flask_app_request_latency_seconds', 'Request latency', ['method', 'endpoint'])
+
+    # 6. 요청 전 세션 초기화 및 시작 시간 기록
+    @app.before_request
+    def before_request():
+        g.start_time = time.time()  # Record start time
+        db_session()
+
+    # 7. 요청 후 메트릭 수집 및 세션 종료 관리
+    @app.after_request
+    def after_request(response):
+        if hasattr(g, 'start_time'):
+            latency = time.time() - g.start_time
+            REQUEST_LATENCY.labels(method=request.method, endpoint=request.path).observe(latency)
+        REQUEST_COUNT.labels(method=request.method, endpoint=request.path).inc()
+        return response
+
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db_session.remove()
+
+    # 8. Prometheus 멀티프로세싱 지원을 위한 메트릭 엔드포인트 설정
+    def prometheus_metrics():
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
+        return generate_latest(registry)
+
+    app.add_url_rule('/metrics', 'metrics', prometheus_metrics)
+    
+    # 9. db_session을 반환해 DB 세션 관리
     return db_session
 
 
