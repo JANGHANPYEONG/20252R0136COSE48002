@@ -76,7 +76,7 @@ class DefaultFirebaseOptions {
   static FirebaseOptions macos = FirebaseOptions(
     apiKey: dotenv.env['MACOS_APIKEY']!,
     appId: dotenv.env['MACOS_APPID']!,
-    messagingSenderId: dotenv.env['MACOD_MESSAGING']!,
+    messagingSenderId: dotenv.env['MACOS_MESSAGING']!,
     projectId: dotenv.env['MACOS_PROJECTID']!,
     storageBucket: dotenv.env['MACOS_STORAGEBUCKET'],
     iosBundleId: dotenv.env['MACOS_BUNDLEID'],
