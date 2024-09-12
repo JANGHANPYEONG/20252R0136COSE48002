@@ -6,6 +6,7 @@ on:
       - feature/app
     paths:
       - "app/**"
+      - ".github/workflows/app-*"
   pull_request:
     branches:
       - feature/app
@@ -105,7 +106,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd app
           flutter pub get
 
       - name: Check Format Issue
