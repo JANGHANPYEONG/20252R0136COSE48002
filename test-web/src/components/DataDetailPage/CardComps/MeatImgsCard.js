@@ -11,7 +11,9 @@ import { useUser } from '../../../Utils/UserContext';
 import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
 import { Tooltip } from '@mui/material';
-import opencvpreview from '../../../src_assets/opencvpreview.png';
+import useOpencvImageData from '../../../API/get/getOpencvImageDataSWR';
+import { dummyOpencvData } from './dummyOpencvData';
+import OpencvImgMaker from './OpencvImgMaker';
 
 const navy = '#0F3659';
 
@@ -30,19 +32,7 @@ const MeatImgsCard = ({
   processedMinute, // 처리 시간 (분)
   processed_data_seq, // 회차 정보
   isPost,
-  opencvDataProps,
 }) => {
-  const {
-    segmentImage,
-    proteinColorPalette,
-    fatColorPalette,
-    totalColorPalette,
-    proteinRate,
-    fatRate,
-  } = opencvDataProps || {};
-
-  console.log('opencvDataProps', opencvDataProps);
-
   // 1.이미지 배열 만들기
   const [imgArr, setImgArr] = useState([raw_img_path]);
   useEffect(() => {
@@ -80,7 +70,6 @@ const MeatImgsCard = ({
     let newImages = imgArr;
     newImages[currentIdx] = reader.result;
     setImgArr(newImages);
-    console.log('opencvDataProps', opencvDataProps);
   };
 
   const handleFileChange = (e) => {
@@ -103,6 +92,17 @@ const MeatImgsCard = ({
       isPost,
     });
   };
+
+  const [tooltipImgData, setTooltipImgData] = useState([]);
+  const { data: fetchedData, isLoading, isError } = useOpencvImageData(id);
+  const data = id === '3c80e807e2b5' ? dummyOpencvData : fetchedData;
+
+  //데이터 전처리
+  useEffect(() => {
+    if (data !== null && data !== undefined) {
+      setTooltipImgData(data);
+    }
+  }, [data]);
 
   return (
     <Card
@@ -182,11 +182,19 @@ const MeatImgsCard = ({
             overlay={
               <Tooltip id="button-tooltip">
                 {' '}
-                <img
-                  src={opencvpreview}
-                  alt={`Image ${currentIdx + 1}`}
-                  style={style.imgWrapper}
-                />
+                {isLoading ? (
+                  <div style={style.overlayNotExistWrapper}>Loading...</div>
+                ) : data === undefined || data === null || isError ? (
+                  <div style={style.overlayNotExistWrapper}>
+                    단면, 컬러팔레트 이미지가 없습니다
+                  </div>
+                ) : tooltipImgData ? (
+                  <OpencvImgMaker data={tooltipImgData} />
+                ) : (
+                  <div style={style.overlayNotExistWrapper}>
+                    오류로 인해 단면, 컬러팔레트 이미지를 불러올 수 없습니다
+                  </div>
+                )}
               </Tooltip>
             }
           >
