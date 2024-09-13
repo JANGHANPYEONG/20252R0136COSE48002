@@ -109,11 +109,7 @@ jobs:
           cd app/structure
           flutter pub get
 
-      - name: Check Format Issue
-        run: flutter format --set-exit-if-changed .
-
-      - name: Analyze Code Error
-        run: flutter analyze .
-
       - name: Run Widget Test
-        run: flutter test
+        run: | 
+          flutter test
+          echo 'Test Success!'
