@@ -150,7 +150,8 @@ class UserRouter {
                 GoRoute(
                   path: 'trace-num',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => InsertionTraceNumViewModel(meatModel),
+                    create: (context) =>
+                        InsertionTraceNumViewModel(meatModel, context),
                     child: const InsertionTraceNumScreen(),
                   ),
                   routes: [
@@ -159,7 +160,7 @@ class UserRouter {
                       path: 'meat-info',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
-                            InsertionMeatInfoViewModel(meatModel),
+                            InsertionMeatInfoViewModel(meatModel, context),
                         child: const InsertionMeatInfoScreen(),
                       ),
                     ),
@@ -229,7 +230,8 @@ class UserRouter {
                 GoRoute(
                   path: 'user-detail',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) => UserDetailViewModel(userModel),
+                    create: (context) =>
+                        UserDetailViewModel(userModel, context),
                     child: const UserDetailScreen(),
                   ),
                 ),
@@ -300,7 +302,7 @@ class UserRouter {
                       path: 'info-editable',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) =>
-                            InsertionMeatInfoViewModel(meatModel),
+                            InsertionMeatInfoViewModel(meatModel, context),
                         child: const InsertionMeatInfoScreen(),
                       ),
                     ),

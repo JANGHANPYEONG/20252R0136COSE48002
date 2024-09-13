@@ -7,7 +7,8 @@ import 'package:structure/model/user_model.dart';
 
 class UserDetailViewModel with ChangeNotifier {
   UserModel userModel;
-  UserDetailViewModel(this.userModel) {
+  BuildContext context;
+  UserDetailViewModel(this.userModel, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -102,7 +103,7 @@ class UserDetailViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 
