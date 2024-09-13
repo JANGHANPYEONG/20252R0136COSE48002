@@ -15,7 +15,8 @@ import 'package:structure/components/custom_pop_up.dart';
 
 class InsertionMeatInfoViewModel with ChangeNotifier {
   MeatModel meatModel;
-  InsertionMeatInfoViewModel(this.meatModel) {
+  BuildContext context;
+  InsertionMeatInfoViewModel(this.meatModel, this.context) {
     initialize();
   }
   bool isLoading = false;
@@ -83,7 +84,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error getting getMeatSpecies: $e');
-      // TODO : 에러 메시지 팝업
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     // 종에 따른 대분류 데이터 할당
@@ -172,7 +173,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
         }
       } catch (e) {
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context);
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       // 신규 생성
@@ -192,7 +193,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       if (response == null) Error();
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 임시저장 에러 메시지 팝업
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }
