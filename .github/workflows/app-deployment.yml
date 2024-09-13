@@ -31,7 +31,7 @@ env:
   IOS_BUNDLEID: ${{secrets.IOS_BUNDLEID}}
   MACOS_APIKEY: ${{secrets.MACOS_APIKEY}}
   MACOS_APPID: ${{secrets.MACOS_APPID}}
-  MACOD_MESSAGING: ${{secrets.MACOD_MESSAGING}}
+  MACOS_MESSAGING: ${{secrets.MACOS_MESSAGING}}
   MACOS_PROJECTID: ${{secrets.MACOS_PROJECTID}}
   MACOS_STORAGEBUCKET: ${{secrets.MACOS_STORAGEBUCKET}}
   MACOS_BUNDLEID: ${{secrets.MACOS_BUNDLEID}}
@@ -45,10 +45,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
+          flutter-version: '3.22.0'  # 특정 버전 지정 (최신 안정 버전으로 변경 가능)
+          channel: 'stable'
 
       - name: Set Environment variables
         run: |
@@ -90,6 +97,11 @@ jobs:
           cd app/structure/android/app
           echo "$google-service" > google-services.json
           cd ../../../../
+
+      - name: Install dependencies
+        run: |
+          cd app/structure
+          flutter pub get
 
       - name: Build APK
         run: |
