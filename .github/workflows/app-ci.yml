@@ -6,7 +6,6 @@ on:
       - feature/app
     paths:
       - "app/**"
-      - ".github/workflows/app-*"
   pull_request:
     branches:
       - feature/app
