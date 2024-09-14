@@ -52,6 +52,8 @@ const DataPAView = ({ dataProps }) => {
 
   // fetch 한 예측 데이터 저장
   const [dataPA, setDataPA] = useState(null);
+
+  
   // 예측 데이터 fetch
   const getPredictedData = async (seqno) => {
     try {
@@ -64,15 +66,15 @@ const DataPAView = ({ dataProps }) => {
       const json = await response.json();
       setDataPA(json);
 
-      setDataXAIImg(json.xai_imagePath);
-      setGradeXAIImg(json.xai_gradeNum_imagePath);
+      setDataXAIImg(json.xaiImagePath);
+      setGradeXAIImg(json.xaiGradeImagePath);
       return json;
     } catch (error) {
       // 데이터를 불러오는 데 실패한 경우 모든 data를 null로 설정
       console.error('Error fetching data seqno-', seqno, ':', error);
       setDataPA(null);
-      setDataXAIImg(null);
-      setGradeXAIImg(null);
+      //setDataXAIImg(null);
+      //setGradeXAIImg(null);
     }
   };
 
@@ -218,7 +220,7 @@ const DataPAView = ({ dataProps }) => {
                   {dataXAIImg ? (
                     <div className="imgContainer">
                       <img
-                        src={dataXAIImg + '?n=' + Math.random()}
+                        src={dataXAIImg}
                         style={style.imgWrapperContextImg}
                       />
                     </div>
@@ -231,7 +233,7 @@ const DataPAView = ({ dataProps }) => {
                   {gradeXAIImg ? (
                     <div className="imgContainer">
                       <img
-                        src={gradeXAIImg + '?n=' + Math.random()}
+                        src={gradeXAIImg}
                         style={style.imgWrapperContextImg}
                       />
                     </div>
