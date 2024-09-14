@@ -1139,7 +1139,7 @@ def get_AI_SensoryEval(db_session, id, seqno):
             "meatId": ai_sensoryEval.id,
             "seqno": ai_sensoryEval.seqno,
             "createdAt": ai_sensoryEval.createdAt,
-            "xaiGrade": gradeNum[ai_sensoryEval.xaiGradeNum],
+            "xaiGrade": gradeNum[ai_sensoryEval.xai_gradeNum],
             "xaiGradeImagePath": ai_sensoryEval.xai_gradeNum_imagePath,
             "xaiImagePath": ai_sensoryEval.xai_imagePath,
             "marbling": ai_sensoryEval.marbling,
