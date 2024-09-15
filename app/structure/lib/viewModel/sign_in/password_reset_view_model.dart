@@ -6,7 +6,8 @@ import 'package:structure/model/user_model.dart';
 
 class PasswordResetViewModel with ChangeNotifier {
   UserModel userModel;
-  PasswordResetViewModel({required this.userModel});
+  BuildContext context;
+  PasswordResetViewModel({required this.userModel, required this.context});
 
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
@@ -36,11 +37,8 @@ class PasswordResetViewModel with ChangeNotifier {
     }
   }
 
-  late BuildContext _context;
-
   /// 비밀번호 변경
-  Future<void> sendResetPassword(BuildContext context) async {
-    _context = context;
+  Future<void> sendResetPassword() async {
     isLoading = true;
     notifyListeners();
 
@@ -64,7 +62,7 @@ class PasswordResetViewModel with ChangeNotifier {
 
   /// 오류 snackbar
   void _showAlert(String message) {
-    ScaffoldMessenger.of(_context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
@@ -75,8 +73,8 @@ class PasswordResetViewModel with ChangeNotifier {
 
   /// 성공시 complete_reset_screen으로 이동
   void _success() {
-    if (_context.mounted) {
-      _context.go('/sign-in/complete_password_reset');
+    if (context.mounted) {
+      context.go('/sign-in/complete_password_reset');
     }
   }
 }

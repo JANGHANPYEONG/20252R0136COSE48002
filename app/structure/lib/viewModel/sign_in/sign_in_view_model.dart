@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/palette.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -11,7 +12,12 @@ import 'package:structure/model/user_model.dart';
 class SignInViewModel with ChangeNotifier {
   UserModel userModel;
   MeatModel meatModel;
-  SignInViewModel({required this.userModel, required this.meatModel});
+  BuildContext context;
+  SignInViewModel({
+    required this.userModel,
+    required this.meatModel,
+    required this.context,
+  });
 
   String userId = '';
   String userPw = '';
@@ -36,13 +42,13 @@ class SignInViewModel with ChangeNotifier {
   }
 
   // 로그인 버튼 클릭 시
-  Future<void> clickedSignInButton(BuildContext context) async {
+  Future<void> clickedSignInButton() async {
     FocusScope.of(context).unfocus();
-    await _signIn(context);
+    await _signIn();
   }
 
   // 로그인 진행
-  Future<void> _signIn(BuildContext context) async {
+  Future<void> _signIn() async {
     // 로딩 상태를 활성화
     isLoading = true;
     notifyListeners();
@@ -156,19 +162,19 @@ class SignInViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 에러 메시지 팝업
+      if (context.mounted) showErrorPopup(context, error: e.toString());
       return false;
     }
   }
 
   /// 비밀번호 변경 페이지 이동
-  void resetPassword(BuildContext context) {
+  void resetPassword() {
     FocusScope.of(context).unfocus();
     if (context.mounted) context.go('/sign-in/password_reset');
   }
 
   /// 회원가입 변경 페이지 이동
-  void signUp(BuildContext context) {
+  void signUp() {
     FocusScope.of(context).unfocus();
     if (context.mounted) context.go('/sign-in/sign-up');
   }

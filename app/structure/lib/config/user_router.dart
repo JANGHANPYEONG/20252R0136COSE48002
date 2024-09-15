@@ -85,8 +85,11 @@ class UserRouter {
         GoRoute(
           path: '/sign-in',
           builder: (context, state) => ChangeNotifierProvider(
-            create: (context) =>
-                SignInViewModel(userModel: userModel, meatModel: meatModel),
+            create: (context) => SignInViewModel(
+              userModel: userModel,
+              meatModel: meatModel,
+              context: context,
+            ),
             child: const SignInScreen(),
           ),
           routes: [
@@ -112,8 +115,10 @@ class UserRouter {
             GoRoute(
               path: 'password_reset',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    PasswordResetViewModel(userModel: userModel),
+                create: (context) => PasswordResetViewModel(
+                  userModel: userModel,
+                  context: context,
+                ),
                 child: const PasswordResetScreen(),
               ),
             ),

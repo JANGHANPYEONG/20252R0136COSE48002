@@ -61,8 +61,8 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                         width: double.infinity,
                         height: 96.h,
                         onPressed: passwordResetViewModel.isValid()
-                            ? () async => passwordResetViewModel
-                                .sendResetPassword(context)
+                            ? () async =>
+                                passwordResetViewModel.sendResetPassword()
                             : null,
                         text: '비밀번호 재설정',
                       ),

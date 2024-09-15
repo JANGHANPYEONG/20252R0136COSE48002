@@ -19,9 +19,8 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () {
-      context.read<SignInViewModel>().autoLoginCheck(context);
-    });
+    // Future.delayed(Duration.zero, () {});
+    context.read<SignInViewModel>().autoLoginCheck(context);
   }
 
   @override
@@ -93,8 +92,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           width: double.infinity,
                           height: 96.h,
                           text: '로그인',
-                          onPressed: () async => await signInViewModel
-                              .clickedSignInButton(context),
+                          onPressed: () async =>
+                              await signInViewModel.clickedSignInButton(),
                         ),
                         SizedBox(height: 32.h),
 
@@ -123,8 +122,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                             // 비밀번호 재설정.
                             TextButton(
-                              onPressed: () =>
-                                  signInViewModel.resetPassword(context),
+                              onPressed: () => signInViewModel.resetPassword(),
                               child: Text(
                                 '비밀번호 재설정',
                                 style: Palette.h5.copyWith(
@@ -134,7 +132,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                             // 회원가입 텍스트버튼
                             TextButton(
-                              onPressed: () => signInViewModel.signUp(context),
+                              onPressed: () => signInViewModel.signUp(),
                               child: Text(
                                 '회원가입',
                                 style: Palette.h5.copyWith(
