@@ -97,7 +97,8 @@ class DataAddViewModel with ChangeNotifier {
       context,
       MaterialPageRoute(
         builder: (context) => ChangeNotifierProvider(
-          create: (context) => AddDeepAgingDataViewModel(meatModel: meatModel),
+          create: (context) =>
+              AddDeepAgingDataViewModel(meatModel: meatModel, context: context),
           child: const AddDeepAgingDataScreen(),
         ),
       ),
