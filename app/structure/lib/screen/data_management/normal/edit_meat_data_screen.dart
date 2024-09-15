@@ -40,7 +40,7 @@ class EditMeatDataScreen extends StatelessWidget {
                           : 4 // 수정 불가
                       : null, // 없음
 
-                  onTap: () => editMeatDataViewModel.clicekdBasic(context),
+                  onTap: () => editMeatDataViewModel.clicekdBasic(),
                   imageUrl: 'assets/images/meat_info.png',
                 ),
                 SizedBox(height: 16.h),
@@ -53,7 +53,7 @@ class EditMeatDataScreen extends StatelessWidget {
                           ? 3 // 수정 가능
                           : 4 // 수정 불가
                       : null, // 없음
-                  onTap: () => editMeatDataViewModel.clickedImage(context),
+                  onTap: () => editMeatDataViewModel.clickedImage(),
                   imageUrl: 'assets/images/meat_image.png',
                 ),
 
@@ -67,7 +67,7 @@ class EditMeatDataScreen extends StatelessWidget {
                           ? 3 // 수정 가능
                           : 4 // 수정 불가
                       : null, // 없음
-                  onTap: () => editMeatDataViewModel.clicekdFresh(context),
+                  onTap: () => editMeatDataViewModel.clicekdFresh(),
                   imageUrl: 'assets/images/meat_eval.png',
                 ),
 

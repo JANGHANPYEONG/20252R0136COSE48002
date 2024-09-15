@@ -10,7 +10,8 @@ import 'package:structure/model/user_model.dart';
 
 class DataManagementNormalViewModel with ChangeNotifier {
   UserModel userModel;
-  DataManagementNormalViewModel(this.userModel) {
+  BuildContext context;
+  DataManagementNormalViewModel(this.userModel, this.context) {
     _initialize();
   }
   // 초기 리스트
@@ -119,6 +120,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 
@@ -397,7 +399,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
   }
 
   // qr 관련 기능 시에 호출된다.
-  Future<void> clickedQr(BuildContext context) async {
+  Future<void> clickedQr() async {
     final response = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -425,14 +427,14 @@ class DataManagementNormalViewModel with ChangeNotifier {
   }
 
   // 입력 텍스트 초기화 시에 호출된다.
-  void textClear(BuildContext context) {
+  void textClear() {
     FocusScope.of(context).unfocus();
     controller.clear();
     onChanged(null);
   }
 
   // 데이터 필드를 클릭 시에 호출된다.
-  Future<void> onTap(int idx, BuildContext context) async {
+  Future<void> onTap(int idx) async {
     isLoading = true;
     notifyListeners();
 
@@ -450,7 +452,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;
