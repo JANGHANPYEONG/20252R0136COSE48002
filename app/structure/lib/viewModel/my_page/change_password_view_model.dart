@@ -7,7 +7,8 @@ import 'package:structure/config/labels.dart';
 
 class ChangePasswordViewModel with ChangeNotifier {
   UserModel userModel;
-  ChangePasswordViewModel({required this.userModel});
+  BuildContext context;
+  ChangePasswordViewModel({required this.userModel, required this.context});
 
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
@@ -83,11 +84,8 @@ class ChangePasswordViewModel with ChangeNotifier {
     }
   }
 
-  late BuildContext _context;
-
   /// 비밀번호 변경 함수
-  Future<void> changePassword(BuildContext context) async {
-    _context = context;
+  Future<void> changePassword() async {
     isLoading = true;
     notifyListeners();
     try {
@@ -115,7 +113,7 @@ class ChangePasswordViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;
@@ -124,7 +122,7 @@ class ChangePasswordViewModel with ChangeNotifier {
 
   /// 오류 snackbar
   void _showAlert(String message) {
-    ScaffoldMessenger.of(_context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),
@@ -135,7 +133,7 @@ class ChangePasswordViewModel with ChangeNotifier {
 
   /// 비밀번호 변경 성공
   void _success() {
-    showSuccessChangeUserInfo(_context, null);
+    showSuccessChangeUserInfo(context, null);
     originPW.clear();
     newPW.clear();
     newCPW.clear();
