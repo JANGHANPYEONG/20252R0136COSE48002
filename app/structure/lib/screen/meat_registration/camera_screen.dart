@@ -106,7 +106,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 child: GestureDetector(
                   onTap: () {
                     // 사진 찍기 함수 호출
-                    cameraViewModel.takePicture(context);
+                    cameraViewModel.takePicture();
                   },
                   child: CamShutter(isReady: cameraViewModel.canTakePicture),
                 ),

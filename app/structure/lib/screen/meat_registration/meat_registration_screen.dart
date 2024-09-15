@@ -31,7 +31,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<MeatRegistrationViewModel>().initialize(context);
+    context.read<MeatRegistrationViewModel>().initialize();
   }
 
   @override
@@ -53,7 +53,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                 StepCard(
                   mainText: '육류 기본정보',
                   status: widget.meatModel.basicCompleted ? 1 : 2,
-                  onTap: () => meatRegistrationViewModel.clickedBasic(context),
+                  onTap: () => meatRegistrationViewModel.clickedBasic(),
                   imageUrl: 'assets/images/meat_info.png',
                 ),
                 SizedBox(height: 16.h),
@@ -62,7 +62,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                 StepCard(
                   mainText: '육류 단면 촬영',
                   status: widget.meatModel.imageCompleted ? 1 : 2,
-                  onTap: () => meatRegistrationViewModel.clickedImage(context),
+                  onTap: () => meatRegistrationViewModel.clickedImage(),
                   imageUrl: 'assets/images/meat_image.png',
                 ),
                 SizedBox(height: 16.h),
@@ -71,8 +71,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                 StepCard(
                   mainText: '원육 관능평가',
                   status: widget.meatModel.sensoryCompleted ? 1 : 2,
-                  onTap: () =>
-                      meatRegistrationViewModel.clickedFreshmeat(context),
+                  onTap: () => meatRegistrationViewModel.clickedFreshmeat(),
                   imageUrl: 'assets/images/meat_eval.png',
                 ),
 
@@ -96,7 +95,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                           style:
                               Palette.h4Regular.copyWith(color: Colors.white),
                           onPressed: () async =>
-                              meatRegistrationViewModel.clickCreateBtn(context),
+                              meatRegistrationViewModel.clickCreateBtn(),
                         ),
                         SizedBox(height: 24.h),
 
@@ -104,8 +103,7 @@ class _MeatRegistrationScreenState extends State<MeatRegistrationScreen> {
                         CustomTextButton(
                           title: '임시저장 하기',
                           onPressed: () {
-                            meatRegistrationViewModel
-                                .clickedTempSaveButton(context);
+                            meatRegistrationViewModel.clickedTempSaveButton();
                           },
                         ),
                       ],

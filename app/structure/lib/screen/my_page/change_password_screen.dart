@@ -95,7 +95,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         onPressed: changePasswordViewModel.isAllValid() &&
                                 changePasswordViewModel.isActivateButton
                             ? () async =>
-                                changePasswordViewModel.changePassword(context)
+                                changePasswordViewModel.changePassword()
                             : null,
                       ),
                     ),

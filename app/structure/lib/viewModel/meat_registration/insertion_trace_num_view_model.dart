@@ -248,9 +248,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
             meatAPIData3['response']['body']['items']['item']['gradeNm'] ?? '';
       } catch (e) {
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context, error: e.toString());
         reset();
         isAllInserted = 2;
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       // 이력 번호의 시작이 '1'인 경우. (돼지의 경우)
@@ -272,9 +272,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
         speciesValue = '돼지';
       } catch (e) {
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context, error: e.toString());
         reset();
         isAllInserted = 2;
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     }
     if (butcheryYmd != null) {

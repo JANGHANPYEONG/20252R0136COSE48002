@@ -16,11 +16,11 @@ import 'package:structure/model/user_model.dart';
 class InsertionSensoryEvalViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
-  InsertionSensoryEvalViewModel(this.meatModel, this.userModel) {
+  final BuildContext context;
+  InsertionSensoryEvalViewModel(this.meatModel, this.userModel, this.context) {
     _initialize();
   }
   bool isLoading = false;
-  late BuildContext _context;
 
   // 초기 변수
   String title = '';
@@ -68,7 +68,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
   }
 
   /// 뒤로가기 버튼
-  VoidCallback? backBtnPressed(BuildContext context) {
+  VoidCallback? backBtnPressed() {
     return () => showExitDialog(context);
   }
 
@@ -103,7 +103,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
   }
 
   // 데이터를 객체에 할당
-  Future<void> saveMeatData(BuildContext context) async {
+  Future<void> saveMeatData() async {
     isLoading = true;
     notifyListeners();
 
@@ -156,7 +156,7 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
         }
       } catch (e) {
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context);
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       await tempSave(); // 임시저장
@@ -165,24 +165,22 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
     isLoading = false;
     notifyListeners();
 
-    _context = context;
     _goNext();
   }
 
   void _goNext() {
     if (meatModel.meatId == null) {
       // 신규 등록
-      _context.go('/home/registration');
+      context.go('/home/registration');
     } else {
       // 원육 수정
       if (meatModel.sensoryEval!['seqno'] == 0) {
-        showDataManageSucceedPopup(_context, () {
-          _context.go('/home/data-manage-normal/edit');
+        showDataManageSucceedPopup(context, () {
+          context.go('/home/data-manage-normal/edit');
         });
       } else {
         // 처리육 수정
-        // _context.go('/home/data-manage-researcher/add/processed-meat');
-        _context.pop();
+        context.pop();
       }
     }
   }
