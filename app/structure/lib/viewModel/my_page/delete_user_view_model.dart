@@ -13,15 +13,14 @@ import 'package:structure/model/user_model.dart';
 
 class DeleteUserViewModel with ChangeNotifier {
   UserModel userModel;
-  DeleteUserViewModel({required this.userModel});
+  BuildContext context;
+  DeleteUserViewModel({required this.userModel, required this.context});
   bool isActivateButton = false;
   bool isLoading = false;
 
   final formKey = GlobalKey<FormState>();
   TextEditingController password = TextEditingController();
   bool _isValidPw = false;
-
-  late BuildContext _context;
 
   /// 기존 비밀번호 유효성 검사
   String? pwValidate(String? value) {
@@ -50,36 +49,42 @@ class DeleteUserViewModel with ChangeNotifier {
   void popDialogCancel() {
     isLoading = false;
     notifyListeners();
-    _context.pop();
+    context.pop();
   }
 
   /// 회원 탈퇴 confirm
   void popDialogConfirm() async {
     isLoading = true;
     notifyListeners();
-    _context.pop();
+    context.pop();
 
-    // DB에서 유저 삭제 API 호출
-    final response = await RemoteDataSource.deleteUser(userModel.userId!);
+    try {
+      // DB에서 유저 삭제 API 호출
+      final response = await RemoteDataSource.deleteUser(userModel.userId!);
 
-    if (response != 200) {
+      if (response != 200) {
+        throw ErrorDescription(response);
+      }
+
+      password.clear();
+
+      await LocalDataSource.deleteLocalData(userModel.userId!);
+      await LocalDataSource.saveDataToLocal(
+          jsonEncode({'auto': null}), 'auto.json');
+      userModel.reset();
+
+      if (context.mounted) context.go('/sign-in');
+      _showSnackBar('회원 탈퇴가 성공적으로 처리되었습니다.');
+    } catch (e) {
       isLoading = false;
       notifyListeners();
-      _showSnackBar('오류가 발생했습니다.');
-      throw ErrorDescription(response);
-    }
 
-    password.clear();
-    await LocalDataSource.deleteLocalData(userModel.userId!);
-    await LocalDataSource.saveDataToLocal(
-        jsonEncode({'auto': null}), 'auto.json');
-    userModel.reset();
-    if (_context.mounted) _context.go('/sign-in');
-    _showSnackBar('회원 탈퇴가 성공적으로 처리되었습니다.');
+      if (context.mounted) showErrorPopup(context, error: e.toString());
+    }
   }
 
   /// 회원 탈퇴 함수
-  Future<void> deleteUser(BuildContext context) async {
+  Future<void> deleteUser() async {
     isLoading = true;
     notifyListeners();
 
@@ -98,9 +103,8 @@ class DeleteUserViewModel with ChangeNotifier {
         // 비밀번호 인증 통과하면 최종 확인 팝업 후 탈퇴 진행
         isLoading = false;
         notifyListeners();
-        _context = context;
-        if (_context.mounted) {
-          showDeleteIdDialog(_context, popDialogCancel, popDialogConfirm);
+        if (context.mounted) {
+          showDeleteIdDialog(context, popDialogCancel, popDialogConfirm);
         }
       } else {
         throw ErrorDescription('User does not exist');
@@ -110,11 +114,11 @@ class DeleteUserViewModel with ChangeNotifier {
       if (e.code == 'wrong-password') {
         _showSnackBar(Labels.pwdNotSame); // 기존 비밀번호가 틀리면 alert 생성
       } else {
-        _showSnackBar('오류가 발생했습니다.');
+        throw ErrorDescription(e.code);
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;
@@ -123,7 +127,7 @@ class DeleteUserViewModel with ChangeNotifier {
 
   /// 오류 snackbar
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(_context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 1),
         content: Text(message),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/usefuls.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -50,6 +51,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
         if (response != 200) throw ErrorDescription(response);
       } catch (e) {
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     }
 
@@ -77,6 +79,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
     } else {
       // 데이터 입력이 제대로 되지 않았을 때 에러 반환
       debugPrint('Error creating managementNum');
+      if (context.mounted) showErrorPopup(context, error: '관리번호 생성중 오류 발생');
     }
   }
 
@@ -114,6 +117,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       await uploadQRCodeImageToStorage();
     } catch (e) {
       debugPrint('Error uploading image to firebase: $e');
+      // Fail 페이지로 가기 때문에 오류 팝업 생성 x
       if (context.mounted) context.go('/home/registration-fail');
     }
   }

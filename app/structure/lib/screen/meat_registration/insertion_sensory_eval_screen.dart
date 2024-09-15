@@ -50,8 +50,7 @@ class _InsertionSensoryEvalScreenState extends State<InsertionSensoryEvalScreen>
     return Scaffold(
       appBar: CustomAppBar(
         title: insertionSeosnryEvalViewModel.title,
-        backButtonOnPressed:
-            insertionSeosnryEvalViewModel.backBtnPressed(context),
+        backButtonOnPressed: insertionSeosnryEvalViewModel.backBtnPressed(),
       ),
       body: Stack(
         children: [
@@ -151,7 +150,7 @@ class _InsertionSensoryEvalScreenState extends State<InsertionSensoryEvalScreen>
                       height: 96.h,
                       text: insertionSeosnryEvalViewModel.saveBtnText(),
                       onPressed: () async =>
-                          insertionSeosnryEvalViewModel.saveMeatData(context),
+                          insertionSeosnryEvalViewModel.saveMeatData(),
                     ),
                   ),
                 ],

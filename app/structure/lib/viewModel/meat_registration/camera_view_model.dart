@@ -7,7 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:structure/components/custom_pop_up.dart';
 
 class CameraViewModel with ChangeNotifier {
-  CameraViewModel() {
+  BuildContext context;
+  CameraViewModel({required this.context}) {
     _initialize();
   }
 
@@ -29,9 +30,11 @@ class CameraViewModel with ChangeNotifier {
       if (e is CameraException && e.code == 'CameraAccessDenied') {
         // 카메라 권한 설정
         debugPrint('Camera access denied');
+        // TODO : 카메라 권한 팝업
       } else {
         // 카메라 오류
         debugPrint('Camera error: $e');
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     });
 
@@ -52,7 +55,7 @@ class CameraViewModel with ChangeNotifier {
   }
 
   /// 사진 촬영
-  Future<void> takePicture(BuildContext context) async {
+  Future<void> takePicture() async {
     // 카메라 init 오류 또는 사진 찍는 중
     if (!controller.value.isInitialized || controller.value.isTakingPicture) {
       return;
