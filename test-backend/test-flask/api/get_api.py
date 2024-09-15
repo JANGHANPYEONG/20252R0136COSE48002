@@ -75,13 +75,19 @@ def getMeatDataByPartialId():
     try:
         db_session = current_app.db_session
         partial_id = request.args.get("meatId")
+        offset = request.args.get("offset")
+        count = request.args.get("count")
+        start = request.args.get("start")
+        end = request.args.get("end")
+        specie = request.args.get("specieValue")
+        if specie == '전체':
+            specie_value = 2
+        else:
+            specie_value = species.index(specie)
         if partial_id is None:
             return jsonify({"msg": "Invalid Meat Id"}), 400
-        meats = get_meat_by_partial_id(db_session, partial_id)
-
-        part_id_meat_list = [get_meat(meat) for meat in meats]
-        logger.log(meats)
-        return jsonify(part_id_meat_list)
+        meats = get_meat_by_partial_id(db_session, partial_id, offset, count, start, end, specie_value)
+        return jsonify(meats)
     except Exception as e:
         logger.exception(str(e))
         return (
