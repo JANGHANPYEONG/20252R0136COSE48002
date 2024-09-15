@@ -13,7 +13,8 @@ from db.db_controller import (
     _getMeatDataByRangeStatusType,
     _getTexanomyData,
     _getPredictionData,
-    get_OpenCVresult
+    get_OpenCVresult,
+    get_meat_by_partial_id
 )
 from utils import *
 
@@ -69,30 +70,25 @@ def getMeatDataById():
 
 
 # ID를 부분적으로 포함하는 육류 데이터 출력
-@get_api.route("/by-partial-id", methods=["GET", "POST"])
+@get_api.route("/by-partial-id", methods=["GET"])
 def getMeatDataByPartialId():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            part_id = request.args.get("part_id")
-            meats_with_statusType_2 = (
-                db_session.query(Meat).filter_by(statusType=2).all()
-            )
-            meat_list = []
-            for meat in meats_with_statusType_2:
-                meat_list.append(meat.id)
+        db_session = current_app.db_session
+        partial_id = request.args.get("meatId")
+        if partial_id is None:
+            return jsonify({"msg": "Invalid Meat Id"}), 400
+        meats = get_meat_by_partial_id(db_session, partial_id)
 
-            part_id_meat_list = [meat for meat in meat_list if part_id in meat]
-            return jsonify({part_id: part_id_meat_list})
-        else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+        part_id_meat_list = [get_meat(meat) for meat in meats]
+        logger.log(meats)
+        return jsonify(part_id_meat_list)
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 

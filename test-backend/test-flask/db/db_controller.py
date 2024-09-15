@@ -791,6 +791,10 @@ def get_range_meat_data(
     db_session.close()
     return result
 
+def get_meat_by_partial_id(db_session, partial_id):
+    meats = db_session.query(Meat).filter(Meat.id.like(f"{partial_id}/%"))
+    logger.log(meats)
+    return meats
 
 # UPDATE
 
