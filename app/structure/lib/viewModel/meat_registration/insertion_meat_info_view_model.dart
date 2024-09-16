@@ -136,7 +136,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
   }
 
   /// 뒤로가기 버튼
-  VoidCallback? backBtnPressed(BuildContext context) {
+  VoidCallback? backBtnPressed() {
     return () {
       showExitDialog(context);
     };

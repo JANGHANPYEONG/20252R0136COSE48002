@@ -173,8 +173,8 @@ class UserRouter {
                 GoRoute(
                   path: 'image',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) =>
-                        InsertionMeatImageViewModel(meatModel, userModel, true),
+                    create: (context) => InsertionMeatImageViewModel(
+                        meatModel, userModel, true, context),
                     child: const InsertionMeatImageScreen(),
                   ),
                   routes: [
@@ -266,7 +266,8 @@ class UserRouter {
             GoRoute(
               path: 'data-manage-normal',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => DataManagementNormalViewModel(userModel),
+                create: (context) =>
+                    DataManagementNormalViewModel(userModel, context),
                 child: const DataManagementNormalScreen(),
               ),
               routes: [
@@ -275,7 +276,7 @@ class UserRouter {
                   path: 'edit',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
-                        EditMeatDataViewModel(meatModel, userModel),
+                        EditMeatDataViewModel(meatModel, userModel, context),
                     child: const EditMeatDataScreen(),
                   ),
                   routes: [
@@ -317,7 +318,7 @@ class UserRouter {
                       path: 'image-editable',
                       builder: (context, state) => ChangeNotifierProvider(
                         create: (context) => InsertionMeatImageViewModel(
-                            meatModel, userModel, true),
+                            meatModel, userModel, true, context),
                         child: const InsertionMeatImageScreen(),
                       ),
                     ),
@@ -420,7 +421,7 @@ class UserRouter {
                           path: 'heated-image',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionMeatImageScreen(),
                           ),
                         ),
@@ -464,7 +465,7 @@ class UserRouter {
                           path: 'image',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
-                                meatModel, userModel, true),
+                                meatModel, userModel, true, context),
                             child: const InsertionMeatImageScreen(),
                           ),
                         ),
@@ -499,7 +500,7 @@ class UserRouter {
                           path: 'heated-image',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionMeatImageViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionMeatImageScreen(),
                           ),
                         ),
@@ -549,7 +550,7 @@ class UserRouter {
                   path: 'approve',
                   builder: (context, state) => ChangeNotifierProvider(
                     create: (context) =>
-                        EditMeatDataViewModel(meatModel, userModel),
+                        EditMeatDataViewModel(meatModel, userModel, context),
                     child: const EditMeatDataScreen(),
                   ),
                   routes: [

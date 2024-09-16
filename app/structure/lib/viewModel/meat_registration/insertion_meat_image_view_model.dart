@@ -21,8 +21,9 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
   final bool isRaw;
-
-  InsertionMeatImageViewModel(this.meatModel, this.userModel, this.isRaw) {
+  BuildContext context;
+  InsertionMeatImageViewModel(
+      this.meatModel, this.userModel, this.isRaw, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -121,8 +122,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       }
     } else {
       // 사진 찍기 오류
-      // TODO : 이미지 촬영 오류 팝업 띄우기
       debugPrint('Image error');
+      if (context.mounted) showErrorPopup(context, error: "이미지 촬영 오류");
     }
   }
 
@@ -225,7 +226,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         }
       } catch (e) {
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context);
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       // 신규 생성일때만 임시저장
@@ -299,7 +300,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       if (response == null) throw Error();
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 임시저장 에러 메시지 팝업
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

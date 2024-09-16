@@ -136,8 +136,7 @@ class _AddDeepAgingDataScreenState extends State<AddDeepAgingDataScreen> {
                       height: 96.h,
                       text: '저장',
                       onPressed: addDeepAgingDataViewModel.isInsertedMinute
-                          ? () async =>
-                              addDeepAgingDataViewModel.saveData(context)
+                          ? () async => addDeepAgingDataViewModel.saveData()
                           : null,
                     ),
                   ),

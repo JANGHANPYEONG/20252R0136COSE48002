@@ -88,6 +88,8 @@ class UserDetailViewModel with ChangeNotifier {
     try {
       // 데이터 전송
       final response = await RemoteDataSource.updateUser(userModel.toJson());
+      print("--------");
+      print(userModel.toJson());
       if (response == 200) {
         if (context.mounted) {
           isLoading = false;

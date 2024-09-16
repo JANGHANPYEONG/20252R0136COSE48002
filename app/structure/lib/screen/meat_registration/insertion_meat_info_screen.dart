@@ -32,8 +32,7 @@ class _InsertionMeatInfoScreenState extends State<InsertionMeatInfoScreen> {
       child: Scaffold(
         appBar: CustomAppBar(
             title: '육류 기본정보',
-            backButtonOnPressed:
-                insertionMeatInfoViewModel.backBtnPressed(context)),
+            backButtonOnPressed: insertionMeatInfoViewModel.backBtnPressed()),
         resizeToAvoidBottomInset: false,
         body: Container(
           margin: EdgeInsets.symmetric(horizontal: 40.w),

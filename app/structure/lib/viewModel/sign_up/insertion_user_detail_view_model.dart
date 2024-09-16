@@ -72,6 +72,8 @@ class InsertionUserDetailViewModel with ChangeNotifier {
     try {
       // 사용자의 회원가입 정보를 서버로 전송
       dynamic response = await RemoteDataSource.signUp(userModel.toJson());
+      print("회원가입 json");
+      print(userModel.toJson());
       if (response == 200) {
         // 새로운 유저 생성
         UserCredential credential =
