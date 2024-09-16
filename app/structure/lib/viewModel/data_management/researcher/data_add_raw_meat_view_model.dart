@@ -14,53 +14,59 @@ import 'package:structure/main.dart';
 import 'package:structure/model/meat_model.dart';
 
 class DataAddRawMeatViewModel with ChangeNotifier {
+  BuildContext context;
+
+  DataAddRawMeatViewModel({
+    required this.context,
+  });
+
   /// 원육 기본정보 (수정 불가)
-  void clicekdBasic(BuildContext context) {
+  void clicekdBasic() {
     context.push('/home/data-manage-researcher/add/raw-meat/info');
   }
 
   /// 원육 단면 촬영 (수정 불가)
-  void clickedBasicImage(BuildContext context) {
+  void clickedBasicImage() {
     context.push('/home/data-manage-researcher/add/raw-meat/image-noteditable');
   }
 
   /// 원육 관능 평가 (수정 불가)
-  void clicekdFresh(BuildContext context) {
+  void clicekdFresh() {
     context.push('/home/data-manage-researcher/add/raw-meat/sensory');
   }
 
   /// 원육 전자혀 데이터
-  void clickedTongue(BuildContext context) {
+  void clickedTongue() {
     context.push('/home/data-manage-researcher/add/raw-meat/tongue');
   }
 
   /// 원육 실험 데이터
-  void clickedLab(BuildContext context) {
+  void clickedLab() {
     context.push('/home/data-manage-researcher/add/raw-meat/lab');
   }
 
   /// 가열육 관능평가
-  void clickedImage(BuildContext context) {
+  void clickedImage() {
     context.push('/home/data-manage-researcher/add/raw-meat/heated-image');
   }
 
   /// 가열육 전자혀 데이터
-  void clickedHeated(BuildContext context) {
+  void clickedHeated() {
     context.push('/home/data-manage-researcher/add/raw-meat/heated-sensory');
   }
 
   /// 가열육 전자혀 데이터
-  void clickedHeatedTongue(BuildContext context) {
+  void clickedHeatedTongue() {
     context.push('/home/data-manage-researcher/add/raw-meat/heated-tongue');
   }
 
   /// 원육 실험 데이터
-  void clickedHeatedLab(BuildContext context) {
+  void clickedHeatedLab() {
     context.push('/home/data-manage-researcher/add/raw-meat/heated-lab');
   }
 
   /// 완료 버튼 클릭
-  void clickedbutton(BuildContext context, MeatModel model) {
+  void clickedbutton(MeatModel model) {
     if (meatModel.tongueCompleted &&
         meatModel.labCompleted &&
         meatModel.heatedImageCompleted &&
@@ -91,12 +97,12 @@ class DataAddRawMeatViewModel with ChangeNotifier {
           context.pop();
         }
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
       if (context.mounted) context.pop();
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

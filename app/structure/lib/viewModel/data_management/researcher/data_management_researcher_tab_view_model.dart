@@ -5,5 +5,6 @@ import 'package:structure/model/user_model.dart';
 class DataManagementHomeTabViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-  DataManagementHomeTabViewModel(this.meatModel, this.userModel);
+  BuildContext context;
+  DataManagementHomeTabViewModel(this.meatModel, this.userModel, this.context);
 }

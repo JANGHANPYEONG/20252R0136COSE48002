@@ -340,8 +340,8 @@ class UserRouter {
             GoRoute(
               path: 'data-manage-researcher',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) =>
-                    DataManagementHomeTabViewModel(meatModel, userModel),
+                create: (context) => DataManagementHomeTabViewModel(
+                    meatModel, userModel, context),
                 child: const DataManagementResearcherTabScreen(),
               ),
               routes: [
@@ -363,7 +363,8 @@ class UserRouter {
                     GoRoute(
                       path: 'raw-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) => DataAddRawMeatViewModel(),
+                        create: (context) =>
+                            DataAddRawMeatViewModel(context: context),
                         child: DataAddRawMeatScreen(meatModel: meatModel),
                       ),
                       routes: [
@@ -456,7 +457,8 @@ class UserRouter {
                     GoRoute(
                       path: 'processed-meat',
                       builder: (context, state) => ChangeNotifierProvider(
-                        create: (context) => DataAddProcessedMeatViewModel(),
+                        create: (context) =>
+                            DataAddProcessedMeatViewModel(context: context),
                         child: DataAddProcessedMeatScreen(meatModel: meatModel),
                       ),
                       routes: [

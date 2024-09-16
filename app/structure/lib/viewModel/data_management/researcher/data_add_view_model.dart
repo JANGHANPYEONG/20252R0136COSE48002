@@ -68,7 +68,7 @@ class DataAddViewModel with ChangeNotifier {
       final response =
           await RemoteDataSource.deleteDeepAging(meatModel.meatId!, seqno);
 
-      if (response == 200) {
+      if (response != 200) {
         meatModel.deepAgingInfo!.removeAt(idx);
       } else {
         // TODO : 오류 메시지 팝업
@@ -76,7 +76,7 @@ class DataAddViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Error: $e");
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     _setTotal();
