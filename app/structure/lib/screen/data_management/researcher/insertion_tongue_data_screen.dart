@@ -132,8 +132,7 @@ class _InsertionTongueDataScreenState extends State<InsertionTongueDataScreen> {
                       height: 96.h,
                       text: '저장',
                       onPressed: insertionTongueDataViewModel.inputComplete
-                          ? () async =>
-                              insertionTongueDataViewModel.saveData(context)
+                          ? () async => insertionTongueDataViewModel.saveData()
                           : null,
                     ),
                   ),

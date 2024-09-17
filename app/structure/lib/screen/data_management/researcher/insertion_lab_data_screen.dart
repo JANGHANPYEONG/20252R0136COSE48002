@@ -238,8 +238,7 @@ class _InsertionLabDataScreenState extends State<InsertionLabDataScreen> {
                         height: 96.h,
                         text: '저장',
                         onPressed: insertionLabDataViewModel.inputComplete
-                            ? () async =>
-                                insertionLabDataViewModel.saveData(context)
+                            ? () async => insertionLabDataViewModel.saveData()
                             : null,
                       ),
                     ),

@@ -14,7 +14,9 @@ import 'package:structure/model/user_model.dart';
 class InsertionHeatedSensoryViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
-  InsertionHeatedSensoryViewModel(this.meatModel, this.userModel) {
+  BuildContext context;
+  InsertionHeatedSensoryViewModel(
+      this.meatModel, this.userModel, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -72,7 +74,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
   }
 
   // 데이터를 객체에 할당 (이후 POST)
-  Future<void> saveData(BuildContext context) async {
+  Future<void> saveData() async {
     isLoading = true;
     notifyListeners();
 
@@ -114,7 +116,7 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     meatModel.checkCompleted();
