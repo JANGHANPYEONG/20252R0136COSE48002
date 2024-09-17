@@ -15,7 +15,7 @@ import 'package:structure/components/custom_dialog.dart';
 
 class DataAddProcessedMeatViewModel with ChangeNotifier {
   bool popup = true;
-  BuildContext context;
+  BuildContext context; //
 
   DataAddProcessedMeatViewModel({
     required this.context,
