@@ -109,7 +109,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                                           .isValidId
                                       ? context
                                           .read<InsertionUserInfoViewModel>()
-                                          .dupliCheck(context)
+                                          .dupliCheck()
                                       : null,
                               child: context
                                       .read<InsertionUserInfoViewModel>()
@@ -281,7 +281,7 @@ class _InsertionUserInfoScreenState extends State<InsertionUserInfoScreen> {
                                   .isAllChecked()
                               ? () => context
                                   .read<InsertionUserInfoViewModel>()
-                                  .clickedNextButton(context)
+                                  .clickedNextButton()
                               : null,
                         ),
                       ),
