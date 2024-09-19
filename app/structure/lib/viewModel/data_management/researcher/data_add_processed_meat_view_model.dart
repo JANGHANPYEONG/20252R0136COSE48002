@@ -15,51 +15,56 @@ import 'package:structure/components/custom_dialog.dart';
 
 class DataAddProcessedMeatViewModel with ChangeNotifier {
   bool popup = true;
+  BuildContext context; //
+
+  DataAddProcessedMeatViewModel({
+    required this.context,
+  });
 
   /// 처리육 단면 촬영
-  void clickedImage(BuildContext context) {
+  void clickedImage() {
     context.push('/home/data-manage-researcher/add/processed-meat/image');
   }
 
   /// 처리육 관능평가
-  void clickedSensory(BuildContext context) {
+  void clickedSensory() {
     context.push('/home/data-manage-researcher/add/processed-meat/sensory');
   }
 
   /// 처리육 전자혀 데이터
-  void clickedTongue(BuildContext context) {
+  void clickedTongue() {
     context.push('/home/data-manage-researcher/add/processed-meat/tongue');
   }
 
   /// 처리육 실험 데이터
-  void clickedLab(BuildContext context) {
+  void clickedLab() {
     context.push('/home/data-manage-researcher/add/processed-meat/lab');
   }
 
   // 가열육 단면 촬영
-  void clickedHeatedImage(BuildContext context) {
+  void clickedHeatedImage() {
     context
         .push('/home/data-manage-researcher/add/processed-meat/heated-image');
   }
 
   /// 가열육 관능평가
-  void clickedHeatedSensory(BuildContext context) {
+  void clickedHeatedSensory() {
     context
         .push('/home/data-manage-researcher/add/processed-meat/heated-sensory');
   }
 
   /// 가열육 전자혀 데이터
-  void clickedHeatedTongue(BuildContext context) {
+  void clickedHeatedTongue() {
     context
         .push('/home/data-manage-researcher/add/processed-meat/heated-tongue');
   }
 
   /// 가열육 실험 데이터
-  void clickedHeatedLab(BuildContext context) {
+  void clickedHeatedLab() {
     context.push('/home/data-manage-researcher/add/processed-meat/heated-lab');
   }
 
-  void clickedbutton(BuildContext context, MeatModel model) {
+  void clickedbutton(MeatModel model) {
     popup = model.imageCompleted &&
         model.sensoryCompleted &&
         model.tongueCompleted &&
@@ -93,12 +98,12 @@ class DataAddProcessedMeatViewModel with ChangeNotifier {
           context.pop();
         }
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
       if (context.mounted) context.pop();
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

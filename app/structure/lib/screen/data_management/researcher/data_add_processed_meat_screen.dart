@@ -40,7 +40,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '처리육 단면 촬영',
                   status: meatModel.imageCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_image.png',
-                  onTap: () => addProcessedMeatViewModel.clickedImage(context),
+                  onTap: () => addProcessedMeatViewModel.clickedImage(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -49,8 +49,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '처리육 관능평가',
                   status: meatModel.sensoryCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_eval.png',
-                  onTap: () =>
-                      addProcessedMeatViewModel.clickedSensory(context),
+                  onTap: () => addProcessedMeatViewModel.clickedSensory(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -59,7 +58,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '처리육 전자혀 데이터',
                   status: meatModel.tongueCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_tongue.png',
-                  onTap: () => addProcessedMeatViewModel.clickedTongue(context),
+                  onTap: () => addProcessedMeatViewModel.clickedTongue(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -68,7 +67,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '처리육 실험 데이터',
                   status: meatModel.labCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_lab.png',
-                  onTap: () => addProcessedMeatViewModel.clickedLab(context),
+                  onTap: () => addProcessedMeatViewModel.clickedLab(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -81,8 +80,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '가열육 단면 촬영',
                   status: meatModel.heatedImageCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_image.png',
-                  onTap: () =>
-                      addProcessedMeatViewModel.clickedHeatedImage(context),
+                  onTap: () => addProcessedMeatViewModel.clickedHeatedImage(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -91,8 +89,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '가열육 관능평가',
                   status: meatModel.heatedSensoryCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_eval.png',
-                  onTap: () =>
-                      addProcessedMeatViewModel.clickedHeatedSensory(context),
+                  onTap: () => addProcessedMeatViewModel.clickedHeatedSensory(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -101,8 +98,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '가열육 전자혀 데이터',
                   status: meatModel.heatedTongueCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_tongue.png',
-                  onTap: () =>
-                      addProcessedMeatViewModel.clickedHeatedTongue(context),
+                  onTap: () => addProcessedMeatViewModel.clickedHeatedTongue(),
                 ),
                 SizedBox(height: 16.h),
 
@@ -111,8 +107,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                   mainText: '가열육 실험 데이터',
                   status: meatModel.heatedLabCompleted ? 1 : 2,
                   imageUrl: 'assets/images/meat_lab.png',
-                  onTap: () =>
-                      addProcessedMeatViewModel.clickedHeatedLab(context),
+                  onTap: () => addProcessedMeatViewModel.clickedHeatedLab(),
                 ),
                 SizedBox(height: 64.h),
 
@@ -123,8 +118,7 @@ class DataAddProcessedMeatScreen extends StatelessWidget {
                     height: 96.h,
                     text: '완료',
                     onPressed: () async {
-                      addProcessedMeatViewModel.clickedbutton(
-                          context, meatModel);
+                      addProcessedMeatViewModel.clickedbutton(meatModel);
                     },
                   ),
                 ),
