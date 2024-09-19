@@ -791,6 +791,62 @@ def get_range_meat_data(
     db_session.close()
     return result
 
+def get_meat_by_partial_id(
+    db_session,
+    partial_id,
+    offset,
+    count,
+    start=None,
+    end=None,
+    specie_value=None
+):
+    if (count is not None) and (offset is not None):
+        count = safe_int(count)
+        offset = safe_int(offset)
+        offset = offset * count
+    start = convert2datetime(start, 0)
+    end = convert2datetime(end, 0)
+
+    # Base Query
+    query = db_session.query(Meat.id).filter(Meat.id.like(f"{partial_id}%"))
+
+    if specie_value != 2:
+        query = query.join(CategoryInfo).filter(CategoryInfo.speciesId == specie_value)
+
+    # 기간 설정 쿼리
+    db_total_len = query.count()
+    if start is not None and end is not None:
+        query = query.filter(Meat.createdAt.between(start, end))
+        db_total_len = query.filter(Meat.createdAt.between(start, end)).count()
+    query = query.order_by(Meat.createdAt.desc())
+    if (count is not None) and (offset is not None):
+        query = query.offset(offset).limit(count)
+
+    # 탐색
+    meat_data = query.all()
+    meat_result = {}
+    id_result = [data.id for data in meat_data]
+    for id in id_result:
+        meat_result[id] = get_meat(db_session, id)
+        userTemp = get_user(db_session, meat_result[id].get("userId"))
+        if userTemp:
+            meat_result[id]["userName"] = userTemp.name
+            meat_result[id]["company"] = userTemp.company
+            meat_result[id]["userType"] = usrType[userTemp.type]
+        else:
+            meat_result[id]["userName"] = userTemp
+            meat_result[id]["company"] = userTemp
+            meat_result[id]["userType"] = userTemp
+        del meat_result[id]["deepAgingInfo"]
+
+    result = {
+        "DB Total len": db_total_len,
+        "id_list": id_result,
+        "meat_dict": meat_result,
+    }
+    
+    db_session.close()
+    return result
 
 # UPDATE
 
