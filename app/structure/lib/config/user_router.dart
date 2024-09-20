@@ -97,15 +97,20 @@ class UserRouter {
             GoRoute(
               path: 'sign-up',
               builder: (context, state) => ChangeNotifierProvider(
-                create: (context) => InsertionUserInfoViewModel(userModel),
+                create: (context) => InsertionUserInfoViewModel(
+                  userModel: userModel,
+                  context: context,
+                ),
                 child: const InsertionUserInfoScreen(),
               ),
               routes: [
                 GoRoute(
                   path: 'user-detail',
                   builder: (context, state) => ChangeNotifierProvider(
-                    create: (context) =>
-                        InsertionUserDetailViewModel(userModel: userModel),
+                    create: (context) => InsertionUserDetailViewModel(
+                      userModel: userModel,
+                      context: context,
+                    ),
                     child: const InsertionUserDetailScreen(),
                   ),
                 ),

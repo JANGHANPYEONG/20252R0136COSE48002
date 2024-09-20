@@ -2,14 +2,15 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:structure/components/custom_pop_up.dart';
-import 'package:structure/main.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/user_model.dart';
 import 'package:structure/config/labels.dart';
 import 'package:structure/components/custom_dialog.dart';
 
 class InsertionUserInfoViewModel with ChangeNotifier {
-  InsertionUserInfoViewModel(UserModel userModel) {
+  UserModel userModel;
+  BuildContext context;
+  InsertionUserInfoViewModel({required this.userModel, required this.context}) {
     userModel.reset();
   }
 
@@ -40,8 +41,6 @@ class InsertionUserInfoViewModel with ChangeNotifier {
 
   // 이메일 중복 확인 로딩 여부 확인 변수
   bool emailCheckLoading = false;
-
-  late BuildContext _context;
 
   /// 이름 입력 여부 검사
   void nameCheck(String? value) {
@@ -119,42 +118,45 @@ class InsertionUserInfoViewModel with ChangeNotifier {
   }
 
   /// 이메일 중복 검사
-  Future<void> dupliCheck(BuildContext context) async {
+  Future<void> dupliCheck() async {
     // 이메일 중복 검사 로딩중인 상태
     emailCheckLoading = true;
     notifyListeners();
 
-    // 중복 확인
-    dynamic response = await RemoteDataSource.dupliCheck(email.text);
+    try {
+      // 중복 확인
+      dynamic response = await RemoteDataSource.dupliCheck(email.text);
 
-    // response 값 확인
-    if (response is Map<String, dynamic>) {
-      // 200 OK
-      isUnique = !response['isDuplicated'];
-      emailCheckLoading = false;
-      notifyListeners();
+      // response 값 확인
+      if (response is Map<String, dynamic>) {
+        // 200 OK
+        isUnique = !response['isDuplicated'];
+        emailCheckLoading = false;
+        notifyListeners();
 
-      // 이메일 중복인 경우
-      if (!isUnique) {
-        // 중복 popup 창 띄우기
-        _context = context;
-        if (context.mounted) {
-          showDuplicateIdSigninDialog(context, moveSignIn);
+        // 이메일 중복인 경우
+        if (!isUnique) {
+          // 중복 popup 창 띄우기
+          if (context.mounted) {
+            showDuplicateIdSigninDialog(context, moveSignIn);
+          }
         }
-      }
-    } else {
-      // 오류
-      isUnique = false;
-      emailCheckLoading = false;
-      notifyListeners();
+      } else {
+        // 오류
+        isUnique = false;
+        emailCheckLoading = false;
+        notifyListeners();
 
-      if (context.mounted) showErrorPopup(context);
+        throw ErrorDescription(response.body);
+      }
+    } catch (e) {
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 
   /// popup 확인
   void moveSignIn() {
-    _context.go('/sign-in');
+    context.go('/sign-in');
   }
 
   /// 필수 동의 체크 확인
@@ -220,7 +222,7 @@ class InsertionUserInfoViewModel with ChangeNotifier {
     userModel.password = password.text.trim();
   }
 
-  void clickedNextButton(BuildContext context) {
+  void clickedNextButton() {
     saveUserInfo();
     context.go('/sign-in/sign-up/user-detail');
   }
