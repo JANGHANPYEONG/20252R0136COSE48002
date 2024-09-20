@@ -414,7 +414,7 @@ class UserRouter {
                           path: 'tongue',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionTongueDataViewModel(
-                                meatModel, userModel, true),
+                                meatModel, userModel, true, context),
                             child: const InsertionTongueDataScreen(),
                           ),
                         ),
@@ -423,7 +423,7 @@ class UserRouter {
                           path: 'lab',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionLabDataViewModel(
-                                meatModel, userModel, true),
+                                meatModel, userModel, true, context),
                             child: const InsertionLabDataScreen(),
                           ),
                         ),
@@ -442,7 +442,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) =>
                                 InsertionHeatedSensoryViewModel(
-                                    meatModel, userModel),
+                                    meatModel, userModel, context),
                             child: const InsertionHeatedSensoryScreen(),
                           ),
                         ),
@@ -450,7 +450,7 @@ class UserRouter {
                           path: 'heated-tongue',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionTongueDataViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionTongueDataScreen(),
                           ),
                         ),
@@ -459,7 +459,7 @@ class UserRouter {
                           path: 'heated-lab',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionLabDataViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionLabDataScreen(),
                           ),
                         ),
@@ -496,7 +496,7 @@ class UserRouter {
                           path: 'tongue',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionTongueDataViewModel(
-                                meatModel, userModel, true),
+                                meatModel, userModel, true, context),
                             child: const InsertionTongueDataScreen(),
                           ),
                         ),
@@ -504,7 +504,7 @@ class UserRouter {
                           path: 'lab',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionLabDataViewModel(
-                                meatModel, userModel, true),
+                                meatModel, userModel, true, context),
                             child: const InsertionLabDataScreen(),
                           ),
                         ),
@@ -521,7 +521,7 @@ class UserRouter {
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) =>
                                 InsertionHeatedSensoryViewModel(
-                                    meatModel, userModel),
+                                    meatModel, userModel, context),
                             child: const InsertionHeatedSensoryScreen(),
                           ),
                           routes: [
@@ -542,7 +542,7 @@ class UserRouter {
                           path: 'heated-tongue',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionTongueDataViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionTongueDataScreen(),
                           ),
                         ),
@@ -550,7 +550,7 @@ class UserRouter {
                           path: 'heated-lab',
                           builder: (context, state) => ChangeNotifierProvider(
                             create: (context) => InsertionLabDataViewModel(
-                                meatModel, userModel, false),
+                                meatModel, userModel, false, context),
                             child: const InsertionLabDataScreen(),
                           ),
                         ),

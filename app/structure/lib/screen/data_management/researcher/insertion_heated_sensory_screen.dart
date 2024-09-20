@@ -121,8 +121,7 @@ class _HeatedMeatEvaluation extends State<InsertionHeatedSensoryScreen>
                     width: double.infinity,
                     height: 96.h,
                     text: '저장',
-                    onPressed: () =>
-                        insertionHeatedSensoryViewModel.saveData(context),
+                    onPressed: () => insertionHeatedSensoryViewModel.saveData(),
                   ),
                 ),
               ],
