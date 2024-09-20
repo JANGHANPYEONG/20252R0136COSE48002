@@ -141,7 +141,7 @@ def apply_mask(image, mask):
     return image * mask.to(device)
 
 
-def extract_section_image(s3_image_object, meat_id):
+def extract_section_image(s3_image_object, meat_id, seqno):
     # 데이터셋 및 DataLoader 설정
     transform = SegmentationTransform(output_size=(448, 448))
     
@@ -194,7 +194,7 @@ def extract_section_image(s3_image_object, meat_id):
     img = Image.fromarray(img)
 
     # output_key를 설정
-    output_key = os.path.join('section_images', f"{meat_id}-0.png")
+    output_key = os.path.join('section_images', f"{meat_id}-{seqno}.png")
 
     # 이미지 데이터를 바이트 스트림으로 변환
     img_byte_arr = io.BytesIO()

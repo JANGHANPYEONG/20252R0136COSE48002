@@ -81,9 +81,5 @@ def hello_world():
     return "Hello, World!"
 
 if __name__ == "__main__":
-    # Prometheus 메트릭 엔드포인트를 위해 DispatcherMiddleware 사용
-    app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-        '/metrics': make_wsgi_app()
-    })
 
     app.run(debug=True, port=8080, host="0.0.0.0")
