@@ -338,8 +338,8 @@ def getOpenCVData():
             if result:
                 return jsonify(result), 200
             else:
-                return jsonify({"msg": "OpenCV Result Does Not Exist"}), 404
-        return jsonify({"msg": f"OpenCV Data {meat_id}-{seqno} Does Not Exist"}), 400
+                return jsonify({"msg": "OpenCV Result Does Not Exist"}), 400
+        return jsonify("Invalid id or seqno parameter"), 404
     except Exception as e:
         logger.exception(str(e))
         return (

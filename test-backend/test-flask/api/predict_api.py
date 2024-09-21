@@ -22,6 +22,10 @@ def create_raw_meat_opencv_info():
         meat_id = request.args.get("meatId")
         seqno = request.args.get("seqno")
         
+        # Invalid parameter
+        if (meat_id or seqno) is None:
+            return {"msg": "Invalid id or seqno parameter"}, 404 
+        
         # 해당 육류 - 회차의 관능 데이터가 존재하지 않을 때
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
         if not sensory_info:
@@ -57,6 +61,10 @@ def predict_sensory_eval():
         s3_conn = current_app.s3_conn
         meat_id = safe_str(request.args.get("meatId"))
         seqno = safe_int(request.args.get("seqno"))
+        
+        # Invalid parameter
+        if (meat_id or seqno) is None:
+            return {"msg": "Invalid id or seqno parameter"}, 404 
         
         # 해당 육류 - 회차의 관능 데이터가 존재하지 않을 때
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
