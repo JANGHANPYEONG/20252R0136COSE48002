@@ -2208,7 +2208,7 @@ def process_predict_sensory_eval(db_session, s3_conn, meat_id, seqno):
         if segment_img:
             segment_img_object = segment_img
         else:
-            segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id)
+            segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
         
         ai_sensory_data = {}
         
