@@ -85,7 +85,7 @@ const DataPAView = ({ dataProps }) => {
   const user = useUser();
 
   //데이터 예측 버튼 클릭 시
-  const handlePredictClick = async () => {
+  const handlePredictClick = async (seqno) => {
     //로그인한 유저 정보
     const userId = user.userId;
     // period 계산
@@ -100,7 +100,7 @@ const DataPAView = ({ dataProps }) => {
       ['seqno']: parseInt(processedToggleValue),
     };
     try {
-      await fetch(`http://${apiIP}/meat/predict/sensory-eval`, {
+      await fetch(`http://${apiIP}/meat/predict/sensory-eval?meatId=${meatId}&seqno=${seqno}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,9 +133,11 @@ const DataPAView = ({ dataProps }) => {
             : null
         );
   };
+  
 
   // 처리육 탭에서 회차가 바뀜에 따라 다른 예측 결과 load
   useEffect(() => {
+    
     getPredictedData(parseInt(processedToggleValue));
   }, [processedToggleValue]);
 
@@ -181,7 +183,7 @@ const DataPAView = ({ dataProps }) => {
         <button
           type="button"
           class="btn btn-outline-success"
-          onClick={handlePredictClick}
+          onClick={() => handlePredictClick(parseInt(processedToggleValue))}
         >
           예측
         </button>
