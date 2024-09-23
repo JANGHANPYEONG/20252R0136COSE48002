@@ -41,7 +41,7 @@ def predict_regression_sensory_eval(s3_image_object, meat_id, seqno):
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     image_tensor = transform(img).unsqueeze(0).to(device)  # 배치 차원 추가
 
@@ -102,7 +102,7 @@ def predict_classification_grade(s3_image_object):
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     image_tensor = transform(img).unsqueeze(0).to(device)  # 배치 차원 추가
 

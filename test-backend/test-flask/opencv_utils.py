@@ -166,7 +166,7 @@ def extract_section_image(s3_image_object, meat_id, seqno):
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     # 이미지 변환
     img_tensor, _ = transform(img, Image.new('L', img.size))
