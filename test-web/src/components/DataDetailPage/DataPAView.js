@@ -6,7 +6,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import QRInfoCard from './CardComps/QRInfoCard';
 //mui
 import './imgRot.css';
-import { TextField, Autocomplete } from '@mui/material';
+import { TextField, Autocomplete, tableCellClasses } from '@mui/material';
 // import tables
 import RawTable from './TablesComps/RawTable';
 import PredictedRawTable from './TablesComps/PredictedRawTable';
@@ -43,6 +43,7 @@ const DataPAView = ({ dataProps }) => {
   const [processed_toggle, setProcessedToggle] = useState(first);
   const [processedToggleValue, setProcessedToggleValue] = useState(first);
   const [tab, setTab] = useState('0');
+  const [nowSeqno, setNowSeqno] = useState(0);
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
@@ -53,7 +54,6 @@ const DataPAView = ({ dataProps }) => {
   // fetch 한 예측 데이터 저장
   const [dataPA, setDataPA] = useState(null);
 
-  
   // 예측 데이터 fetch
   const getPredictedData = async (seqno) => {
     try {
@@ -100,13 +100,16 @@ const DataPAView = ({ dataProps }) => {
       ['seqno']: parseInt(processedToggleValue),
     };
     try {
-      await fetch(`http://${apiIP}/meat/predict/sensory-eval?meatId=${meatId}&seqno=${seqno}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req),
-      });
+      await fetch(
+        `http://${apiIP}/meat/predict/sensory-eval?meatId=${meatId}&seqno=${seqno}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(req),
+        }
+      );
       // 예측 정보 로드
       await getPredictedData(parseInt(processedToggleValue));
     } catch (err) {
@@ -122,8 +125,10 @@ const DataPAView = ({ dataProps }) => {
     // 예측 데이터 로드
     await getPredictedData(key);
     setTab(key);
-    const target = processedToggleValue; //n회
+
+    const target = processedToggleValue; // n회
     const targetIndex = processed_data_seq.indexOf(target) - 1;
+
     // 원본 이미지 바꾸기
     key === '0'
       ? setPreviewImage(raw_img_path)
@@ -133,11 +138,21 @@ const DataPAView = ({ dataProps }) => {
             : null
         );
   };
-  
+
+  // useEffect(() => {
+  //   console.log('seqno : ', nowSeqno);
+  // }, [nowSeqno]);
+
+  useEffect(() => {
+    if (tab === '0' || tab === 0) {
+      setNowSeqno(parseInt(tab));
+    } else {
+      setNowSeqno(parseInt(processedToggleValue));
+    }
+  }, [processedToggleValue, tab]);
 
   // 처리육 탭에서 회차가 바뀜에 따라 다른 예측 결과 load
   useEffect(() => {
-    
     getPredictedData(parseInt(processedToggleValue));
   }, [processedToggleValue]);
 
@@ -153,7 +168,6 @@ const DataPAView = ({ dataProps }) => {
     }
   }, [processedToggleValue, tab]);
 
-
   // 초기에 원육 예측 데이터 로드
   useEffect(() => {
     getPredictedData(0);
@@ -166,8 +180,6 @@ const DataPAView = ({ dataProps }) => {
       processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
     );
   }, [processedToggleValue, tab]);
-
-
 
   return (
     <div style={{ width: '100%' }}>
@@ -183,7 +195,7 @@ const DataPAView = ({ dataProps }) => {
         <button
           type="button"
           class="btn btn-outline-success"
-          onClick={() => handlePredictClick(parseInt(processedToggleValue))}
+          onClick={() => handlePredictClick(nowSeqno)}
         >
           예측
         </button>
