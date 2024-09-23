@@ -159,7 +159,7 @@ const DataPAView = ({ dataProps }) => {
   useEffect(() => {
     const target = processedToggleValue; //n회
     const targetIndex = processed_data_seq.indexOf(target) - 1;
-    if (tab === '0') {
+    if (tab === '0' || tab === 0) {
       setImgPath(raw_img_path);
     } else {
       setImgPath(
@@ -209,7 +209,7 @@ const DataPAView = ({ dataProps }) => {
               <Card.Text>
                 <div style={style.imgTextWrapper}>원본이미지</div>
                 <div style={style.imgWrapper}>
-                  {previewImage ? (
+                  {imgPath? (
                     <img
                       src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
