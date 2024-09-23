@@ -65,7 +65,7 @@ class _DataManagementApproveDataTabScreenState
                         // 필터 버튼
                         InkWell(
                           onTap: () => dataManagementApproveDataTabViewModel
-                              .clickedFilter(context),
+                              .clickedFilter(),
                           borderRadius: BorderRadius.circular(20.r),
                           child: Container(
                             padding: EdgeInsets.all(16.w),
@@ -188,7 +188,7 @@ class _DataManagementApproveDataTabScreenState
                                 ? IconButton(
                                     onPressed: () {
                                       dataManagementApproveDataTabViewModel
-                                          .textClear(context);
+                                          .textClear();
                                     },
                                     icon: const Icon(
                                       Icons.cancel_outlined,
@@ -204,8 +204,7 @@ class _DataManagementApproveDataTabScreenState
                         IconButton(
                           iconSize: 48.w,
                           onPressed: () async =>
-                              dataManagementApproveDataTabViewModel
-                                  .clickedQr(context),
+                              dataManagementApproveDataTabViewModel.clickedQr(),
                           icon: const Icon(
                             Icons.qr_code_scanner_rounded,
                             color: Palette.primary,
@@ -242,7 +241,7 @@ class _DataManagementApproveDataTabScreenState
                                 itemBuilder: (context, index) => ListCard(
                                   onTap: () async =>
                                       await dataManagementApproveDataTabViewModel
-                                          .onTapApproveCard(index, context),
+                                          .onTapApproveCard(index),
                                   meatId: dataManagementApproveDataTabViewModel
                                       .selectedList[index]['meatId']!,
                                   dayTime: Usefuls.parseDate(

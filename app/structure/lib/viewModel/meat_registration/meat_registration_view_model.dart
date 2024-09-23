@@ -41,9 +41,7 @@ class MeatRegistrationViewModel with ChangeNotifier {
   Future<void> checkTempData() async {
     try {
       dynamic response = await LocalDataSource.getLocalData(meatModel.userId!);
-      if (response == null) {
-        throw Error();
-      } else {
+      if (response != null) {
         await _showTempDataDialog(response);
       }
     } catch (e) {
