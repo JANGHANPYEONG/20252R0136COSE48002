@@ -296,7 +296,7 @@ def getTexanomyData():
         db_session = current_app.db_session
         return _getTexanomyData(db_session)
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -332,13 +332,14 @@ def getOpenCVData():
     try:
         db_session = current_app.db_session
         meat_id = safe_str(request.args.get("meatId"))
-        if meat_id:
-            result = get_OpenCVresult(db_session, meat_id)
+        seqno = safe_int(request.args.get("seqno"))
+        if meat_id and (seqno is not None):
+            result = get_OpenCVresult(db_session, meat_id, seqno)
             if result:
                 return jsonify(result), 200
             else:
-                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 404
-        return jsonify({"msg": f"Meat Data {meat_id} Does Not Exist"}), 400
+                return jsonify({"msg": "OpenCV Result Does Not Exist"}), 400
+        return jsonify("Invalid id or seqno parameter"), 404
     except Exception as e:
         logger.exception(str(e))
         return (
