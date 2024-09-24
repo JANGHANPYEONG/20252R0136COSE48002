@@ -4,6 +4,8 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Spinner from 'react-bootstrap/Spinner';
 import QRInfoCard from './CardComps/QRInfoCard';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 //mui
 import './imgRot.css';
 import { TextField, Autocomplete, tableCellClasses } from '@mui/material';
@@ -71,7 +73,7 @@ const DataPAView = ({ dataProps }) => {
       return json;
     } catch (error) {
       // 데이터를 불러오는 데 실패한 경우 모든 data를 null로 설정
-      console.error('Error fetching data seqno-', seqno, ':', error);
+      console.error('Error fetching data seqno ', seqno, ':', error);
       setDataPA(null);
       //setDataXAIImg(null);
       //setGradeXAIImg(null);
@@ -91,16 +93,14 @@ const DataPAView = ({ dataProps }) => {
     // period 계산
     const elapsedHour = computePeriod(api_data['butcheryYmd']);
     const len = processed_data_seq.length;
-
-    // 로딩 화면 표시 시작
-    SetIsPredictedDone(false);
-    //모든 육류 데이터 (원육, n회차 이미지)에 대해 예측
-    let req = {
-      ['meatId']: meatId,
-      ['seqno']: parseInt(processedToggleValue),
-    };
     try {
-      await fetch(
+      // 로딩 화면 표시 시작
+      SetIsPredictedDone(false);
+      let req = {
+        ['meatId']: meatId,
+        ['seqno']: parseInt(processedToggleValue),
+      };
+      const response = await fetch(
         `http://${apiIP}/meat/predict/sensory-eval?meatId=${meatId}&seqno=${seqno}`,
         {
           method: 'POST',
@@ -110,14 +110,26 @@ const DataPAView = ({ dataProps }) => {
           body: JSON.stringify(req),
         }
       );
-      // 예측 정보 로드
-      await getPredictedData(parseInt(processedToggleValue));
-    } catch (err) {
-      console.error(err);
-    }
 
-    // 로딩 화면 표시 종료
-    SetIsPredictedDone(true);
+      if (!response.ok) {
+        throw new Error('Prediction request failed');
+      }
+
+      // 예측이 성공한 후 즉시 데이터를 가져오기
+      const predictedData = await getPredictedData(seqno);
+
+      // 예측된 데이터가 있는지 확인하고 상태 업데이트
+      if (predictedData) {
+        setDataPA(predictedData);
+      }
+
+      // 로딩 화면 표시 종료(완료)
+      SetIsPredictedDone(true);
+    } catch (error) {
+      console.error('Error during prediction:', error);
+      // 로딩 화면 표시 종료
+      SetIsPredictedDone(true);
+    }
   };
 
   //탭 변환에 맞는 데이터 로드
@@ -192,13 +204,43 @@ const DataPAView = ({ dataProps }) => {
         </div>
       )}
       <div style={style.editBtnWrapper}>
-        <button
-          type="button"
-          class="btn btn-outline-success"
-          onClick={() => handlePredictClick(nowSeqno)}
-        >
-          예측
-        </button>
+        {(dataPA && dataPA.seqno === nowSeqno) || !imgPath ? (
+          // 예측할 이미지가 없거나 이미 예측된 데이터가 존재하면, 버튼 비활성화 후 툴팁 표시
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={
+              !imgPath ? (
+                <Tooltip id="no-image-tooltip">
+                  예측할 이미지가 존재하지 않습니다
+                </Tooltip>
+              ) : (
+                <Tooltip id="predicted-data-tooltip">
+                  이미 예측된 데이터가 존재합니다!
+                </Tooltip>
+              )
+            }
+          >
+            <span className="d-inline-block">
+              <button
+                type="button"
+                className="btn btn-outline-success"
+                disabled
+                style={{ pointerEvents: 'none' }}
+              >
+                예측
+              </button>
+            </span>
+          </OverlayTrigger>
+        ) : (
+          <button
+            type="button"
+            class="btn btn-outline-success"
+            onClick={() => handlePredictClick(nowSeqno)}
+          >
+            예측
+          </button>
+        )}
       </div>
       <div style={style.singleDataWrapper}>
         {/* 1. 관리번호 육류에 대한 사진*/}
@@ -209,7 +251,7 @@ const DataPAView = ({ dataProps }) => {
               <Card.Text>
                 <div style={style.imgTextWrapper}>원본이미지</div>
                 <div style={style.imgWrapper}>
-                  {imgPath? (
+                  {imgPath ? (
                     <img
                       src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
