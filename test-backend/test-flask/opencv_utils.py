@@ -51,23 +51,30 @@ def ndarray_to_image(s3_conn, response, image_name):
     return image_url
 
 
-## ---------------- Model 호출 ---------------- ##
-def serve_mlflow(model_location):
-    mlflow.set_tracking_uri("http://52.78.235.242:5000")
-    print("Success to Set Mlflow Tracking Server")
-
+## ---------------- 모델 호출 ---------------- ##
+def load_local_model(model_path):
     try:
-        
-        model = mlflow.pytorch.load_model(model_location)
+        # 모델 파일이 존재하는지 확인
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model path does not exist: {model_path}")
+
+        # GPU 사용 가능 여부 확인
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model = model.to(device)
-        gc.collect()
-        torch.cuda.empty_cache()
-        print(f"Success to load model")
-        return model
-    except mlflow.exceptions.MlflowException as e:
-        print(f"Error loading model: {e}")
+
+        # 모델 로드
+        model = torch.load(model_path, map_location=device)
         
+        # 메모리 정리
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        return model
+
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        return None
+
 
 ## ---------------- 단면 도출 ---------------- ##
 torch.backends.cudnn.enabled = False
@@ -146,8 +153,8 @@ def extract_section_image(s3_image_object, meat_id, seqno):
     transform = SegmentationTransform(output_size=(448, 448))
     
     # 사전 학습된 모델 로드
-    model_location = "/home/ubuntu/mlflow/segmentation_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/segmentation_model/data/model.pth"
+    model = load_local_model(model_location)
     
     model.eval()
     s3_bucket = os.getenv("S3_BUCKET_NAME")

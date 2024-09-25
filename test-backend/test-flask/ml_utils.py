@@ -21,8 +21,8 @@ def predict_regression_sensory_eval(s3_image_object, meat_id, seqno):
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=std),
     ])
-    model_location = "/home/ubuntu/mlflow/regression_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
+    model = load_local_model(model_location)
 
     model.eval()
 
@@ -82,8 +82,8 @@ def predict_classification_grade(s3_image_object):
         transforms.Normalize(mean=mean, std=std),
     ])
 
-    model_location = "/home/ubuntu/mlflow/classification_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/classification_model/data/model.pth"
+    model = load_local_model(model_location)
 
     model.eval()
 
