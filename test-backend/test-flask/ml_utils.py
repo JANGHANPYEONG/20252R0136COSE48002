@@ -21,8 +21,8 @@ def predict_regression_sensory_eval(s3_image_object, meat_id, seqno):
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=std),
     ])
-    model_location = "/home/ubuntu/mlflow/regression_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
+    model = load_local_model(model_location)
 
     model.eval()
 
@@ -41,7 +41,7 @@ def predict_regression_sensory_eval(s3_image_object, meat_id, seqno):
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     image_tensor = transform(img).unsqueeze(0).to(device)  # 배치 차원 추가
 
@@ -82,8 +82,8 @@ def predict_classification_grade(s3_image_object):
         transforms.Normalize(mean=mean, std=std),
     ])
 
-    model_location = "/home/ubuntu/mlflow/classification_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/classification_model/data/model.pth"
+    model = load_local_model(model_location)
 
     model.eval()
 
@@ -102,7 +102,7 @@ def predict_classification_grade(s3_image_object):
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     image_tensor = transform(img).unsqueeze(0).to(device)  # 배치 차원 추가
 
