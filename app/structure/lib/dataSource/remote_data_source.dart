@@ -166,6 +166,13 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 육류 이미지 openCV 전처리 (PATCH)
+  static Future<dynamic> patchMeatImage(String? meatId, int? seqno) async {
+    String endPoint = 'meat/predict/process-image?meatId=$meatId&seqno=$seqno';
+    dynamic response = await _patchApi(endPoint, null);
+    return response;
+  }
+
   /// 딥에이징 데이터 삭제 (DELETE)
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨

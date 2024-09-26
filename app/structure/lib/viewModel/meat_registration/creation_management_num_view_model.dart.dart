@@ -160,7 +160,11 @@ class CreationManagementNumViewModel with ChangeNotifier {
       final response2 = await RemoteDataSource.createMeatData(
           'sensory-eval', meatModel.toJsonSensory());
 
-      if (response1 == 200 && response2 == 200) {
+      //openCV 전처리 이미지 입력
+      final response3 = await RemoteDataSource.patchMeatImage(
+          meatModel.meatId, meatModel.seqno);
+
+      if (response1 == 200 && response2 == 200 && response3 == 200) {
         // 육류 등록 성공
         // 임시저장된 데이터 삭제
         await LocalDataSource.deleteLocalData(meatModel.userId!);
