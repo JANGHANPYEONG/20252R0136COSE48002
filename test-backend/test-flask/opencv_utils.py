@@ -309,8 +309,13 @@ def create_texture_info(image):
     # 관심 영역만 추출 (검정색 배경 제외)
     roi = gray[mask != 0] #1차원 배열인 상태 
 
-    # GLCM 계산을 위한 형태로 변환
-    roi_reshaped = roi.reshape(-1, 1)
+    # ROI가 비어있다면 관심영역을 전체로 판단
+    if roi.size == 0:
+        roi_reshaped = gray
+    else:
+        # roi를 2차원으로 변환
+        roi_reshaped = np.zeros_like(gray)
+        roi_reshaped[mask != 0] = roi
 
     # GLCM 계산
     distances = [1]
