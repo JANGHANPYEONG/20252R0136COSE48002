@@ -198,10 +198,13 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           if (isPost) {
             response = await RemoteDataSource.createMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
+
+            // print("처리육 이미지 post");
           } else {
             // 처리육 patch
             response = await RemoteDataSource.patchMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
+            // print("처리육 이미지 patch");
           }
         } else {
           // 가열육

@@ -173,6 +173,13 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 육류 이미지 openCV 전처리 (POST)
+  static Future<dynamic> postMeatImage(String? meatId, int? seqno) async {
+    String endPoint = 'meat/predict/process-image?meatId=$meatId&seqno=$seqno';
+    dynamic response = await _postApi(endPoint, null);
+    return response;
+  }
+
   /// 딥에이징 데이터 삭제 (DELETE)
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨
@@ -213,7 +220,7 @@ class RemoteDataSource {
   /// API POST
   ///
   /// 데이터 생성시 사용
-  static Future<dynamic> _postApi(String endPoint, String jsonData) async {
+  static Future<dynamic> _postApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
     // String requestBody = jsonData;
