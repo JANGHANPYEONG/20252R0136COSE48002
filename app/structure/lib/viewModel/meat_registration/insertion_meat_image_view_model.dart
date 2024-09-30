@@ -192,19 +192,22 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         await _sendImageToFirebase();
 
         dynamic response;
-
+        dynamic responseOpencv;
         if (isRaw) {
           // 처리육
           if (isPost) {
             response = await RemoteDataSource.createMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
-
-            // print("처리육 이미지 post");
+            responseOpencv = await RemoteDataSource.postMeatImage(
+                meatModel.meatId, meatModel.seqno);
+            print("처리육 이미지 post");
           } else {
             // 처리육 patch
             response = await RemoteDataSource.patchMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
-            // print("처리육 이미지 patch");
+            responseOpencv = await RemoteDataSource.patchMeatImage(
+                meatModel.meatId, meatModel.seqno);
+            print("처리육 이미지 patch");
           }
         } else {
           // 가열육
@@ -217,7 +220,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           }
         }
 
-        if (response == 200) {
+        if (response == 200 && responseOpencv == 200) {
+          print("openCV 전처리 성공");
           if (isRaw) {
             meatModel.updateSeonsory();
           } else {
