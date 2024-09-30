@@ -70,14 +70,9 @@ def create_meat_opencv_info_for_model():
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
         if not sensory_info:
             return {"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}, 400
-        
-        segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
-        
-        if segment_img_object:
-            result = process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno, segment_img_object)
-            return jsonify({"msg": result["msg"], "code": result["code"]})
-        
-        return jsonify({"msg": f"Fail to Create or Update OpenCV data for Learning"}), 400
+    
+        result = process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno)
+        return jsonify({"msg": result["msg"], "code": result["code"]})
     except Exception as e:
         logging.exception(str(e))
         return (
