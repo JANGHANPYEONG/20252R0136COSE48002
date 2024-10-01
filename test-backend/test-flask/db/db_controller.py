@@ -2261,19 +2261,16 @@ def process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno):
 def process_predict_sensory_eval(db_session, s3_conn, meat_id, seqno):
     try:
         # 단면 이미지 도출
-        segment_img = s3_conn.get_object(bucket="section_images", object_key=f"section_images/{meat_id}-{seqno}.png")        
-        if segment_img:
-            segment_img_object = segment_img
-        else:
-            segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
-        
+        # segment_img = s3_conn.get_object(bucket="section_images", object_key=f"section_images/{meat_id}-{seqno}.png")        
+        segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
+
         ai_sensory_data = {}
         
         # 관능 데이터 예측
-        predict_result = predict_regression_sensory_eval(segment_img_object, meat_id, seqno)
+        predict_result = predict_regression_sensory_eval(s3_conn, segment_img_object, meat_id, seqno)
         
         # 등급 예측
-        grade_data = predict_classification_grade(segment_img_object)
+        grade_data = predict_classification_grade(s3_conn, segment_img_object, meat_id, seqno)
         
         # ai_sensory_data
         ai_sensory_data["createdAt"] = convert2string(datetime.now(), 1)
