@@ -27,9 +27,7 @@ const ColorPaletteMaker = ({ colors, showPercentage = false }) => {
           />
           {/* 퍼센트 표시 여부 */}
           {showPercentage && (
-            <span style={{ marginTop: '5px' }}>
-              {(color[1] * 100).toFixed(2)}
-            </span>
+            <span style={{ marginTop: '5px' }}>{color[1].toFixed(2)}</span>
           )}
         </div>
       ))}
