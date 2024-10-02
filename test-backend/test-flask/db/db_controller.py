@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import func
 import json
 from utils import *
+import pprint
 
 from .db_model import *
 from opencv_utils import *
@@ -2169,37 +2170,93 @@ def get_OpenCVresult(db_session, meat_id, seqno):
         raise Exception("Something Wrong with DB" + str(e))
     
     
-def process_opencv_image(db_session, s3_conn, meat_id, seqno, segment_object):
+def process_opencv_image_for_web(db_session, s3_conn, meat_id, seqno, segment_object, is_post):
     try:
+        opencv_info = db_session.query(OpenCVImagesInfo).filter(
+            OpenCVImagesInfo.id == meat_id, OpenCVImagesInfo.seqno == seqno
+            ).first()
         segment_img = s3_conn.download_image(segment_object)
-        opencv_data = {}
+        new_opencv_data = {}
         
-        # 단면 이미지 url 불러오기
-        segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
-        opencv_data["section_imagePath"] = segment_image_path
-        opencv_data["createdAt"] = convert2string(datetime.now(), 1)
-        opencv_data["id"] = meat_id
-        opencv_data["seqno"] = seqno
-        
-        # openCV 전처리 순서대로 진행
-        color_palette = display_palette_with_ratios(segment_img)
-        texture_result = create_texture_info(segment_img)
-        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=seqno)
-        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=seqno)
-        
-        # opencv DB에 저장
-        opencv_data = {**opencv_data, **color_palette, **texture_result, **lbp_result, **gabor_result}
-        new_opencv = OpenCVImagesInfo(**opencv_data)
-        db_session.add(new_opencv)
-        db_session.commit()
-        
-        db_session.close()
-        return opencv_data
+        # POST 요청
+        if is_post == 1: 
+            if opencv_info:
+                return {"msg": f"OpenCV Result Already Exists", "code": 400}
+            
+            # 단면 이미지 url 불러오기
+            segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
+            new_opencv_data["section_imagePath"] = segment_image_path
+            new_opencv_data["createdAt"] = convert2string(datetime.now(), 1)
+            new_opencv_data["id"] = meat_id
+            new_opencv_data["seqno"] = seqno
+            
+            # openCV 전처리 순서대로 진행
+            color_palette = display_palette_with_ratios(segment_img)
+            
+            # opencv DB에 저장
+            new_opencv_data = {**new_opencv_data, **color_palette}
+            new_opencv = OpenCVImagesInfo(**new_opencv_data)
+            db_session.add(new_opencv)
+            db_session.commit()
+            
+            db_session.close()
+            return {"msg": f"Success to Create OpenCV Result {meat_id}-{seqno}", "code": 200}
+        # PATCH 요청
+        else:
+            if not opencv_info:
+                return {"msg": f"OpenCV Result Does Not Exist. Create OpenCV Data First.", "code": 400}
+            
+            new_color_palette = display_palette_with_ratios(segment_img)
+            
+            opencv_info.createdAt = convert2string(datetime.now(), 1)
+            new_color_palette = display_palette_with_ratios(segment_img)
+            
+            for key, value in new_color_palette.items():
+                setattr(opencv_info, key, value)
+                
+            db_session.merge(opencv_info)
+            db_session.commit()
+            return {"msg": f"Success to Update OpenCV Result {meat_id}-{seqno}", "code": 200}
+            
     except Exception as e:
         db_session.rollback()
         db_session.close()
         raise Exception("Something Wrong with DB" + str(e))
     
+
+def process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno):
+    try:
+        opencv_info = db_session.query(OpenCVImagesInfo).filter(
+            OpenCVImagesInfo.id == meat_id, OpenCVImagesInfo.seqno == seqno
+            ).first()
+        
+        # PATCH 요청만 존재
+        if not opencv_info:
+            return {"msg": f"OpenCV Result Does Not Exist", "code": 400}
+        
+        segment_object = opencv_info.section_imagePath.split('.com/')[1]
+        segment_img = s3_conn.download_image(segment_object)
+        
+        # 모델 학습에 필요한 데이터들 전처리
+        texture_result = create_texture_info(segment_img)
+        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=seqno)
+        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=seqno)
+        new_opencv_data = {**texture_result, **lbp_result, **gabor_result}
+            
+        opencv_info.createdAt = convert2string(datetime.now(), 1)
+        
+        for key, value in new_opencv_data.items():
+            setattr(opencv_info, key, value)
+                
+        db_session.merge(opencv_info)
+        db_session.commit()
+        return {"msg": f"Success to Update OpenCV Result for Learning {meat_id}-{seqno}", "code": 200}
+
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
+        
 
 def process_predict_sensory_eval(db_session, s3_conn, meat_id, seqno):
     try:

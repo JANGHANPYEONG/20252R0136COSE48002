@@ -31,7 +31,11 @@ def ndarray_to_image(s3_conn, response, image_name):
     # Min-Max scaling을 통해 값을 [0, 255] 범위로 조정
     min_val = response.min()
     max_val = response.max()
-    scaled_array = (response - min_val) / (max_val - min_val) * 255
+    if min_val == max_val:
+        scaled_array = np.zeros_like(response)
+    else:
+        scaled_array = (response - min_val) / (max_val - min_val) * 255
+
     image = Image.fromarray(scaled_array.astype(np.uint8))
 
     # 이미지 데이터를 바이트 배열로 변환
@@ -366,7 +370,7 @@ def lbp_calculate(s3_conn, image, meat_id, seqno):
     n_points = 8 * radius
     lbp2 = local_binary_pattern(image, n_points, radius, method='uniform')
     
-    print("Success to create gabor_texture")
+    print("Success to create lbp images")
     
     # Save the LBP image
     image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
@@ -425,7 +429,7 @@ def gabor_texture_analysis(s3_conn, image, id, seqno):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
-    print("Success to create gabor_texture")
+    print("Success to create gabor filter images")
     
     tmp = {}
     final_result = {}
