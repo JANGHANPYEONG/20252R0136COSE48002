@@ -53,17 +53,17 @@ const DataPredict = () => {
             >
               <FaArrowLeft />
             </IconButton>
-            <span
-              style={{
-                textDecoration: 'none',
-                color: `${navy}`,
-                fontSize: '30px',
-                fontWeight: '600',
-              }}
-            >
-              {idParam.id}
-            </span>
           </Link>
+          <span
+            style={{
+              textDecoration: 'none',
+              color: `${navy}`,
+              fontSize: '30px',
+              fontWeight: '600',
+            }}
+          >
+            {idParam.id}
+          </span>
         </div>
       </Box>
       <Box>

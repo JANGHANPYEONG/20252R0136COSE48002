@@ -183,7 +183,11 @@ const PA = () => {
       </Box>
       {/**데이터 목록 */}
       {value === 'searched' && (
-        <PASearchedDataListComp searchedData={searchedData} />
+        <PASearchedDataListComp
+          startDate={startDate}
+          endDate={endDate}
+          searchedData={searchedData}
+        />
       )}
       {value === 'list' && (
         <PADataListComp
