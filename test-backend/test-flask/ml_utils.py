@@ -73,7 +73,10 @@ def predict_regression_sensory_eval(s3_conn, s3_image_object, meat_id, seqno):
 
 
 def create_xai_image(s3_conn, image, bucket_name, meat_id, seqno, xai_type):
-    model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
+    if xai_type == 'sensory-xai':
+        model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
+    else:
+        model_location = "/home/ubuntu/mlflow/classification_model/data/model.pth"
     model = load_local_model(model_location)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -176,7 +179,7 @@ def preprocess_image(image):
 
 
 # 어텐션 맵을 가져오는 함수
-def get_all_attention_maps(model, image):
+def get_all_attention_maps(model, image, xai_type):
     input_tensor = preprocess_image(image).to(device)
     attention_maps = []
     cls_weights = []
@@ -191,11 +194,18 @@ def get_all_attention_maps(model, image):
 
     hooks = []
     # 모델에 어텐션 래퍼 적용
-    for block in model.base_model.blocks:
-        block.attn.forward = my_forward_wrapper(block.attn)
-    
-    for block in model.base_model.blocks:
-        hooks.append(block.attn.register_forward_hook(hook_fn))
+    if xai_type == "grade-xai":
+        for block in model.blocks:
+            block.attn.forward = my_forward_wrapper(block.attn)
+        
+        for block in model.blocks:
+            hooks.append(block.attn.register_forward_hook(hook_fn))
+    else:
+        for block in model.base_model.blocks:
+            block.attn.forward = my_forward_wrapper(block.attn)
+        
+        for block in model.base_model.blocks:
+            hooks.append(block.attn.register_forward_hook(hook_fn))
         
     with torch.no_grad():
         output = model(input_tensor)
@@ -236,7 +246,7 @@ def show_img2(img1, img2, alpha=0.8, ax=None):
 
 # 모든 어텐션 레이어 시각화
 def visualize_all_attention_layers(s3_conn, image, model, s3_bucket_name, meat_id, seqno, xai_type):
-    input_tensor, attention_maps, cls_weights = get_all_attention_maps(model, image)
+    input_tensor, attention_maps, cls_weights = get_all_attention_maps(model, image, xai_type)
     
     img_resized = F.interpolate(input_tensor, (224, 224), mode='bilinear').squeeze(0).permute(1, 2, 0)
     img_resized = np.clip(img_resized.cpu().numpy(), 0, 1)
