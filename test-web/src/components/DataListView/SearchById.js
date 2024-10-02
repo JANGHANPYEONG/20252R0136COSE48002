@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { apiIP } from '../../config';
 import { HiOutlineSearch } from 'react-icons/hi';
 import { TextField, IconButton, Box } from '@mui/material';
-import { getByMeatId } from '../../API/get/getByMeatId';
 import { getByPartialMeatId } from '../../API/get/getByPartialMeatId';
 const SearchById = ({
   onDataFetch,
@@ -47,11 +45,11 @@ const SearchById = ({
       // If we got results, update the view accordingly
       if (data && data.meat_dict && Object.keys(data.meat_dict).length > 0) {
         onDataFetch(data);
-        onValueChange('single'); // Change to list view to show multiple results
+        onValueChange('searched'); // Change to list view to show multiple results
       } else {
         // Handle no results case
         onDataFetch({ id_list: [], meat_dict: {}, 'DB Total len': 0 });
-        onValueChange('single');
+        onValueChange('searched');
       }
     } catch (error) {
       console.error('Error fetching data:', error);

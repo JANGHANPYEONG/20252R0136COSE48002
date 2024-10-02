@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import Spinner from 'react-bootstrap/Spinner';
 import DataList from './DataList';
-import style from './style/pasinglestyle';
+import style from './style/pasearcheddatastyle';
 
-const PASingle = ({ startDate, endDate, singleData }) => {
+const PASearchedDataListComp = ({ startDate, endDate, searchedData }) => {
   const [meatList, setMeatList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   // API fetch 데이터 전처리
@@ -32,11 +32,11 @@ const PASingle = ({ startDate, endDate, singleData }) => {
 
   useEffect(() => {
     setIsLoading(true);
-    if (singleData) {
-      processMeatData(singleData);
+    if (searchedData) {
+      processMeatData(searchedData);
     }
     setIsLoading(false);
-  }, [singleData]);
+  }, [searchedData]);
 
   if (isLoading) {
     return (
@@ -78,4 +78,4 @@ const PASingle = ({ startDate, endDate, singleData }) => {
   );
 };
 
-export default PASingle;
+export default PASearchedDataListComp;
