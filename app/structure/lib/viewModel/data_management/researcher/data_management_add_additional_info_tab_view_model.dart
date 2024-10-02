@@ -471,7 +471,7 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
         meatModel.fromJson(response);
         if (context.mounted) context.go('/home/data-manage-researcher/add');
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');

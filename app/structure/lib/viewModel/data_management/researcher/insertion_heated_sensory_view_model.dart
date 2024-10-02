@@ -111,10 +111,12 @@ class InsertionHeatedSensoryViewModel with ChangeNotifier {
       if (response == 200) {
         meatModel.updateHeatedSeonsory();
       } else {
-        // TODO : 입력한 데이터 초기화
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

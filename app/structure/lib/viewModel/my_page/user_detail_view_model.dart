@@ -103,7 +103,9 @@ class UserDetailViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
-      print("fefe");
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

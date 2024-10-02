@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 String errorText = '오류가 발생했습니다.';
 String unselectedText = '선택되지 않은 항목이 있습니다.';
+String cameraPermissionText = '설정에서 카메라 권한을 먼저 허용하세요.';
 String cameraErrorText = '카메라에 문제가 생겼습니다.';
 String fileUploadFailedText = '파일 업로드에 실패했습니다.';
 String successChangeUserInfo = '정상적으로 변경되었습니다.';
@@ -23,6 +24,11 @@ String terms =
 /// 선택되지않은 popup
 void showUnselectedPopup(BuildContext context) {
   showPopup(context, unselectedText, '');
+}
+
+/// 카메라 권한 오류 popup
+void showCameraPermissionPopup(BuildContext context) {
+  showPopup(context, cameraPermissionText, '확인');
 }
 
 /// 카메라 오류 popup
@@ -134,16 +140,14 @@ void showPopup(BuildContext context, String contentText, String btnText,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child:
-                    Center(child: Text(contentText, style: Palette.h4Regular)),
+                child: Center(
+                  child: Text(contentText, style: Palette.h4Regular),
+                ),
               ),
               CustomTextButton(
                 title: btnText,
                 textStyle: Palette.h5.copyWith(color: Palette.primary),
-                onPressed: onTap ??
-                    () {
-                      context.pop();
-                    },
+                onPressed: onTap ?? () => context.pop(),
               ),
             ],
           ),
@@ -162,24 +166,29 @@ void showErrorPopup(BuildContext context, {String? error}) {
       return Dialog(
         child: Container(
           width: 640.w,
-          height: 240.h,
           padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 16.h),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // 에러 메시지
-              Expanded(
-                child: Center(child: Text(errorText, style: Palette.h4Regular)),
-              ),
+              Center(child: Text(errorText, style: Palette.h4Regular)),
+              SizedBox(height: 16.h),
 
               // 에러 내용
-              Center(child: Text(error ?? '', style: Palette.h4Regular)),
+              Center(
+                child: Text(
+                  error ?? '',
+                  style: Palette.h4Regular,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 16.h),
 
               // 버튼
               CustomTextButton(

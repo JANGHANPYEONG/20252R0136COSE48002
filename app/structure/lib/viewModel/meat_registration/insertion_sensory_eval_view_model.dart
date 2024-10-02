@@ -155,6 +155,9 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
           throw ErrorDescription(response);
         }
       } catch (e) {
+        isLoading = false;
+        notifyListeners();
+
         debugPrint('Error: $e');
         if (context.mounted) showErrorPopup(context, error: e.toString());
       }
@@ -192,8 +195,13 @@ class InsertionSensoryEvalViewModel with ChangeNotifier {
           meatModel.toJsonTemp(), meatModel.userId!);
       if (response == null) throw Error();
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
-      // TODO : 임시저장 에러 메시지 팝업
+      if (context.mounted) {
+        showErrorPopup(context, error: '임시 저장에 실패했습니다.');
+      }
     }
   }
 }

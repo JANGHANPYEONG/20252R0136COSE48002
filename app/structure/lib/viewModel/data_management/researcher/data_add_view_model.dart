@@ -71,10 +71,12 @@ class DataAddViewModel with ChangeNotifier {
       if (response != 200) {
         meatModel.deepAgingInfo!.removeAt(idx);
       } else {
-        // TODO : 오류 메시지 팝업
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

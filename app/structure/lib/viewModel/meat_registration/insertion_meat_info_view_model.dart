@@ -80,7 +80,7 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
       if (response is Map<String, dynamic>) {
         dataTable = response[speciesValue];
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error getting getMeatSpecies: $e');
@@ -172,6 +172,9 @@ class InsertionMeatInfoViewModel with ChangeNotifier {
           throw ErrorDescription(response);
         }
       } catch (e) {
+        isLoading = false;
+        notifyListeners();
+
         debugPrint('Error: $e');
         if (context.mounted) showErrorPopup(context, error: e.toString());
       }

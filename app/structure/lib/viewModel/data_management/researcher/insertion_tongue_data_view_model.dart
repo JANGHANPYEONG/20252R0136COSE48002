@@ -147,10 +147,12 @@ class InsertionTongueDataViewModel with ChangeNotifier {
           meatModel.updateHeatedProbExpt();
         }
       } else {
-        // TODO : 입력한 데이터 초기화
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }
