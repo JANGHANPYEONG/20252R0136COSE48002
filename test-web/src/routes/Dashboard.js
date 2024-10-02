@@ -208,25 +208,24 @@ const Dashboard = () => {
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
           <SearchFilterBar />
-          {value === 'list' && (
-            <>
-              <SearchById
-                onDataFetch={handleSingleDataFetch}
-                onValueChange={handleValueChange}
-              />
-              <Select
-                labelId="species"
-                id="species"
-                value={specieValue}
-                onChange={handleSpeciesChange}
-                label="종류"
-              >
-                <MenuItem value="전체">전체</MenuItem>
-                <MenuItem value="소">소</MenuItem>
-                <MenuItem value="돼지">돼지</MenuItem>
-              </Select>
-            </>
-          )}
+          <SearchById
+            onDataFetch={handleSingleDataFetch}
+            onValueChange={handleValueChange}
+            startDate={startDate}
+            endDate={endDate}
+            specieValue={specieValue}
+          />
+          <Select
+            labelId="species"
+            id="species"
+            value={specieValue}
+            onChange={handleSpeciesChange}
+            label="종류"
+          >
+            <MenuItem value="전체">전체</MenuItem>
+            <MenuItem value="소">소</MenuItem>
+            <MenuItem value="돼지">돼지</MenuItem>
+          </Select>
         </Box>
         <div
           style={{

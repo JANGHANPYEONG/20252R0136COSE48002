@@ -3,8 +3,14 @@ import { apiIP } from '../../config';
 import { HiOutlineSearch } from 'react-icons/hi';
 import { TextField, IconButton, Box } from '@mui/material';
 import { getByMeatId } from '../../API/get/getByMeatId';
-
-const SearchById = ({ onDataFetch, onValueChange }) => {
+import { getByPartialMeatId } from '../../API/get/getByPartialMeatId';
+const SearchById = ({
+  onDataFetch,
+  onValueChange,
+  startDate,
+  endDate,
+  specieValue,
+}) => {
   const [meatId, setMeatId] = useState('');
   const [error, setError] = useState(false);
 
@@ -24,10 +30,24 @@ const SearchById = ({ onDataFetch, onValueChange }) => {
   const handleSearch = async () => {
     if (error || !meatId) return; // error가 있거나 id가 없으면 검색하지 않음
     try {
-      const response = await getByMeatId(meatId); //getbymeatid api 호출
-      const data = await response.json();
-      onDataFetch(data);
-      onValueChange('single');
+      const data = await getByPartialMeatId(
+        meatId,
+        0, // offset
+        2000, // count - showing more results for partial matches
+        startDate,
+        endDate,
+        specieValue
+      );
+
+      // If we got results, update the view accordingly
+      if (data && data.meat_dict && Object.keys(data.meat_dict).length > 0) {
+        onDataFetch(data);
+        onValueChange('single'); // Change to list view to show multiple results
+      } else {
+        // Handle no results case
+        onDataFetch({ id_list: [], meat_dict: {}, 'DB Total len': 0 });
+        onValueChange('single');
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       onDataFetch(null); // 에러 발생 시 데이터 초기화

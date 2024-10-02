@@ -164,6 +164,9 @@ const PA = () => {
           <SearchById
             onDataFetch={handleSingleDataFetch}
             onValueChange={handleValueChange}
+            startDate={startDate}
+            endDate={endDate}
+            specieValue={specieValue}
           />
           <Select
             labelId="species"
