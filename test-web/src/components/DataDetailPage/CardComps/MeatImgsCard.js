@@ -94,8 +94,7 @@ const MeatImgsCard = ({
   };
 
   const [tooltipImgData, setTooltipImgData] = useState([]);
-  const { data: fetchedData, isLoading, isError } = useOpencvImageData(id);
-  const data = id === '3c80e807e2b5' ? dummyOpencvData : fetchedData;
+  const { data, isLoading, isError } = useOpencvImageData(id, currentIdx);
 
   //데이터 전처리
   useEffect(() => {
@@ -184,13 +183,30 @@ const MeatImgsCard = ({
                 {' '}
                 {isLoading ? (
                   <div style={style.overlayNotExistWrapper}>Loading...</div>
-                ) : data === undefined || data === null || isError ? (
+                ) : isError || !data || data.msg ? (
+                  // 데이터가 없는 경우
                   <div style={style.overlayNotExistWrapper}>
                     단면, 컬러팔레트 이미지가 없습니다
                   </div>
-                ) : tooltipImgData ? (
-                  <OpencvImgMaker data={tooltipImgData} />
+                ) : data.segmentImage &&
+                  data.fatColorPalette &&
+                  data.proteinColorPalette &&
+                  data.totalColorPalette ? (
+                  // 올바른 데이터인지 검사
+                  data.fatColorPalette.every(
+                    (color) =>
+                      color[0] === 0 && color[1] === 0 && color[2] === 0
+                  ) ? (
+                    // 컬러가 모두 0인 경우
+                    <div style={style.overlayNotExistWrapper}>
+                      올바르지 않은 데이터입니다
+                    </div>
+                  ) : (
+                    // 데이터가 있는 경우
+                    <OpencvImgMaker data={tooltipImgData} />
+                  )
                 ) : (
+                  // 그 외
                   <div style={style.overlayNotExistWrapper}>
                     오류로 인해 단면, 컬러팔레트 이미지를 불러올 수 없습니다
                   </div>
