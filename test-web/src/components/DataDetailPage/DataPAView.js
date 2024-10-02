@@ -204,13 +204,13 @@ const DataPAView = ({ dataProps }) => {
         </div>
       )}
       <div style={style.editBtnWrapper}>
-        {(dataPA && dataPA.seqno === nowSeqno) || !imgPath ? (
+        {((dataPA && dataPA.seqno === nowSeqno) || (imgPath === 'null')) ? (
           // 예측할 이미지가 없거나 이미 예측된 데이터가 존재하면, 버튼 비활성화 후 툴팁 표시
           <OverlayTrigger
             placement="top"
             delay={{ show: 250, hide: 400 }}
             overlay={
-              !imgPath ? (
+              imgPath === 'null' ? (
                 <Tooltip id="no-image-tooltip">
                   예측할 이미지가 존재하지 않습니다
                 </Tooltip>
