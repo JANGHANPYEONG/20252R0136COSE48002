@@ -264,7 +264,6 @@ class RemoteDataSource {
 
       return response.statusCode;
     } catch (e) {
-      print(e);
       debugPrint('PATCH 요청 중 예외 발생: $e');
       return e;
     }

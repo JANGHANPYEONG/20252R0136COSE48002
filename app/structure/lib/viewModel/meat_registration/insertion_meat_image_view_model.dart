@@ -225,7 +225,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
             meatModel.updateHeatedSeonsory();
           }
         } else {
-          // TODO : 입력한 데이터 초기화
           throw ErrorDescription(response);
         }
       } catch (e) {
@@ -287,7 +286,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
 
       // 이미지가 새롭게 수정된 경우에만 firebase에 업로드
       if (imgAdded) {
-        // TODO : 이미지 업데이트 확인
         await refMeatImage.putFile(
           imgFile!,
           SettableMetadata(contentType: 'image/jpeg'),

@@ -30,7 +30,7 @@ class CameraViewModel with ChangeNotifier {
       if (e is CameraException && e.code == 'CameraAccessDenied') {
         // 카메라 권한 설정
         debugPrint('Camera access denied');
-        // TODO : 카메라 권한 팝업
+        if (context.mounted) showCameraPermissionPopup(context);
       } else {
         // 카메라 오류
         debugPrint('Camera error: $e');

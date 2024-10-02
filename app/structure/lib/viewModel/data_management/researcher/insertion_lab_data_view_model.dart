@@ -180,7 +180,6 @@ class InsertionLabDataViewModel with ChangeNotifier {
           meatModel.updateHeatedProbExpt();
         }
       } else {
-        // TODO: 입력한 데이터 삭제해야함
         throw ErrorDescription(response);
       }
     } catch (e) {

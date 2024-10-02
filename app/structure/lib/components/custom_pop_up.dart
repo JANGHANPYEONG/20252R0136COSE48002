@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 String errorText = '오류가 발생했습니다.';
 String unselectedText = '선택되지 않은 항목이 있습니다.';
+String cameraPermissionText = '설정에서 카메라 권한을 먼저 허용하세요.';
 String cameraErrorText = '카메라에 문제가 생겼습니다.';
 String fileUploadFailedText = '파일 업로드에 실패했습니다.';
 String successChangeUserInfo = '정상적으로 변경되었습니다.';
@@ -23,6 +24,11 @@ String terms =
 /// 선택되지않은 popup
 void showUnselectedPopup(BuildContext context) {
   showPopup(context, unselectedText, '');
+}
+
+/// 카메라 권한 오류 popup
+void showCameraPermissionPopup(BuildContext context) {
+  showPopup(context, cameraPermissionText, '확인');
 }
 
 /// 카메라 오류 popup
