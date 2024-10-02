@@ -203,6 +203,7 @@ const SearchFilterBar = () => {
                 <div style={{ display: 'flex', marginLeft: '20px' }}>
                   <DatePicker
                     disableFuture
+                    maxDate={calenderEnd ? calenderEnd : dayjs()}
                     onChange={(newVal) => {
                       setCalenderStart(newVal);
                       setIsDur(false);
