@@ -71,7 +71,7 @@ def deleteDeepAgingData():
             delete_deep_aging_data = _deleteSpecificDeepAgingData(db_session, s3_conn, id, seqno)
             return jsonify({"msg": delete_deep_aging_data["msg"]}), delete_deep_aging_data["code"]
         else:
-            return jsonify("Invalid id and seqno"), 400
+            return jsonify({"msg": "Invalid id and seqno"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (

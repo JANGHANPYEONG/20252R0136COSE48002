@@ -24,12 +24,12 @@ def create_meat_opencv_info():
         
         # Invalid parameter
         if (meat_id or seqno) is None:
-            return {"msg": "Invalid id or seqno parameter"}, 404 
+            return jsonify({"msg": "Invalid id or seqno parameter"}), 404 
         
         # 해당 육류 - 회차의 관능 데이터가 존재하지 않을 때
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
         if not sensory_info:
-            return {"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}, 400
+            return jsonify({"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}), 400
         
         segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
         
@@ -40,7 +40,7 @@ def create_meat_opencv_info():
             # PATCH 요청
             else: 
                 result = process_opencv_image_for_web(db_session, s3_conn, meat_id, seqno, segment_img_object, is_post=0)
-            return jsonify({"msg": result["msg"], "code": result["code"]})
+            return jsonify({"msg": result["msg"]}), result["code"]
         
         return jsonify({"msg": f"Fail to Create or Update OpenCV data"}), 400
     except Exception as e:
@@ -64,15 +64,15 @@ def create_meat_opencv_info_for_model():
         
         # Invalid parameter
         if (meat_id or seqno) is None:
-            return {"msg": "Invalid id or seqno parameter"}, 404 
+            return jsonify({"msg": "Invalid id or seqno parameter"}), 404 
         
         # 해당 육류 - 회차의 관능 데이터가 존재하지 않을 때
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
         if not sensory_info:
-            return {"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}, 400
+            return jsonify({"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}), 400
     
         result = process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno)
-        return jsonify({"msg": result["msg"], "code": result["code"]})
+        return jsonify({"msg": result["msg"]}), result["code"]
     except Exception as e:
         logging.exception(str(e))
         return (
@@ -94,17 +94,17 @@ def predict_sensory_eval():
         
         # Invalid parameter
         if (meat_id or seqno) is None:
-            return {"msg": "Invalid id or seqno parameter"}, 404 
+            return jsonify({"msg": "Invalid id or seqno parameter"}), 404 
         
         # 해당 육류 - 회차의 관능 데이터가 존재하지 않을 때
         sensory_info = get_SensoryEval(db_session, meat_id, seqno)
         if not sensory_info:
-            return {"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}, 400
+            return jsonify({"msg": f"Sensory Info Does Not Exist: {meat_id} - {seqno}"}), 400
         
         # 해당 육류 - 회차의 예측 관능, 등급 데이터가 존재할 때
         ai_sensory_info = get_AI_SensoryEval(db_session, meat_id, seqno)
         if ai_sensory_info:
-            return {"msg": f"AI Sensory Info Already Exists"}, 400
+            return jsonify({"msg": f"AI Sensory Info Already Exists"}), 400
         
         ai_sensory_data = process_predict_sensory_eval(db_session, s3_conn, meat_id, seqno)
         if ai_sensory_data:

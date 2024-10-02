@@ -18,7 +18,7 @@ def updateConfirmData():
         if meat_id:
             return _updateConfirmData(db_session, meat_id)
         else:
-            return jsonify("No meatId parameter"), 400
+            return jsonify({"msg": "No meatId parameter"}), 400
     except Exception as e:
         # logger.exception(str(e))
         return (
@@ -37,7 +37,7 @@ def updateRejectData():
         if meat_id:
             return _updateRejectData(db_session, meat_id)
         else:
-            return jsonify("No meatId parameter"), 400
+            return jsonify({"msg": "No meatId parameter"}), 400
     except Exception as e:
         # logger.exception(str(e))
         return (
