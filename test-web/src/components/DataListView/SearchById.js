@@ -28,7 +28,12 @@ const SearchById = ({
   };
 
   const handleSearch = async () => {
-    if (error || !meatId) return; // error가 있거나 id가 없으면 검색하지 않음
+    if (error) return; // Return if there's an error
+    if (!meatId) {
+      // If meatId is empty, switch to list view and return
+      onValueChange('list');
+      return;
+    }
     try {
       const data = await getByPartialMeatId(
         meatId,
@@ -54,6 +59,12 @@ const SearchById = ({
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -68,6 +79,7 @@ const SearchById = ({
       <TextField
         value={meatId}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder="ID"
         variant="outlined"
         size="small"
