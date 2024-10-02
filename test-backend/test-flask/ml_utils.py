@@ -65,25 +65,7 @@ def predict_regression_sensory_eval(s3_conn, s3_image_object, meat_id, seqno):
     predict_result["surfaceMoisture"] = predict_data[0]
     predict_result["overall"] = predict_data[0]
     
-    # xai 이미지 생성
-    xai_sensory = create_xai_image(s3_conn, img, s3_bucket, meat_id, seqno, "sensory-xai")
-    predict_result["xai_imagePath"] = xai_sensory
-    
     return predict_result
-
-
-def create_xai_image(s3_conn, image, bucket_name, meat_id, seqno, xai_type):
-    if xai_type == 'sensory-xai':
-        model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
-    else:
-        model_location = "/home/ubuntu/mlflow/classification_model/data/model.pth"
-    model = load_local_model(model_location)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-    
-    xai_object = visualize_all_attention_layers(s3_conn, image, model, bucket_name, meat_id, seqno, xai_type)
-    return xai_object
 
 
 def predict_classification_grade(s3_conn, s3_image_object, meat_id, seqno):
@@ -137,10 +119,6 @@ def predict_classification_grade(s3_conn, s3_image_object, meat_id, seqno):
     grade_data = {}
     grade_data["xai_gradeNum"] = predicted_index
     
-    # xai 이미지 생성
-    xai_grade = create_xai_image(s3_conn, img, s3_bucket, meat_id, seqno, "grade-xai")
-    grade_data["xai_gradeNum_imagePath"] = xai_grade
-    
     return grade_data
 
 
@@ -179,7 +157,7 @@ def preprocess_image(image):
 
 
 # 어텐션 맵을 가져오는 함수
-def get_all_attention_maps(model, image, xai_type):
+def get_all_attention_maps(model, device, image, xai_type):
     input_tensor = preprocess_image(image).to(device)
     attention_maps = []
     cls_weights = []
@@ -216,21 +194,6 @@ def get_all_attention_maps(model, image, xai_type):
     return input_tensor, attention_maps, cls_weights
 
 
-def apply_colormap(mask, cmap_name='viridis'):
-    cmap = plt.get_cmap(cmap_name)
-    colored_mask = cmap(mask)
-    return (colored_mask[:, :, :3] * 255).astype(np.uint8)
-
-
-def show_mask_on_image(img, mask, cmap_name='viridis'):
-    img = np.float32(img) / 255
-    heatmap = apply_colormap(mask, cmap_name)
-    heatmap = np.float32(heatmap) / 255
-    cam = heatmap + np.float32(img)
-    cam = cam / np.max(cam)
-    return np.uint8(255 * cam)
-
-
 # 이미지 표시 함수
 def show_img2(img1, img2, alpha=0.8, ax=None):
     if isinstance(img1, torch.Tensor):
@@ -238,38 +201,66 @@ def show_img2(img1, img2, alpha=0.8, ax=None):
     if isinstance(img2, torch.Tensor):
         img2 = img2.squeeze().cpu().numpy()
     if ax is None:
-        fig, ax = plt.subplots(figsize=(20, 4))
+        fig, ax = plt.subplots(figsize=(10, 10))
     ax.imshow(img1)
     ax.imshow(img2, alpha=alpha, cmap='viridis')
     ax.axis('off')
+    
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    
+    # 결과를 ndarray로 변환
+    fig.canvas.draw()  # Figure를 그립니다.
+    img_array = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)  # RGB 데이터를 가져옵니다.
+    img_array = img_array.reshape(fig.canvas.get_width_height()[::-1] + (3,))  # 배열의 형태를 맞춥니다.
+    
+    plt.close(fig)
+    
+    return img_array
 
 
 # 모든 어텐션 레이어 시각화
-def visualize_all_attention_layers(s3_conn, image, model, s3_bucket_name, meat_id, seqno, xai_type):
-    input_tensor, attention_maps, cls_weights = get_all_attention_maps(model, image, xai_type)
+def visualize_all_attention_layers(s3_conn, image, s3_bucket_name, meat_id, seqno, xai_type):
+    # model 호출
+    if xai_type == 'sensory-xai':
+        model_location = "/home/ubuntu/mlflow/regression_model/data/model.pth"
+    else:
+        model_location = "/home/ubuntu/mlflow/classification_model/data/model.pth"
+    model = load_local_model(model_location)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    
+    # attention map 생성
+    input_tensor, attention_maps, cls_weights = get_all_attention_maps(model, device, image, xai_type)
     
     img_resized = F.interpolate(input_tensor, (224, 224), mode='bilinear').squeeze(0).permute(1, 2, 0)
     img_resized = np.clip(img_resized.cpu().numpy(), 0, 1)
 
     cls_weight = cls_weights[-1]
     cls_resized = F.interpolate(cls_weight.unsqueeze(0).unsqueeze(0), input_tensor.shape[2:], mode='bicubic').squeeze()
-    cls_resized = cv2.GaussianBlur(cls_resized.cpu().numpy(), (5, 5), 0)
+    cls_resized = cls_resized.cpu().numpy()
     cls_resized = (cls_resized - cls_resized.min()) / (cls_resized.max() - cls_resized.min())
-    
-    visualized_image = show_mask_on_image(img_resized * 255, cls_resized)
-    
+
     # 시각화
     plt.figure(figsize=(10, 10))
-    plt.imshow(visualized_image)
-    plt.axis('off')
+    img_array = show_img2(img_resized, cls_resized)
 
-    # 이미지 저장 및 S3 업로드 (기존 코드와 동일)
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png', dpi=300, bbox_inches='tight')
-    buffer.seek(0)
-
-    buffer_image = Image.open(buffer)
-    img_array = np.array(buffer_image)
     xai_image = ndarray_to_image(s3_conn, img_array, f'xai_images/{xai_type}-{meat_id}-{seqno}.png')
     
     return xai_image
+
+
+# xai 이미지 생성 함수
+def create_xai_image(s3_conn, image, bucket_name, meat_id, seqno):
+    xai_result = {}
+    image = Image.open(io.BytesIO(image)).convert("RGB")
+    
+    # xai 관능 이미지 생성
+    xai_object = visualize_all_attention_layers(s3_conn, image, bucket_name, meat_id, seqno, "sensory-xai")
+    xai_result["xai_imagePath"] = xai_object
+    
+    # xai 등급 이미지 생성
+    xai_grade_object = visualize_all_attention_layers(s3_conn, image, bucket_name, meat_id, seqno, "grade-xai")
+    xai_result["xai_gradeNum_imagePath"] = xai_grade_object
+    
+    return xai_result
