@@ -47,8 +47,6 @@ const DataListComp = ({
     setCurrentPage(1);
   }, [count]);
 
-  
-
   // API fetch
   const { data, isLoading, isError } = useMeatList(
     currentPage - 1,
@@ -104,7 +102,7 @@ const DataListComp = ({
   return (
     <div>
       <div style={style.listContainer}>
-        {meatList !== undefined && (
+        {meatList.length > 0 ? (
           <DataList
             meatList={meatList}
             pageProp={'list'} // 육류 목록 페이지임을 명시
@@ -114,6 +112,19 @@ const DataListComp = ({
             endDate={endDate}
             pageOffset={pageOffset}
           />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+              fontSize: '1.2rem',
+              color: '#666',
+            }}
+          >
+            검색 결과가 없습니다.
+          </Box>
         )}
       </div>
       <Box sx={style.paginationBar}>

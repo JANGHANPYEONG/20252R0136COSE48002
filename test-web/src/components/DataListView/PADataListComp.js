@@ -101,7 +101,7 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
   return (
     <div>
       <div style={style.listContainer}>
-        {meatList !== undefined && (
+        {meatList.length > 0 ? (
           <DataList
             meatList={meatList}
             pageProp={'pa'}
@@ -111,6 +111,19 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
             endDate={endDate}
             pageOffset={pageOffset}
           />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+              fontSize: '1.2rem',
+              color: '#666',
+            }}
+          >
+            검색 결과가 없습니다.
+          </Box>
         )}
       </div>
       <Box sx={style.paginationBar}>
