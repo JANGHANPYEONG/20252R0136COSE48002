@@ -151,6 +151,9 @@ class InsertionTongueDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

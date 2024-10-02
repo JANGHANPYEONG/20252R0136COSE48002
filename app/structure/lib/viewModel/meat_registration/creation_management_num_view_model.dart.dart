@@ -50,6 +50,9 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
         if (response != 200) throw ErrorDescription(response);
       } catch (e) {
+        isLoading = false;
+        notifyListeners();
+
         debugPrint('Error: $e');
         if (context.mounted) showErrorPopup(context, error: e.toString());
       }
@@ -174,6 +177,9 @@ class CreationManagementNumViewModel with ChangeNotifier {
         throw ErrorDescription(response2);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) context.go('/home/registration-fail');
     }

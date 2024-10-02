@@ -99,7 +99,9 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
-      print("dfsfdfs");
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

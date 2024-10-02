@@ -117,6 +117,8 @@ class DataManagementNormalViewModel with ChangeNotifier {
             entireList.add(idStatusPair);
           }
         }
+      } else {
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -448,7 +450,7 @@ class DataManagementNormalViewModel with ChangeNotifier {
 
         if (context.mounted) context.go('/home/data-manage-normal/edit');
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');

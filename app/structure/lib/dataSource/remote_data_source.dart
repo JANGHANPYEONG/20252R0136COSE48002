@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
@@ -223,7 +224,6 @@ class RemoteDataSource {
   static Future<dynamic> _postApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    // String requestBody = jsonData;
     debugPrint('POST 요청: $endPoint');
 
     try {
@@ -233,13 +233,14 @@ class RemoteDataSource {
         debugPrint('POST 요청 성공');
       } else {
         debugPrint('POST 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       // 예외 처리를 위한 status code 반환
       return response.statusCode;
     } catch (e) {
       debugPrint('POST 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -249,7 +250,6 @@ class RemoteDataSource {
   static Future<dynamic> _patchApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    // String requestBody = jsonData;
     debugPrint('PATCH 요청: $endPoint');
 
     try {
@@ -259,12 +259,14 @@ class RemoteDataSource {
         debugPrint('PATCH 요청 성공');
       } else {
         debugPrint('PATCH 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       return response.statusCode;
     } catch (e) {
+      print(e);
       debugPrint('PATCH 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -283,11 +285,11 @@ class RemoteDataSource {
         return jsonDecode(response.body);
       } else {
         debugPrint('GET 요청 실패: (${response.statusCode})${response.body}');
-        return response;
+        return errorMsg(response);
       }
     } catch (e) {
       debugPrint('GET 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -305,12 +307,13 @@ class RemoteDataSource {
         debugPrint('DELETE 요청 성공');
       } else {
         debugPrint('DELETE 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       return response.statusCode;
     } catch (e) {
       debugPrint('DELETE 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -337,5 +340,18 @@ class RemoteDataSource {
       debugPrint('error');
       return;
     }
+  }
+
+  /// `Response`를 code - msg 형식의 에러 메시지로 변환하는 함수
+  static String errorMsg(Response response) {
+    final code = response.statusCode;
+    String msg = '';
+    try {
+      msg = json.decode(response.body)['msg'];
+    } catch (e) {
+      msg = response.body;
+      msg = msg.replaceAll('“', '');
+    }
+    return '$code: $msg';
   }
 }

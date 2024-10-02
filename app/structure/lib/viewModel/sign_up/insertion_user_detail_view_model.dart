@@ -116,6 +116,9 @@ class InsertionUserDetailViewModel with ChangeNotifier {
 
       if (context.mounted) showErrorPopup(context, error: e.code);
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context, error: e.toString());
     }

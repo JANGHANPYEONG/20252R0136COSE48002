@@ -161,6 +161,9 @@ class SignInViewModel with ChangeNotifier {
         throw ErrorDescription(userInfo);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) showErrorPopup(context, error: e.toString());
       return false;
