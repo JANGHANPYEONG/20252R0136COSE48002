@@ -43,12 +43,11 @@ const DataListComp = ({
     setMeatList(meatData);
   };
 
-  // useEffect(() => {
-  //   if (pageOffset) {
-  //     setCurrentPage(pageOffset + 1);
-  //   }
-  //   console.log(currentPage, 'asd');
-  // }, [pageOffset]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [count]);
+
+  
 
   // API fetch
   const { data, isLoading, isError } = useMeatList(

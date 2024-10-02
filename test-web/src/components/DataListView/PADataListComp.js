@@ -3,7 +3,7 @@ import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DataList from './DataList';
 import Pagination from './Children/Pagination';
 import Spinner from 'react-bootstrap/Spinner';
-import {usePredictedMeatList} from '../../API/get/getPredictedMeatListSWR';
+import { usePredictedMeatList } from '../../API/get/getPredictedMeatListSWR';
 import style from './style/padatalistcompstyle';
 
 // 데이터 예측 페이지 목록 컴포넌트
@@ -16,7 +16,6 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
   const [currentPage, setCurrentPage] = useState(1);
   // 한페이지당 보여줄 개수
   const [count, setCount] = useState(5);
-  
 
   // API fetch 데이터 전처리
   const processPAMeatDatas = (data) => {
@@ -43,7 +42,9 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
 
     setMeatList(meatData);
   };
-
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [count]);
   // API fetch
   const { data, isLoading, isError } = usePredictedMeatList(
     currentPage - 1,
@@ -139,4 +140,3 @@ const PADataListComp = ({ startDate, endDate, pageOffset, specieValue }) => {
 };
 
 export default PADataListComp;
-
