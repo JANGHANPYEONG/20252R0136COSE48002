@@ -169,14 +169,14 @@ class RemoteDataSource {
 
   /// 육류 이미지 openCV 전처리 (PATCH)
   static Future<dynamic> patchMeatImage(String? meatId, int? seqno) async {
-    String endPoint = 'meat/predict/process-image?meatId=$meatId&seqno=$seqno';
+    String endPoint = 'meat/predict/process-opencv?meatId=$meatId&seqno=$seqno';
     dynamic response = await _patchApi(endPoint, null);
     return response;
   }
 
   /// 육류 이미지 openCV 전처리 (POST)
   static Future<dynamic> postMeatImage(String? meatId, int? seqno) async {
-    String endPoint = 'meat/predict/process-image?meatId=$meatId&seqno=$seqno';
+    String endPoint = 'meat/predict/process-opencv?meatId=$meatId&seqno=$seqno';
     dynamic response = await _postApi(endPoint, null);
     return response;
   }
