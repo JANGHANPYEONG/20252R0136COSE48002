@@ -30,6 +30,7 @@ const style = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    textAlign: 'center',
   },
   imgUploadWrapper: {
     height: '40px',

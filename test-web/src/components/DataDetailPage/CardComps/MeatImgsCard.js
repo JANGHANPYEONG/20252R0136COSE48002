@@ -242,7 +242,7 @@ const MeatImgsCard = ({
             <div style={style.imgContainer}>
               {
                 // 실제 이미지
-                imgArr[currentIdx] ? (
+                imgArr[currentIdx] !== null && imgArr[currentIdx] !== 'null' ? (
                   isImgChanged === true ? (
                     /*이미지 미리 보기*/
                     <img
@@ -259,7 +259,7 @@ const MeatImgsCard = ({
                   )
                 ) : (
                   <div style={style.imgNotExistWrapper}>
-                    이미지가 존재하지 않습니다.
+                    이미지가 존재하지 않습니다. <br /> 이미지를 업로드해주세요!
                   </div>
                 )
               }
