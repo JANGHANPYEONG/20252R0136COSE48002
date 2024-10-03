@@ -69,6 +69,7 @@ const DataPAView = ({ dataProps }) => {
       if (!response.ok) {
         throw new Error('Network response was not ok', meatId, '-', seqno);
       }
+
       const json = await response.json();
       setDataPA(json);
 
@@ -121,66 +122,33 @@ const DataPAView = ({ dataProps }) => {
     }
   };
 
-  //탭 변환에 맞는 데이터 로드
+  //탭 변환
   const handleSelect = async (key) => {
-    // 예측 데이터 로드
-    await getPredictedData(key);
     setTab(key);
-
-    const target = processedToggleValue; // n회
-    const targetIndex = processed_data_seq.indexOf(target) - 1;
-
-    // 원본 이미지 바꾸기
-    key === '0'
-      ? setPreviewImage(raw_img_path)
-      : setPreviewImage(
-          processed_img_path[targetIndex]
-            ? processed_img_path[targetIndex]
-            : null
-        );
   };
-
-  // useEffect(() => {
-  //   console.log('seqno : ', nowSeqno);
-  // }, [nowSeqno]);
-
-  useEffect(() => {
-    if (tab === '0' || tab === 0) {
-      setNowSeqno(parseInt(tab));
-    } else {
-      setNowSeqno(parseInt(processedToggleValue));
-    }
-  }, [processedToggleValue, tab]);
-
-  // 처리육 탭에서 회차가 바뀜에 따라 다른 예측 결과 load
-  useEffect(() => {
-    getPredictedData(parseInt(processedToggleValue));
-  }, [processedToggleValue]);
-
+  //원육&처리육 탭, 처리육 회차 변경에 맞추어 seqno, 이미지 변경
   useEffect(() => {
     const target = processedToggleValue; //n회
     const targetIndex = processed_data_seq.indexOf(target) - 1;
     if (tab === '0' || tab === 0) {
+      setNowSeqno(parseInt(tab));
       setImgPath(raw_img_path);
+      setPreviewImage(raw_img_path);
     } else {
+      setNowSeqno(parseInt(processedToggleValue));
       setImgPath(
+        processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+      );
+      setPreviewImage(
         processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
       );
     }
   }, [processedToggleValue, tab]);
 
-  // 초기에 원육 예측 데이터 로드
+  // 회차 따라 예측 데이터 로드
   useEffect(() => {
-    getPredictedData(0);
-  }, []);
-
-  useEffect(() => {
-    const target = processedToggleValue; //n회
-    const targetIndex = processed_data_seq.indexOf(target) - 1;
-    setPreviewImage(
-      processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
-    );
-  }, [processedToggleValue, tab]);
+    getPredictedData(nowSeqno);
+  }, [nowSeqno]);
 
   return (
     <div style={{ width: '100%' }}>
@@ -242,7 +210,7 @@ const DataPAView = ({ dataProps }) => {
               <Card.Text>
                 <div style={style.imgTextWrapper}>원본이미지</div>
                 <div style={style.imgWrapper}>
-                  {imgPath ? (
+                  {imgPath !== 'null' && imgPath !== null ? (
                     <img
                       src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
