@@ -33,13 +33,32 @@ const MeatImgsCard = ({
   isPost,
 }) => {
   // 1.이미지 배열 만들기
-  const [imgArr, setImgArr] = useState([raw_img_path]);
+  // 이미지 배열 초기화
+  const [imgArr, setImgArr] = useState([]);
+  // 이미지 배열을 한 번만 설정하고, processed_img_path가 변경될 때만 업데이트
   useEffect(() => {
-    setImgArr([...imgArr, ...processed_img_path]);
-  }, []);
+    // 원육 이미지는 항상 포함
+    const newImgArr = [raw_img_path];
 
-  // 이미지 배열 페이지네이션
+    // processed_img_path가 배열이고 비어있지 않은 경우에만 처리
+    if (Array.isArray(processed_img_path) && processed_img_path.length > 0) {
+      // 최대 4회차까지만 처리육 이미지 추가
+      const processedImages = processed_img_path.slice(0, 4);
+      newImgArr.push(...processedImages);
+    }
+
+    setImgArr(newImgArr);
+  }, [raw_img_path, processed_img_path]); // 의존성 배열에 이미지 경로들 추가
+
+  // 현재 이미지 인덱스 상태
   const [currentIdx, setCurrIdx] = useState(0);
+
+  // 이미지 인덱스가 배열 범위를 벗어나지 않도록 보정
+  useEffect(() => {
+    if (currentIdx >= imgArr.length) {
+      setCurrIdx(Math.max(0, imgArr.length - 1));
+    }
+  }, [imgArr.length, currentIdx]);
 
   // 1) 이미지 페이지네이션 '>' 버튼 클릭
   const handleNextClick = () => {
