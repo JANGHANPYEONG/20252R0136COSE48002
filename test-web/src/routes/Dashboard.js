@@ -20,7 +20,7 @@ import ExcelController from '../components/DataListView/ExcelController';
 // import StatsExport from '../components/DataListView/StatsExport_';
 // ID 검색 컴포넌트
 import SearchById from '../components/DataListView/SearchById';
-import DataSingle from '../components/DataListView/DataSingle';
+import SearchedDataListComp from '../components/DataListView/SearchedDataListComp';
 // 구간 계산 함수
 import updateDates from '../Utils/updateDates';
 
@@ -29,7 +29,7 @@ const navy = '#0F3659';
 const Dashboard = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
-  const [singleData, setSingleData] = useState(null);
+  const [searchedData, setSearchedData] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
@@ -97,8 +97,8 @@ const Dashboard = () => {
     setSpecieValue(event.target.value);
   };
 
-  const handleSingleDataFetch = (fetchedData) => {
-    setSingleData(fetchedData);
+  const handleSearchedDataFetch = (fetchedData) => {
+    setSearchedData(fetchedData);
   };
 
   if (isLoading) {
@@ -187,7 +187,7 @@ const Dashboard = () => {
           >
             목록
           </Button>
-          {value !== 'single' && (
+          {value !== 'searched' && (
             <Button
               style={value === 'stat' ? style.tabBtnCilcked : style.tabBtn}
               value="stat"
@@ -208,25 +208,24 @@ const Dashboard = () => {
           sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
         >
           <SearchFilterBar />
-          {value === 'list' && (
-            <>
-              <SearchById
-                onDataFetch={handleSingleDataFetch}
-                onValueChange={handleValueChange}
-              />
-              <Select
-                labelId="species"
-                id="species"
-                value={specieValue}
-                onChange={handleSpeciesChange}
-                label="종류"
-              >
-                <MenuItem value="전체">전체</MenuItem>
-                <MenuItem value="소">소</MenuItem>
-                <MenuItem value="돼지">돼지</MenuItem>
-              </Select>
-            </>
-          )}
+          <SearchById
+            onDataFetch={handleSearchedDataFetch}
+            onValueChange={handleValueChange}
+            startDate={startDate}
+            endDate={endDate}
+            specieValue={specieValue}
+          />
+          <Select
+            labelId="species"
+            id="species"
+            value={specieValue}
+            onChange={handleSpeciesChange}
+            label="종류"
+          >
+            <MenuItem value="전체">전체</MenuItem>
+            <MenuItem value="소">소</MenuItem>
+            <MenuItem value="돼지">돼지</MenuItem>
+          </Select>
         </Box>
         <div
           style={{
@@ -236,7 +235,7 @@ const Dashboard = () => {
             paddingRight: '85px',
           }}
         >
-          {(value === 'list' || value === 'single') && (
+          {(value === 'list' || value === 'searched') && (
             <ExcelController
               startDate={startDate}
               endDate={endDate}
@@ -247,11 +246,11 @@ const Dashboard = () => {
         </div>
       </Box>
 
-      {value === 'single' && (
-        <DataSingle
+      {value === 'searched' && (
+        <SearchedDataListComp
           startDate={startDate}
           endDate={endDate}
-          singleData={singleData}
+          searchedData={searchedData}
         />
       )}
 

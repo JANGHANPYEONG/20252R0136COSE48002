@@ -87,17 +87,29 @@ const RejectedDataListComp = ({
   return (
     <div>
       <div style={style.listContainer}>
-        {meatList !== undefined && (
+        {meatList.length > 0 ? (
           <DataList
             meatList={meatList}
             pageProp={'reject'}
             offset={currentPage - 1}
             count={count}
-            totalPages={totalPages}
             startDate={startDate}
             endDate={endDate}
             pageOffset={pageOffset}
           />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+              fontSize: '1.2rem',
+              color: '#666',
+            }}
+          >
+            검색 결과가 없습니다.
+          </Box>
         )}
       </div>
       <Box sx={style.paginationBar}>
