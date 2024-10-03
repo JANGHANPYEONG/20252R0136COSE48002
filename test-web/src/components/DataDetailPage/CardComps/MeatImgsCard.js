@@ -97,10 +97,15 @@ const MeatImgsCard = ({
     });
   };
 
-  //데이터 전처리
+  // 데이터 전처리
   useEffect(() => {
     if (data !== null && data !== undefined) {
-      setTooltipImgData(data);
+      const updatedData = {
+        ...data,
+        // 캐싱 방지를 위해 segmentImage URL에 타임스탬프 추가
+        segmentImage: data.segmentImage + '?time=' + new Date().getTime(),
+      };
+      setTooltipImgData(updatedData);
     }
   }, [data]);
 
