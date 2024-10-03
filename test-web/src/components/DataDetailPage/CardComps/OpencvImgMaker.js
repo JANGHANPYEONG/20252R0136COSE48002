@@ -37,6 +37,16 @@ const OpencvImgMaker = ({ data }) => {
               style={style.imgWrapper}
             />
           </div>
+          <div style={{ marginTop: '6vh' }}>
+            <div style={style.imgTitleWrapper}>
+              {data.proteinRate
+                ? ` 단백질 비율 (${data.proteinRate.toFixed(2)}%)`
+                : ''}
+            </div>
+            <div style={style.imgTitleWrapper}>
+              {data.fatRate ? ` 지방 비율 (${data.fatRate.toFixed(2)}%)` : ''}
+            </div>
+          </div>
         </div>
       )}
 

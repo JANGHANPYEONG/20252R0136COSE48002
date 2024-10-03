@@ -12,7 +12,6 @@ import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
 import { Tooltip } from '@mui/material';
 import useOpencvImageData from '../../../API/get/getOpencvImageDataSWR';
-import { dummyOpencvData } from './dummyOpencvData';
 import OpencvImgMaker from './OpencvImgMaker';
 
 const navy = '#0F3659';
@@ -72,6 +71,10 @@ const MeatImgsCard = ({
     setImgArr(newImages);
   };
 
+  // 툴팁 이미지 데이터
+  const [tooltipImgData, setTooltipImgData] = useState([]);
+  const { data, isLoading, isError } = useOpencvImageData(id, currentIdx);
+
   const handleFileChange = (e) => {
     handleImgChange({
       newImgFile: e.target.files[0],
@@ -90,11 +93,9 @@ const MeatImgsCard = ({
       processedMinute,
       butcheryYmd,
       isPost,
+      data,
     });
   };
-
-  const [tooltipImgData, setTooltipImgData] = useState([]);
-  const { data, isLoading, isError } = useOpencvImageData(id, currentIdx);
 
   //데이터 전처리
   useEffect(() => {
