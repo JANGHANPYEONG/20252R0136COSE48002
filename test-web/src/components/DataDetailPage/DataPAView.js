@@ -19,6 +19,9 @@ import { computePeriod } from './computeTime';
 import { apiIP } from '../../config';
 import { useUser } from '../../Utils/UserContext';
 
+import { predictSensoryData } from '../../API/predict/predictSensoryData';
+// import { getPredictedData } from '../../API/get/getPredictedData';
+
 const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
   const {
@@ -96,24 +99,8 @@ const DataPAView = ({ dataProps }) => {
     try {
       // 로딩 화면 표시 시작
       SetIsPredictedDone(false);
-      let req = {
-        ['meatId']: meatId,
-        ['seqno']: parseInt(processedToggleValue),
-      };
-      const response = await fetch(
-        `http://${apiIP}/meat/predict/sensory-eval?meatId=${meatId}&seqno=${seqno}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(req),
-        }
-      );
 
-      if (!response.ok) {
-        throw new Error('Prediction request failed');
-      }
+      await predictSensoryData(meatId, seqno);
 
       // 예측이 성공한 후 즉시 데이터를 가져오기
       const predictedData = await getPredictedData(seqno);
@@ -204,13 +191,15 @@ const DataPAView = ({ dataProps }) => {
         </div>
       )}
       <div style={style.editBtnWrapper}>
-        {((dataPA && dataPA.seqno === nowSeqno) || (imgPath === 'null')) ? (
+        {(dataPA && dataPA.seqno === nowSeqno) ||
+        imgPath === 'null' ||
+        imgPath === null ? (
           // 예측할 이미지가 없거나 이미 예측된 데이터가 존재하면, 버튼 비활성화 후 툴팁 표시
           <OverlayTrigger
             placement="top"
             delay={{ show: 250, hide: 400 }}
             overlay={
-              imgPath === 'null' ? (
+              imgPath === 'null' || imgPath === null ? (
                 <Tooltip id="no-image-tooltip">
                   예측할 이미지가 존재하지 않습니다
                 </Tooltip>

@@ -2,6 +2,7 @@ import { computePeriod } from '../computeTime';
 import addSensoryRawImg from '../../../API/add/addSensoryRawImg';
 import addSensoryProcessedData from '../../../API/add/addSensoryProcessedData';
 import uploadNewImgToFirebase from '../../../API/firebase/uploadNewImgToFirebase';
+import predictOpencvImageData from '../../../API/predict/predictOpencvImageData';
 import { TIME_ZONE } from '../../../config';
 
 const handleImgChange = async ({
@@ -21,6 +22,7 @@ const handleImgChange = async ({
   processedMinute,
   butcheryYmd,
   isPost,
+  data,
 }) => {
   if (newImgFile) {
     const existSeq = processed_data_seq
@@ -53,6 +55,8 @@ const handleImgChange = async ({
           } else {
             updatePreviews(reader);
             setIsImgChanged(true);
+            // 원육 이미지는 항상 수정이므로 PATCH로 OpenCV 데이터 처리
+            predictOpencvImageData(id, 0, false);
           }
           setIsUploadingDone(true);
         });
@@ -70,6 +74,12 @@ const handleImgChange = async ({
           .then((response) => {
             updatePreviews(reader);
             setIsImgChanged(true);
+            // OpenCV 데이터가 없으면 POST로, 있으면 PATCH로 처리
+            if (!data || data.msg) {
+              isPost = true;
+            }
+            // 처리육은 isPost 값에 따라 생성/수정 구분하여 OpenCV 데이터 처리
+            predictOpencvImageData(id, existSeq[i], isPost);
           })
           .catch((error) => {
             console.error('처리육 이미지 수정 POST 요청 오류:', error);
