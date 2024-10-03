@@ -20,6 +20,7 @@ import { apiIP } from '../../config';
 import { useUser } from '../../Utils/UserContext';
 
 import { predictSensoryData } from '../../API/predict/predictSensoryData';
+import { predictOpencvTrainingData } from '../../API/predict/predictOpencvTrainingData';
 // import { getPredictedData } from '../../API/get/getPredictedData';
 
 const DataPAView = ({ dataProps }) => {
@@ -100,6 +101,7 @@ const DataPAView = ({ dataProps }) => {
       // 로딩 화면 표시 시작
       SetIsPredictedDone(false);
 
+      await predictOpencvTrainingData(meatId, seqno);
       await predictSensoryData(meatId, seqno);
 
       // 예측이 성공한 후 즉시 데이터를 가져오기
