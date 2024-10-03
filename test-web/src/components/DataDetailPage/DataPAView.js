@@ -78,9 +78,9 @@ const DataPAView = ({ dataProps }) => {
     } catch (error) {
       // 데이터를 불러오는 데 실패한 경우 모든 data를 null로 설정
       console.error('Error fetching data seqno ', seqno, ':', error);
+      setDataXAIImg(null);
+      setGradeXAIImg(null);
       setDataPA(null);
-      //setDataXAIImg(null);
-      //setGradeXAIImg(null);
     }
   };
 
