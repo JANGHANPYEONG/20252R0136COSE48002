@@ -2,9 +2,14 @@
 import React from 'react';
 
 const ColorPaletteMaker = ({ colors, showPercentage = false }) => {
+  // 퍼센테이지 표시 여부에 따라 정렬된 컬러 배열 생성
+  const sortedColors = showPercentage
+    ? [...colors].sort((a, b) => b[1] - a[1])
+    : colors;
+
   return (
     <div style={{ display: 'flex' }}>
-      {colors.map((color, index) => (
+      {sortedColors.map((color, index) => (
         <div
           key={index}
           style={{
@@ -20,11 +25,9 @@ const ColorPaletteMaker = ({ colors, showPercentage = false }) => {
               backgroundColor: `rgb(${color[0].join(',')})`,
             }}
           />
-          {/* Conditionally show the percentage */}
+          {/* 퍼센트 표시 여부 */}
           {showPercentage && (
-            <span style={{ marginTop: '5px' }}>
-              {(color[1] * 100).toFixed(2)}
-            </span>
+            <span style={{ marginTop: '5px' }}>{color[1].toFixed(2)}</span>
           )}
         </div>
       ))}
