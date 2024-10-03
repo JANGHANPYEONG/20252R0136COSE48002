@@ -154,7 +154,7 @@ def getMeatDataByUserId():
         start = request.args.get("start")
         end = request.args.get("end")
         if not (userId and start and end) or offset is None or count is None:
-            return jsonify("Invalid parameter"), 400
+            return jsonify({"msg": "Invalid parameter"}), 400
         meat_by_user = _getMeatDataByUserId(db_session, userId, offset, count, start, end)
         return jsonify(meat_by_user), 200
     except Exception as e:
@@ -178,7 +178,7 @@ def getMeatDataByUserType():
                 return _getMeatDataByUserType(db_session, userType)
 
             else:
-                return jsonify("No userType in parameter"), 401
+                return jsonify({"msg": "No userType in parameter"}), 400
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -258,7 +258,7 @@ def getMeatDataByRangeStatusType():
                 db_session, status_type, offset, count, specie_value, start, end
             )
         else:
-            return jsonify("Invalid statusType or specieValue in parameter"), 400
+            return jsonify({"msg": "Invalid statusType or specieValue in parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -315,7 +315,7 @@ def getPredictionData():
         if meat_id and seqno is not None:
             return _getPredictionData(db_session, meat_id, seqno)
         else:
-            return jsonify("Invalid id or seqno parameter"), 404
+            return jsonify({"msg": "Invalid id or seqno parameter"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -339,7 +339,7 @@ def getOpenCVData():
                 return jsonify(result), 200
             else:
                 return jsonify({"msg": "OpenCV Result Does Not Exist"}), 400
-        return jsonify("Invalid id or seqno parameter"), 404
+        return jsonify({"msg": "Invalid id or seqno parameter"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (

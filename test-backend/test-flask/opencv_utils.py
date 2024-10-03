@@ -275,29 +275,41 @@ def extract_palette_and_ratios(image, colors):
     
     return palette_and_ratios
 
+def normalize_ratios(palette_and_ratios):
+    ratios = [item[1] for item in palette_and_ratios]
+    total_ratio = sum(ratios)
+    normalized_palette_and_ratios = [
+        (color, (ratio / total_ratio) * 100) for color, ratio in palette_and_ratios
+    ]
+    return normalized_palette_and_ratios
+
 #총합 비율과 컬러팔레트(리스트)를 구하는 함수
 def display_palette_with_ratios(image):
     red_palette_and_ratios = extract_palette_and_ratios(image, red_colors)
     white_palette_and_ratios = extract_palette_and_ratios(image, white_colors)
     total_palette = red_palette_and_ratios + white_palette_and_ratios
+    
+    normalized_palette = normalize_ratios(total_palette)
+    
     red_proportion = []
     white_proportion = []
-    for red_color in total_palette[:5]:
-        sum = 0
-        sum += red_color[1]
+    red_sum = 0
+    white_sum = 0
+    
+    for red_color in normalized_palette[:5]:
+        red_sum += red_color[1]
         red_proportion.append(red_color)
-    red_ratio = sum
-    for white_color in total_palette[5:]:
-        sum = 0
-        sum += white_color[1]
+        
+    for white_color in normalized_palette[5:]:
+        white_sum += white_color[1]
         white_proportion.append(white_color)
-    white_ratio = sum
+        
     result = {
-        "protein_rate": red_ratio,
-        "fat_rate": white_ratio,
+        "protein_rate": red_sum,
+        "fat_rate": white_sum,
         "protein_palette": [red[0] for red in red_proportion],
         "fat_palette": [white[0] for white in white_proportion],
-        "full_palette": total_palette
+        "full_palette": normalized_palette
     }
     return result
 

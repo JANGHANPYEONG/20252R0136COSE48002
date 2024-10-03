@@ -36,7 +36,7 @@ def getRatioFreshAndProcessed():
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
@@ -270,7 +270,7 @@ def getTimeSeriesData():
             timeseries_data = get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno)
             return jsonify(timeseries_data), 200
         else:
-            return jsonify("Invalid parameter"), 400
+            return jsonify({"msg": "Invalid parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
