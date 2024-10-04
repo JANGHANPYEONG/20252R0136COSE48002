@@ -10,7 +10,11 @@ import 'package:structure/model/user_model.dart';
 
 class InsertionUserDetailViewModel with ChangeNotifier {
   UserModel userModel;
-  InsertionUserDetailViewModel({required this.userModel});
+  BuildContext context;
+  InsertionUserDetailViewModel({
+    required this.userModel,
+    required this.context,
+  });
 
   bool isLoading = false;
   bool emailcheck = false;
@@ -23,7 +27,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
   String jobTitle = '';
 
   /// 검색 버튼 클릭
-  Future clickedSearchButton(context) async {
+  Future clickedSearchButton() async {
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -40,15 +44,19 @@ class InsertionUserDetailViewModel with ChangeNotifier {
   }
 
   /// 다음 버튼 클릭시
-  Future<void> clickedNextButton(BuildContext context) async {
+  Future<void> clickedNextButton() async {
     isLoading = true;
     notifyListeners();
 
-    _saveUserData();
-    await _sendData(context);
+    try {
+      _saveUserData();
+      await _sendData();
 
-    //
-    await LocalDataSource.deleteLocalData(userModel.userId!);
+      await LocalDataSource.deleteLocalData(userModel.userId!);
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (context.mounted) showErrorPopup(context, error: e.toString());
+    }
 
     isLoading = false;
     notifyListeners();
@@ -66,7 +74,7 @@ class InsertionUserDetailViewModel with ChangeNotifier {
   }
 
   /// 데이터 서버로 전송
-  Future<void> _sendData(BuildContext context) async {
+  Future<void> _sendData() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
     try {
@@ -76,7 +84,9 @@ class InsertionUserDetailViewModel with ChangeNotifier {
         // 새로운 유저 생성
         UserCredential credential =
             await firebaseAuth.createUserWithEmailAndPassword(
-                email: userModel.userId!, password: userModel.password!);
+          email: userModel.userId!,
+          password: userModel.password!,
+        );
 
         // 이메일 인증 메일 전송
         if (credential.user != null) {
@@ -101,11 +111,16 @@ class InsertionUserDetailViewModel with ChangeNotifier {
           break;
         default:
           debugPrint('Error: ${e.code}');
+          break;
       }
+
+      if (context.mounted) showErrorPopup(context, error: e.code);
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
-      // DB 생성 오류시 오류 메시지 띄우고 반환
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

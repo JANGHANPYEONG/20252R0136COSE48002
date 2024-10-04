@@ -15,8 +15,8 @@ import 'package:structure/model/user_model.dart';
 class EditMeatDataViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-
-  EditMeatDataViewModel(this.meatModel, this.userModel) {
+  BuildContext context;
+  EditMeatDataViewModel(this.meatModel, this.userModel, this.context) {
     // 만약 데이터의 상태가 '대기중' 또는 '반려'이며, 3일 내 등록(반려) 데이터이면 수정 가능으로 만든다.
     String dday = meatModel.updatedAt ?? meatModel.createdAt!;
     if (meatModel.statusType != '승인' &&
@@ -33,7 +33,7 @@ class EditMeatDataViewModel with ChangeNotifier {
   bool isEditable = false;
   bool isNormal = true;
 
-  void clicekdBasic(BuildContext context) {
+  void clicekdBasic() {
     if (isNormal) {
       // 일반
       if (isEditable) {
@@ -47,7 +47,7 @@ class EditMeatDataViewModel with ChangeNotifier {
     }
   }
 
-  void clickedImage(BuildContext context) {
+  void clickedImage() {
     if (isNormal) {
       if (isEditable) {
         context.go('/home/data-manage-normal/edit/image-editable');
@@ -59,7 +59,7 @@ class EditMeatDataViewModel with ChangeNotifier {
     }
   }
 
-  void clicekdFresh(BuildContext context) {
+  void clicekdFresh() {
     if (isNormal) {
       if (isEditable) {
         context.go('/home/data-manage-normal/edit/freshmeat-editable');
@@ -93,8 +93,11 @@ class EditMeatDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;
@@ -117,8 +120,11 @@ class EditMeatDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;

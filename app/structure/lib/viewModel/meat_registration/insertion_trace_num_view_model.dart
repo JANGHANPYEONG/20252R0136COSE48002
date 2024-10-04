@@ -10,12 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
 import 'package:structure/model/meat_model.dart';
 
 class InsertionTraceNumViewModel with ChangeNotifier {
   final MeatModel meatModel;
-  InsertionTraceNumViewModel(this.meatModel) {
+  BuildContext context;
+  InsertionTraceNumViewModel(this.meatModel, this.context) {
     initialize();
   }
   // api
@@ -196,8 +198,9 @@ class InsertionTraceNumViewModel with ChangeNotifier {
               pigAPIData['response']['body']['items']['item'][0]['pigNo'];
         }
       } catch (e) {
-        // TODO : 에러 메시지 팝업
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context, error: e.toString());
+
         reset();
         isAllInserted = 2;
       }
@@ -244,10 +247,10 @@ class InsertionTraceNumViewModel with ChangeNotifier {
         gradeNum =
             meatAPIData3['response']['body']['items']['item']['gradeNm'] ?? '';
       } catch (e) {
-        // TODO : 에러 메시지 팝업
         debugPrint('Error: $e');
         reset();
         isAllInserted = 2;
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       // 이력 번호의 시작이 '1'인 경우. (돼지의 경우)
@@ -268,10 +271,10 @@ class InsertionTraceNumViewModel with ChangeNotifier {
 
         speciesValue = '돼지';
       } catch (e) {
-        // TODO: 에러 메시지 팝업
         debugPrint('Error: $e');
         reset();
         isAllInserted = 2;
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     }
     if (butcheryYmd != null) {

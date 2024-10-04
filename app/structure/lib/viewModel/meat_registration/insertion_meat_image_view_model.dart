@@ -21,8 +21,9 @@ class InsertionMeatImageViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
   final bool isRaw;
-
-  InsertionMeatImageViewModel(this.meatModel, this.userModel, this.isRaw) {
+  BuildContext context;
+  InsertionMeatImageViewModel(
+      this.meatModel, this.userModel, this.isRaw, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -121,8 +122,8 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       }
     } else {
       // 사진 찍기 오류
-      // TODO : 이미지 촬영 오류 팝업 띄우기
       debugPrint('Image error');
+      if (context.mounted) showErrorPopup(context, error: "이미지 촬영 오류");
     }
   }
 
@@ -191,16 +192,20 @@ class InsertionMeatImageViewModel with ChangeNotifier {
         await _sendImageToFirebase();
 
         dynamic response;
-
+        dynamic responseOpencv;
         if (isRaw) {
           // 처리육
           if (isPost) {
             response = await RemoteDataSource.createMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
+            responseOpencv = await RemoteDataSource.postMeatImage(
+                meatModel.meatId, meatModel.seqno);
           } else {
             // 처리육 patch
             response = await RemoteDataSource.patchMeatData(
                 'sensory-eval', meatModel.toJsonSensory());
+            responseOpencv = await RemoteDataSource.patchMeatImage(
+                meatModel.meatId, meatModel.seqno);
           }
         } else {
           // 가열육
@@ -213,19 +218,21 @@ class InsertionMeatImageViewModel with ChangeNotifier {
           }
         }
 
-        if (response == 200) {
+        if (response == 200 && responseOpencv == 200) {
           if (isRaw) {
             meatModel.updateSeonsory();
           } else {
             meatModel.updateHeatedSeonsory();
           }
         } else {
-          // TODO : 입력한 데이터 초기화
           throw ErrorDescription(response);
         }
       } catch (e) {
+        isLoading = false;
+        notifyListeners();
+
         debugPrint('Error: $e');
-        if (context.mounted) showErrorPopup(context);
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     } else {
       // 신규 생성일때만 임시저장
@@ -279,7 +286,6 @@ class InsertionMeatImageViewModel with ChangeNotifier {
 
       // 이미지가 새롭게 수정된 경우에만 firebase에 업로드
       if (imgAdded) {
-        // TODO : 이미지 업데이트 확인
         await refMeatImage.putFile(
           imgFile!,
           SettableMetadata(contentType: 'image/jpeg'),
@@ -299,7 +305,7 @@ class InsertionMeatImageViewModel with ChangeNotifier {
       if (response == null) throw Error();
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 임시저장 에러 메시지 팝업
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

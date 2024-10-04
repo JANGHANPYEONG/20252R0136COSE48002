@@ -16,7 +16,9 @@ import 'package:structure/model/user_model.dart';
 class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-  DataManagementAddAdditionalInfoTabViewModel(this.meatModel, this.userModel) {
+  BuildContext context;
+  DataManagementAddAdditionalInfoTabViewModel(
+      this.meatModel, this.userModel, this.context) {
     _initialize();
   }
 
@@ -122,16 +124,16 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
           }
         }
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
-      // TODO : 조회된 데이터가 없을 경우 처리
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 
   // 필터가 활성화 되면 호출.
-  void clickedFilter(BuildContext context) {
+  void clickedFilter() {
     // 키보드 내리기
     FocusScope.of(context).unfocus();
 
@@ -432,7 +434,7 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
   }
 
   // qr 관련 기능 시에 호출된다.
-  Future<void> clickedQr(BuildContext context) async {
+  Future<void> clickedQr() async {
     final response = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -448,14 +450,14 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
   }
 
   // 입력 텍스트 초기화 시에 호출된다.
-  void textClear(BuildContext context) {
+  void textClear() {
     FocusScope.of(context).unfocus();
     controller.clear();
     onChanged(null);
   }
 
   /// 데이터 필드를 클릭 시에 호출된다.
-  Future<void> onTap(int idx, BuildContext context) async {
+  Future<void> onTap(int idx) async {
     String meatId = '';
     isLoading = true;
     notifyListeners();
@@ -465,15 +467,15 @@ class DataManagementAddAdditionalInfoTabViewModel with ChangeNotifier {
 
       // API 호출
       final response = await RemoteDataSource.getMeatData(meatId);
-      if (response is Map<String, dynamic>) {
+      if ((response is Map<String, dynamic>)) {
         meatModel.fromJson(response);
         if (context.mounted) context.go('/home/data-manage-researcher/add');
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;

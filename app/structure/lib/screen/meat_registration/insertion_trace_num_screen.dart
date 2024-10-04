@@ -35,10 +35,12 @@ class _InsertionTraceNumScreenState extends State<InsertionTraceNumScreen> {
     super.initState();
     // 바코드 관련 사전 작업.
     _eventChannel = const EventChannel('com.example.structure/barcode');
-    _eventSubscription = _eventChannel!.receiveBroadcastStream().listen(
-          (dynamic event) =>
-              context.read<InsertionTraceNumViewModel>().getBarcodeValue(event),
-        );
+    _eventSubscription =
+        _eventChannel!.receiveBroadcastStream().listen((dynamic event) {
+      if (mounted) {
+        context.read<InsertionTraceNumViewModel>().getBarcodeValue(event);
+      }
+    });
   }
 
   @override

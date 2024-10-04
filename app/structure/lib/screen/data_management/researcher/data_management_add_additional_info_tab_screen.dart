@@ -62,7 +62,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                         InkWell(
                           onTap: () =>
                               dataManagementAddAdditionalInfoTabViewModel
-                                  .clickedFilter(context),
+                                  .clickedFilter(),
                           borderRadius: BorderRadius.circular(20.r),
                           child: Container(
                             padding: EdgeInsets.all(16.w),
@@ -203,7 +203,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                                     ? IconButton(
                                         onPressed: () {
                                           dataManagementAddAdditionalInfoTabViewModel
-                                              .textClear(context);
+                                              .textClear();
                                         },
                                         icon: const Icon(
                                           Icons.cancel_outlined,
@@ -220,7 +220,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                           iconSize: 48.w,
                           onPressed: () async =>
                               dataManagementAddAdditionalInfoTabViewModel
-                                  .clickedQr(context),
+                                  .clickedQr(),
                           icon: const Icon(
                             Icons.qr_code_scanner_rounded,
                             color: Palette.primary,
@@ -255,7 +255,7 @@ class _DataManagementAddAdditionalInfoTabScreenState
                                     ListCardDataManage(
                                   onTap: () async =>
                                       await dataManagementAddAdditionalInfoTabViewModel
-                                          .onTap(index, context),
+                                          .onTap(index),
                                   idx: index + 1,
                                   meatId:
                                       dataManagementAddAdditionalInfoTabViewModel

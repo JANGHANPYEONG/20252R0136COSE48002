@@ -15,7 +15,9 @@ class InsertionLabDataViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
   bool isRaw;
-  InsertionLabDataViewModel(this.meatModel, this.userModel, this.isRaw) {
+  BuildContext context;
+  InsertionLabDataViewModel(
+      this.meatModel, this.userModel, this.isRaw, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -92,7 +94,7 @@ class InsertionLabDataViewModel with ChangeNotifier {
   }
 
   // 데이터를 객체에 할당 - 이후 POST
-  Future<void> saveData(BuildContext context) async {
+  Future<void> saveData() async {
     isLoading = true;
     notifyListeners();
 
@@ -178,12 +180,14 @@ class InsertionLabDataViewModel with ChangeNotifier {
           meatModel.updateHeatedProbExpt();
         }
       } else {
-        // TODO: 입력한 데이터 삭제해야함
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     // 완료 검사

@@ -16,7 +16,10 @@ import 'package:structure/model/user_model.dart';
 class DataManagementApproveDataTabViewModel with ChangeNotifier {
   MeatModel meatModel;
   UserModel userModel;
-  DataManagementApproveDataTabViewModel(this.meatModel, this.userModel) {
+  BuildContext context; //
+
+  DataManagementApproveDataTabViewModel(
+      this.meatModel, this.userModel, this.context) {
     _initialize();
   }
   bool isLoading = true;
@@ -128,14 +131,20 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
             entireList.add(idStatusPair);
           });
         }
+      } else {
+        throw ErrorDescription(response);
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint(
+        'Error: $e',
+      );
+      if (context.mounted) context.pop();
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 
   // 필터가 활성화 되면 호출.
-  void clickedFilter(BuildContext context) {
+  void clickedFilter() {
     // 키보드 내리기
     FocusScope.of(context).unfocus();
 
@@ -447,7 +456,7 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
   }
 
   // qr 관련 기능 시에 호출된다.
-  Future<void> clickedQr(BuildContext context) async {
+  Future<void> clickedQr() async {
     final response = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -463,14 +472,14 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
   }
 
   // 입력 텍스트 초기화 시에 호출된다.
-  void textClear(BuildContext context) {
+  void textClear() {
     FocusScope.of(context).unfocus();
     controller.clear();
     onChanged(null);
   }
 
   /// 육류 선택
-  Future<void> onTapApproveCard(int idx, BuildContext context) async {
+  Future<void> onTapApproveCard(int idx) async {
     String meatId = '';
     isLoading = true;
     notifyListeners();
@@ -489,11 +498,11 @@ class DataManagementApproveDataTabViewModel with ChangeNotifier {
               .then((_) => _initialize());
         }
       } else {
-        throw Error();
+        throw ErrorDescription(response);
       }
     } catch (e) {
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     isLoading = false;

@@ -161,19 +161,18 @@ class _DataManagementNormalScreenState
                             focusNode: dataManagementNormalViewModel.focusNode,
                             canAlert: false,
                             prefixIcon: const Icon(Icons.search),
-                            suffixIcon:
-                                dataManagementNormalViewModel.focusNode.hasFocus
-                                    ? IconButton(
-                                        onPressed: () {
-                                          dataManagementNormalViewModel
-                                              .textClear(context);
-                                        },
-                                        icon: const Icon(
-                                          Icons.cancel_outlined,
-                                          color: Colors.black,
-                                        ),
-                                      )
-                                    : null,
+                            suffixIcon: dataManagementNormalViewModel
+                                    .focusNode.hasFocus
+                                ? IconButton(
+                                    onPressed: () {
+                                      dataManagementNormalViewModel.textClear();
+                                    },
+                                    icon: const Icon(
+                                      Icons.cancel_outlined,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
                         SizedBox(width: 16.w),
@@ -182,7 +181,7 @@ class _DataManagementNormalScreenState
                           // QR 코드 확인 기능을 정의한다.
                           iconSize: 48.w,
                           onPressed: () async =>
-                              dataManagementNormalViewModel.clickedQr(context),
+                              dataManagementNormalViewModel.clickedQr(),
                           icon: const Icon(Icons.qr_code_scanner_rounded),
                         ),
                       ],
@@ -213,8 +212,8 @@ class _DataManagementNormalScreenState
                                     .selectedList.length,
                                 itemBuilder: (context, index) => ListCard(
                                   onTap: () async =>
-                                      await dataManagementNormalViewModel.onTap(
-                                          index, context),
+                                      await dataManagementNormalViewModel
+                                          .onTap(index),
                                   meatId: dataManagementNormalViewModel
                                       .selectedList[index]['meatId']!,
                                   dayTime: dataManagementNormalViewModel

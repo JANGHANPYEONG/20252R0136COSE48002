@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:xml2json/xml2json.dart';
 
 class RemoteDataSource {
@@ -166,6 +167,20 @@ class RemoteDataSource {
     return response;
   }
 
+  /// 육류 이미지 openCV 전처리 (PATCH)
+  static Future<dynamic> patchMeatImage(String? meatId, int? seqno) async {
+    String endPoint = 'meat/predict/process-opencv?meatId=$meatId&seqno=$seqno';
+    dynamic response = await _patchApi(endPoint, null);
+    return response;
+  }
+
+  /// 육류 이미지 openCV 전처리 (POST)
+  static Future<dynamic> postMeatImage(String? meatId, int? seqno) async {
+    String endPoint = 'meat/predict/process-opencv?meatId=$meatId&seqno=$seqno';
+    dynamic response = await _postApi(endPoint, null);
+    return response;
+  }
+
   /// 딥에이징 데이터 삭제 (DELETE)
   /// meatId, seqno에 해당하는 딥에이징 데이터 삭제
   /// 연결된 관능데이터, 가열육 관능데이터, 실험 데이터 등이 삭제됨
@@ -206,10 +221,9 @@ class RemoteDataSource {
   /// API POST
   ///
   /// 데이터 생성시 사용
-  static Future<dynamic> _postApi(String endPoint, String jsonData) async {
+  static Future<dynamic> _postApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    // String requestBody = jsonData;
     debugPrint('POST 요청: $endPoint');
 
     try {
@@ -219,13 +233,14 @@ class RemoteDataSource {
         debugPrint('POST 요청 성공');
       } else {
         debugPrint('POST 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       // 예외 처리를 위한 status code 반환
       return response.statusCode;
     } catch (e) {
       debugPrint('POST 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -235,7 +250,6 @@ class RemoteDataSource {
   static Future<dynamic> _patchApi(String endPoint, String? jsonData) async {
     String apiUrl = '$baseUrl/$endPoint';
     Map<String, String> headers = {'Content-Type': 'application/json'};
-    // String requestBody = jsonData;
     debugPrint('PATCH 요청: $endPoint');
 
     try {
@@ -245,12 +259,13 @@ class RemoteDataSource {
         debugPrint('PATCH 요청 성공');
       } else {
         debugPrint('PATCH 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       return response.statusCode;
     } catch (e) {
       debugPrint('PATCH 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -269,11 +284,11 @@ class RemoteDataSource {
         return jsonDecode(response.body);
       } else {
         debugPrint('GET 요청 실패: (${response.statusCode})${response.body}');
-        return response;
+        return errorMsg(response);
       }
     } catch (e) {
       debugPrint('GET 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -291,12 +306,13 @@ class RemoteDataSource {
         debugPrint('DELETE 요청 성공');
       } else {
         debugPrint('DELETE 요청 실패: (${response.statusCode})${response.body}');
+        return errorMsg(response);
       }
 
       return response.statusCode;
     } catch (e) {
       debugPrint('DELETE 요청 중 예외 발생: $e');
-      return;
+      return e;
     }
   }
 
@@ -323,5 +339,18 @@ class RemoteDataSource {
       debugPrint('error');
       return;
     }
+  }
+
+  /// `Response`를 code - msg 형식의 에러 메시지로 변환하는 함수
+  static String errorMsg(Response response) {
+    final code = response.statusCode;
+    String msg = '';
+    try {
+      msg = json.decode(response.body)['msg'];
+    } catch (e) {
+      msg = response.body;
+      msg = msg.replaceAll('“', '');
+    }
+    return '$code: $msg';
   }
 }

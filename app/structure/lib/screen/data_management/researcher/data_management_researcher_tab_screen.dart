@@ -60,6 +60,7 @@ class _DataManagementResearcherTabScreenState
             create: (context) => DataManagementAddAdditionalInfoTabViewModel(
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
+              dataManagementHomeTabViewModel.context,
             ),
             child: const DataManagementAddAdditionalInfoTabScreen(),
           ),
@@ -67,6 +68,7 @@ class _DataManagementResearcherTabScreenState
             create: (context) => DataManagementApproveDataTabViewModel(
               dataManagementHomeTabViewModel.meatModel,
               dataManagementHomeTabViewModel.userModel,
+              dataManagementHomeTabViewModel.context,
             ),
             child: const DataManagementApproveDataTabScreen(),
           ),

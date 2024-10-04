@@ -58,7 +58,7 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
                         right: 24.w,
                         child: TextButton(
                           onPressed: () async => insertionUserDetailViewModel
-                              .clickedSearchButton(context),
+                              .clickedSearchButton(),
                           child: Text('검색', style: Palette.h4Regular),
                         ),
                       ),
@@ -126,8 +126,8 @@ class _InsertionUserDetailScreenState extends State<InsertionUserDetailScreen> {
                     child: MainButton(
                       width: double.infinity,
                       height: 96.h,
-                      onPressed: () async => insertionUserDetailViewModel
-                          .clickedNextButton(context),
+                      onPressed: () async =>
+                          insertionUserDetailViewModel.clickedNextButton(),
                       text: '회원가입',
                     ),
                   ),

@@ -15,7 +15,9 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   final MeatModel meatModel;
   final UserModel userModel;
   final bool isRaw;
-  InsertionTongueDataViewModel(this.meatModel, this.userModel, this.isRaw) {
+  BuildContext context;
+  InsertionTongueDataViewModel(
+      this.meatModel, this.userModel, this.isRaw, this.context) {
     _initialize();
   }
   bool isLoading = false;
@@ -72,7 +74,7 @@ class InsertionTongueDataViewModel with ChangeNotifier {
   }
 
   // 데이터를 객체에 할당 - 이후 POST
-  Future<void> saveData(BuildContext context) async {
+  Future<void> saveData() async {
     isLoading = true;
     notifyListeners();
 
@@ -145,12 +147,14 @@ class InsertionTongueDataViewModel with ChangeNotifier {
           meatModel.updateHeatedProbExpt();
         }
       } else {
-        // TODO : 입력한 데이터 초기화
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     // 완료 검사

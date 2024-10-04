@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:structure/components/custom_pop_up.dart';
 import 'package:structure/config/usefuls.dart';
 import 'package:structure/dataSource/local_data_source.dart';
 import 'package:structure/dataSource/remote_data_source.dart';
@@ -49,7 +50,11 @@ class CreationManagementNumViewModel with ChangeNotifier {
 
         if (response != 200) throw ErrorDescription(response);
       } catch (e) {
+        isLoading = false;
+        notifyListeners();
+
         debugPrint('Error: $e');
+        if (context.mounted) showErrorPopup(context, error: e.toString());
       }
     }
 
@@ -77,6 +82,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
     } else {
       // 데이터 입력이 제대로 되지 않았을 때 에러 반환
       debugPrint('Error creating managementNum');
+      if (context.mounted) showErrorPopup(context, error: '관리번호 생성중 오류 발생');
     }
   }
 
@@ -114,6 +120,7 @@ class CreationManagementNumViewModel with ChangeNotifier {
       await uploadQRCodeImageToStorage();
     } catch (e) {
       debugPrint('Error uploading image to firebase: $e');
+      // Fail 페이지로 가기 때문에 오류 팝업 생성 x
       if (context.mounted) context.go('/home/registration-fail');
     }
   }
@@ -156,7 +163,10 @@ class CreationManagementNumViewModel with ChangeNotifier {
       final response2 = await RemoteDataSource.createMeatData(
           'sensory-eval', meatModel.toJsonSensory());
 
-      if (response1 == 200 && response2 == 200) {
+      //openCV 전처리 이미지 입력
+      final response3 = await RemoteDataSource.postMeatImage(
+          meatModel.meatId, meatModel.seqno);
+      if (response1 == 200 && response2 == 200 && response3 == 200) {
         // 육류 등록 성공
         // 임시저장된 데이터 삭제
         await LocalDataSource.deleteLocalData(meatModel.userId!);
@@ -167,6 +177,9 @@ class CreationManagementNumViewModel with ChangeNotifier {
         throw ErrorDescription(response2);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
       if (context.mounted) context.go('/home/registration-fail');
     }

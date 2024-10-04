@@ -14,7 +14,8 @@ import 'package:structure/model/meat_model.dart';
 
 class AddDeepAgingDataViewModel with ChangeNotifier {
   MeatModel meatModel = MeatModel();
-  AddDeepAgingDataViewModel({required this.meatModel});
+  BuildContext context;
+  AddDeepAgingDataViewModel({required this.meatModel, required this.context});
 
   bool isLoading = false;
 
@@ -61,7 +62,7 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
   }
 
   // 데이터 저장
-  Future<void> saveData(BuildContext context) async {
+  Future<void> saveData() async {
     isLoading = true;
     notifyListeners();
 
@@ -98,8 +99,11 @@ class AddDeepAgingDataViewModel with ChangeNotifier {
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint('Error: $e');
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
   }
 }

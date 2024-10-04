@@ -68,15 +68,17 @@ class DataAddViewModel with ChangeNotifier {
       final response =
           await RemoteDataSource.deleteDeepAging(meatModel.meatId!, seqno);
 
-      if (response == 200) {
+      if (response != 200) {
         meatModel.deepAgingInfo!.removeAt(idx);
       } else {
-        // TODO : 오류 메시지 팝업
         throw ErrorDescription(response);
       }
     } catch (e) {
+      isLoading = false;
+      notifyListeners();
+
       debugPrint("Error: $e");
-      if (context.mounted) showErrorPopup(context);
+      if (context.mounted) showErrorPopup(context, error: e.toString());
     }
 
     _setTotal();
@@ -97,7 +99,8 @@ class DataAddViewModel with ChangeNotifier {
       context,
       MaterialPageRoute(
         builder: (context) => ChangeNotifierProvider(
-          create: (context) => AddDeepAgingDataViewModel(meatModel: meatModel),
+          create: (context) =>
+              AddDeepAgingDataViewModel(meatModel: meatModel, context: context),
           child: const AddDeepAgingDataScreen(),
         ),
       ),

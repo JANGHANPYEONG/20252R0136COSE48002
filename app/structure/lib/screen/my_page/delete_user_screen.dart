@@ -62,8 +62,7 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
                         height: 96.h,
                         text: '회원 탈퇴',
                         onPressed: deleteUserViewModel.isValid()
-                            ? () async =>
-                                deleteUserViewModel.deleteUser(context)
+                            ? () async => deleteUserViewModel.deleteUser()
                             : null,
                       ),
                     ),
