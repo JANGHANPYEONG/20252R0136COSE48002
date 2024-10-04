@@ -465,6 +465,7 @@ const DataView = ({ dataProps }) => {
             handleClose={handleInfoRegisterClose}
             processed_data_seq={processed_data_seq}
             meatId={meatId}
+            userId={userId}
           />
         </Modal.Body>
       </Modal>
