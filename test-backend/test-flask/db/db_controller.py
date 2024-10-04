@@ -5,9 +5,11 @@ import uuid
 from sqlalchemy import func
 import json
 from utils import *
+import pprint
 
 from .db_model import *
 from opencv_utils import *
+from ml_utils import *
 
 db = SQLAlchemy()
 logging.basicConfig(level=logging.INFO)
@@ -791,6 +793,62 @@ def get_range_meat_data(
     db_session.close()
     return result
 
+def get_meat_by_partial_id(
+    db_session,
+    partial_id,
+    offset,
+    count,
+    start=None,
+    end=None,
+    specie_value=None
+):
+    if (count is not None) and (offset is not None):
+        count = safe_int(count)
+        offset = safe_int(offset)
+        offset = offset * count
+    start = convert2datetime(start, 0)
+    end = convert2datetime(end, 0)
+
+    # Base Query
+    query = db_session.query(Meat.id).filter(Meat.id.like(f"{partial_id}%"))
+
+    if specie_value != 2:
+        query = query.join(CategoryInfo).filter(CategoryInfo.speciesId == specie_value)
+
+    # 기간 설정 쿼리
+    db_total_len = query.count()
+    if start is not None and end is not None:
+        query = query.filter(Meat.createdAt.between(start, end))
+        db_total_len = query.filter(Meat.createdAt.between(start, end)).count()
+    query = query.order_by(Meat.createdAt.desc())
+    if (count is not None) and (offset is not None):
+        query = query.offset(offset).limit(count)
+
+    # 탐색
+    meat_data = query.all()
+    meat_result = {}
+    id_result = [data.id for data in meat_data]
+    for id in id_result:
+        meat_result[id] = get_meat(db_session, id)
+        userTemp = get_user(db_session, meat_result[id].get("userId"))
+        if userTemp:
+            meat_result[id]["userName"] = userTemp.name
+            meat_result[id]["company"] = userTemp.company
+            meat_result[id]["userType"] = usrType[userTemp.type]
+        else:
+            meat_result[id]["userName"] = userTemp
+            meat_result[id]["company"] = userTemp
+            meat_result[id]["userType"] = userTemp
+        del meat_result[id]["deepAgingInfo"]
+
+    result = {
+        "DB Total len": db_total_len,
+        "id_list": id_result,
+        "meat_dict": meat_result,
+    }
+    
+    db_session.close()
+    return result
 
 # UPDATE
 
@@ -1139,7 +1197,7 @@ def get_AI_SensoryEval(db_session, id, seqno):
             "meatId": ai_sensoryEval.id,
             "seqno": ai_sensoryEval.seqno,
             "createdAt": ai_sensoryEval.createdAt,
-            "xaiGrade": gradeNum[ai_sensoryEval.xaiGradeNum],
+            "xaiGrade": gradeNum[ai_sensoryEval.xai_gradeNum],
             "xaiGradeImagePath": ai_sensoryEval.xai_gradeNum_imagePath,
             "xaiImagePath": ai_sensoryEval.xai_imagePath,
             "marbling": ai_sensoryEval.marbling,
@@ -2087,12 +2145,15 @@ def get_timeseries_of_cattle_data(db_session, start, end, meat_value, seqno):
     return stats
 
 
-def get_OpenCVresult(db_session, meat_id):
+def get_OpenCVresult(db_session, meat_id, seqno):
     try:
         result = {}
-        opencv_result = db_session.query(OpenCVImagesInfo).filter_by(id=meat_id).first()
+        opencv_result = db_session.query(OpenCVImagesInfo).filter(
+            OpenCVImagesInfo.id == meat_id, OpenCVImagesInfo.seqno == seqno
+            ).first()
         if opencv_result:
             result["meatId"] = meat_id
+            result["seqno"] = seqno
             result["createdAt"] = convert2string(opencv_result.createdAt, 1)
             result["segmentImage"] = opencv_result.section_imagePath
             result["proteinColorPalette"] = opencv_result.protein_palette
@@ -2109,33 +2170,126 @@ def get_OpenCVresult(db_session, meat_id):
         raise Exception("Something Wrong with DB" + str(e))
     
     
-def process_opencv_image(db_session, s3_conn, meat_id, segment_object):
+def process_opencv_image_for_web(db_session, s3_conn, meat_id, seqno, segment_object, is_post):
     try:
+        opencv_info = db_session.query(OpenCVImagesInfo).filter(
+            OpenCVImagesInfo.id == meat_id, OpenCVImagesInfo.seqno == seqno
+            ).first()
         segment_img = s3_conn.download_image(segment_object)
-        opencv_data = {}
+        new_opencv_data = {}
         
-        # 단면 이미지 url 불러오기
-        segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
-        opencv_data["section_imagePath"] = segment_image_path
-        opencv_data["createdAt"] = convert2string(datetime.now(), 1)
-        opencv_data["id"] = meat_id
-        opencv_data["seqno"] = "0"
-        
-        # openCV 전처리 순서대로 진행
-        color_palette = display_palette_with_ratios(segment_img)
-        texture_result = create_texture_info(segment_img)
-        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=0)
-        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=0)
-        
-        # opencv DB에 저장
-        opencv_data = {**opencv_data, **color_palette, **texture_result, **lbp_result, **gabor_result}
-        new_opencv = OpenCVImagesInfo(**opencv_data)
-        db_session.add(new_opencv)
-        db_session.commit()
-        
-        db_session.close()
-        return opencv_data
+        # POST 요청
+        if is_post == 1: 
+            if opencv_info:
+                return {"msg": f"OpenCV Result Already Exists", "code": 400}
+            
+            # 단면 이미지 url 불러오기
+            segment_image_path = f"https://{s3_conn.bucket}.s3.ap-northeast-2.amazonaws.com/{segment_object}"
+            new_opencv_data["section_imagePath"] = segment_image_path
+            new_opencv_data["createdAt"] = convert2string(datetime.now(), 1)
+            new_opencv_data["id"] = meat_id
+            new_opencv_data["seqno"] = seqno
+            
+            # openCV 전처리 순서대로 진행
+            color_palette = display_palette_with_ratios(segment_img)
+            
+            # opencv DB에 저장
+            new_opencv_data = {**new_opencv_data, **color_palette}
+            new_opencv = OpenCVImagesInfo(**new_opencv_data)
+            db_session.add(new_opencv)
+            db_session.commit()
+            
+            db_session.close()
+            return {"msg": f"Success to Create OpenCV Result {meat_id}-{seqno}", "code": 200}
+        # PATCH 요청
+        else:
+            if not opencv_info:
+                return {"msg": f"OpenCV Result Does Not Exist. Create OpenCV Data First.", "code": 400}
+            
+            new_color_palette = display_palette_with_ratios(segment_img)
+            
+            opencv_info.createdAt = convert2string(datetime.now(), 1)
+            new_color_palette = display_palette_with_ratios(segment_img)
+            
+            for key, value in new_color_palette.items():
+                setattr(opencv_info, key, value)
+                
+            db_session.merge(opencv_info)
+            db_session.commit()
+            return {"msg": f"Success to Update OpenCV Result {meat_id}-{seqno}", "code": 200}
+            
     except Exception as e:
         db_session.rollback()
         db_session.close()
         raise Exception("Something Wrong with DB" + str(e))
+    
+
+def process_opencv_image_for_learning(db_session, s3_conn, meat_id, seqno):
+    try:
+        opencv_info = db_session.query(OpenCVImagesInfo).filter(
+            OpenCVImagesInfo.id == meat_id, OpenCVImagesInfo.seqno == seqno
+            ).first()
+        
+        # PATCH 요청만 존재
+        if not opencv_info:
+            return {"msg": f"OpenCV Result Does Not Exist", "code": 400}
+        
+        segment_object = opencv_info.section_imagePath.split('.com/')[1]
+        segment_img = s3_conn.download_image(segment_object)
+        
+        # 모델 학습에 필요한 데이터들 전처리
+        texture_result = create_texture_info(segment_img)
+        lbp_result = lbp_calculate(s3_conn, segment_img, meat_id, seqno=seqno)
+        gabor_result = gabor_texture_analysis(s3_conn, segment_img, meat_id, seqno=seqno)
+        new_opencv_data = {**texture_result, **lbp_result, **gabor_result}
+            
+        opencv_info.createdAt = convert2string(datetime.now(), 1)
+        
+        for key, value in new_opencv_data.items():
+            setattr(opencv_info, key, value)
+                
+        db_session.merge(opencv_info)
+        db_session.commit()
+        return {"msg": f"Success to Update OpenCV Result for Learning {meat_id}-{seqno}", "code": 200}
+
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB" + str(e))
+        
+
+def process_predict_sensory_eval(db_session, s3_conn, meat_id, seqno):
+    try:
+        # 단면 이미지 도출
+        # segment_img = s3_conn.get_object(bucket="section_images", object_key=f"section_images/{meat_id}-{seqno}.png")        
+        segment_img_object = extract_section_image(f"sensory_evals/{meat_id}-{seqno}.png", meat_id, seqno)
+
+        ai_sensory_data = {}
+        
+        # 관능 데이터 예측
+        predict_result = predict_regression_sensory_eval(s3_conn, segment_img_object, meat_id, seqno)
+        
+        # 등급 예측
+        grade_data = predict_classification_grade(s3_conn, segment_img_object, meat_id, seqno)
+        
+        # xai 이미지 데이터
+        original_img = s3_conn.get_object(s3_conn.bucket, f"sensory_evals/{meat_id}-{seqno}.png")
+        xai_image = create_xai_image(s3_conn, original_img, s3_conn.bucket, meat_id, seqno)
+        
+        # ai_sensory_data
+        ai_sensory_data["createdAt"] = convert2string(datetime.now(), 1)
+        ai_sensory_data["id"] = meat_id
+        ai_sensory_data["seqno"] = seqno
+        
+        ai_sensory_data = {**ai_sensory_data, **grade_data, **predict_result, **xai_image}
+        new_ai_sensory = AI_SensoryEval(**ai_sensory_data)
+        db_session.add(new_ai_sensory)
+        db_session.commit()
+        
+        db_session.close()
+        return ai_sensory_data
+        
+    except Exception as e:
+        db_session.rollback()
+        db_session.close()
+        raise Exception("Something Wrong with DB: " + str(e))

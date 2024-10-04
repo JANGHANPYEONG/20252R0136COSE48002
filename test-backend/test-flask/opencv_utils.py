@@ -31,7 +31,11 @@ def ndarray_to_image(s3_conn, response, image_name):
     # Min-Max scaling을 통해 값을 [0, 255] 범위로 조정
     min_val = response.min()
     max_val = response.max()
-    scaled_array = (response - min_val) / (max_val - min_val) * 255
+    if min_val == max_val:
+        scaled_array = np.zeros_like(response)
+    else:
+        scaled_array = (response - min_val) / (max_val - min_val) * 255
+
     image = Image.fromarray(scaled_array.astype(np.uint8))
 
     # 이미지 데이터를 바이트 배열로 변환
@@ -51,23 +55,30 @@ def ndarray_to_image(s3_conn, response, image_name):
     return image_url
 
 
-## ---------------- Model 호출 ---------------- ##
-def serve_mlflow(model_location):
-    mlflow.set_tracking_uri("http://52.78.235.242:5000")
-    print("Success to Set Mlflow Tracking Server")
-
+## ---------------- 모델 호출 ---------------- ##
+def load_local_model(model_path):
     try:
-        
-        model = mlflow.pytorch.load_model(model_location)
+        # 모델 파일이 존재하는지 확인
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model path does not exist: {model_path}")
+
+        # GPU 사용 가능 여부 확인
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model = model.to(device)
-        gc.collect()
-        torch.cuda.empty_cache()
-        print(f"Success to load model")
-        return model
-    except mlflow.exceptions.MlflowException as e:
-        print(f"Error loading model: {e}")
+
+        # 모델 로드
+        model = torch.load(model_path, map_location=device)
         
+        # 메모리 정리
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        return model
+
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        return None
+
 
 ## ---------------- 단면 도출 ---------------- ##
 torch.backends.cudnn.enabled = False
@@ -141,13 +152,13 @@ def apply_mask(image, mask):
     return image * mask.to(device)
 
 
-def extract_section_image(s3_image_object, meat_id):
+def extract_section_image(s3_image_object, meat_id, seqno):
     # 데이터셋 및 DataLoader 설정
     transform = SegmentationTransform(output_size=(448, 448))
     
     # 사전 학습된 모델 로드
-    model_location = "/home/ubuntu/mlflow/segmentation_model"
-    model = serve_mlflow(model_location)
+    model_location = "/home/ubuntu/mlflow/segmentation_model/data/model.pth"
+    model = load_local_model(model_location)
     
     model.eval()
     s3_bucket = os.getenv("S3_BUCKET_NAME")
@@ -160,13 +171,13 @@ def extract_section_image(s3_image_object, meat_id):
                 aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
             )
-        object_key = s3_image_object
+        object_key = str(s3_image_object)
 
         response = s3.get_object(Bucket=s3_bucket, Key=object_key)
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
         print("Success to create Image Object")
     except Exception as e:
-        raise jsonify({"msg": f"Fail to create Image Object From S3. {str(e)}"})
+        raise Exception({"msg": f"Fail to create Image Object From S3. {str(e)}"})
     
     # 이미지 변환
     img_tensor, _ = transform(img, Image.new('L', img.size))
@@ -194,7 +205,7 @@ def extract_section_image(s3_image_object, meat_id):
     img = Image.fromarray(img)
 
     # output_key를 설정
-    output_key = os.path.join('section_images', f"{meat_id}-0.png")
+    output_key = os.path.join('section_images', f"{meat_id}-{seqno}.png")
 
     # 이미지 데이터를 바이트 스트림으로 변환
     img_byte_arr = io.BytesIO()
@@ -264,29 +275,45 @@ def extract_palette_and_ratios(image, colors):
     
     return palette_and_ratios
 
+def normalize_ratios(palette_and_ratios):
+    ratios = [item[1] for item in palette_and_ratios]
+    total_ratio = sum(ratios)
+    # total_ratio가 0인 경우를 처리
+    if total_ratio == 0:
+        normalized_palette_and_ratios = [(color, 0) for color, _ in palette_and_ratios]
+    else:
+        normalized_palette_and_ratios = [
+            (color, (ratio / total_ratio) * 100) for color, ratio in palette_and_ratios
+        ]
+    return normalized_palette_and_ratios
+
 #총합 비율과 컬러팔레트(리스트)를 구하는 함수
 def display_palette_with_ratios(image):
     red_palette_and_ratios = extract_palette_and_ratios(image, red_colors)
     white_palette_and_ratios = extract_palette_and_ratios(image, white_colors)
     total_palette = red_palette_and_ratios + white_palette_and_ratios
+    
+    normalized_palette = normalize_ratios(total_palette)
+    
     red_proportion = []
     white_proportion = []
-    for red_color in total_palette[:5]:
-        sum = 0
-        sum += red_color[1]
+    red_sum = 0
+    white_sum = 0
+    
+    for red_color in normalized_palette[:5]:
+        red_sum += red_color[1]
         red_proportion.append(red_color)
-    red_ratio = sum
-    for white_color in total_palette[5:]:
-        sum = 0
-        sum += white_color[1]
+        
+    for white_color in normalized_palette[5:]:
+        white_sum += white_color[1]
         white_proportion.append(white_color)
-    white_ratio = sum
+        
     result = {
-        "protein_rate": red_ratio,
-        "fat_rate": white_ratio,
+        "protein_rate": red_sum,
+        "fat_rate": white_sum,
         "protein_palette": [red[0] for red in red_proportion],
         "fat_palette": [white[0] for white in white_proportion],
-        "full_palette": total_palette
+        "full_palette": normalized_palette
     }
     return result
 
@@ -302,8 +329,13 @@ def create_texture_info(image):
     # 관심 영역만 추출 (검정색 배경 제외)
     roi = gray[mask != 0] #1차원 배열인 상태 
 
-    # GLCM 계산을 위한 형태로 변환
-    roi_reshaped = roi.reshape(-1, 1)
+    # ROI가 비어있다면 관심영역을 전체로 판단
+    if roi.size == 0:
+        roi_reshaped = gray
+    else:
+        # roi를 2차원으로 변환
+        roi_reshaped = np.zeros_like(gray)
+        roi_reshaped[mask != 0] = roi
 
     # GLCM 계산
     distances = [1]
@@ -354,7 +386,7 @@ def lbp_calculate(s3_conn, image, meat_id, seqno):
     n_points = 8 * radius
     lbp2 = local_binary_pattern(image, n_points, radius, method='uniform')
     
-    print("Success to create gabor_texture")
+    print("Success to create lbp images")
     
     # Save the LBP image
     image_name1 = f'openCV_images/{meat_id}-{seqno}-lbp1-{i+1}.png'
@@ -413,7 +445,7 @@ def gabor_texture_analysis(s3_conn, image, id, seqno):
     kernels = create_gabor_kernels(ksize, sigma, lambd, gamma, psi, num_orientations)
     responses = apply_gabor_kernels(img, kernels)
     features = compute_texture_features(responses)
-    print("Success to create gabor_texture")
+    print("Success to create gabor filter images")
     
     tmp = {}
     final_result = {}

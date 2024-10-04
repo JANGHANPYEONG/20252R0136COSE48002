@@ -44,6 +44,15 @@ class S3_:
             print(f"No such file in Flask Server: {type}/{item_id}.png")
             return False
         
+    def get_object(self, bucket, object_key):
+        try:
+            response = self.s3.get_object(Bucket=bucket, Key=object_key)
+            data = response['Body'].read()  # Read the entire content of the object
+            return data  # Return the binary data
+        except Exception as e:
+            print(f"Error downloading image from S3: {e}")
+            return None
+        
     def download_image(self, object_key):
         """S3에서 이미지를 다운로드하고 OpenCV 이미지로 변환 (최적화 버전)"""
         try:

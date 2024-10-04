@@ -12,6 +12,9 @@ from db.db_model import initialize_db
 from connection.firebase_connect import FireBase_
 from connection.s3_connect import S3_
 
+from prometheus_client import make_wsgi_app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -77,6 +80,6 @@ app.register_blueprint(predict_api, url_prefix="/meat/predict") # 예측 데이�
 def hello_world():
     return "Hello, World!"
 
-# Flask 실행
 if __name__ == "__main__":
+
     app.run(debug=True, port=8080, host="0.0.0.0")

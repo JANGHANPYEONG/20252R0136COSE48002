@@ -13,7 +13,8 @@ from db.db_controller import (
     _getMeatDataByRangeStatusType,
     _getTexanomyData,
     _getPredictionData,
-    get_OpenCVresult
+    get_OpenCVresult,
+    get_meat_by_partial_id
 )
 from utils import *
 
@@ -69,30 +70,31 @@ def getMeatDataById():
 
 
 # ID를 부분적으로 포함하는 육류 데이터 출력
-@get_api.route("/by-partial-id", methods=["GET", "POST"])
+@get_api.route("/by-partial-id", methods=["GET"])
 def getMeatDataByPartialId():
     try:
-        if request.method == "GET":
-            db_session = current_app.db_session
-            part_id = request.args.get("part_id")
-            meats_with_statusType_2 = (
-                db_session.query(Meat).filter_by(statusType=2).all()
-            )
-            meat_list = []
-            for meat in meats_with_statusType_2:
-                meat_list.append(meat.id)
-
-            part_id_meat_list = [meat for meat in meat_list if part_id in meat]
-            return jsonify({part_id: part_id_meat_list})
+        db_session = current_app.db_session
+        partial_id = request.args.get("meatId")
+        offset = request.args.get("offset")
+        count = request.args.get("count")
+        start = request.args.get("start")
+        end = request.args.get("end")
+        specie = request.args.get("specieValue")
+        if specie == '전체':
+            specie_value = 2
         else:
-            return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
+            specie_value = species.index(specie)
+        if partial_id is None:
+            return jsonify({"msg": "Invalid Meat Id"}), 400
+        meats = get_meat_by_partial_id(db_session, partial_id, offset, count, start, end, specie_value)
+        return jsonify(meats)
     except Exception as e:
         logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
             ),
-            505,
+            500,
         )
 
 
@@ -152,7 +154,7 @@ def getMeatDataByUserId():
         start = request.args.get("start")
         end = request.args.get("end")
         if not (userId and start and end) or offset is None or count is None:
-            return jsonify("Invalid parameter"), 400
+            return jsonify({"msg": "Invalid parameter"}), 400
         meat_by_user = _getMeatDataByUserId(db_session, userId, offset, count, start, end)
         return jsonify(meat_by_user), 200
     except Exception as e:
@@ -176,7 +178,7 @@ def getMeatDataByUserType():
                 return _getMeatDataByUserType(db_session, userType)
 
             else:
-                return jsonify("No userType in parameter"), 401
+                return jsonify({"msg": "No userType in parameter"}), 400
         else:
             return jsonify({"msg": "Invalid Route, Please Try Again."}), 404
     except Exception as e:
@@ -256,7 +258,7 @@ def getMeatDataByRangeStatusType():
                 db_session, status_type, offset, count, specie_value, start, end
             )
         else:
-            return jsonify("Invalid statusType or specieValue in parameter"), 400
+            return jsonify({"msg": "Invalid statusType or specieValue in parameter"}), 400
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -294,7 +296,7 @@ def getTexanomyData():
         db_session = current_app.db_session
         return _getTexanomyData(db_session)
     except Exception as e:
-        # logger.exception(str(e))
+        logger.exception(str(e))
         return (
             jsonify(
                 {"msg": "Server Error", "time": datetime.now().strftime("%H:%M:%S")}
@@ -313,7 +315,7 @@ def getPredictionData():
         if meat_id and seqno is not None:
             return _getPredictionData(db_session, meat_id, seqno)
         else:
-            return jsonify("Invalid id or seqno parameter"), 404
+            return jsonify({"msg": "Invalid id or seqno parameter"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (
@@ -330,13 +332,14 @@ def getOpenCVData():
     try:
         db_session = current_app.db_session
         meat_id = safe_str(request.args.get("meatId"))
-        if meat_id:
-            result = get_OpenCVresult(db_session, meat_id)
+        seqno = safe_int(request.args.get("seqno"))
+        if meat_id and (seqno is not None):
+            result = get_OpenCVresult(db_session, meat_id, seqno)
             if result:
                 return jsonify(result), 200
             else:
-                return jsonify({"msg": "There Does Not Exist OpenCV Result"}), 404
-        return jsonify({"msg": f"Meat Data {meat_id} Does Not Exist"}), 400
+                return jsonify({"msg": "OpenCV Result Does Not Exist"}), 400
+        return jsonify({"msg": "Invalid id or seqno parameter"}), 404
     except Exception as e:
         logger.exception(str(e))
         return (
