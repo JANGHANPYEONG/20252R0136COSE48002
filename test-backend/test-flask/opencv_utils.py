@@ -171,7 +171,7 @@ def extract_section_image(s3_image_object, meat_id, seqno):
                 aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
             )
-        object_key = s3_image_object
+        object_key = str(s3_image_object)
 
         response = s3.get_object(Bucket=s3_bucket, Key=object_key)
         img = Image.open(io.BytesIO(response['Body'].read())).convert("RGB")
@@ -278,9 +278,13 @@ def extract_palette_and_ratios(image, colors):
 def normalize_ratios(palette_and_ratios):
     ratios = [item[1] for item in palette_and_ratios]
     total_ratio = sum(ratios)
-    normalized_palette_and_ratios = [
-        (color, (ratio / total_ratio) * 100) for color, ratio in palette_and_ratios
-    ]
+    # total_ratio가 0인 경우를 처리
+    if total_ratio == 0:
+        normalized_palette_and_ratios = [(color, 0) for color, _ in palette_and_ratios]
+    else:
+        normalized_palette_and_ratios = [
+            (color, (ratio / total_ratio) * 100) for color, ratio in palette_and_ratios
+        ]
     return normalized_palette_and_ratios
 
 #총합 비율과 컬러팔레트(리스트)를 구하는 함수
