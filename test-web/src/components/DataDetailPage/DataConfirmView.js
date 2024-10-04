@@ -115,6 +115,7 @@ const DataConfirmView = ({ dataProps }) => {
         // 오류 발생 시의 처리
         console.error('원육 수정 POST 요청 오류:', error);
       });
+    window.location.reload();
   };
 
   const handleRawInputChange = (e, field) => {
@@ -212,7 +213,7 @@ const DataConfirmView = ({ dataProps }) => {
         {/* 1. 관리번호 육류에 대한 사진*/}
         <MeatImgsCard
           edited={edited}
-          page={'수정및조회'}
+          page={'승인및반려'}
           raw_img_path={raw_img_path}
           processed_img_path={processed_img_path}
           setIsUploadingDone={setIsUploadingDone}

@@ -161,7 +161,7 @@ const MeatImgsCard = ({
                * page 가 수정및조회인 경우,
                * 이미지 파일을 업로드하기 위한 <input type="file"/>
                */
-              page === '수정및조회' && (
+              currentIdx !== 0 && (
                 <div>
                   <input
                     className="form-control"
