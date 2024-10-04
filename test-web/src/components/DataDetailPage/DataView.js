@@ -78,7 +78,7 @@ const DataView = ({ dataProps }) => {
 
   // 처리육 및 실험 회차 토글
   const [processed_toggle, setProcessedToggle] = useState('1회');
-  const [processedToggleValue,setProcessedToggleValue] = useState('1회');
+  const [processedToggleValue, setProcessedToggleValue] = useState('1회');
   const [heatedToggle, setHeatedToggle] = useState(options[0]);
   const [heatedToggleValue, setHeatedToggleValue] = useState('');
   const [labToggle, setLabToggle] = useState(options[0]);
@@ -313,6 +313,7 @@ const DataView = ({ dataProps }) => {
       isMethodPostPro = isMethodPost;
     }
     setIsProcessedPosted({ ...isProcessedPosted, ...dict });
+    window.location.reload();
   };
 
   // 처리육 이미지 먼저 업로드 경고 창 필요 여부
@@ -464,6 +465,7 @@ const DataView = ({ dataProps }) => {
             handleClose={handleInfoRegisterClose}
             processed_data_seq={processed_data_seq}
             meatId={meatId}
+            userId={userId}
           />
         </Modal.Body>
       </Modal>

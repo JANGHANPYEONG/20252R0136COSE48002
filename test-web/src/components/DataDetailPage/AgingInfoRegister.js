@@ -5,15 +5,21 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import addDeepAgingRegister from '../../API/add/addDeepAging';
 import DeepInfoCompleteModal from './DeepInfoCompleteModal';
+import addSensoryProcessedData from '../../API/add/addSensoryProcessedData';
 
-const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
+const AgingInfoRegister = ({
+  handleClose,
+  processed_data_seq,
+  meatId,
+  userId,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [validated, setValidated] = useState(false);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [seqno, setSeqno] = useState('');
-  
+
   const handleCompletionModalClose = () => {
     setShowCompletionModal(false);
     handleClose();
@@ -41,8 +47,29 @@ const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
       };
       const registerResponse = await addDeepAgingRegister(req);
       if (registerResponse.ok) {
-        console.log('Success to register DeepInfo');
-        setShowCompletionModal(true);
+        try {
+          const processedInput = {
+            marbling: null,
+            color: null,
+            texture: null,
+            surfaceMoisture: null,
+            overall: null,
+          };
+          const registerSensoryResponse = await addSensoryProcessedData(
+            processedInput,
+            seqno,
+            meatId,
+            userId,
+            true,
+            false
+          );
+          if (registerSensoryResponse.ok) {
+            console.log('Success to register DeepInfo');
+            setShowCompletionModal(true);
+          }
+        } catch (error) {
+          console.error('Error during registration', error);
+        }
       }
     } catch (error) {
       console.error('Error during registration', error);
@@ -52,14 +79,15 @@ const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
 
     setValidated(true);
   };
-  
 
   // All possible sequences
   const allSeqs = ['1회', '2회', '3회', '4회'];
 
   // Filtered nonExistSeq containing values not in processed_data_seq
-  const nonExistSeq = allSeqs.filter((seq) => !processed_data_seq.includes(seq));
- 
+  const nonExistSeq = allSeqs.filter(
+    (seq) => !processed_data_seq.includes(seq)
+  );
+
   return (
     <div>
       <div>
@@ -93,7 +121,10 @@ const AgingInfoRegister = ({ handleClose, processed_data_seq, meatId }) => {
               required
               id="SelectSeqno"
               onChange={(event) => {
-                const selectedSeq = nonExistSeq[event.target.value].replace('회', '');
+                const selectedSeq = nonExistSeq[event.target.value].replace(
+                  '회',
+                  ''
+                );
                 setSeqno(selectedSeq);
               }}
               //value={seqno}

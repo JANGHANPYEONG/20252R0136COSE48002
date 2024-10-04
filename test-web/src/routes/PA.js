@@ -12,7 +12,7 @@ import SearchFilterBar from '../components/Search/SearchFilterBar';
 import PADataListComp from '../components/DataListView/PADataListComp';
 // ID 검색 컴포넌트
 import SearchById from '../components/DataListView/SearchById';
-import PASingle from '../components/DataListView/PASingle';
+import PASearchedDataListComp from '../components/DataListView/PASearchedDataListComp';
 // 구간 계산 함수
 import updateDates from '../Utils/updateDates';
 
@@ -22,7 +22,7 @@ const navy = '#0F3659';
 const PA = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
-  const [singleData, setSingleData] = useState(null);
+  const [searchedData, setSearchedData] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
@@ -90,8 +90,8 @@ const PA = () => {
     setSpecieValue(event.target.value);
   };
 
-  const handleSingleDataFetch = (fetchedData) => {
-    setSingleData(fetchedData);
+  const handleSearchedDataFetch = (fetchedData) => {
+    setSearchedData(fetchedData);
   };
 
   if (isLoading) {
@@ -162,8 +162,11 @@ const PA = () => {
             setEndDate={setEndDate}
           />
           <SearchById
-            onDataFetch={handleSingleDataFetch}
+            onDataFetch={handleSearchedDataFetch}
             onValueChange={handleValueChange}
+            startDate={startDate}
+            endDate={endDate}
+            specieValue={specieValue}
           />
           <Select
             labelId="species"
@@ -179,7 +182,13 @@ const PA = () => {
         </Box>
       </Box>
       {/**데이터 목록 */}
-      {value === 'single' && <PASingle singleData={singleData} />}
+      {value === 'searched' && (
+        <PASearchedDataListComp
+          startDate={startDate}
+          endDate={endDate}
+          searchedData={searchedData}
+        />
+      )}
       {value === 'list' && (
         <PADataListComp
           startDate={startDate}

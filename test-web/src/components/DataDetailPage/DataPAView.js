@@ -4,9 +4,11 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Spinner from 'react-bootstrap/Spinner';
 import QRInfoCard from './CardComps/QRInfoCard';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 //mui
 import './imgRot.css';
-import { TextField, Autocomplete } from '@mui/material';
+import { TextField, Autocomplete, tableCellClasses } from '@mui/material';
 // import tables
 import RawTable from './TablesComps/RawTable';
 import PredictedRawTable from './TablesComps/PredictedRawTable';
@@ -16,6 +18,10 @@ import PredictedProcessedTablePA from './TablesComps/PredictedProcessedTablePA';
 import { computePeriod } from './computeTime';
 import { apiIP } from '../../config';
 import { useUser } from '../../Utils/UserContext';
+
+import { predictSensoryData } from '../../API/predict/predictSensoryData';
+import { predictOpencvTrainingData } from '../../API/predict/predictOpencvTrainingData';
+// import { getPredictedData } from '../../API/get/getPredictedData';
 
 const DataPAView = ({ dataProps }) => {
   //데이터 받아오기
@@ -43,6 +49,7 @@ const DataPAView = ({ dataProps }) => {
   const [processed_toggle, setProcessedToggle] = useState(first);
   const [processedToggleValue, setProcessedToggleValue] = useState(first);
   const [tab, setTab] = useState('0');
+  const [nowSeqno, setNowSeqno] = useState(0);
 
   //이미지 파일
   const [previewImage, setPreviewImage] = useState(raw_img_path);
@@ -52,6 +59,7 @@ const DataPAView = ({ dataProps }) => {
 
   // fetch 한 예측 데이터 저장
   const [dataPA, setDataPA] = useState(null);
+
   // 예측 데이터 fetch
   const getPredictedData = async (seqno) => {
     try {
@@ -61,18 +69,19 @@ const DataPAView = ({ dataProps }) => {
       if (!response.ok) {
         throw new Error('Network response was not ok', meatId, '-', seqno);
       }
+
       const json = await response.json();
       setDataPA(json);
 
-      setDataXAIImg(json.xai_imagePath);
-      setGradeXAIImg(json.xai_gradeNum_imagePath);
+      setDataXAIImg(json.xaiImagePath);
+      setGradeXAIImg(json.xaiGradeImagePath);
       return json;
     } catch (error) {
       // 데이터를 불러오는 데 실패한 경우 모든 data를 null로 설정
-      console.error('Error fetching data seqno-', seqno, ':', error);
-      setDataPA(null);
+      console.error('Error fetching data seqno ', seqno, ':', error);
       setDataXAIImg(null);
       setGradeXAIImg(null);
+      setDataPA(null);
     }
   };
 
@@ -83,87 +92,63 @@ const DataPAView = ({ dataProps }) => {
   const user = useUser();
 
   //데이터 예측 버튼 클릭 시
-  const handlePredictClick = async () => {
+  const handlePredictClick = async (seqno) => {
     //로그인한 유저 정보
     const userId = user.userId;
     // period 계산
     const elapsedHour = computePeriod(api_data['butcheryYmd']);
     const len = processed_data_seq.length;
-
-    // 로딩 화면 표시 시작
-    SetIsPredictedDone(false);
-    //모든 육류 데이터 (원육, n회차 이미지)에 대해 예측
-    let req = {
-      ['meatId']: meatId,
-      ['seqno']: parseInt(processedToggleValue),
-    };
     try {
-      await fetch(`http://${apiIP}/meat/predict/sensory-eval`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req),
-      });
-      // 예측 정보 로드
-      await getPredictedData(parseInt(processedToggleValue));
-    } catch (err) {
-      console.error(err);
+      // 로딩 화면 표시 시작
+      SetIsPredictedDone(false);
+
+      await predictOpencvTrainingData(meatId, seqno);
+      await predictSensoryData(meatId, seqno);
+
+      // 예측이 성공한 후 즉시 데이터를 가져오기
+      const predictedData = await getPredictedData(seqno);
+
+      // 예측된 데이터가 있는지 확인하고 상태 업데이트
+      if (predictedData) {
+        setDataPA(predictedData);
+      }
+
+      // 로딩 화면 표시 종료(완료)
+      SetIsPredictedDone(true);
+    } catch (error) {
+      console.error('Error during prediction:', error);
+      // 로딩 화면 표시 종료
+      SetIsPredictedDone(true);
     }
-
-    // 로딩 화면 표시 종료
-    SetIsPredictedDone(true);
   };
 
-  //탭 변환에 맞는 데이터 로드
+  //탭 변환
   const handleSelect = async (key) => {
-    // 예측 데이터 로드
-    await getPredictedData(key);
     setTab(key);
-    const target = processedToggleValue; //n회
-    const targetIndex = processed_data_seq.indexOf(target) - 1;
-    // 원본 이미지 바꾸기
-    key === '0'
-      ? setPreviewImage(raw_img_path)
-      : setPreviewImage(
-          processed_img_path[targetIndex]
-            ? processed_img_path[targetIndex]
-            : null
-        );
   };
-
-  // 처리육 탭에서 회차가 바뀜에 따라 다른 예측 결과 load
-  useEffect(() => {
-    getPredictedData(parseInt(processedToggleValue));
-  }, [processedToggleValue]);
-
+  //원육&처리육 탭, 처리육 회차 변경에 맞추어 seqno, 이미지 변경
   useEffect(() => {
     const target = processedToggleValue; //n회
     const targetIndex = processed_data_seq.indexOf(target) - 1;
-    if (tab === '0') {
+    if (tab === '0' || tab === 0) {
+      setNowSeqno(parseInt(tab));
       setImgPath(raw_img_path);
+      setPreviewImage(raw_img_path);
     } else {
+      setNowSeqno(parseInt(processedToggleValue));
       setImgPath(
+        processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
+      );
+      setPreviewImage(
         processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
       );
     }
   }, [processedToggleValue, tab]);
 
-
-  // 초기에 원육 예측 데이터 로드
+  // 회차 따라 예측 데이터 로드
   useEffect(() => {
-    getPredictedData(0);
-  }, []);
-
-  useEffect(() => {
-    const target = processedToggleValue; //n회
-    const targetIndex = processed_data_seq.indexOf(target) - 1;
-    setPreviewImage(
-      processed_img_path[targetIndex] ? processed_img_path[targetIndex] : null
-    );
-  }, [processedToggleValue, tab]);
-
-
+    getPredictedData(nowSeqno);
+  }, [nowSeqno]);
 
   return (
     <div style={{ width: '100%' }}>
@@ -176,13 +161,45 @@ const DataPAView = ({ dataProps }) => {
         </div>
       )}
       <div style={style.editBtnWrapper}>
-        <button
-          type="button"
-          class="btn btn-outline-success"
-          onClick={handlePredictClick}
-        >
-          예측
-        </button>
+        {(dataPA && dataPA.seqno === nowSeqno) ||
+        imgPath === 'null' ||
+        imgPath === null ? (
+          // 예측할 이미지가 없거나 이미 예측된 데이터가 존재하면, 버튼 비활성화 후 툴팁 표시
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={
+              imgPath === 'null' || imgPath === null ? (
+                <Tooltip id="no-image-tooltip">
+                  예측할 이미지가 존재하지 않습니다
+                </Tooltip>
+              ) : (
+                <Tooltip id="predicted-data-tooltip">
+                  이미 예측된 데이터가 존재합니다!
+                </Tooltip>
+              )
+            }
+          >
+            <span className="d-inline-block">
+              <button
+                type="button"
+                className="btn btn-outline-success"
+                disabled
+                style={{ pointerEvents: 'none' }}
+              >
+                예측
+              </button>
+            </span>
+          </OverlayTrigger>
+        ) : (
+          <button
+            type="button"
+            class="btn btn-outline-success"
+            onClick={() => handlePredictClick(nowSeqno)}
+          >
+            예측
+          </button>
+        )}
       </div>
       <div style={style.singleDataWrapper}>
         {/* 1. 관리번호 육류에 대한 사진*/}
@@ -193,7 +210,7 @@ const DataPAView = ({ dataProps }) => {
               <Card.Text>
                 <div style={style.imgTextWrapper}>원본이미지</div>
                 <div style={style.imgWrapper}>
-                  {previewImage ? (
+                  {imgPath !== 'null' && imgPath !== null ? (
                     <img
                       src={imgPath} //{previewImage + '?n=' + Math.random()}
                       style={style.imgWrapperContextImg}
@@ -218,7 +235,7 @@ const DataPAView = ({ dataProps }) => {
                   {dataXAIImg ? (
                     <div className="imgContainer">
                       <img
-                        src={dataXAIImg + '?n=' + Math.random()}
+                        src={dataXAIImg}
                         style={style.imgWrapperContextImg}
                       />
                     </div>
@@ -231,7 +248,7 @@ const DataPAView = ({ dataProps }) => {
                   {gradeXAIImg ? (
                     <div className="imgContainer">
                       <img
-                        src={gradeXAIImg + '?n=' + Math.random()}
+                        src={gradeXAIImg}
                         style={style.imgWrapperContextImg}
                       />
                     </div>

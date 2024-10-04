@@ -11,7 +11,8 @@ import { useUser } from '../../../Utils/UserContext';
 import handleImgChange from './handleImgChange';
 import style from '../style/meatimgscardstyle';
 import { Tooltip } from '@mui/material';
-import opencvpreview from '../../../src_assets/opencvpreview.png';
+import useOpencvImageData from '../../../API/get/getOpencvImageDataSWR';
+import OpencvImgMaker from './OpencvImgMaker';
 
 const navy = '#0F3659';
 
@@ -30,27 +31,34 @@ const MeatImgsCard = ({
   processedMinute, // 처리 시간 (분)
   processed_data_seq, // 회차 정보
   isPost,
-  opencvDataProps,
 }) => {
-  const {
-    segmentImage,
-    proteinColorPalette,
-    fatColorPalette,
-    totalColorPalette,
-    proteinRate,
-    fatRate,
-  } = opencvDataProps || {};
-
-  console.log('opencvDataProps', opencvDataProps);
-
   // 1.이미지 배열 만들기
-  const [imgArr, setImgArr] = useState([raw_img_path]);
+  // 이미지 배열 초기화
+  const [imgArr, setImgArr] = useState([]);
+  // 이미지 배열을 한 번만 설정하고, processed_img_path가 변경될 때만 업데이트
   useEffect(() => {
-    setImgArr([...imgArr, ...processed_img_path]);
-  }, []);
+    // 원육 이미지는 항상 포함
+    const newImgArr = [raw_img_path];
 
-  // 이미지 배열 페이지네이션
+    // processed_img_path가 배열이고 비어있지 않은 경우에만 처리
+    if (Array.isArray(processed_img_path) && processed_img_path.length > 0) {
+      // 최대 4회차까지만 처리육 이미지 추가
+      const processedImages = processed_img_path.slice(0, 4);
+      newImgArr.push(...processedImages);
+    }
+
+    setImgArr(newImgArr);
+  }, [raw_img_path, processed_img_path]); // 의존성 배열에 이미지 경로들 추가
+
+  // 현재 이미지 인덱스 상태
   const [currentIdx, setCurrIdx] = useState(0);
+
+  // 이미지 인덱스가 배열 범위를 벗어나지 않도록 보정
+  useEffect(() => {
+    if (currentIdx >= imgArr.length) {
+      setCurrIdx(Math.max(0, imgArr.length - 1));
+    }
+  }, [imgArr.length, currentIdx]);
 
   // 1) 이미지 페이지네이션 '>' 버튼 클릭
   const handleNextClick = () => {
@@ -80,8 +88,11 @@ const MeatImgsCard = ({
     let newImages = imgArr;
     newImages[currentIdx] = reader.result;
     setImgArr(newImages);
-    console.log('opencvDataProps', opencvDataProps);
   };
+
+  // 툴팁 이미지 데이터
+  const [tooltipImgData, setTooltipImgData] = useState([]);
+  const { data, isLoading, isError } = useOpencvImageData(id, currentIdx);
 
   const handleFileChange = (e) => {
     handleImgChange({
@@ -101,8 +112,21 @@ const MeatImgsCard = ({
       processedMinute,
       butcheryYmd,
       isPost,
+      data,
     });
   };
+
+  // 데이터 전처리
+  useEffect(() => {
+    if (data !== null && data !== undefined) {
+      const updatedData = {
+        ...data,
+        // 캐싱 방지를 위해 segmentImage URL에 타임스탬프 추가
+        segmentImage: data.segmentImage + '?time=' + new Date().getTime(),
+      };
+      setTooltipImgData(updatedData);
+    }
+  }, [data]);
 
   return (
     <Card
@@ -137,7 +161,7 @@ const MeatImgsCard = ({
                * page 가 수정및조회인 경우,
                * 이미지 파일을 업로드하기 위한 <input type="file"/>
                */
-              page === '수정및조회' && (
+              currentIdx !== 0 && (
                 <div>
                   <input
                     className="form-control"
@@ -182,18 +206,43 @@ const MeatImgsCard = ({
             overlay={
               <Tooltip id="button-tooltip">
                 {' '}
-                <img
-                  src={opencvpreview}
-                  alt={`Image ${currentIdx + 1}`}
-                  style={style.imgWrapper}
-                />
+                {isLoading ? (
+                  <div style={style.overlayNotExistWrapper}>Loading...</div>
+                ) : isError || !data || data.msg ? (
+                  // 데이터가 없는 경우
+                  <div style={style.overlayNotExistWrapper}>
+                    단면, 컬러팔레트 이미지가 없습니다
+                  </div>
+                ) : data.segmentImage &&
+                  data.fatColorPalette &&
+                  data.proteinColorPalette &&
+                  data.totalColorPalette ? (
+                  // 올바른 데이터인지 검사
+                  data.fatColorPalette.every(
+                    (color) =>
+                      color[0] === 0 && color[1] === 0 && color[2] === 0
+                  ) ? (
+                    // 컬러가 모두 0인 경우
+                    <div style={style.overlayNotExistWrapper}>
+                      올바르지 않은 데이터입니다
+                    </div>
+                  ) : (
+                    // 데이터가 있는 경우
+                    <OpencvImgMaker data={tooltipImgData} />
+                  )
+                ) : (
+                  // 그 외
+                  <div style={style.overlayNotExistWrapper}>
+                    오류로 인해 단면, 컬러팔레트 이미지를 불러올 수 없습니다
+                  </div>
+                )}
               </Tooltip>
             }
           >
             <div style={style.imgContainer}>
               {
                 // 실제 이미지
-                imgArr[currentIdx] ? (
+                imgArr[currentIdx] !== null && imgArr[currentIdx] !== 'null' ? (
                   isImgChanged === true ? (
                     /*이미지 미리 보기*/
                     <img
@@ -210,7 +259,7 @@ const MeatImgsCard = ({
                   )
                 ) : (
                   <div style={style.imgNotExistWrapper}>
-                    이미지가 존재하지 않습니다.
+                    이미지가 존재하지 않습니다. <br /> 이미지를 업로드해주세요!
                   </div>
                 )
               }
