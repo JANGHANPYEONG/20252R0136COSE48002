@@ -24,7 +24,7 @@
 육류 맛 예측 인공지능 위한 데이터 수집에 사용되는 어플리케이션입니다.  
 육류 이력 번호 조회, 사진 촬영, 관능평가 및 실험 데이터 등록, 조회, 수정이 가능합니다.
 
-안드로이드에서만 가능합니다.
+> APK 설치 경로 : [http://deeplant-web.s3-website.ap-northeast-2.amazonaws.com](https://deeplant-app.s3.ap-northeast-2.amazonaws.com/deepaging_1.1.1.apk)
 
 <img src="https://github.com/user-attachments/assets/02ee4b02-4b0f-400a-8091-41756434a96e" width="400">
 
@@ -90,7 +90,7 @@
 ## Project Tech Stack
 
 ### Environment
-
+![Android Studio](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-007ACC?style=for-the-badge&logo=Visual%20Studio%20Code&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=Git&logoColor=white)
 ![Github](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white)
