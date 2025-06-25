@@ -57,89 +57,32 @@ const LogInField = () => {
 
   const navigate = useNavigate();
   const login = async () => {
+    // Hardcoded login - bypass all authentication
     try {
-      if (!loginEmail) {
-        setLoginError('아이디를 입력해주세요.');
-        return;
+      // Create a mock user object
+      const mockUser = {
+        userId: loginEmail || 'test@example.com',
+        type: 'Admin', // Give admin privileges
+        email: loginEmail || 'test@example.com'
+      };
+
+      // Set user context
+      setUser(mockUser);
+
+      // Set localStorage
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', loginEmail);
+      } else {
+        localStorage.removeItem('rememberedEmail');
       }
-      if (!loginPassword) {
-        setLoginError('비밀번호를 입력해주세요.');
-        return;
-      }
+      localStorage.setItem('isLoggedIn', 'true');
 
-      const response = await userIsLogin(loginEmail);
-      const user = await response.json();
-      // const user = userUser();
-
-      if (!user.type || user.type === 'Normal') {
-        // 관리자가 아닌 경우
-        setLoginError('로그인 권한이 없습니다. 관리자에게 문의해주세요.');
-        return;
-      } else if (!user.userId) {
-        // 사용자 존재 여부 확인
-        setLoginError(
-          'DB상 존재하지 않는 아이디입니다. 관리자에게 문의해주세요.'
-        );
-        return;
-      }
-
-      try {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          loginEmail,
-          loginPassword
-        );
-
-        // 이메일 인증 여부 확인
-
-        /*const firebaseUser = userCredential.user;
-        if (
-          !firebaseUser.emailVerified &&
-          loginEmail != 'deeplant@example.com'
-        ) {
-          setLoginError(
-            '이메일 인증이 필요한 계정입니다. 이메일을 확인하고 인증을 완료해주세요.'
-          );
-          return;
-        }*/
-
-        // 로그인 성공 시 UserContext에 사용자 정보 설정
-        setUser(user);
-
-        // 로그인 성공 시 Localstorage에 사용자 정보 설정
-        if (rememberMe) {
-          localStorage.setItem('rememberedEmail', loginEmail);
-        } else {
-          localStorage.removeItem('rememberedEmail');
-        }
-        localStorage.setItem('isLoggedIn', 'true');
-
-        // 로그인 성공 시 홈으로 이동
-        console.log('LOGIN SUCCESS');
-        navigate('/Home');
-        window.location.reload();
-      } catch (error) {
-        if (error.code === 'auth/user-not-found') {
-          // 아이디가 존재하지 않는다면
-          setLoginError('존재하지 않는 아이디입니다.');
-          return;
-        } else if (error.code === 'auth/too-many-requests') {
-          // 로그인을 너무 많이 시도하면
-          setLoginError(
-            '로그인을 너무 많이 시도했습니다. 잠시후 다시 시도해주세요.'
-          );
-          return;
-        } else if (error.code === 'auth/wrong-password') {
-          // 비밀번호가 일치하지 않는다면
-          setLoginError('비밀번호가 일치하지 않습니다.');
-          return;
-        } else {
-          console.log(error.message);
-          setLoginError('로그인에 실패했습니다. 관리자에게 문의해주세요.');
-        }
-      }
+      // Navigate to home
+      console.log('LOGIN SUCCESS (HARDCODED)');
+      navigate('/Home');
+      window.location.reload();
     } catch (error) {
-      console.log(error.message);
+      console.log('Hardcoded login error:', error);
       setLoginError('로그인에 실패했습니다. 관리자에게 문의해주세요.');
     }
   };
