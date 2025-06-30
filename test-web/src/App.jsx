@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import LogIn from './routes/LogIn';
 import Home from './routes/Home';
+import Normal from './routes/Normal';
 import Dashboard from './routes/Dashboard';
 import Stats from './routes/Stats';
 import PA from './routes/PA';
@@ -11,6 +12,10 @@ import DataEdit from './routes/DataEdit';
 import UserManagement from './routes/UserManagement';
 import DataConfirm from './routes/DataConfirm';
 import DataPredict from './routes/DataPredict';
+import Spectro from './routes/spectro';
+import SpectroPattern from './routes/spectro_pattern';
+import SpectroTrain from './routes/spectro_train';
+import SpectroPredict from './routes/spectro_predict';
 
 import { UserProvider } from './Utils/UserContext';
 
@@ -33,6 +38,31 @@ function App() {
       path: '/Home',
       title: 'Home | DeePlant',
       component: <Home />,
+    },
+    {
+      path: '/normal',
+      title: 'Normal | DeePlant',
+      component: <Normal />,
+    },
+    {
+      path: '/spectro',
+      title: 'Spectro | DeePlant',
+      component: <Spectro />,
+    },
+    {
+      path: '/spectro/pattern',
+      title: 'Spectro Pattern | DeePlant',
+      component: <SpectroPattern />,
+    },
+    {
+      path: '/spectro/train',
+      title: 'Spectro Train | DeePlant',
+      component: <SpectroTrain />,
+    },
+    {
+      path: '/spectro/predict',
+      title: 'Spectro Predict | DeePlant',
+      component: <SpectroPredict />,
     },
     {
       path: '/DataManage',
@@ -94,7 +124,7 @@ function App() {
                       <LogIn />
                     ) : (
                       <Box sx={{ display: 'flex' }}>
-                        <MainWidgetBars />
+                        {route.path !== '/' && <MainWidgetBars />}
                         <Box
                           component="main"
                           sx={{
