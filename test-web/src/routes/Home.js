@@ -10,49 +10,28 @@ import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Utils/UserContext';
-import home1 from '../src_assets/home1.png';
-import home2 from '../src_assets/home2.png';
-import home3 from '../src_assets/home3.png';
-import home4 from '../src_assets/home4.png';
-import home5 from '../src_assets/home5.png';
-import home6 from '../src_assets/home6.png';
+import home1 from '../src_assets/home_1.png';
+import home2 from '../src_assets/home_2.png';
+import home3 from '../src_assets/home5.png';
 
 const cards = [
   {
-    title: '홈',
+    title: '일반데이터',
     image: home1,
-    imageSize: { height: '106px', width: '104px' },
-    link: '/Home',
+    imageSize: { height: '160px', width: '160px' },
+    link: '/normal',
   },
   {
-    title: '대시보드',
+    title: '분광데이터',
     image: home2,
-    imageSize: { height: '107px', width: '177px' },
-    link: '/DataManage',
+    imageSize: { height: '160px', width: '160px' },
+    link: '/spectro',
   },
   {
-    title: '통계 분석',
+    title: '사용자관리',
     image: home3,
-    imageSize: { height: `104px`, width: `158px` },
-    link: '/stats',
-  },
-  {
-    title: '데이터 예측',
-    image: home4,
-    imageSize: { height: '100px', width: '100px' },
-    link: '/PA',
-  },
-  {
-    title: '사용자 관리',
-    image: home5,
-    imageSize: { height: '108px', width: '132px' },
+    imageSize: { height: '160px', width: '160px' },
     link: '/UserManagement',
-  },
-  {
-    title: '프로필',
-    image: home6,
-    imageSize: { height: '112px', width: '152px' },
-    link: '/Profile',
   },
 ];
 
@@ -114,26 +93,31 @@ const Home = () => {
         >
           원하시는 작업을 선택해주세요.
         </Typography>
-        <Grid container spacing={5}>
+        <Grid container spacing={5} justifyContent="center" alignItems="center">
           {cards.map((card) => (
-            <Grid item xs={12} sm={4} md={4} lg={4} key={card.title}>
+            <Grid item xs={12} sm={4} md={4} lg={4} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
               <Box
                 sx={{
-                  // width: `${(260 / 1920) * 100}vw`, // Relative width
-                  // height: `${(260 / 1080) * 100}vh`, // Relative height
-                  border: `${(1 / 1920) * 100}vw solid rgba(238, 238, 238, 0.50)`, // Relative border
-                  borderRadius: `${(40 / 1920) * 100}vw`, // Relative border radius
+                  width: '260px', // 고정 크기
+                  height: '260px', // 고정 크기
+                  border: `${(1 / 1920) * 100}vw solid rgba(238, 238, 238, 0.50)`,
+                  borderRadius: `${(40 / 1920) * 100}vw`,
                   overflow: 'hidden',
                   backgroundColor: 'white',
-                  boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${(20 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.50)`, // Relative boxShadow
-                  padding: `${(20 / 1920) * 100}vw ${(20 / 1080) * 100}vh`, // Relative padding
+                  boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${(20 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.50)`,
+                  padding: `${(20 / 1920) * 100}vw ${(20 / 1080) * 100}vh`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <CardActionArea onClick={() => handleCardClick(card.link)}>
                   <CardMedia
                     sx={{
                       ...card.imageSize,
-                      margin: ' auto',
+                      display: 'block',
+                      margin: '0 auto',
                     }}
                     image={card.image}
                   />

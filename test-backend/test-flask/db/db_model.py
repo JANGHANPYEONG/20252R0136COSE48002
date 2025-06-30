@@ -24,8 +24,30 @@ Base = declarative_base()
 
 def initialize_db(app):
     try:
+        # 0. 데이터베이스 자동 생성
+        db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
+        if "postgresql://" in db_uri:
+            # PostgreSQL용 데이터베이스 생성
+            from urllib.parse import urlparse
+            parsed = urlparse(db_uri)
+            db_name = parsed.path[1:]  # '/' 제거
+            
+            # 기본 PostgreSQL 연결 (postgres 데이터베이스)
+            base_uri = f"postgresql://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}/postgres"
+            base_engine = create_engine(base_uri)
+            
+            # 데이터베이스가 존재하는지 확인
+            with base_engine.connect() as conn:
+                result = conn.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
+                if not result.fetchone():
+                    # 데이터베이스가 없으면 생성
+                    conn.execute(f"CREATE DATABASE {db_name}")
+                    print(f"Database '{db_name}' created successfully.")
+            
+            base_engine.dispose()
+        
         # 1. DB Engine 생성
-        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+        engine = create_engine(db_uri)
         # 2. 생성한 DB 엔진에 세션 연결
         db_session = scoped_session(
             sessionmaker(autocommit=False, autoflush=False, bind=engine)
