@@ -23,7 +23,7 @@ const MainWidgetBars = () => {
   const defaultTheme = createTheme();
 
   // const drawerWidth = `${(345 / 1920) * 100}vw`;
-  const drawerWidth = '345px'; // Width when drawer is open
+  const drawerWidth = '280px'; // Width when drawer is open
 
   const logout = useLogout();
 

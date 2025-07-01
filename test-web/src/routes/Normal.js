@@ -15,7 +15,7 @@ import home2 from '../src_assets/home2.png';
 import home3 from '../src_assets/home3.png';
 import home4 from '../src_assets/home4.png';
 import home5 from '../src_assets/home5.png';
-import home6 from '../src_assets/home6.png';
+//import home6 from '../src_assets/home6.png';
 
 const cards = [
     {
@@ -48,12 +48,12 @@ const cards = [
         imageSize: { height: '108px', width: '132px' },
         link: '/UserManagement',
     },
-    {
-        title: '프로필',
-        image: home6,
-        imageSize: { height: '112px', width: '152px' },
-        link: '/Profile',
-    },
+    // {
+    //     title: '프로필',
+    //     image: home6,
+    //     imageSize: { height: '112px', width: '152px' },
+    //     link: '/Profile',
+    // },
 ];
 
 const Normal = () => {
