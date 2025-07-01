@@ -12,10 +12,9 @@ import DataEdit from './routes/DataEdit';
 import UserManagement from './routes/UserManagement';
 import DataConfirm from './routes/DataConfirm';
 import DataPredict from './routes/DataPredict';
-import Spectro from './routes/spectro';
 import SpectroPattern from './routes/spectro_pattern';
-import SpectroTrain from './routes/spectro_train';
-import SpectroPredict from './routes/spectro_predict';
+import Learning from './routes/Learning';
+import Predict from './routes/Predict';
 import Data from './routes/Data';
 import AI from './routes/AI';
 import DataRegister from './routes/DataRegister';
@@ -46,26 +45,6 @@ function App() {
       path: '/normal',
       title: 'Normal | DeePlant',
       component: <Normal />,
-    },
-    {
-      path: '/spectro',
-      title: 'Spectro | DeePlant',
-      component: <Spectro />,
-    },
-    {
-      path: '/spectro/pattern',
-      title: 'Spectro Pattern | DeePlant',
-      component: <SpectroPattern />,
-    },
-    {
-      path: '/spectro/train',
-      title: 'Spectro Train | DeePlant',
-      component: <SpectroTrain />,
-    },
-    {
-      path: '/spectro/predict',
-      title: 'Spectro Predict | DeePlant',
-      component: <SpectroPredict />,
     },
     {
       path: '/Data',
@@ -115,12 +94,12 @@ function App() {
     {
       path: '/Learning',
       title: 'Learning | DeePlant',
-      component: <SpectroTrain />,
+      component: <Learning />,
     },
     {
       path: '/Predict',
       title: 'Predict | DeePlant',
-      component: <SpectroPredict />,
+      component: <Predict />,
     },
     {
       path: '/Stats',
