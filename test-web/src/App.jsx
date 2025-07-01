@@ -16,6 +16,9 @@ import Spectro from './routes/spectro';
 import SpectroPattern from './routes/spectro_pattern';
 import SpectroTrain from './routes/spectro_train';
 import SpectroPredict from './routes/spectro_predict';
+import Data from './routes/Data';
+import AI from './routes/AI';
+import DataRegister from './routes/DataRegister';
 
 import { UserProvider } from './Utils/UserContext';
 
@@ -65,8 +68,23 @@ function App() {
       component: <SpectroPredict />,
     },
     {
+      path: '/Data',
+      title: 'Data | DeePlant',
+      component: <Data />,
+    },
+    {
       path: '/DataManage',
       title: 'DataManage | DeePlant',
+      component: <Dashboard />,
+    },
+    {
+      path: '/DataRegister',
+      title: 'DataRegister | DeePlant',
+      component: <DataRegister />,
+    },
+    {
+      path: '/DashBoard',
+      title: 'DashBoard | DeePlant',
       component: <Dashboard />,
     },
     {
@@ -90,6 +108,26 @@ function App() {
       component: <PA />,
     },
     {
+      path: '/Pattern',
+      title: 'Pattern | DeePlant',
+      component: <SpectroPattern />,
+    },
+    {
+      path: '/Learning',
+      title: 'Learning | DeePlant',
+      component: <SpectroTrain />,
+    },
+    {
+      path: '/Predict',
+      title: 'Predict | DeePlant',
+      component: <SpectroPredict />,
+    },
+    {
+      path: '/Stats',
+      title: 'Statistics | DeePlant',
+      component: <Stats />,
+    },
+    {
       path: '/stats',
       title: 'Statistics | DeePlant',
       component: <Stats />,
@@ -103,6 +141,11 @@ function App() {
       path: '/UserManagement',
       title: 'UserManage | Deeplant',
       component: <UserManagement />,
+    },
+    {
+      path: '/AI',
+      title: 'AI | DeePlant',
+      component: <AI />,
     },
   ];
 

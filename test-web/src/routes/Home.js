@@ -10,26 +10,37 @@ import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Utils/UserContext';
-import home1 from '../src_assets/home_1.png';
-import home2 from '../src_assets/home_2.png';
-import home3 from '../src_assets/home5.png';
+import home_DATA from '../src_assets/home_DATA.png';
+import home_ML from '../src_assets/home_ML.png';
+import home_PREDICT from '../src_assets/home_PREDICT.png';
+import home_USER from '../src_assets/home_USER.png';
 
 const cards = [
   {
-    title: '일반데이터',
-    image: home1,
+    title: '데이터관리',
+    subtitle: 'Data',
+    image: home_DATA,
     imageSize: { height: '160px', width: '160px' },
-    link: '/normal',
+    link: '/Data',
   },
   {
-    title: '분광데이터',
-    image: home2,
+    title: 'AI 학습',
+    subtitle: 'Learning',
+    image: home_ML,
     imageSize: { height: '160px', width: '160px' },
-    link: '/spectro',
+    link: '/Learning',
+  },
+  {
+    title: '예측하기',
+    subtitle: 'Predict',
+    image: home_PREDICT,
+    imageSize: { height: '160px', width: '160px' },
+    link: '/Predict',
   },
   {
     title: '사용자관리',
-    image: home3,
+    subtitle: 'UserManagement',
+    image: home_USER,
     imageSize: { height: '160px', width: '160px' },
     link: '/UserManagement',
   },
@@ -93,13 +104,13 @@ const Home = () => {
         >
           원하시는 작업을 선택해주세요.
         </Typography>
-        <Grid container spacing={5} justifyContent="center" alignItems="center">
+        <Grid container spacing={4} justifyContent="center" alignItems="center">
           {cards.map((card) => (
-            <Grid item xs={12} sm={4} md={4} lg={4} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid item xs={12} sm={6} md={3} lg={3} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
               <Box
                 sx={{
-                  width: '260px', // 고정 크기
-                  height: '260px', // 고정 크기
+                  width: '240px', // 고정 크기
+                  height: '280px', // 고정 크기
                   border: `${(1 / 1920) * 100}vw solid rgba(238, 238, 238, 0.50)`,
                   borderRadius: `${(40 / 1920) * 100}vw`,
                   overflow: 'hidden',
@@ -110,6 +121,11 @@ const Home = () => {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: `${(0 / 1920) * 100}vw ${(8 / 1080) * 100}vh ${(30 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.70)`,
+                  },
                 }}
               >
                 <CardActionArea onClick={() => handleCardClick(card.link)}>
@@ -123,12 +139,19 @@ const Home = () => {
                   />
                   <CardContent>
                     <Typography
-                      sx={{ textAlign: 'center' }}
+                      sx={{ textAlign: 'center', fontWeight: 600, fontSize: '18px', color: '#151D48' }}
                       gutterBottom
                       variant="h6"
                       component="div"
                     >
                       {card.title}
+                    </Typography>
+                    <Typography
+                      sx={{ textAlign: 'center', fontSize: '14px', color: '#666', fontWeight: 400 }}
+                      variant="body2"
+                      component="div"
+                    >
+                      {card.subtitle}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

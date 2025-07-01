@@ -68,6 +68,26 @@ const Drawer = ({
     }
   }, [open]);
 
+  // 경로가 바뀔 때마다, 해당 경로가 속한 상위 메뉴만 펼치고 나머지는 접음
+  useEffect(() => {
+    let found = false;
+    const newExpanded = {};
+    for (const item of pageListItems) {
+      if (item.hasSubmenu) {
+        if (
+          location.pathname === item.path ||
+          item.submenu.some((sub) => location.pathname === sub.path)
+        ) {
+          newExpanded[item.label] = true;
+          found = true;
+        } else {
+          newExpanded[item.label] = false;
+        }
+      }
+    }
+    setExpandedMenus(newExpanded);
+  }, [location.pathname]);
+
   const handleMenuExpand = (label) => {
     setExpandedMenus(prev => ({
       ...prev,
@@ -92,6 +112,7 @@ const Drawer = ({
             onClick={() => {
               if (item.hasSubmenu) {
                 handleMenuExpand(item.label);
+                handleListItemClick(item);
               } else {
                 handleListItemClick(item);
               }
