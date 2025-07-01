@@ -48,6 +48,7 @@ const DataRegister = () => {
       Papa.parse(text, {
         header: false,
         skipEmptyLines: true,
+        encoding : "UTF-8",
         complete: (results) => {
           const data = results.data;
           const [headers, ...rows] = data;
