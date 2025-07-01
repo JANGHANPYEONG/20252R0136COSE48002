@@ -14,7 +14,7 @@ import useLogout from '../../../Utils/useLogout';
 import { useUser } from '../../../Utils/UserContext';
 
 const MainWidgetBars = () => {
-  const [widgetOpen, setWidgetOpen] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -23,7 +23,7 @@ const MainWidgetBars = () => {
   const defaultTheme = createTheme();
 
   // const drawerWidth = `${(345 / 1920) * 100}vw`;
-  const drawerWidth = '280px'; // Width when drawer is open
+  const drawerWidth = '260px'; // Width when drawer is open
 
   const logout = useLogout();
 

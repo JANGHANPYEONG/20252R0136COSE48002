@@ -28,7 +28,7 @@ const cards = [
     subtitle: 'Learning',
     image: home_ML,
     imageSize: { height: '160px', width: '160px' },
-    link: '/Learning',
+    link: '/AI',
   },
   {
     title: '예측하기',
