@@ -133,7 +133,16 @@ const DataRegister = () => {
     };
 
     return (
-        <div style={{ overflow: 'auto', width: '100%', marginTop: 100, padding: '0 20px', height: '100%' }}>
+        <div
+            style={{
+                overflow: 'auto',
+                width: '100%',
+                marginTop: '100px',
+                height: '100%',
+                paddingLeft: '30px',
+                paddingRight: '20px',
+            }}
+        >
             <Box
                 style={{
                     display: 'flex',
