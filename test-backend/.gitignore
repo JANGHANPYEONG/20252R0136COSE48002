@@ -1,4 +1,4 @@
-test-flask/.env
+.env
 test-flask/serviceAccountKey.json
 .idea/*
 

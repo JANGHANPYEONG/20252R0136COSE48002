@@ -46,7 +46,7 @@ def initialize_db(app):
         raise
     else:
         print("Connect DB OKAY")
-        
+
     # Prometheus 메트릭 설정
     REQUEST_COUNT = Counter('flask_app_request_count', 'App Request Count', ['method', 'endpoint'])
     REQUEST_LATENCY = Histogram('flask_app_request_latency_seconds', 'Request latency', ['method', 'endpoint'])
@@ -77,7 +77,7 @@ def initialize_db(app):
         return generate_latest(registry)
 
     app.add_url_rule('/metrics', 'metrics', prometheus_metrics)
-    
+
     # 9. db_session을 반환해 DB 세션 관리
     return db_session
 
@@ -651,6 +651,97 @@ class OpenCVImagesInfo(Base):
         CheckConstraint('"correlation" >= 0', name="check_texture_correlation"),
     )
 
+class SpectralData(Base):
+    __tablename__ = "spectral_data"
+    # 1. 복합키 설정
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+
+    createdAt = Column(DateTime, nullable=False, default=datetime.utcnow)
+    userId = Column(String(255), nullable=False, server_default=default_user_id)
+    
+    # 2. 학습에 필요한 spectral data와 label vector
+    spectralVector = Column(JSONB, nullable=False) 
+    labelVector = Column(JSONB, nullable=False)    
+     
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"],
+            ["deepAging_info.id", "deepAging_info.seqno"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["userId"], ["user.userId"],
+            ondelete="SET DEFAULT",
+            onupdate="CASCADE"
+        )
+    )
+
+    class AI_SpectralData(Base):
+    __tablename__ = "ai_spectral_data"
+    
+    # 1. 복합키 설정
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+    
+    createdAt = Column(DateTime, nullable=False, default=datetime.utcnow)
+    userId = Column(String(255), nullable=False, server_default=default_user_id)
+    
+    # 2. 학습된 model에 넣은 spectral data와 그 예측값
+    spectralVector = Column(JSONB, nullable=False) 
+    labelVector = Column(JSONB, nullable=False)    
+    
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"],
+            ["deepAging_info.id", "deepAging_info.seqno"],
+            ondelete="CASCADE",
+            onupdate="CASCADE"
+        ),
+        ForeignKeyConstraint(
+            ["userId"], ["user.userId"],
+            ondelete="SET DEFAULT",
+            onupdate="CASCADE"
+        )
+    )
+
+    class ModelCategory(Base):
+    __tablename__ = "model_category"
+		# 모델 정보
+    model_id = Column(String(255), primary_key=True)
+    model_name = Column(String(255), nullable=False)
+    method = Column(JSONB, nullable=False)
+    path = Column(String(255), nullable=False) # 모델 파일 경로
+
+    class AI_Eval(Base):
+    __tablename__ = "ai_eval"
+
+    # 1. 복합키 설정
+    id = Column(String(255), primary_key=True)     # 육류 관리번호
+    seqno = Column(Integer, primary_key=True)      # 가공 횟수
+
+    # 2. AI 예측 결과 (관능 데이터 + 분광 데이터 결과)
+    marbling = Column(Float)       # 마블링
+    color = Column(Float)          # 색
+    texture = Column(Float)        # 조직감
+    flavor = Column(Float)         # 풍미
+    moisture = Column(Float)       # 수분
+    fat = Column(Float)            # 지방
+    protein = Column(Float)        # 단백질
+    myoglobin = Column(Float)      # 미오글로빈
+    label = Column(String(256))    # 예측된 종합 label
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno"),
+        ForeignKeyConstraint(
+            ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
+            ondelete="CASCADE", 
+            onupdate="CASCADE"
+        ),
+    )
 
 ## {parent}-{child} 테이블 간 관계 정의
 # categoryInfo - meat
