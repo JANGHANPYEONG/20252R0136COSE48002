@@ -57,7 +57,7 @@ const Drawer = ({
   toggleDrawer,
   location,
   handleListItemClick,
-  drawerWidth,
+  drawerWidth
 }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
 
@@ -226,9 +226,6 @@ const Drawer = ({
           px: [1.2],
         }}
       >
-        <IconButton onClick={toggleDrawer}>
-          {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-        </IconButton>
       </Toolbar>
     </StyledDrawer>
   );
