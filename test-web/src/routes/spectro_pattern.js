@@ -5,10 +5,12 @@ import style from './style/dashboardstyle';
 // components
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
-
+//component/Charts/WavelengthChart추가 후 component가져오기
+import WavelengthChart from '../components/Charts/WavelengthChart';
+import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 const navy = '#0F3659';
 
-const Learning = () => {
+const Spectro_pattern = () => {
     const [value, setValue] = useState('photo');
     const [data, setData] = useState([]);
     const [models, setModels] = useState([]);
@@ -20,6 +22,23 @@ const Learning = () => {
         options: [],
         value: { start: null, end: null }
     }]);
+    //그래프 상태 추가
+    const [selectedFeature, setSelectedFeature] = useState('');
+    const [importanceData, setImportanceData] = useState([]);
+    
+    //특성 선책 핸들러
+
+    const handleFeatureChange = (event) => {
+    const feature = event.target.value;
+    setSelectedFeature(feature);
+
+    // 예시: 해당 특성에 대한 중요도 데이터 가져오기 (임시 가짜 데이터)
+    const dummy = Array.from({ length: 50 }, (_, i) => ({
+        wavelength: 400 + i * 10,
+        importance: Math.random(), // 추후 API 결과로 교체 가능
+    }));
+    setImportanceData(dummy);
+};
 
     const handleValueChange = (newValue) => {
         setValue(newValue);
@@ -153,13 +172,24 @@ const Learning = () => {
                             분석하기
                         </Button>
                     </Box>
+                    <Box sx={{ marginTop: '40px' }}>
+                        <Typography variant="h6" sx={{ color: navy, marginBottom: '10px' }}>
+                            특성별 파장 연관도
+                        </Typography>
 
-                    {/* 모델 목록 */}
-                    <DataList
-                        columns={getModelColumns()}
-                        data={models}
-                        title="모델 목록"
-                    />
+                        <FormControl sx={{ minWidth: 200, marginBottom: 2 }}>
+                            <InputLabel>특성 선택</InputLabel>
+                            <Select value={selectedFeature} label="특성 선택" onChange={handleFeatureChange}>
+                                <MenuItem value="맛">맛</MenuItem>
+                                <MenuItem value="육색">육색</MenuItem>
+                                <MenuItem value="부패정도">부패정도</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        {importanceData.length > 0 && (
+                            <WavelengthChart data={importanceData} />
+                        )}
+                    </Box>                   
                 </Box>
             </Box>
 
@@ -175,4 +205,4 @@ const Learning = () => {
     );
 };
 
-export default Learning; 
+export default Spectro_pattern; 
