@@ -27,10 +27,6 @@ const MainWidgetBars = () => {
 
   const logout = useLogout();
 
-  const toggleDrawer = () => {
-    setWidgetOpen(!widgetOpen);
-  };
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
@@ -55,14 +51,12 @@ const MainWidgetBars = () => {
     <ThemeProvider theme={defaultTheme}>
       <AppBar
         open={widgetOpen}
-        toggleDrawer={toggleDrawer}
         userInfo={user}
         logout={logout}
         drawerWidth={drawerWidth}
       />
       <Drawer
         open={widgetOpen}
-        toggleDrawer={toggleDrawer}
         location={location}
         handleListItemClick={handleListItemClick}
         drawerWidth={drawerWidth}
