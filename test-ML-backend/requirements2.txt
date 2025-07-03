@@ -1,0 +1,8 @@
+pip list | grep opencv
+pip install werkzeug==2.0.3
+pip install opencv-python==4.8.0.74
+pip install scikit-image
+pip install opencv-python==4.5.4.60
+pip install timm
+pip install openpyxl
+pip install --upgrade mlflow flask
