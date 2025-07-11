@@ -1,0 +1,21 @@
+{
+  "train_type": "default",
+  "experiment": "hsi_band_selection",
+  "run": "vector_pipeline",
+  "hyperparameters": {
+    "seed": 42
+  },
+  "preprocessing": {
+    "config_path": "configs/pre/vector_pre_config.json",
+    "target_bands": 50
+  },
+  "training": {
+    "config_path": "configs/training/vector_training_config.json",
+    "target_bands": 10
+  },
+  "data": {
+    "csv_path": "./datasets_HSI/label/label.csv"
+  },
+  "output_dir": "./results",
+  "save_results": true
+}

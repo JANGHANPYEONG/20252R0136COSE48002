@@ -1,0 +1,18 @@
+{
+  "column_order": {
+    "id_column_index": 0,
+    "label_start_index": 1,
+    "label_end_index": 5,
+    "vector_start_index": 6
+  },
+  "label_columns": [
+    "Marbling",
+    "Color",
+    "Texture",
+    "Surface_Moisture",
+    "Total"
+  ],
+  "wavelengths": [
+    600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730
+  ]
+}
