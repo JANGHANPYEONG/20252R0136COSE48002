@@ -61,7 +61,7 @@ def load_training_model(config: Dict) -> Any:
             raise
     
     else:
-        # MLflow에서 저장된 모델 로딩
+        # MLflow에서 저장된 모델 로딩 (메인 파이프라인에서만 사용)
         try:
             model_uri = f"models:/{model_name}/{model_version}"
             model = mlflow.pytorch.load_model(model_uri)
@@ -137,8 +137,9 @@ def get_model_info(config: Dict, stage: str) -> Dict[str, Any]:
     
     return {}
 
+# 메인 파이프라인에서만 사용하는 MLflow 저장 함수
 def save_model_to_mlflow(model: Any, model_name: str, config: Dict, stage: str):
-    """모델을 MLflow에 저장합니다."""
+    """모델을 MLflow에 저장합니다 (메인 파이프라인에서만 호출)."""
     
     try:
         # 모델 저장
