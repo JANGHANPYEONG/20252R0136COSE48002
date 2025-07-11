@@ -9,7 +9,7 @@
   },
   "training": {
     "model_name": "random_frog",
-    "model_file": "random_frog_model",
+    "model_file": "random_frog",
     "n_iter": 1000,
     "n_subset": 6,
     "resample_factor": 10,
