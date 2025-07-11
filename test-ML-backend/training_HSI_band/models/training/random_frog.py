@@ -46,10 +46,19 @@ class RandomFrogModel:
 
         # 선택 비율, 상위 target_bands만 선택
         selection_ratio = feature_count / self.n_iterations
-        top_indices = np.argsort(selection_ratio)[-target_bands:][::-1]  # 내림차순
+
+        # Z-score 정규화
+        mean = np.mean(selection_ratio)
+        std = np.std(selection_ratio)
+        if std > 0:
+            selection_ratio_norm = (selection_ratio - mean) / std
+        else:
+            selection_ratio_norm = selection_ratio - mean
+
+        top_indices = np.argsort(selection_ratio_norm)[-target_bands:][::-1]  # 내림차순
         # 파이프라인 요구에 따라 반드시 "원본 feature 인덱스"로 변환
         selected_bands = [pre_selected_bands[i] for i in top_indices]
-        selected_scores = selection_ratio[top_indices]
+        selected_scores = selection_ratio_norm[top_indices]
         return selected_bands, selected_scores.tolist()
 
     @staticmethod
