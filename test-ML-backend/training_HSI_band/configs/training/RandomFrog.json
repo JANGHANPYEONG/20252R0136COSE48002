@@ -1,0 +1,25 @@
+{
+  "data": {
+    "csv_path": "./datasets_HSI/label/label.csv"
+  },
+  "preprocessing": {
+    "model_name": "mrmr",
+    "model_file": "mrmr_model",
+    "target_bands": 30
+  },
+  "training": {
+    "model_name": "random_frog",
+    "model_file": "random_frog_model",
+    "n_iter": 1000,
+    "n_subset": 6,
+    "resample_factor": 10,
+    "pls_n_components": 4,
+    "target_bands": 10,
+    "seed": 42
+  },
+  "hyperparameters": {
+    "seed": 42
+  },
+  "experiment": "hsi_band_selection",
+  "run": "vector_pipeline"
+}
