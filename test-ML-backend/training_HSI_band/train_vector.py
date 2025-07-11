@@ -26,47 +26,49 @@ def load_config(config_path: str) -> Dict:
     
     return config
 
-def run_preprocessing_stage(pre_config: Dict, dataset: VectorDataset, params: Dict, evaluator: BandSelectionEvaluator) -> List[int]:
-    """전처리 단계를 실행합니다."""
+def run_integrated_training(pre_config: Dict, train_config: Dict, dataset: VectorDataset, 
+                          params: Dict, evaluator: BandSelectionEvaluator, 
+                          mlflow_experiment: str, mlflow_run_id: str) -> Tuple[List[int], List[int], List[float]]:
+    """전처리와 본처리를 통합하여 하나의 학습 과정으로 실행합니다."""
     print("\n" + "="*50)
-    print("     Preprocessing Stage")
+    print("     Integrated Band Selection Training")
     print("="*50)
     
-    # 전처리 모델 로딩
-    pre_model = load_preprocessing_model(pre_config)
+    # MLflow 정보를 config에 추가
+    mlflow_info = {
+        "experiment_name": mlflow_experiment,
+        "parent_run_id": mlflow_run_id
+    }
     
-    # 전처리 실행
+    # 1. 전처리 모델 로딩 및 실행
+    print("Step 1: Preprocessing")
+    pre_config_with_mlflow = pre_config.copy()
+    pre_config_with_mlflow['mlflow_info'] = mlflow_info
+    
+    pre_model = load_preprocessing_model(pre_config_with_mlflow)
+    
     evaluator.start_timer()
     pre_selected_bands = pre_model.select_bands(
         spectral_data=dataset.spectral_data,
         labels=dataset.labels,
         target_bands=params['pre_target_bands']
     )
+    pre_time = evaluator.end_timer()
     
-    # 전처리 결과 평가
-    pre_metrics = evaluator.evaluate_preprocessing(
-        original_bands=dataset.spectral_data.shape[1],
-        selected_bands=pre_selected_bands,
-        target_bands=params['pre_target_bands'],
-        method_name=pre_config['preprocessing']['model_name']
-    )
+    # 전처리 결과를 MLflow에 기록
+    mlflow.log_param("pre_processing_time", pre_time)
+    mlflow.log_param("pre_selected_bands_count", len(pre_selected_bands))
+    mlflow.log_dict({"pre_selected_bands": pre_selected_bands}, "preprocessing/pre_selected_bands.json")
     
-    print(f"Preprocessing completed: {len(pre_selected_bands)} bands selected")
-    print(f"Preprocessing metrics: {pre_metrics}")
+    print(f"Preprocessing completed: {len(pre_selected_bands)} bands selected in {pre_time:.2f}s")
     
-    return pre_selected_bands
-
-def run_training_stage(train_config: Dict, dataset: VectorDataset, pre_selected_bands: List[int], 
-                      params: Dict, evaluator: BandSelectionEvaluator) -> Tuple[List[int], List[float]]:
-    """본처리 단계를 실행합니다."""
-    print("\n" + "="*50)
-    print("     Training Stage")
-    print("="*50)
+    # 2. 본처리 모델 로딩 및 실행 (실제 학습)
+    print("Step 2: Training-based Band Selection")
+    train_config_with_mlflow = train_config.copy()
+    train_config_with_mlflow['mlflow_info'] = mlflow_info
     
-    # 본처리 모델 로딩
-    train_model = load_training_model(train_config)
+    train_model = load_training_model(train_config_with_mlflow)
     
-    # 전처리된 데이터로 본처리 실행
     evaluator.start_timer()
     final_selected_bands, band_scores = train_model.select_bands_with_scores(
         spectral_data=dataset.spectral_data,
@@ -74,19 +76,19 @@ def run_training_stage(train_config: Dict, dataset: VectorDataset, pre_selected_
         pre_selected_bands=pre_selected_bands,
         target_bands=params['final_target_bands']
     )
+    train_time = evaluator.end_timer()
     
-    # 본처리 결과 평가
-    train_metrics = evaluator.evaluate_training(
-        selected_bands=final_selected_bands,
-        band_scores=band_scores,
-        target_bands=params['final_target_bands'],
-        method_name=train_config['training']['model_name']
-    )
+    # 본처리 결과를 MLflow에 기록
+    mlflow.log_param("training_time", train_time)
+    mlflow.log_param("final_selected_bands_count", len(final_selected_bands))
+    mlflow.log_dict({
+        "final_selected_bands": final_selected_bands,
+        "band_scores": band_scores
+    }, "training/final_results.json")
     
-    print(f"Training completed: {len(final_selected_bands)} bands selected")
-    print(f"Training metrics: {train_metrics}")
+    print(f"Training completed: {len(final_selected_bands)} bands selected in {train_time:.2f}s")
     
-    return final_selected_bands, band_scores
+    return pre_selected_bands, final_selected_bands, band_scores
 
 def main():
     # Config 파일 파싱
@@ -141,7 +143,7 @@ def main():
     # 평가기 초기화
     evaluator = BandSelectionEvaluator()
     
-    # MLflow run 시작
+    # 통합 MLflow run 시작
     with mlflow.start_run(run_name=run_name) as run:
         print(f"MLflow run_id: {run.info.run_id}")
         
@@ -156,13 +158,12 @@ def main():
         mlflow.log_param("train_model", train_config['training']['model_name'])
         mlflow.log_param("csv_path", csv_path)
         mlflow.log_param("seed", seed)
+        mlflow.log_param("total_original_bands", dataset.spectral_data.shape[1])
         
-        # 전처리 단계 실행
-        pre_selected_bands = run_preprocessing_stage(pre_config, dataset, params, evaluator)
-        
-        # 본처리 단계 실행
-        final_selected_bands, band_scores = run_training_stage(
-            train_config, dataset, pre_selected_bands, params, evaluator
+        # 통합 학습 실행 (MLflow 정보 전달)
+        pre_selected_bands, final_selected_bands, band_scores = run_integrated_training(
+            pre_config, train_config, dataset, params, evaluator, 
+            experiment, run.info.run_id
         )
         
         # 전체 파이프라인 평가
@@ -213,7 +214,7 @@ def main():
             
             print(f"\nResults saved to: {output_dir}")
         
-        print(f"\nPipeline completed successfully!")
+        print(f"\nIntegrated training completed successfully!")
         print(f"MLflow run: {run.info.run_id}")
 
 if __name__ == "__main__":
