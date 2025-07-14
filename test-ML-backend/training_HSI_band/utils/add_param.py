@@ -64,6 +64,30 @@ def add_param(train_type: str, args: argparse.Namespace, config: Dict) -> Dict:
         'input_type': 'vector'  # 현재는 vector 고정
     }
     
+    # 데이터 설정
+    data_config = config.get('data', {})
+    params['csv_path'] = args.csv_path or data_config.get('csv_path', './datasets_HSI/label/label.csv')
+    params['wavelength_info_path'] = data_config.get('wavelength_info_path', './datasets_HSI/wavelength_info.txt')
+    params['label_column'] = data_config.get('label_column', 'label')
+    params['spectral_start_col'] = data_config.get('spectral_start_col', 1)
+    params['spectral_end_col'] = data_config.get('spectral_end_col', 204)
+    
+    # 출력 설정
+    output_config = config.get('output', {})
+    params['output_dir'] = args.output_dir or output_config.get('output_dir', './results')
+    params['save_results'] = args.save_results or output_config.get('save_results', False)
+    params['save_model'] = args.save_model or output_config.get('save_model', False)
+    params['save_metrics'] = output_config.get('save_metrics', True)
+    params['save_band_info'] = output_config.get('save_band_info', True)
+    
+    # MLflow 설정
+    mlflow_config = config.get('mlflow', {})
+    params['mlflow_tracking_uri'] = mlflow_config.get('tracking_uri', 'http://0.0.0.0:5000')
+    params['mlflow_port'] = args.port or mlflow_config.get('port', 5000)
+    params['log_artifacts'] = mlflow_config.get('log_artifacts', True)
+    params['log_parameters'] = mlflow_config.get('log_parameters', True)
+    params['log_metrics'] = mlflow_config.get('log_metrics', True)
+    
     # 밴드 수 설정 (전처리와 본처리 분리)
     if args.pre_target_bands is not None:
         params['pre_target_bands'] = args.pre_target_bands
@@ -104,14 +128,6 @@ def add_param(train_type: str, args: argparse.Namespace, config: Dict) -> Dict:
             'background_samples': args.background_samples or config.get('shap', {}).get('background_samples', 100),
             'nsamples': args.nsamples or config.get('shap', {}).get('nsamples', 100)
         })
-    
-    # 결과 저장 관련
-    if args.output_dir:
-        params['output_dir'] = args.output_dir
-    else:
-        params['output_dir'] = config.get('output_dir', './results')
-    
-    params['save_results'] = args.save_results or config.get('save_results', False)
     
     return params
 

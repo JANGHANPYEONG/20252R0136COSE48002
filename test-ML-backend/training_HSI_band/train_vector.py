@@ -123,9 +123,12 @@ def main():
     # MLflow 설정
     experiment = args.experiment if args.experiment is not None else main_config.get('experiment', 'hsi_band_selection')
     run_name = args.run if args.run is not None else main_config.get('run', 'vector_pipeline')
-    port = args.port
     
-    mlflow.set_tracking_uri('http://0.0.0.0:' + str(port))
+    # MLflow 설정을 파라미터에서 가져오기
+    mlflow_tracking_uri = params['mlflow_tracking_uri']
+    mlflow_port = params['mlflow_port']
+    
+    mlflow.set_tracking_uri(mlflow_tracking_uri)
     mlflow.set_experiment(experiment)
     
     # 랜덤 시드 설정
@@ -134,11 +137,28 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     
-    # 데이터 로딩
-    csv_path = args.csv_path if args.csv_path else main_config.get('data', {}).get('csv_path', './datasets_HSI/label/label.csv')
+    # 데이터 로딩 - 파라미터에서 설정 가져오기
+    csv_path = params['csv_path']
+    wavelength_info_path = params['wavelength_info_path']
+    label_column = params['label_column']
+    spectral_start_col = params['spectral_start_col']
+    spectral_end_col = params['spectral_end_col']
+    
+    # 데이터셋 설정을 main_config에 추가
+    dataset_config = {
+        'csv_path': csv_path,
+        'wavelength_info_path': wavelength_info_path,
+        'label_column': label_column,
+        'spectral_start_col': spectral_start_col,
+        'spectral_end_col': spectral_end_col
+    }
+    
     dataset = load_vector_data(csv_path, main_config, is_train=True)
     
     print(f"\nDataset loaded: {dataset.get_spectral_info()}")
+    print(f"CSV path: {csv_path}")
+    print(f"Label column: {label_column}")
+    print(f"Spectral columns: {spectral_start_col}-{spectral_end_col}")
     
     # 평가기 초기화
     evaluator = BandSelectionEvaluator()
@@ -146,19 +166,29 @@ def main():
     # 통합 MLflow run 시작
     with mlflow.start_run(run_name=run_name) as run:
         print(f"MLflow run_id: {run.info.run_id}")
+        print(f"MLflow tracking URI: {mlflow_tracking_uri}")
         
         # 기본 파라미터 MLflow에 기록
         mlflow.log_dict(main_config, 'config/main_config.json')
         mlflow.log_dict(pre_config, 'config/pre_config.json')
         mlflow.log_dict(train_config, 'config/train_config.json')
         
+        # 데이터 설정 기록
+        mlflow.log_dict(dataset_config, 'config/dataset_config.json')
+        
+        # 파라미터 기록
         mlflow.log_param("pre_target_bands", params['pre_target_bands'])
         mlflow.log_param("final_target_bands", params['final_target_bands'])
         mlflow.log_param("pre_model", pre_config['preprocessing']['model_name'])
         mlflow.log_param("train_model", train_config['training']['model_name'])
         mlflow.log_param("csv_path", csv_path)
+        mlflow.log_param("label_column", label_column)
+        mlflow.log_param("spectral_start_col", spectral_start_col)
+        mlflow.log_param("spectral_end_col", spectral_end_col)
         mlflow.log_param("seed", seed)
         mlflow.log_param("total_original_bands", dataset.spectral_data.shape[1])
+        mlflow.log_param("output_dir", params['output_dir'])
+        mlflow.log_param("save_results", params['save_results'])
         
         # 통합 학습 실행 (MLflow 정보 전달)
         pre_selected_bands, final_selected_bands, band_scores = run_integrated_training(
@@ -185,7 +215,13 @@ def main():
             'pre_selected_bands': pre_selected_bands,
             'final_selected_bands': final_selected_bands,
             'band_scores': band_scores,
-            'pipeline_metrics': pipeline_metrics
+            'pipeline_metrics': pipeline_metrics,
+            'dataset_info': {
+                'csv_path': csv_path,
+                'total_samples': len(dataset),
+                'total_bands': dataset.spectral_data.shape[1],
+                'label_column': label_column
+            }
         }
         
         mlflow.log_dict(results, 'results/band_selection_results.json')
@@ -206,11 +242,23 @@ def main():
             os.makedirs(output_dir, exist_ok=True)
             
             # 메트릭 저장
-            evaluator.save_metrics(os.path.join(output_dir, 'metrics.csv'))
+            if params['save_metrics']:
+                evaluator.save_metrics(os.path.join(output_dir, 'metrics.csv'))
             
             # 결과 JSON 저장
             with open(os.path.join(output_dir, 'results.json'), 'w') as f:
                 json.dump(results, f, indent=2)
+            
+            # 밴드 정보 저장
+            if params['save_band_info']:
+                band_info = {
+                    'pre_selected_bands': pre_selected_bands,
+                    'final_selected_bands': final_selected_bands,
+                    'band_scores': band_scores,
+                    'wavelength_info_path': wavelength_info_path
+                }
+                with open(os.path.join(output_dir, 'band_info.json'), 'w') as f:
+                    json.dump(band_info, f, indent=2)
             
             print(f"\nResults saved to: {output_dir}")
         
