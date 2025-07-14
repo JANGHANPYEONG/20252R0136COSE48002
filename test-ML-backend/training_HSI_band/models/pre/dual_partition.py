@@ -9,10 +9,10 @@ from sklearn.neighbors import NearestNeighbors
 
 class PreprocessingModel:
     def __init__(self, config: Dict):
-        self.config = config
-        self.n_clusters = config["preprocessing"]["parameters"].get("n_clusters", 10)
-        self.top_k = config["preprocessing"]["parameters"].get("top_k", 5)
-        self.k_neighbors = config["preprocessing"]["parameters"].get("k_neighbors", 5)
+        params = config["preprocessing"]["parameters"]
+        self.n_clusters = params.get("n_clusters")
+        self.top_k = params.get("top_k")
+        self.k_neighbors = params.get("k_neighbors")
 
     def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, target_bands: int) -> List[int]:
         """
@@ -29,6 +29,9 @@ class PreprocessingModel:
         # 1차 분할: 밴드 간 상관관계 기반 클러스터링
         corr = np.corrcoef(spectral_data.T)
         clusterer = AgglomerativeClustering(n_clusters=self.n_clusters, affinity='precomputed', linkage='average')
+        # n_clusters=self.n_clusters -> 최종적으로 만들 클러스터(군집)의 개수를 지정
+        # affinity='precomputed' -> 거리 계산 방식(유사도 기준)을 지정, fit()할 때 넘겨주는 행렬이 직접 계산된 거리/유사도 행렬
+        # linkage='average' -> 두 클러스터 간의 거리를 계산하는 방식, 두 클러스터 A, B에 있는 모든 점 간의 거리의 평균을 클러스터 간 거리로 정의
         cluster_labels = clusterer.fit_predict(1 - np.abs(corr))
 
         # 2차 분할: 밴드 내 이웃 기반 neighborhood 재구성
@@ -61,7 +64,7 @@ class PreprocessingModel:
 
 # __init__.py 내부에서 호출되는 factory 함수
 
-def create_model(model_name: str, config: Dict):
+def create_model(model_name, config):
     if model_name == "dual_partition":
         return PreprocessingModel(config)
     raise ValueError(f"Unknown model name: {model_name}")

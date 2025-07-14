@@ -10,31 +10,51 @@ class Simple3DCNN(nn.Module):
     def __init__(self, config: Dict):
         super(Simple3DCNN, self).__init__()
         params = config["training"]["parameters"]
+        models = config["3DCNN"]
         in_channels = params.get("in_channels")
         num_classes = params.get("num_classes")
         init_channels = params.get("init_channels")
 
-        self.features = nn.Sequential(
-            nn.Conv3d(1, init_channels, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(init_channels),
-            nn.ReLU(),
-            nn.MaxPool3d(kernel_size=(1, 2, 2)),
+        
+        conv_layers_cfg = models["conv_layers"]
+        adaptive_pool_output = tuple(models["adaptive_pool_output"])
+        activation_fn = getattr(nn, models.get("activation", "ReLU"))
 
-            nn.Conv3d(init_channels, init_channels * 2, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(init_channels * 2),
-            nn.ReLU(),
-            nn.MaxPool3d(kernel_size=(1, 2, 2)),
+        layers = []
+        cur_in = in_channels
+        for layer_cfg in conv_layers_cfg:
+            out_ch = eval(
+                str(layer_cfg["out_channels"]), {}, {"init_channels": init_channels}
+            )
+            layers.append(
+                nn.Conv3d(
+                    cur_in, # size of input data
+                    out_ch, # size of output data
+                    kernel_size=tuple(layer_cfg["kernel_size"]), # size of kernel
+                    padding=layer_cfg["padding"] # padding
+                )
+            )
 
-            nn.Conv3d(init_channels * 2, init_channels * 4, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(init_channels * 4),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool3d(output_size=(1, 1, 1))
+            layers.append(nn.BatchNorm3d(out_ch)) # 3D conv 사용하였으므로 3d Norm
+            layers.append(activation_fn())
+
+            if "pooling" in layer_cfg:
+                pool = layer_cfg["pooling"]
+                layers.append(
+                    getattr(nn, pool["type"])(kernel_size=tuple(pool["kernel_size"]))
+                )
+            cur_in = out_ch
+
+        layers.append(
+            nn.AdaptiveAvgPool3d(output_size=adaptive_pool_output)
         )
 
+        self.features = nn.Sequential(*layers)
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(init_channels * 4, num_classes)
+            nn.Linear(cur_in, num_classes)
         )
+
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -46,3 +66,10 @@ class Simple3DCNN(nn.Module):
         x = self.features(x)
         x = self.classifier(x)
         return x
+    
+
+def create_model(model_name, config):
+    if model_name == "BS_3DCNN":
+        return Simple3DCNN(config)
+    else:
+        raise ValueError(f"Unknown model: {model_name}")
