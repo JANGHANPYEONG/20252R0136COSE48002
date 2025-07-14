@@ -26,3 +26,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# ML training results
+test-ML-backend/training_HSI_band/results/
+
