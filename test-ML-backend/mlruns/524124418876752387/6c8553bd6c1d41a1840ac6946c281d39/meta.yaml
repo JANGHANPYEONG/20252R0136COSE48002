@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/524124418876752387/6c8553bd6c1d41a1840ac6946c281d39/artifacts
+end_time: 1752475426479
+entry_point_name: ''
+experiment_id: '524124418876752387'
+lifecycle_stage: active
+run_id: 6c8553bd6c1d41a1840ac6946c281d39
+run_name: vector_pipeline
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752475390123
+status: 4
+tags: []
+user_id: dinda

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/524124418876752387/3028a973097743a1aba2bfe697f8d7e9/artifacts
+end_time: 1752476403888
+entry_point_name: ''
+experiment_id: '524124418876752387'
+lifecycle_stage: active
+run_id: 3028a973097743a1aba2bfe697f8d7e9
+run_name: label_1_disease_1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752476401969
+status: 3
+tags: []
+user_id: dinda
