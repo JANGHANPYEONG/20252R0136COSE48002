@@ -5,6 +5,27 @@
   "hyperparameters": {
     "seed": 42
   },
+  "data": {
+    "csv_path": "./datasets_HSI/label/label.csv",
+    "wavelength_info_path": "./datasets_HSI/wavelength_info.txt",
+    "label_column": "label",
+    "spectral_start_col": 1,
+    "spectral_end_col": 204
+  },
+  "output": {
+    "output_dir": "./results",
+    "save_results": true,
+    "save_model": false,
+    "save_metrics": true,
+    "save_band_info": true
+  },
+  "mlflow": {
+    "tracking_uri": "http://0.0.0.0:5000",
+    "port": 5000,
+    "log_artifacts": true,
+    "log_parameters": true,
+    "log_metrics": true
+  },
   "preprocessing": {
     "config_path": "configs/pre/vector_pre_config.json",
     "target_bands": 50
@@ -12,10 +33,5 @@
   "training": {
     "config_path": "configs/training/vector_training_config.json",
     "target_bands": 10
-  },
-  "data": {
-    "csv_path": "./datasets_HSI/label/label.csv"
-  },
-  "output_dir": "./results",
-  "save_results": true
+  }
 }
