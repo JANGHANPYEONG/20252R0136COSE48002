@@ -67,7 +67,6 @@ def add_param(train_type: str, args: argparse.Namespace, config: Dict) -> Dict:
     # 데이터 설정
     data_config = config.get('data', {})
     params['csv_path'] = args.csv_path or data_config.get('csv_path', './datasets_HSI/label/label.csv')
-    params['wavelength_info_path'] = data_config.get('wavelength_info_path', './datasets_HSI/wavelength_info.txt')
     params['label_column'] = data_config.get('label_column', 'label')
     params['spectral_start_col'] = data_config.get('spectral_start_col', 1)
     params['spectral_end_col'] = data_config.get('spectral_end_col', 204)

@@ -26,3 +26,34 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# ML training results
+test-ML-backend/training_HSI_band/results/
+
+# MLflow experiment tracking
+test-ML-backend/mlruns/
+test-ML-backend/mlartifacts/
+
+# Python cache
+test-ML-backend/__pycache__/
+test-ML-backend/*.pyc
+test-ML-backend/*.pyo
+
+# Jupyter notebook checkpoints
+test-ML-backend/*.ipynb_checkpoints/
+
+# Log, temp, backup files
+test-ML-backend/*.log
+test-ML-backend/*.tmp
+test-ML-backend/*.bak
+
+# Python egg
+test-ML-backend/*.egg-info/
+test-ML-backend/*.egg
+
+# Vim swap files
+test-ML-backend/*.swp
+test-ML-backend/*.swo
+
+# Environment files
+test-ML-backend/.env
+
