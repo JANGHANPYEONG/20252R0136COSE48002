@@ -1,0 +1,17 @@
+{
+  "training": {
+    "model_name": "simple_3dcnn",
+    "model_file": "simple_3dcnn_model",
+    "parameters": {
+      "in_channels": 20,
+      "num_classes": 4,
+      "init_channels": 16,
+      "num_epochs": 100,
+      "learning_rate": 0.01
+    }
+  },
+  "mlflow_info": {
+    "experiment_name": "hsi_band_selection",
+    "parent_run_id": "abc123def456"
+  }
+}
