@@ -7,28 +7,33 @@ import torch.nn as nn
 
 # 선택된 밴드 이미지 (h, w, p)를 입력으로 받는 3D CNN 모델
 class Simple3DCNN(nn.Module):
-    def __init__(self, in_channels: int, num_classes: int):
+    def __init__(self, config: Dict):
         super(Simple3DCNN, self).__init__()
+        params = config["training"]["parameters"]
+        in_channels = params.get("in_channels")
+        num_classes = params.get("num_classes")
+        init_channels = params.get("init_channels")
+
         self.features = nn.Sequential(
-            nn.Conv3d(1, 16, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(16),
+            nn.Conv3d(1, init_channels, kernel_size=(3, 3, 3), padding=1),
+            nn.BatchNorm3d(init_channels),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(1, 2, 2)),
 
-            nn.Conv3d(16, 32, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(32),
+            nn.Conv3d(init_channels, init_channels * 2, kernel_size=(3, 3, 3), padding=1),
+            nn.BatchNorm3d(init_channels * 2),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(1, 2, 2)),
 
-            nn.Conv3d(32, 64, kernel_size=(3, 3, 3), padding=1),
-            nn.BatchNorm3d(64),
+            nn.Conv3d(init_channels * 2, init_channels * 4, kernel_size=(3, 3, 3), padding=1),
+            nn.BatchNorm3d(init_channels * 4),
             nn.ReLU(),
             nn.AdaptiveAvgPool3d(output_size=(1, 1, 1))
         )
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(64, num_classes)
+            nn.Linear(init_channels * 4, num_classes)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
