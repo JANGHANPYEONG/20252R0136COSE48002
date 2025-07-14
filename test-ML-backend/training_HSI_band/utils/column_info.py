@@ -23,7 +23,7 @@ def get_spectral_columns():
     try:
         column_config = load_column_config()
         wavelengths = column_config["wavelengths"]
-        return [f"reflectance_{wavelength}" for wavelength in wavelengths]
+        return [f"band_{wavelength}" for wavelength in wavelengths]
     except (FileNotFoundError, KeyError) as e:
         print(f"Warning: Error loading wavelengths from column_config.json: {e}")
         # 기본값 (600nm부터 730nm까지 10nm 간격)

@@ -139,7 +139,6 @@ def main():
     
     # 데이터 로딩 - 파라미터에서 설정 가져오기
     csv_path = params['csv_path']
-    wavelength_info_path = params['wavelength_info_path']
     label_column = params['label_column']
     spectral_start_col = params['spectral_start_col']
     spectral_end_col = params['spectral_end_col']
@@ -147,7 +146,6 @@ def main():
     # 데이터셋 설정을 main_config에 추가
     dataset_config = {
         'csv_path': csv_path,
-        'wavelength_info_path': wavelength_info_path,
         'label_column': label_column,
         'spectral_start_col': spectral_start_col,
         'spectral_end_col': spectral_end_col
@@ -254,8 +252,7 @@ def main():
                 band_info = {
                     'pre_selected_bands': pre_selected_bands,
                     'final_selected_bands': final_selected_bands,
-                    'band_scores': band_scores,
-                    'wavelength_info_path': wavelength_info_path
+                    'band_scores': band_scores
                 }
                 with open(os.path.join(output_dir, 'band_info.json'), 'w') as f:
                     json.dump(band_info, f, indent=2)
