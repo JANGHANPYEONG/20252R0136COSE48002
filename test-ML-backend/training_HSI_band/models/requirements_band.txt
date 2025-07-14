@@ -1,0 +1,3 @@
+#RandomFrog
+numpy==1.23.5
+scikit-learn==1.3.2
