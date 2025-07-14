@@ -2,17 +2,23 @@
   "column_order": {
     "id_column_index": 0,
     "label_start_index": 1,
-    "label_end_index": 5,
-    "vector_start_index": 6
+    "label_end_index": 13,
+    "vector_start_index": 14
   },
   "label_columns": [
-    "Marbling",
-    "Color",
-    "Texture",
-    "Surface_Moisture",
-    "Total"
+    "disease_1",
+    "disease_2",
+    "disease_3",
+    "disease_4",
+    "disease_5",
+    "disease_6",
+    "disease_7",
+    "disease_8",
+    "disease_9",
+    "disease_10",
+    "disease_11",
+    "disease_12",
+    "disease_13"
   ],
-  "wavelengths": [
-    600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730
-  ]
+  "wavelengths": [10, 60, 70, 100, 110]
 }

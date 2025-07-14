@@ -7,10 +7,9 @@
   },
   "data": {
     "csv_path": "./datasets_HSI/label/label.csv",
-    "wavelength_info_path": "./datasets_HSI/wavelength_info.txt",
     "label_column": "label",
-    "spectral_start_col": 1,
-    "spectral_end_col": 204
+    "spectral_start_col": 14,
+    "spectral_end_col": 18
   },
   "output": {
     "output_dir": "./results",
@@ -20,18 +19,18 @@
     "save_band_info": true
   },
   "mlflow": {
-    "tracking_uri": "http://0.0.0.0:5000",
+    "tracking_uri": "http://127.0.0.1:5000",
     "port": 5000,
     "log_artifacts": true,
     "log_parameters": true,
     "log_metrics": true
   },
   "preprocessing": {
-    "config_path": "configs/pre/vector_pre_config.json",
-    "target_bands": 50
+    "config_path": "configs/pre/mrmr_config.json",
+    "target_bands": 4
   },
   "training": {
-    "config_path": "configs/training/vector_training_config.json",
-    "target_bands": 10
+    "config_path": "configs/training/shap_config.json",
+    "target_bands": 2
   }
 }

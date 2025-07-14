@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Optional
 import os
 
 from utils.column_info import (
-    get_csv_structure, get_spectral_columns, LABEL_COLUMNS, 
+    get_csv_structure, get_spectral_columns, 
     get_id_column, get_label_columns, get_vector_columns
 )
 

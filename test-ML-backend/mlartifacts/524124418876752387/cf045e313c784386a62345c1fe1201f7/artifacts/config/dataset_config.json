@@ -1,0 +1,6 @@
+{
+  "csv_path": "./datasets_HSI/label/label.csv",
+  "label_column": "label",
+  "spectral_start_col": 14,
+  "spectral_end_col": 18
+}
