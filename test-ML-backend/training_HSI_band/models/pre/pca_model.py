@@ -34,8 +34,13 @@ class PreprocessingModel:
         Returns:
             selected_bands: List[int] (선택된 밴드 인덱스)
         """
+
+        # 0. 주성분 수가 밴드 수보다 크면 자동으로 줄여 줌
+        n_samples, n_bands = spectral_data.shape
+        n_comp = min(self.n_components, n_bands)
+        
         # 1. PCA 수행
-        pca = PCA(n_components=1)
+        pca = PCA(n_components=n_comp, random_state=self.random_state)
         pca.fit(spectral_data)
 
         # 2. 첫 번째 주성분 로딩 벡터 가져오기

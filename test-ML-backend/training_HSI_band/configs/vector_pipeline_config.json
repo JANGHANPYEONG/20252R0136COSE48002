@@ -5,6 +5,11 @@
   "hyperparameters": {
     "seed": 42
   },
+  "data_split": {
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1
+  },
   "data": {
     "csv_path": "./datasets_HSI/label/label.csv",
     "label_column": "label",
