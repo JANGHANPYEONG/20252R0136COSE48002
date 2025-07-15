@@ -54,7 +54,7 @@ class PreprocessingModel:
         return selected_bands
 
 
-def create_model(model_name: str, config: Dict):
+def create_model(model_name: str, config: Dict, label_type: str = None):
     if model_name == "pca":
         return PreprocessingModel(config)
     else:
