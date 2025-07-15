@@ -31,11 +31,11 @@
     "log_metrics": true
   },
   "preprocessing": {
-    "config_path": "configs/pre/dual_partition.json",
+    "config_path": "configs/pre/pca_config.json",
     "target_bands": 4
   },
   "training": {
-    "config_path": "configs/training/BS_3DCNN.json",
+    "config_path": "configs/training/shap_config.json",
     "target_bands": 2
   }
 }
