@@ -1,0 +1,22 @@
+{
+  "preprocessing": {
+    "model_name": "dual_partition",
+    "model_file": "dual_partition",
+    "parameters": {
+      "n_clusters": 5,
+      "top_k": 5,
+      "k_neighbors": 5
+    },
+    "target_bands": 30
+    },
+    "target_bands": 30
+  ,
+  "mlflow_info": {
+    "experiment_name": "hsi_band_selection",
+    "parent_run_id": "abc123def456",
+    "tracking_uri": "http://127.0.0.1:5000",
+    "log_artifacts": true,
+    "log_parameters": true,
+    "log_metrics": true
+  }
+}
