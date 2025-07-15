@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/770436005834472595/c27aa66c572742bd845509c9ec398776/artifacts
+end_time: 1752561538265
+entry_point_name: ''
+experiment_id: '770436005834472595'
+lifecycle_stage: active
+run_id: c27aa66c572742bd845509c9ec398776
+run_name: label_1_disease_1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752561538100
+status: 4
+tags: []
+user_id: a2349

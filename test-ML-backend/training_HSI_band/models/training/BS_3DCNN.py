@@ -8,14 +8,13 @@ import torch.nn as nn
 # 선택된 밴드 이미지 (h, w, p)를 입력으로 받는 3D CNN 모델
 class Simple3DCNN(nn.Module):
     def __init__(self, config: Dict):
-        super(Simple3DCNN, self).__init__()
+        super(Simple3DCNN, self).__init__() 
         params = config["training"]["parameters"]
         cnn = config["cnn"]
         in_channels = params.get("in_channels")
         num_classes = params.get("num_classes")
         init_channels = params.get("init_channels")
 
-        
         conv_layers_cfg = cnn["conv_layers"]
         adaptive_pool_output = tuple(cnn["adaptive_pool_output"])
         activation_fn = getattr(nn, cnn.get("activation", "ReLU"))
@@ -55,8 +54,6 @@ class Simple3DCNN(nn.Module):
             nn.Linear(cur_in, num_classes)
         )
 
-
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
@@ -68,6 +65,22 @@ class Simple3DCNN(nn.Module):
         x = self.classifier(x)
         return x
     
+    # 250715 추가
+    @staticmethod
+    def add_coord_channels(x: torch.Tensor) -> torch.Tensor:
+        # 좌표 채널은 H·W≥2일 때만 의미가 있음
+        if x.dim() != 5:
+            return x                  # 2‑D, 4‑D 입력엔 좌표 채널 안 붙임
+        B, _, C, H, W = x.shape
+        if H == 1 or W == 1:
+            return x                  # 1×1 패치는 좌표 채널 무시
+
+        yy = torch.linspace(-1, 1, H, device=x.device)\
+                .view(1,1,1,H,1).expand(B,1,1,H,W)
+        xx = torch.linspace(-1, 1, W, device=x.device)\
+                .view(1,1,1,1,W).expand(B,1,1,H,W)
+        return torch.cat([x, yy, xx], dim=2)   # (B,1,C+2,H,W)
+
     def select_bands_with_scores(
         self,
         spectral_data,
@@ -87,6 +100,7 @@ class Simple3DCNN(nn.Module):
         """
         self.eval()
 
+        # spectral_data가 Numpy 배열이라면 torch.Tensor로 변환
         if isinstance(spectral_data, np.ndarray):
             # spectral_data shape 예: (batch, 1, channels, H, W)
             x = torch.from_numpy(spectral_data).float()
@@ -95,12 +109,19 @@ class Simple3DCNN(nn.Module):
         else:
             raise TypeError(f"Unsupported data type: {type(spectral_data)}")
 
-        if x.dim() == 2:
+        # spectral_data 차원 검사 및 재구성
+        if x.dim() == 2: # x가 (batch, channels) 모양이라면, 
             batch, channels = x.shape
-            x = x.view(batch, 1, channels, 1, 1)
-        
+            # 모델이 기대하는 5D 텐서 (batch, 1, channels, 1, 1) 형태로 뷰(view)를 변경
+            # 차원 맞춤: 2D 입력 → 5D (B, 1, C, H=1, W=1)
+            x = x.view(batch, 1, channels, 1, 1) 
+
         device = next(self.parameters()).device
         x = x.to(device).requires_grad_(True)
+
+        # 위치 정보 추가를 위한 처리
+        # spectral_data → tensor x  (B,1,C,H,W)
+        x = self.add_coord_channels(x)       # (B,1,C+2,H,W)
 
         # 1) Forward pass
         logits = self.forward(x)                  # (batch, num_classes)
@@ -120,8 +141,6 @@ class Simple3DCNN(nn.Module):
                              reverse=True)
         
         return final_bands[:target_bands], band_scores[:target_bands]
-
-
 
 def create_model(model_name, config):
     if model_name == "3DCNN":

@@ -35,7 +35,7 @@
     "target_bands": 4
   },
   "training": {
-    "config_path": "configs/training/BS_3DCNN.json",
+    "config_path": "configs/training/shap_model.json",
     "target_bands": 2
   }
 }
