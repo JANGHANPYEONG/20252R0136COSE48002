@@ -6,7 +6,8 @@
     "parameters": {
       "criterion": "MIQ",
       "k": 4,
-      "random_state": 42
+      "random_state": 42,
+      "label_type": "classification"
     }
   }
 }

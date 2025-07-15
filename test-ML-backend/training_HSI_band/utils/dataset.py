@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import Dataset, Subset
 from typing import Dict, List, Tuple, Optional
 import os
+from sklearn.model_selection import train_test_split
 
 from utils.column_info import (
     get_csv_structure, get_spectral_columns, 
@@ -117,19 +118,53 @@ def load_vector_data(csv_path: str, config: Dict, is_train: bool = True) -> Vect
     return VectorDataset(csv_path, config, is_train)
 
 def split_vector_data(dataset: VectorDataset, train_ratio: float = 0.8, 
-                     val_ratio: float = 0.1, test_ratio: float = 0.1) -> Tuple[VectorDataset, VectorDataset, VectorDataset]:
-    """데이터셋을 train/val/test로 분할합니다."""
+                     val_ratio: float = 0.1, test_ratio: float = 0.1,
+                     random_state: int = 42) -> Tuple[VectorDataset, VectorDataset, VectorDataset]:
+    """
+    데이터셋을 train/val/test로 분할합니다.
+    
+    Args:
+        dataset: 분할할 데이터셋
+        train_ratio: 학습 데이터 비율 (기본값: 0.8)
+        val_ratio: 검증 데이터 비율 (기본값: 0.1)
+        test_ratio: 테스트 데이터 비율 (기본값: 0.1)
+        random_state: 랜덤 시드 (기본값: 42)
+        
+    Returns:
+        train_dataset, val_dataset, test_dataset: 분할된 데이터셋들
+    """
     assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, "Ratios must sum to 1.0"
     
     total_size = len(dataset)
-    train_size = int(total_size * train_ratio)
-    val_size = int(total_size * val_ratio)
+    indices = np.arange(total_size)
     
-    # 인덱스 분할
-    indices = list(range(total_size))
-    train_indices = indices[:train_size]
-    val_indices = indices[train_size:train_size + val_size]
-    test_indices = indices[train_size + val_size:]
+    # 첫 번째 분할: train + (val + test)
+    train_size = int(total_size * train_ratio)
+    remaining_size = total_size - train_size
+    
+    # stratify를 위한 라벨 정보 준비 (멀티라벨의 경우 첫 번째 라벨 사용)
+    labels_for_stratify = dataset.labels[:, 0] if dataset.labels.shape[1] > 0 else None
+    
+    # train과 나머지로 분할
+    train_indices, remaining_indices = train_test_split(
+        indices,
+        train_size=train_size,
+        random_state=random_state,
+        stratify=labels_for_stratify
+    )
+    
+    # 나머지를 val과 test로 분할
+    val_size = int(remaining_size * (val_ratio / (val_ratio + test_ratio)))
+    
+    # val/test 분할을 위한 라벨 정보
+    remaining_labels = labels_for_stratify[remaining_indices] if labels_for_stratify is not None else None
+    
+    val_indices, test_indices = train_test_split(
+        remaining_indices,
+        train_size=val_size,
+        random_state=random_state,
+        stratify=remaining_labels
+    )
     
     # Subset을 사용하여 데이터셋 분할
     train_dataset = Subset(dataset, train_indices)
@@ -137,5 +172,15 @@ def split_vector_data(dataset: VectorDataset, train_ratio: float = 0.8,
     test_dataset = Subset(dataset, test_indices)
     
     print(f"Dataset split: Train={len(train_dataset)}, Val={len(val_dataset)}, Test={len(test_dataset)}")
+    
+    # 분할 결과 검증 (라벨 분포 확인)
+    if dataset.labels.shape[1] > 0:
+        print("Label distribution check:")
+        for i, (name, subset) in enumerate([("Train", train_indices), ("Val", val_indices), ("Test", test_indices)]):
+            subset_labels = dataset.labels[subset]
+            print(f"  {name}: {len(subset)} samples")
+            for j in range(dataset.labels.shape[1]):
+                positive_ratio = np.mean(subset_labels[:, j])
+                print(f"    Label {j}: {positive_ratio:.3f} positive ratio")
     
     return train_dataset, val_dataset, test_dataset 
