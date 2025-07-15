@@ -1,9 +1,7 @@
 import numpy as np
-import pandas as pd
 import mlflow
 from typing import Dict, Any, Tuple, List
 from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mutual_info_score
 import warnings
 warnings.filterwarnings('ignore')
@@ -26,13 +24,14 @@ class MRMRBandSelector:
         self.criterion = self.parameters.get('criterion', 'MID')  # MID, MIQ, MIC
         self.k = self.parameters.get('k', 50)
         self.random_state = self.parameters.get('random_state', 42)
+        self.label_type = self.parameters.get('label_type', 'classification')  # classification, regression
         
         # 결과 저장
         self.selected_bands = None
         self.band_scores = None
         self.feature_names = None
         
-        print(f"MRMR Band Selector initialized with criterion: {self.criterion}, k: {self.k}")
+        print(f"MRMR Band Selector initialized with criterion: {self.criterion}, k: {self.k}, label_type: {self.label_type}")
     
     def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, 
                     target_bands: int, feature_names: List[str] = None) -> List[int]:
@@ -50,10 +49,7 @@ class MRMRBandSelector:
         """
         # MLflow 중첩 실행 시작
         if self.mlflow_info:
-            with mlflow.start_run(
-                run_id=self.mlflow_info['parent_run_id'],
-                nested=True
-            ):
+            with mlflow.start_run(nested=True):
                 return self._select_bands_internal(spectral_data, labels, target_bands, feature_names)
         else:
             return self._select_bands_internal(spectral_data, labels, target_bands, feature_names)
@@ -64,26 +60,22 @@ class MRMRBandSelector:
         
         print(f"Starting MRMR band selection with {target_bands} target bands...")
         
-        # 데이터 전처리
-        scaler = StandardScaler()
-        spectral_scaled = scaler.fit_transform(spectral_data)
-        
-        # 특성 이름 생성
+        # 특성 이름 생성 (이미 정규화된 데이터 사용)
         if feature_names is None:
-            feature_names = [f'band_{i}' for i in range(spectral_scaled.shape[1])]
+            feature_names = [f'band_{i}' for i in range(spectral_data.shape[1])]
         
-        # 라벨이 연속형인지 이산형인지 판단
-        is_continuous = len(np.unique(labels)) > 10  # 임계값으로 판단
+        # label_type에 따라 연속형/이산형 판단
+        is_continuous = self.label_type == "regression"
         
-        # MRMR 알고리즘 실행
+        # MRMR 알고리즘 실행 (이미 정규화된 데이터 사용)
         try:
-            selected_indices = self._mrmr_selection(spectral_scaled, labels, target_bands, is_continuous)
+            selected_indices = self._mrmr_selection(spectral_data, labels, target_bands, is_continuous)
             print(f"MRMR selected {len(selected_indices)} bands")
             
         except Exception as e:
             print(f"Error in MRMR selection: {e}")
             # 대체 방법: 상관관계 기반 선택
-            selected_indices = self._fallback_selection(spectral_scaled, labels, target_bands)
+            selected_indices = self._fallback_selection(spectral_data, labels, target_bands)
         
         # 결과 저장
         self.selected_bands = selected_indices
@@ -96,6 +88,7 @@ class MRMRBandSelector:
             label_idx = self.mlflow_info.get('current_label_idx', 0)
             
             mlflow.log_param("mrmr_criterion", self.criterion)
+            mlflow.log_param("mrmr_label_type", self.label_type)
             mlflow.log_param("mrmr_target_bands", target_bands)
             mlflow.log_param(f"mrmr_selected_bands_{label_name}", len(selected_indices))
             mlflow.log_param(f"mrmr_selected_indices_{label_name}", selected_indices)

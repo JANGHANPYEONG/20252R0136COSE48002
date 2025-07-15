@@ -1,0 +1,38 @@
+# MLflow experiment tracking
+mlruns/
+mlartifacts/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter notebook checkpoints
+*.ipynb_checkpoints/
+
+# Log, temp, backup files
+*.log
+*.tmp
+*.bak
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+.venv/
+
+# Python egg
+*.egg-info/
+*.egg
+
+# Vim swap files
+*.swp
+*.swo
+
+# Environment files
+.env
+
+# Results (이미 상위 .gitignore에 있음)
+# results/ 

@@ -2,14 +2,16 @@ import argparse
 import json
 import pandas as pd
 import mlflow
+import mlflow.sklearn
 import torch
 import random
 import numpy as np
 import os
 from typing import Dict, List, Tuple
 from collections import defaultdict
+from sklearn.preprocessing import StandardScaler
 
-from utils.dataset import VectorDataset, load_vector_data
+from utils.dataset import VectorDataset, load_vector_data, split_vector_data
 from utils.evaluation import BandSelectionEvaluator
 from utils.add_param import add_arg, add_param, validate_config
 from utils.model_loader import load_preprocessing_model, load_training_model, validate_model_config
@@ -154,6 +156,14 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     
+    # GPU 재현성 보장 설정
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        print("GPU reproducibility settings applied")
+    
     # 데이터 로딩
     csv_path = params['csv_path']
     dataset = load_vector_data(csv_path, main_config, is_train=True)
@@ -163,6 +173,43 @@ def main():
     print(f"Total samples: {len(dataset)}")
     print(f"Total spectral bands: {dataset.spectral_data.shape[1]}")
     print(f"Total labels: {dataset.labels.shape[1]}")
+    
+    # 데이터 분할 수행 (데이터 누출 방지)
+    print(f"\n{'='*60}")
+    print("     Data Splitting (Preventing Data Leakage)")
+    print(f"{'='*60}")
+    
+    train_ratio = main_config.get('data_split', {}).get('train_ratio', 0.8)
+    val_ratio = main_config.get('data_split', {}).get('val_ratio', 0.1)
+    test_ratio = main_config.get('data_split', {}).get('test_ratio', 0.1)
+    
+    train_dataset, val_dataset, test_dataset = split_vector_data(
+        dataset, 
+        train_ratio=train_ratio,
+        val_ratio=val_ratio, 
+        test_ratio=test_ratio,
+        random_state=seed
+    )
+    
+    # StandardScaler 초기화 및 train 데이터로 fit (데이터 누출 방지)
+    print(f"\n{'='*60}")
+    print("     StandardScaler Initialization (Train Data Only)")
+    print(f"{'='*60}")
+    
+    train_indices = train_dataset.indices
+    train_spectral_data = dataset.spectral_data[train_indices]
+    
+    # 전체 스펙트럼 데이터에 대한 StandardScaler fit (한 번만)
+    global_scaler = StandardScaler()
+    global_scaler.fit(train_spectral_data)
+    
+    # train 데이터 정규화 (한 번만 수행)
+    train_spectral_data_scaled = global_scaler.transform(train_spectral_data)
+    
+    print(f"StandardScaler fitted on train data: {train_spectral_data.shape}")
+    print(f"Train data normalized: {train_spectral_data_scaled.shape}")
+    print(f"Scaler mean shape: {global_scaler.mean_.shape}")
+    print(f"Scaler scale shape: {global_scaler.scale_.shape}")
     
     # 라벨 정보 가져오기
     column_config = json.load(open("datasets_HSI/column_config.json", 'r'))
@@ -182,7 +229,21 @@ def main():
             'label_names': label_names,
             'original_bands': dataset.spectral_data.shape[1],
             'pre_target_bands': params['pre_target_bands'],
-            'final_target_bands': params['final_target_bands']
+            'final_target_bands': params['final_target_bands'],
+            'data_split': {
+                'train_ratio': train_ratio,
+                'val_ratio': val_ratio,
+                'test_ratio': test_ratio,
+                'train_samples': len(train_dataset),
+                'val_samples': len(val_dataset),
+                'test_samples': len(test_dataset)
+            },
+            'preprocessing': {
+                'standard_scaler_fitted': True,
+                'scaler_mean_shape': global_scaler.mean_.shape[0],
+                'scaler_scale_shape': global_scaler.scale_.shape[0],
+                'scaler_fitted_on': 'train_data_only'
+            }
         }
     }
     
@@ -211,19 +272,36 @@ def main():
         mlflow.log_param("csv_path", csv_path)
         mlflow.log_param("seed", seed)
         mlflow.log_param("total_original_bands", dataset.spectral_data.shape[1])
+        mlflow.log_param("train_ratio", train_ratio)
+        mlflow.log_param("val_ratio", val_ratio)
+        mlflow.log_param("test_ratio", test_ratio)
+        mlflow.log_param("train_samples", len(train_dataset))
+        mlflow.log_param("val_samples", len(val_dataset))
+        mlflow.log_param("test_samples", len(test_dataset))
+        mlflow.log_param("standard_scaler_fitted", True)
+        mlflow.log_param("scaler_mean_shape", global_scaler.mean_.shape[0])
+        mlflow.log_param("scaler_scale_shape", global_scaler.scale_.shape[0])
         
-        # 각 라벨별로 개별 학습 수행
+        # StandardScaler를 MLflow artifact로 저장 (재현성 보장)
+        mlflow.sklearn.log_model(global_scaler, "scaler")
+        print("StandardScaler saved as MLflow artifact")
+        
+        # 각 라벨별로 개별 학습 수행 (정규화된 train 데이터 사용)
         for label_idx in range(num_labels):
             label_name = label_names[label_idx]
-            single_label = dataset.labels[:, label_idx]
+            
+            # train 데이터에서만 라벨 추출 (이미 정규화된 데이터 사용)
+            train_single_label = dataset.labels[train_indices, label_idx]
             
             print(f"\n{'='*60}")
             print(f"Processing Label {label_idx+1}/{num_labels}: {label_name}")
+            print(f"Using TRAIN data only: {len(train_dataset)} samples")
+            print(f"Using pre-normalized data: {train_spectral_data_scaled.shape}")
             print(f"{'='*60}")
             
-            # 단일 라벨에 대한 밴드 선택 수행
+            # 단일 라벨에 대한 밴드 선택 수행 (이미 정규화된 train 데이터 사용)
             pre_selected_bands, final_selected_bands, band_scores = run_single_label_training(
-                label_idx, label_name, dataset.spectral_data, single_label,
+                label_idx, label_name, train_spectral_data_scaled, train_single_label,
                 pre_config, train_config, params, evaluator, mlflow_info
             )
             
@@ -235,10 +313,10 @@ def main():
                 'final_selected_bands': [int(band) for band in final_selected_bands],
                 'band_scores': band_scores,
                 'label_distribution': {
-                    'total_samples': len(single_label),
-                    'positive_samples': int(np.sum(single_label)),
-                    'negative_samples': int(np.sum(single_label == 0)),
-                    'positive_ratio': float(np.mean(single_label))
+                    'total_samples': len(train_single_label),
+                    'positive_samples': int(np.sum(train_single_label)),
+                    'negative_samples': int(np.sum(train_single_label == 0)),
+                    'positive_ratio': float(np.mean(train_single_label))
                 }
             }
             
@@ -296,7 +374,7 @@ def main():
         mlflow.log_dict(all_results_converted, 'results/multilabel_results.json')
         mlflow.log_dict(summary_stats_converted, 'results/summary_statistics.json')
         
-        # 결과 저장 (옵션)
+        # 결과 저장 (옵션) - train/val/test 구분
         if params['save_results']:
             output_dir = params['output_dir']
             os.makedirs(output_dir, exist_ok=True)
@@ -306,16 +384,62 @@ def main():
             with open(os.path.join(output_dir, 'multilabel_results.json'), 'w') as f:
                 json.dump(all_results_converted, f, indent=2)
             
-            # 라벨별 결과 개별 저장
+            # val/test 데이터도 같은 스케일러로 변환 (향후 사용을 위해)
+            val_indices = val_dataset.indices
+            test_indices = test_dataset.indices
+            val_spectral_data = dataset.spectral_data[val_indices]
+            test_spectral_data = dataset.spectral_data[test_indices]
+            
+            val_spectral_data_scaled = global_scaler.transform(val_spectral_data)
+            test_spectral_data_scaled = global_scaler.transform(test_spectral_data)
+            
+            # train/val/test 구분된 결과 저장
+            train_results = {
+                'data_split': 'train',
+                'samples': len(train_dataset),
+                'label_results': all_results['label_results'],
+                'spectral_data_shape': train_spectral_data_scaled.shape,
+                'spectral_data_scaled_shape': train_spectral_data_scaled.shape
+            }
+            
+            val_results = {
+                'data_split': 'validation',
+                'samples': len(val_dataset),
+                'label_results': {},  # validation에서는 밴드 선택을 수행하지 않음
+                'spectral_data_shape': val_spectral_data_scaled.shape,
+                'spectral_data_scaled_shape': val_spectral_data_scaled.shape
+            }
+            
+            test_results = {
+                'data_split': 'test',
+                'samples': len(test_dataset),
+                'label_results': {},  # test에서는 밴드 선택을 수행하지 않음
+                'spectral_data_shape': test_spectral_data_scaled.shape,
+                'spectral_data_scaled_shape': test_spectral_data_scaled.shape
+            }
+            
+            # 분할별 결과 저장
+            for split_name, split_results in [('train', train_results), ('val', val_results), ('test', test_results)]:
+                split_dir = os.path.join(output_dir, split_name)
+                os.makedirs(split_dir, exist_ok=True)
+                
+                split_results_converted = convert_numpy_types(split_results)
+                with open(os.path.join(split_dir, f'band_selection_{split_name}.json'), 'w') as f:
+                    json.dump(split_results_converted, f, indent=2)
+            
+            # 라벨별 결과 개별 저장 (train 데이터 기반)
             for label_name, result in all_results['label_results'].items():
                 label_dir = os.path.join(output_dir, f'label_{label_name}')
                 os.makedirs(label_dir, exist_ok=True)
                 
                 result_converted = convert_numpy_types(result)
-                with open(os.path.join(label_dir, 'band_selection.json'), 'w') as f:
+                with open(os.path.join(label_dir, 'band_selection_train.json'), 'w') as f:
                     json.dump(result_converted, f, indent=2)
             
             print(f"\nResults saved to: {output_dir}")
+            print(f"  - Train results: {len(train_dataset)} samples")
+            print(f"  - Validation results: {len(val_dataset)} samples") 
+            print(f"  - Test results: {len(test_dataset)} samples")
         
         print(f"\nMulti-label band selection completed successfully!")
         print(f"MLflow run: {run.info.run_id}")
