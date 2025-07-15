@@ -30,11 +30,11 @@
     "log_metrics": true
   },
   "preprocessing": {
-    "config_path": "configs/pre/mrmr_config.json",
-    "target_bands": 5
+    "config_path": "configs/pre/pca_config.json",
+    "target_bands": 4
   },
   "training": {
-    "config_path": "configs/training/RandomFrog.json",
+    "config_path": "configs/training/shap_config.json",
     "target_bands": 2
   }
 }
