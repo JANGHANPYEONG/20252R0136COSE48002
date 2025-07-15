@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 class RandomFrogModel:
     def __init__(self, config):
@@ -44,7 +45,7 @@ class RandomFrogModel:
 
 
         # 반복 횟수만큼 서브셋을 생성하고 평가
-        for _ in range(self.n_iterations):
+        for _ in tqdm(range(self.n_iterations)):
             best_subset = [None for _ in range(self.Q)]
             best_rmse = [float('inf') for _ in range(self.Q)]    
             # Q frogs
@@ -54,7 +55,7 @@ class RandomFrogModel:
                 delayed(self._evaluate_subset)(X, y, subset) for subset in frog_subsets)
 
             for i, (subset, rmse) in enumerate(results):
-                if rmse < best_rmse[i]:
+                if rmse < best_rmse[i] :
                     best_rmse[i] = rmse
                     best_subset[i] = subset
             # frequency accumulation
