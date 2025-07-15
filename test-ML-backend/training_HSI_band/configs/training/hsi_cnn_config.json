@@ -1,0 +1,19 @@
+{
+  "training": {
+    "model_name": "hsi_cnn",
+    "model_file": "hsi_cnn_model",
+    "method": "learning_based",
+    "parameters": {
+      "learning_rate": 0.001,
+      "batch_size": 16,
+      "epochs": 100,
+      "early_stopping_patience": 10,
+      "optimizer": "adam",
+      "scheduler": "reduce_lr_on_plateau",
+      "scheduler_patience": 5,
+      "scheduler_factor": 0.5,
+      "weight_decay": 0.0001,
+      "label_type": "multilabel_classification"
+    }
+  }
+}
