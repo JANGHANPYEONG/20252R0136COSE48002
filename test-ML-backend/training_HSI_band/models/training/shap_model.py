@@ -11,12 +11,13 @@ warnings.filterwarnings('ignore')
 class SHAPBandSelector:
     """SHAP (SHapley Additive exPlanations) 밴드 선택기"""
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], label_type: str = 'classification'):
         """
         SHAP 밴드 선택기 초기화
         
         Args:
             config: 설정 딕셔너리
+            label_type: 분류/회귀 타입 ('classification' 또는 'regression')
         """
         self.config = config
         self.mlflow_info = config.get('mlflow_info', {})
@@ -28,7 +29,7 @@ class SHAPBandSelector:
         self.random_state = self.parameters.get('random_state', 42)
         self.explainer_type = self.parameters.get('explainer_type', 'TreeExplainer')  # TreeExplainer, KernelExplainer
         self.model_type = self.parameters.get('model_type', 'RandomForest')  # RandomForest, XGBoost, etc.
-        self.label_type = self.parameters.get('label_type', 'classification')  # classification, regression
+        self.label_type = label_type  # 외부에서 전달받은 label_type 사용
         
         # 결과 저장
         self.selected_bands = None
@@ -260,15 +261,16 @@ class SHAPBandSelector:
         """특성 이름 리스트 반환"""
         return self.feature_names if self.feature_names is not None else []
 
-def create_model(model_name: str, config: Dict[str, Any]) -> SHAPBandSelector:
+def create_model(model_name: str, config: Dict[str, Any], label_type: str = 'classification') -> SHAPBandSelector:
     """
     SHAP 모델 생성 함수
     
     Args:
         model_name: 모델 이름
         config: 설정 딕셔너리
+        label_type: 분류/회귀 타입 ('classification' 또는 'regression')
         
     Returns:
         SHAPBandSelector 인스턴스
     """
-    return SHAPBandSelector(config) 
+    return SHAPBandSelector(config, label_type) 
