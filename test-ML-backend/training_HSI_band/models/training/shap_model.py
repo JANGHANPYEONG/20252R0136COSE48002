@@ -4,6 +4,7 @@ import mlflow
 from typing import Dict, Any, Tuple, List
 import shap
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+import xgboost as xgb
 from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings('ignore')
@@ -184,6 +185,19 @@ class SHAPBandSelector:
                 )
             else:  # regression
                 return RandomForestRegressor(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
+        elif self.model_type == 'XGBoost':
+            if self.label_type == 'classification':
+                return xgb.XGBClassifier(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
+            else:  # regression
+                return xgb.XGBRegressor(
                     n_estimators=100,
                     random_state=self.random_state,
                     n_jobs=-1
