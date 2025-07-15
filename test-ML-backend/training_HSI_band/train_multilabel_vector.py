@@ -35,7 +35,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Using device: {device}")
 
 def load_config(config_path: str) -> Dict:
-    """Config 파일을 로드합니다."""
+    # Config 파일을 로드합니다.
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
     
@@ -87,7 +87,7 @@ def run_single_label_training(label_idx: int, label_name: str, spectral_data: np
         train_config_with_mlflow['mlflow_info']['current_label_idx'] = label_idx
         
         train_model = load_training_model(train_config_with_mlflow)
-        
+
         evaluator.start_timer()
         final_selected_bands, band_scores = train_model.select_bands_with_scores(
             spectral_data=spectral_data,
@@ -133,6 +133,15 @@ def main():
     pre_config = load_config(params['pre_config_path'])
     train_config = load_config(params['train_config_path'])
     
+    # trouble shooting을 위한 경로 확인 test code
+    print(">> Loaded pre_config:")
+    print(json.dumps(pre_config, indent=2, ensure_ascii=False))
+    # 파일 경로가 있다면
+    if 'preprocessing' in pre_config and 'model_file' in pre_config['preprocessing']:
+        mf = pre_config['preprocessing']['model_file']
+        print(">> model_file 필드:", mf)
+        print(">> os.path.exists:", os.path.exists(mf), "->", os.path.abspath(mf))
+
     # 모델 config 유효성 검증
     if not validate_model_config(pre_config, 'preprocessing'):
         raise ValueError("Invalid preprocessing config")
