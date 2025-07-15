@@ -13,6 +13,10 @@ class PreprocessingModel:
         self.n_clusters = params.get("n_clusters")
         self.top_k = params.get("top_k")
         self.k_neighbors = params.get("k_neighbors")
+        params = config["preprocessing"]["parameters"]
+        self.n_clusters = params.get("n_clusters")
+        self.top_k = params.get("top_k")
+        self.k_neighbors = params.get("k_neighbors")
 
     def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, target_bands: int) -> List[int]:
         """

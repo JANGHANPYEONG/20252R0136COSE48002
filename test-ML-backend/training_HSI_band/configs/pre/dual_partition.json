@@ -8,7 +8,9 @@
       "k_neighbors": 5
     },
     "target_bands": 30
-  },
+    },
+    "target_bands": 30
+  ,
   "mlflow_info": {
     "experiment_name": "hsi_band_selection",
     "parent_run_id": "abc123def456",
