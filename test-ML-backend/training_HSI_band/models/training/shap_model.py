@@ -3,9 +3,8 @@ import pandas as pd
 import mlflow
 from typing import Dict, Any, Tuple, List
 import shap
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -29,6 +28,7 @@ class SHAPBandSelector:
         self.random_state = self.parameters.get('random_state', 42)
         self.explainer_type = self.parameters.get('explainer_type', 'TreeExplainer')  # TreeExplainer, KernelExplainer
         self.model_type = self.parameters.get('model_type', 'RandomForest')  # RandomForest, XGBoost, etc.
+        self.label_type = self.parameters.get('label_type', 'classification')  # classification, regression
         
         # 결과 저장
         self.selected_bands = None
@@ -37,7 +37,7 @@ class SHAPBandSelector:
         self.explainer = None
         self.model = None
         
-        print(f"SHAP Band Selector initialized with {self.explainer_type}, {self.model_type}")
+        print(f"SHAP Band Selector initialized with {self.explainer_type}, {self.model_type}, {self.label_type}")
     
     def select_bands_with_scores(self, spectral_data: np.ndarray, labels: np.ndarray, 
                                 pre_selected_bands: List[int], target_bands: int) -> Tuple[List[int], List[float]]:
@@ -56,10 +56,7 @@ class SHAPBandSelector:
         """
         # MLflow 중첩 실행 시작
         if self.mlflow_info:
-            with mlflow.start_run(
-                run_id=self.mlflow_info['parent_run_id'],
-                nested=True
-            ):
+            with mlflow.start_run(nested=True):
                 return self._select_bands_internal(spectral_data, labels, pre_selected_bands, target_bands)
         else:
             return self._select_bands_internal(spectral_data, labels, pre_selected_bands, target_bands)
@@ -79,36 +76,49 @@ class SHAPBandSelector:
             pre_selected_bands = list(range(X.shape[1]))
             print(f"Using all {X.shape[1]} original bands")
         
-        # 데이터 전처리
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-        
         # 특성 이름 생성
         feature_names = [f'band_{i}' for i in pre_selected_bands]
         
-        # 데이터 분할 (SHAP 계산을 위해)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled, labels, test_size=0.2, random_state=self.random_state
-        )
+        # 데이터 분할 (SHAP 계산을 위해) - label_type에 따라 stratify 결정
+        stratify = labels if self.label_type == "classification" else None
         
-        # 모델 학습
+        # stratify 에러 대비 예외 처리 (한 클래스뿐인 경우)
+        try:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, labels, test_size=0.2, random_state=self.random_state, stratify=stratify
+            )
+        except ValueError as e:
+            print(f"Warning: Stratify failed ({e}), using random split instead")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, labels, test_size=0.2, random_state=self.random_state, stratify=None
+            )
+        
+        # 모델 학습 (이미 정규화된 데이터 사용)
         self.model = self._create_model()
         self.model.fit(X_train, y_train)
         
-        # SHAP Explainer 생성
+        # SHAP Explainer 생성 (이미 정규화된 데이터 사용)
         self.explainer = self._create_explainer(X_train)
         
-        # SHAP 값 계산
+        # SHAP 값 계산 (이미 정규화된 데이터 사용)
         shap_values = self._calculate_shap_values(X_test)
         
-        # 밴드 중요도 계산 (절댓값 평균)
-        feature_importance = np.mean(np.abs(shap_values), axis=0)
+        # 분류 모델의 경우 SHAP 값이 클래스별로 반환되므로 올바르게 처리
+        if self.label_type == "classification" and isinstance(shap_values, list):
+            # 클래스별 SHAP 값을 하나로 통합 (절댓값 평균)
+            shap_values_combined = np.mean(np.abs(shap_values), axis=0)
+            feature_importance = np.mean(shap_values_combined, axis=0)
+        else:
+            # 회귀 모델이거나 이미 올바른 형태인 경우
+            feature_importance = np.mean(np.abs(shap_values), axis=0)
         
         # 상위 target_bands 선택
         top_indices = np.argsort(feature_importance)[-target_bands:][::-1]  # 내림차순
         
-        # 원본 인덱스로 변환
-        selected_bands = [pre_selected_bands[i] for i in top_indices]
+        # 원본 인덱스로 변환 (안전한 방법)
+        selected_bands = []
+        for idx in top_indices.flatten():
+            selected_bands.append(pre_selected_bands[idx])
         selected_scores = feature_importance[top_indices].tolist()
         
         # 결과 저장
@@ -124,6 +134,7 @@ class SHAPBandSelector:
             
             mlflow.log_param("shap_explainer_type", self.explainer_type)
             mlflow.log_param("shap_model_type", self.model_type)
+            mlflow.log_param("shap_label_type", self.label_type)
             mlflow.log_param("shap_background_samples", self.background_samples)
             mlflow.log_param("shap_nsamples", self.nsamples)
             mlflow.log_param("shap_target_bands", target_bands)
@@ -151,7 +162,7 @@ class SHAPBandSelector:
             }
             mlflow.log_dict(shap_stats, "shap_values_stats.json")
             
-            # 모델 성능 로깅
+            # 모델 성능 로깅 (이미 정규화된 데이터 사용)
             train_score = self.model.score(X_train, y_train)
             test_score = self.model.score(X_test, y_test)
             mlflow.log_metric("train_r2_score", train_score)
@@ -162,20 +173,34 @@ class SHAPBandSelector:
         return selected_bands, selected_scores
     
     def _create_model(self):
-        """모델 생성"""
+        """모델 생성 - label_type에 따라 분류/회귀 모델 선택"""
         if self.model_type == 'RandomForest':
-            return RandomForestRegressor(
-                n_estimators=100,
-                random_state=self.random_state,
-                n_jobs=-1
-            )
+            if self.label_type == 'classification':
+                return RandomForestClassifier(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
+            else:  # regression
+                return RandomForestRegressor(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
         else:
-            # 기본값으로 RandomForest 사용
-            return RandomForestRegressor(
-                n_estimators=100,
-                random_state=self.random_state,
-                n_jobs=-1
-            )
+            # 기본값으로 RandomForest 사용 (label_type에 따라)
+            if self.label_type == 'classification':
+                return RandomForestClassifier(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
+            else:  # regression
+                return RandomForestRegressor(
+                    n_estimators=100,
+                    random_state=self.random_state,
+                    n_jobs=-1
+                )
     
     def _create_explainer(self, X_train: np.ndarray):
         """SHAP Explainer 생성"""
