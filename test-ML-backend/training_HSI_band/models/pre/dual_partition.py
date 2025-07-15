@@ -13,6 +13,10 @@ class PreprocessingModel:
         self.n_clusters = params.get("n_clusters")
         self.top_k = params.get("top_k")
         self.k_neighbors = params.get("k_neighbors")
+        params = config["preprocessing"]["parameters"]
+        self.n_clusters = params.get("n_clusters")
+        self.top_k = params.get("top_k")
+        self.k_neighbors = params.get("k_neighbors")
 
     def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, target_bands: int) -> List[int]:
         """
@@ -28,10 +32,7 @@ class PreprocessingModel:
         """
         # 1차 분할: 밴드 간 상관관계 기반 클러스터링
         corr = np.corrcoef(spectral_data.T)
-        clusterer = AgglomerativeClustering(n_clusters=self.n_clusters, affinity='precomputed', linkage='average')
-        # n_clusters=self.n_clusters -> 최종적으로 만들 클러스터(군집)의 개수를 지정
-        # affinity='precomputed' -> 거리 계산 방식(유사도 기준)을 지정, fit()할 때 넘겨주는 행렬이 직접 계산된 거리/유사도 행렬
-        # linkage='average' -> 두 클러스터 간의 거리를 계산하는 방식, 두 클러스터 A, B에 있는 모든 점 간의 거리의 평균을 클러스터 간 거리로 정의
+        clusterer = AgglomerativeClustering(n_clusters=self.n_clusters, metric='precomputed', linkage='average')
         cluster_labels = clusterer.fit_predict(1 - np.abs(corr))
 
         # 2차 분할: 밴드 내 이웃 기반 neighborhood 재구성
@@ -43,7 +44,7 @@ class PreprocessingModel:
                 continue
             sub_corr = np.corrcoef(spectral_data[:, idx].T)
             nn_graph = 1 - np.abs(sub_corr)
-            sub_clusterer = AgglomerativeClustering(n_clusters=min(len(idx), self.k_neighbors), affinity='precomputed', linkage='average')
+            sub_clusterer = AgglomerativeClustering(n_clusters=min(len(idx), self.k_neighbors), metric='precomputed', linkage='average')
             sub_labels = sub_clusterer.fit_predict(nn_graph)
             subclusters[cl] = [idx[np.where(sub_labels == sub_cl)[0]] for sub_cl in np.unique(sub_labels)]
 
