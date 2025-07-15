@@ -3,7 +3,7 @@ import mlflow
 from typing import Dict, Any, Tuple, List
 import os
 
-def load_preprocessing_model(config: Dict) -> Any:
+def load_preprocessing_model(config: Dict, label_type: str = 'classification') -> Any:
     """전처리 모델을 로딩합니다."""
     
     pre_config = config.get('preprocessing', {})
@@ -16,7 +16,7 @@ def load_preprocessing_model(config: Dict) -> Any:
         
         # 모델 생성 함수 호출
         if hasattr(module, 'create_model'):
-            model = module.create_model(model_name, config)
+            model = module.create_model(model_name, config, label_type)
         else:
             raise AttributeError(f"Module {model_file} does not have create_model function")
         
@@ -30,7 +30,7 @@ def load_preprocessing_model(config: Dict) -> Any:
         print(f"Error loading preprocessing model: {e}")
         raise
 
-def load_training_model(config: Dict) -> Any:
+def load_training_model(config: Dict, label_type: str = 'classification') -> Any:
     """본처리 모델을 로딩합니다."""
     
     train_config = config.get('training', {})
@@ -46,7 +46,7 @@ def load_training_model(config: Dict) -> Any:
             
             # 모델 생성 함수 호출
             if hasattr(module, 'create_model'):
-                model = module.create_model(model_name, config)
+                model = module.create_model(model_name, config, label_type)
             else:
                 raise AttributeError(f"Module {model_file} does not have create_model function")
             
