@@ -3,9 +3,11 @@ from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
 from joblib import Parallel, delayed
 from tqdm import tqdm
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error, accuracy_score
 
 class RandomFrogModel:
-    def __init__(self, config):
+    def __init__(self, config, label_type):
         train_config = config.get("training", config)
         self.n_iterations = train_config.get('n_iter', 1000)
         self.Q = train_config.get('n_subset', 6)
@@ -15,6 +17,7 @@ class RandomFrogModel:
         self.topk = train_config.get('target_bands', 10)
         self.seed = train_config.get('seed', 42)
         self.n_jobs = train_config.get('n_jobs', 1)
+        self.label_type = label_type
         np.random.seed(self.seed)
     
     def _resammple_subset(self, n_features):
@@ -22,13 +25,23 @@ class RandomFrogModel:
         return np.random.choice(n_features, size=self.subset_size, replace=False)
     
     def _evaluate_subset(self, X, y, selected_bands):
-        # PLS 모델을 사용하여 RMSE 계산
-        pls = PLSRegression(n_components=self.pls_n_components)
+        # label_type에 따라 분기
         X_sub = X[:, selected_bands]
-        pls.fit(X_sub, y)
-        y_pred = pls.predict(X_sub)
-        rmse = np.sqrt(mean_squared_error(y, y_pred))
-        return selected_bands, rmse
+        if self.label_type == 'regression' :
+            pls = PLSRegression(n_components=self.pls_n_components)
+            pls.fit(X_sub, y)
+            y_pred = pls.predict(X_sub)
+            rmse = np.sqrt(mean_squared_error(y, y_pred))
+            return selected_bands, rmse
+        else:
+            clf = LogisticRegression(max_iter=200)
+            try :
+                clf.fit(X_sub, y)
+                y_pred = clf.predict(X_sub)
+                return selected_bands, accuracy_score(y, y_pred)
+            except Exception :
+                print(f"Error during model fitting with selected bands: {selected_bands}")
+                return 0.0
 
     def select_bands_with_scores(self, spectral_data, labels, pre_selected_bands, target_bands):
         """
@@ -84,8 +97,9 @@ class RandomFrogModel:
         selected_scores = selection_ratio_norm[top_indices]
         return selected_bands, selected_scores.tolist()
 
-def create_model(model_name, config):
+def create_model(model_name, config, label_type):
+    """모델 생성 함수"""
     if model_name == "random_frog":
-        return RandomFrogModel(config)
+        return RandomFrogModel(config, label_type)
     else:
         raise ValueError(f"Unknown model: {model_name}")
