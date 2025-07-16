@@ -251,6 +251,9 @@ def evaluate_band_selection(spectral_data: np.ndarray, labels: np.ndarray,
             # MLflow에 성능 차이 기록
             mlflow.log_metric(f"{label_name}_{model_name}_accuracy_diff", accuracy_diff)
             mlflow.log_metric(f"{label_name}_{model_name}_f1_diff", f1_diff)
+
+            results[f"{model_name}_accuracy_diff"] = accuracy_diff
+            results[f"{model_name}_f1_diff"] = f1_diff
     elif label_type == 'regression':
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import Ridge
