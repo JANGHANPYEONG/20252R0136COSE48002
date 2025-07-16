@@ -739,8 +739,25 @@ def main():
             # 성능 차이 통계 계산
             diff_metrics = {}
             if label_type == 'classification':
-                diff_metrics['accuracy_diff_mean'] = 0.0
-                diff_metrics['f1_diff_mean'] = 0.0
+                accuracy_diffs = []
+                f1_diffs = []
+
+                for label_name, result in all_results['label_results'].items():
+                    eval_res = result.get('evaluation_results', {})
+                    accuracy_diff_key = f"{base_model_name}_accuracy_diff"
+                    f1_diff_key = f"{base_model_name}_f1_diff"
+
+                    if accuracy_diff_key in eval_res:
+                        accuracy_diffs.append(eval_res[accuracy_diff_key])
+                    if f1_diff_key in eval_res:
+                        f1_diffs.append(eval_res[f1_diff_key])
+
+                if accuracy_diffs:
+                    diff_metrics['accuracy_diff_mean'] = float(np.mean(accuracy_diffs))
+                    diff_metrics['accuracy_diff_std'] = float(np.std(accuracy_diffs))
+                if f1_diffs:
+                    diff_metrics['f1_diff_mean'] = float(np.mean(f1_diffs))
+                    diff_metrics['f1_diff_std'] = float(np.std(f1_diffs))
             else:  # regression
                 diff_metrics['r2_diff_mean'] = 0.0
                 diff_metrics['mse_diff_mean'] = 0.0
