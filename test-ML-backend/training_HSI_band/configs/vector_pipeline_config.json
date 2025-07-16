@@ -31,7 +31,7 @@
   },
   "preprocessing": {
     "config_path": "configs/pre/pca_config.json",
-    "target_bands": 4
+    "target_bands": 5
   },
   "training": {
     "config_path": "configs/training/shap_config.json",
