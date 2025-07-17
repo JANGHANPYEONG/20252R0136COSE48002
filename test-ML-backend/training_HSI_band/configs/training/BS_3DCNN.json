@@ -1,29 +1,11 @@
 {
-  "data": {
-  "csv_path": "./datasets_HSI/label/label.csv"
-  },
-  "preprocessing": {
-    "model_name": "dual_partitioning",
-    "model_file": "dual_partition",
-    "target_bands": 30
-  },
-  "data": {
-  "csv_path": "./datasets_HSI/label/label.csv"
-  },
-  "preprocessing": {
-    "model_name": "dual_partitioning",
-    "model_file": "dual_partition",
-    "target_bands": 30
-  },
   "training": {
-    "model_name": "3DCNN",
-    "model_file": "BS_3DCNN",
     "model_name": "3DCNN",
     "model_file": "BS_3DCNN",
     "parameters": {
       "in_channels": 1,
       "num_classes": 4,
-      "init_channels": 16,
+      "init_channels": 5,
       "num_epochs": 100,
       "learning_rate": 0.01
     }
