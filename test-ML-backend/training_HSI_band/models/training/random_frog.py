@@ -1,17 +1,47 @@
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
+from joblib import Parallel, delayed
+from tqdm import tqdm
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error, accuracy_score
 
 class RandomFrogModel:
-    def __init__(self, config):
+    def __init__(self, config, label_type):
         train_config = config.get("training", config)
         self.n_iterations = train_config.get('n_iter', 1000)
         self.Q = train_config.get('n_subset', 6)
         self.resample_factor = train_config.get('resample_factor', 10)
-        self.pls_n_components = train_config.get('pls_n_components', 4)
+        self.subset_size = train_config.get('subset_size', 4)
+        self.pls_n_components = train_config.get('pls_n_components', 2)
         self.topk = train_config.get('target_bands', 10)
         self.seed = train_config.get('seed', 42)
+        self.n_jobs = train_config.get('n_jobs', 1)
+        self.label_type = label_type
         np.random.seed(self.seed)
+    
+    def _resammple_subset(self, n_features):
+        # generate a random subset of features
+        return np.random.choice(n_features, size=self.subset_size, replace=False)
+    
+    def _evaluate_subset(self, X, y, selected_bands):
+        # label_type에 따라 분기
+        X_sub = X[:, selected_bands]
+        if self.label_type == 'regression' :
+            pls = PLSRegression(n_components=self.pls_n_components)
+            pls.fit(X_sub, y)
+            y_pred = pls.predict(X_sub)
+            rmse = np.sqrt(mean_squared_error(y, y_pred))
+            return selected_bands, rmse
+        else:
+            clf = LogisticRegression(max_iter=200)
+            try :
+                clf.fit(X_sub, y)
+                y_pred = clf.predict(X_sub)
+                return selected_bands, accuracy_score(y, y_pred)
+            except Exception :
+                print(f"Error during model fitting with selected bands: {selected_bands}")
+                return 0.0
 
     def select_bands_with_scores(self, spectral_data, labels, pre_selected_bands, target_bands):
         """
@@ -20,29 +50,35 @@ class RandomFrogModel:
         pre_selected_bands: 전처리된 feature 인덱스 or None
         target_bands: 최종 선택할 밴드 개수(Top-K)
         """
-        X = spectral_data
+        X = spectral_data if pre_selected_bands is None else spectral_data[:, pre_selected_bands]
         y = labels
-        if pre_selected_bands is not None and len(pre_selected_bands) > 0:
-            X = X[:, pre_selected_bands]
-        else:
-            pre_selected_bands = list(range(X.shape[1]))
-        
-        n_features = X.shape[1]
+       
+        n_samples, n_features = X.shape
         feature_count = np.zeros(n_features, dtype=int)
-        
-        for _ in range(self.n_iterations):
-            feature_list = []
-            for _ in range(self.Q):
-                cnt = np.random.randint(4, 6)
-                current_subset = np.random.choice(n_features, cnt, replace=False)
-                for _ in range(self.resample_factor):
-                    new_subset = self.replace_factors(current_subset, n_features, n_keep=3)
-                    if self.pls_rmse(X[:, new_subset], y) < self.pls_rmse(X[:, current_subset], y):
-                        current_subset = new_subset
-                feature_list += current_subset.tolist()
-            feature_list = list(set(feature_list))
-            for idx in feature_list:
-                feature_count[idx] += 1
+
+
+        # 반복 횟수만큼 서브셋을 생성하고 평가
+        for _ in tqdm(range(self.n_iterations)):
+            best_subset = [None for _ in range(self.Q)]
+            best_rmse = [float('inf') for _ in range(self.Q)]    
+            # Q frogs
+            frog_subsets = [self._resammple_subset(n_features) for _ in range(self.Q)]
+            # parallel evaluation
+            results = Parallel(n_jobs=self.n_jobs)(
+                delayed(self._evaluate_subset)(X, y, subset) for subset in frog_subsets)
+
+            for i, (subset, rmse) in enumerate(results):
+                if rmse < best_rmse[i] :
+                    best_rmse[i] = rmse
+                    best_subset[i] = subset
+            # frequency accumulation
+            included_mask = np.zeros(n_features, dtype=bool)
+
+            for subset in best_subset:
+                included_mask[subset] = True  # NumPy fancy indexing
+
+            # Step 2: mask가 True인 항목만 count = 1, 나머지 0
+            feature_count += included_mask.astype(int)
 
         # 선택 비율, 상위 target_bands만 선택
         selection_ratio = feature_count / self.n_iterations
@@ -61,26 +97,9 @@ class RandomFrogModel:
         selected_scores = selection_ratio_norm[top_indices]
         return selected_bands, selected_scores.tolist()
 
-    @staticmethod
-    def replace_factors(subset, n_features, n_keep=3):
-        subset = np.array(subset)
-        k = len(subset)
-        keep_indices = np.random.choice(subset, n_keep, replace=False)
-        available_indices = list(set(range(n_features)) - set(keep_indices))
-        n_replace = k - n_keep
-        new_indices = np.random.choice(available_indices, n_replace, replace=False)
-        return np.concatenate((keep_indices, new_indices))
-
-    def pls_rmse(self, X, y):
-        # RMSE 계산 (적절한 n_components)
-        n_comp = min(self.pls_n_components, X.shape[1], X.shape[0]-1)
-        pls = PLSRegression(n_components=n_comp)
-        pls.fit(X, y)
-        y_pred = pls.predict(X)
-        return np.sqrt(mean_squared_error(y, y_pred))
-
-def create_model(model_name, config):
+def create_model(model_name, config, label_type):
+    """모델 생성 함수"""
     if model_name == "random_frog":
-        return RandomFrogModel(config)
+        return RandomFrogModel(config, label_type)
     else:
         raise ValueError(f"Unknown model: {model_name}")

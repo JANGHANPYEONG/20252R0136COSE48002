@@ -113,7 +113,7 @@ class Simple3DCNN(nn.Module):
         if x.dim() == 2: # x가 (batch, channels) 모양이라면, 
             batch, channels = x.shape
             # 모델이 기대하는 5D 텐서 (batch, 1, channels, 1, 1) 형태로 뷰(view)를 변경
-            # 차원 맞춤: 2D 입력 → 5D (B, 1, C, H=1, W=1)
+            # 차원 맞춤: 2D 입력 → 5D (B, 1, C, H=1, W=1) 
             x = x.view(batch, 1, channels, 1, 1) 
 
         device = next(self.parameters()).device
