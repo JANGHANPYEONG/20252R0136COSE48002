@@ -1,0 +1,15 @@
+{
+  "total_reduction_ratio": 0.8,
+  "pre_to_final_ratio": 0.25,
+  "pre_selected_count": 4,
+  "pre_target_diff": 2,
+  "pre_reduction_ratio": 0.19999999999999996,
+  "pre_band_range": "0-4",
+  "train_selected_count": 1,
+  "train_target_diff": 1,
+  "train_score_mean": 7.879550167899652e-08,
+  "train_score_std": 0.0,
+  "train_score_min": 7.879550167899652e-08,
+  "train_score_max": 7.879550167899652e-08,
+  "train_band_range": "0-0"
+}
