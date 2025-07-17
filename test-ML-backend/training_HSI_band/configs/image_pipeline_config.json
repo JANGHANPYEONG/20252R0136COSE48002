@@ -30,6 +30,6 @@
     "log_metrics": true
   },
   "training": {
-    "config_path": "configs/training/hsi_cnn_config.json"
+    "config_path": "configs/training/SGLM.json"
   }
 } 

@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/229219858969740132
+creation_time: 1752481815722
+experiment_id: '229219858969740132'
+last_update_time: 1752481815722
+lifecycle_stage: active
+name: hsi_band_selection
