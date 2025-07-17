@@ -1,0 +1,13 @@
+{
+  "training": {
+    "model_name": "gpr_ard",
+    "model_file": "gpr_ard_model",
+    "method": "learning_based",
+    "parameters": {
+      "kernel_type": "rbf",
+      "alpha": 1e-6,
+      "random_state": 42,
+      "n_restarts_optimizer": 10
+    }
+  }
+}
