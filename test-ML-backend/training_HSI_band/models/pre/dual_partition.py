@@ -2,70 +2,77 @@ import numpy as np
 import pywt
 from sklearn.cluster import AgglomerativeClustering
 from typing import List, Dict
-import torch
-import torch.nn as nn
-from sklearn.neighbors import NearestNeighbors
-
 
 class PreprocessingModel:
-    def __init__(self, config: Dict):
-        params = config["preprocessing"]["parameters"]
-        self.n_clusters = params.get("n_clusters")
-        self.top_k = params.get("top_k")
-        self.k_neighbors = params.get("k_neighbors")
-        params = config["preprocessing"]["parameters"]
-        self.n_clusters = params.get("n_clusters")
-        self.top_k = params.get("top_k")
-        self.k_neighbors = params.get("k_neighbors")
-
-    def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, target_bands: int) -> List[int]:
+    def __init__(self, config: Dict, full_hsi_data: np.ndarray):
         """
-        이중 분할(Dual Partitioning) 및 웨이브릿 기반 밴드 우선순위화
+        Args:
+            config: 설정 딕셔너리, key "preprocessing" -> "parameters"에 n_clusters, top_k, k_neighbors 포함
+            full_hsi_data: 원본 HSI 데이터, shape = (n_samples, H, W, n_bands)
+        """
+        params = config["preprocessing"]["parameters"]
+        self.n_clusters = params.get("n_clusters")
+        self.top_k = params.get("top_k")
+        self.k_neighbors = params.get("k_neighbors")
+        self.full_hsi_data = full_hsi_data  # (N, H, W, B_full)
+
+    def select_bands(self, target_bands: int) -> List[int]:
+        """
+        Dual Partitioning & Wavelet 에너지 기반 밴드 우선순위화
 
         Args:
-            spectral_data: np.ndarray (n_samples, n_bands)
-            labels: np.ndarray (n_samples, n_labels)  # 사용하지 않음
-            target_bands: int (목표 밴드 수)
-
+            target_bands: 최종 선택할 밴드 수
         Returns:
-            selected_bands: List[int] (선택된 밴드 인덱스)
+            List[int]: 선택된 밴드 인덱스
         """
-        # 1차 분할: 밴드 간 상관관계 기반 클러스터링
-        corr = np.corrcoef(spectral_data.T)
-        clusterer = AgglomerativeClustering(n_clusters=self.n_clusters, metric='precomputed', linkage='average')
-        cluster_labels = clusterer.fit_predict(1 - np.abs(corr))
+        # full_hsi_data: (N, H, W, B_full)
+        N, H, W, B_full = self.full_hsi_data.shape
+        # 공간 픽셀별 스펙트럼(flatten)
+        flat = self.full_hsi_data.reshape(N * H * W, B_full)
 
-        # 2차 분할: 밴드 내 이웃 기반 neighborhood 재구성
-        subclusters = {}
+        # 밴드 상관관계 및 계층적 클러스터링
+        corr = np.corrcoef(flat.T)
+        hc = AgglomerativeClustering(n_clusters=self.n_clusters,
+                                     metric='precomputed', linkage='average')
+        labels_cluster = hc.fit_predict(1 - np.abs(corr))
+
+        # 서브클러스터 재구성
+        subclusters: Dict[int, List[np.ndarray]] = {}
         for cl in range(self.n_clusters):
-            idx = np.where(cluster_labels == cl)[0]
-            if len(idx) < self.k_neighbors:
+            idx = np.where(labels_cluster == cl)[0]
+            if len(idx) <= self.k_neighbors:
                 subclusters[cl] = [idx]
-                continue
-            sub_corr = np.corrcoef(spectral_data[:, idx].T)
-            nn_graph = 1 - np.abs(sub_corr)
-            sub_clusterer = AgglomerativeClustering(n_clusters=min(len(idx), self.k_neighbors), metric='precomputed', linkage='average')
-            sub_labels = sub_clusterer.fit_predict(nn_graph)
-            subclusters[cl] = [idx[np.where(sub_labels == sub_cl)[0]] for sub_cl in np.unique(sub_labels)]
+            else:
+                sub_corr = np.corrcoef(flat[:, idx].T)
+                graph = 1 - np.abs(sub_corr)
+                sub_hc = AgglomerativeClustering(
+                    n_clusters=self.k_neighbors,
+                    metric='precomputed', linkage='average'
+                )
+                sub_labels = sub_hc.fit_predict(graph)
+                subclusters[cl] = [idx[sub_labels == sc] for sc in np.unique(sub_labels)]
 
-        # 웨이브릿 에너지 기반 우선순위화
-        selected_bands = []
-        for cl in subclusters:
-            for group in subclusters[cl]:
-                energies = []
-                for b in group:
-                    coeffs = pywt.wavedec(spectral_data[:, b], wavelet='db1', level=2)
+        # Wavelet 에너지 순위화
+        selected: List[int] = []
+        for groups in subclusters.values():
+            for grp in groups:
+                energy_list: List[Tuple[int, float]] = []
+                for b in grp:
+                    coeffs = pywt.wavedec(flat[:, b], wavelet='db1', level=2)
                     energy = sum((c ** 2).sum() for c in coeffs)
-                    energies.append((b, energy))
-                energies.sort(key=lambda x: x[1], reverse=True)
-                selected_bands.extend([b for b, _ in energies[:self.top_k]])
+                    energy_list.append((b, energy))
+                # 에너지 내림차순
+                energy_list.sort(key=lambda x: x[1], reverse=True)
+                # 그룹별 top_k 밴드 추가
+                selected.extend([b for b, _ in energy_list[: self.top_k]])
 
-        return selected_bands[:target_bands]
+        # 최종 target_bands 반환
+        return selected[:target_bands]
 
 
-# __init__.py 내부에서 호출되는 factory 함수
-
-def create_model(model_name, config):
+def create_model(model_name: str,
+                 config: Dict,
+                 full_hsi_data: np.ndarray) -> PreprocessingModel:
     if model_name == "dual_partition":
-        return PreprocessingModel(config)
+        return PreprocessingModel(config, full_hsi_data)
     raise ValueError(f"Unknown model name: {model_name}")

@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.decomposition import PCA
 from typing import List, Dict
+import mlflow
 
 class PreprocessingModel:
     def __init__(self, config):
@@ -21,6 +22,7 @@ class PreprocessingModel:
         self.mlflow_info = config.get("mlflow_info", {})
         self.n_components = config.get("parameters", {}).get("n_components", 1) # 주성분 개수
         self.random_state = config.get("parameters", {}).get("random_state", None) # 랜덤 시드
+        self.device = config.get('device', 'cpu')
 
     def select_bands(self, spectral_data: np.ndarray, labels: np.ndarray, target_bands: int) -> List[int]:
         """
@@ -35,24 +37,45 @@ class PreprocessingModel:
             selected_bands: List[int] (선택된 밴드 인덱스)
         """
 
-        # 0. 주성분 수가 밴드 수보다 크면 자동으로 줄여 줌
-        n_samples, n_bands = spectral_data.shape
-        n_comp = min(self.n_components, n_bands)
-        
+        label_name = self.mlflow_info.get("current_label", "unknown")
+        label_idx = self.mlflow_info.get("current_label_idx", -1)
+
         # 1. PCA 수행
-        pca = PCA(n_components=n_comp, random_state=self.random_state)
-        pca.fit(spectral_data)
+        pca = PCA(n_components=target_bands)
+        transformed = pca.fit_transform(spectral_data)
 
-        # 2. 첫 번째 주성분 로딩 벡터 가져오기
-        pc1 = pca.components_[0]  # shape: (n_bands,)
+        # 2. 로딩 벡터 기반 기여도 분석
+        loading_vectors = np.abs(pca.components_)
+        mean_loading = loading_vectors.mean(axis=0)
 
-        # 3. 절댓값 기준 상위 밴드 인덱스 선택
-        top_indices = np.argsort(np.abs(pc1))[::-1][:target_bands]
+        # 3. 상위 기여도 순으로 밴드 선택
+        band_indices = np.argsort(mean_loading)[::-1][:target_bands]
+        band_indices = sorted(band_indices.tolist())
 
-        # 4. 반환값은 리스트 형태로
-        selected_bands = top_indices.tolist()
-        return selected_bands
+        # 4. PCA 설명력 기록
+        explained_variance = pca.explained_variance_ratio_
+        explained_variance_sum = explained_variance.sum()
 
+        mlflow.log_metric(f"pca_explained_variance_sum_{label_name}", explained_variance_sum)
+        mlflow.log_dict(
+            {
+                "explained_variance_ratio": explained_variance.tolist(),
+                "selected_band_indices": band_indices
+            },
+            f"preprocessing/pca_summary_{label_name}.json"
+        )
+
+        # 5. 복원 오차 계산
+        reconstructed = pca.inverse_transform(transformed)
+        reconstruction_error = np.mean((spectral_data - reconstructed) ** 2)
+
+        mlflow.log_metric(f"pca_reconstruction_error_{label_name}", reconstruction_error)
+
+        print(f"[{label_name}] PCA explained variance sum: {explained_variance_sum:.4f}")
+        print(f"[{label_name}] PCA reconstruction error: {reconstruction_error:.6f}")
+        print(f"[{label_name}] Selected Bands: {band_indices}")
+
+        return band_indices
 
 def create_model(model_name: str, config: Dict, label_type: str = None):
     if model_name == "pca":

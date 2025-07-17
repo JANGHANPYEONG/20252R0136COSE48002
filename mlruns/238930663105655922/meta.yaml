@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/238930663105655922
+creation_time: 1752564127655
+experiment_id: '238930663105655922'
+last_update_time: 1752564127655
+lifecycle_stage: active
+name: hsi_image_classification

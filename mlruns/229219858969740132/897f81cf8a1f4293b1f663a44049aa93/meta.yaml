@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/229219858969740132/897f81cf8a1f4293b1f663a44049aa93/artifacts
+end_time: 1752549777152
+entry_point_name: ''
+experiment_id: '229219858969740132'
+lifecycle_stage: active
+run_id: 897f81cf8a1f4293b1f663a44049aa93
+run_name: vector_pipeline
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752549768360
+status: 3
+tags: []
+user_id: user
