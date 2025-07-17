@@ -641,6 +641,7 @@ def main():
             registered_model_name=f"standard_scaler_{experiment}"
         )
         print("StandardScaler saved as MLflow artifact")
+        
         # 각 라벨별로 개별 학습 수행 (정규화된 train 데이터 사용)
         for label_idx in range(num_labels):
             label_name = label_names[label_idx]
