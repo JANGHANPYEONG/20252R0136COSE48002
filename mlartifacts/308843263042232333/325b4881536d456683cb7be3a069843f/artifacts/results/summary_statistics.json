@@ -1,0 +1,29 @@
+{
+  "unique_pre_bands": 4,
+  "unique_final_bands": 4,
+  "most_used_bands": [
+    [
+      2,
+      9
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      3,
+      5
+    ]
+  ],
+  "band_usage_distribution": {
+    "2": 9,
+    "4": 6,
+    "1": 6,
+    "3": 5
+  },
+  "average_bands_per_label": 0.3076923076923077
+}

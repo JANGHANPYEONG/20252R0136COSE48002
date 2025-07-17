@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/a66d0c8998c3499496305ccd41c7afa6/artifacts
+end_time: 1752544961335
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: a66d0c8998c3499496305ccd41c7afa6
+run_name: label_6_disease_6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752544960220
+status: 3
+tags: []
+user_id: bomin

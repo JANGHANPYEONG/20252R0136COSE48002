@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/0f1eb4951f77476680383ef413970871/artifacts
+end_time: 1752548511618
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 0f1eb4951f77476680383ef413970871
+run_name: bemused-pug-954
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548509980
+status: 3
+tags: []
+user_id: bomin

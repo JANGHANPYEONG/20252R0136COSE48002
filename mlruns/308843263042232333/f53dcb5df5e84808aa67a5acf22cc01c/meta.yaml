@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/f53dcb5df5e84808aa67a5acf22cc01c/artifacts
+end_time: 1752564839406
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: f53dcb5df5e84808aa67a5acf22cc01c
+run_name: fun-foal-439
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564838410
+status: 3
+tags: []
+user_id: bomin

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/e21655722285408f9f9ac6fda83010bb/artifacts
+end_time: 1752555956565
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: e21655722285408f9f9ac6fda83010bb
+run_name: exultant-cat-654
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752555956031
+status: 3
+tags: []
+user_id: bomin
