@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/770436005834472595/models/m-c3d8ccc4dc1249d9ba90ca9a6389303d/artifacts
+creation_timestamp: 1752559722898
+experiment_id: '770436005834472595'
+last_updated_timestamp: 1752559726672
+model_id: m-c3d8ccc4dc1249d9ba90ca9a6389303d
+model_type: ''
+name: scaler
+source_run_id: 903fb5bbb29f42809f0741c01e3cb8d2
+status: 2
+status_message: null

@@ -68,4 +68,5 @@ class PreprocessingModel:
 def create_model(model_name, config):
     if model_name == "dual_partition":
         return PreprocessingModel(config)
-    raise ValueError(f"Unknown model name: {model_name}")
+    else:
+        raise ValueError(f"Unknown model name: {model_name}")
