@@ -34,7 +34,7 @@
     "target_bands": 5
   },
   "training": {
-    "config_path": "configs/training/shap_config.json",
+    "config_path": "configs/training/shap_model.json",
     "target_bands": 2
   }
 }
