@@ -1,0 +1,42 @@
+{
+  "training": {
+    "model_name": "1DCNN",
+    "model_file": "BS_1DCNN",
+    "parameters": {
+      "in_channels": 1,
+      "num_classes": 4,
+      "init_channels": 16,
+      "num_epochs": 100,
+      "learning_rate": 0.01
+    }
+  },
+  "cnn": {
+    "conv_layers": [
+      {
+        "out_channels": "init_channels",
+        "kernel_size": [3],
+        "padding": 1
+      },
+      {
+        "out_channels": "init_channels * 2",
+        "kernel_size": [3],
+        "padding": 1
+      },
+      {
+        "out_channels": "init_channels * 4",
+        "kernel_size": [3],
+        "padding": 1
+      }
+    ],
+    "pooling": {
+      "type": "MaxPool1d",
+      "kernel_size": [2]
+    },
+    "adaptive_pool_output": [1],
+    "activation": "ReLU"
+  },
+  "mlflow_info": {
+    "experiment_name": "hsi_band_selection_1d",
+    "parent_run_id": "abc123def456"
+  }
+}

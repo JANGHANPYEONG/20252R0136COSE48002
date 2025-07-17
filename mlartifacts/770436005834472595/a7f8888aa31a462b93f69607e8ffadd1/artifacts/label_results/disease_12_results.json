@@ -1,0 +1,22 @@
+{
+  "label_name": "disease_12",
+  "label_index": 11,
+  "pre_selected_bands": [
+    4,
+    3,
+    0,
+    1
+  ],
+  "final_selected_bands": [
+    0
+  ],
+  "band_scores": [
+    1.3134247467405658e-07
+  ],
+  "label_distribution": {
+    "total_samples": 2731,
+    "positive_samples": 49,
+    "negative_samples": 2682,
+    "positive_ratio": 0.017942145466804504
+  }
+}

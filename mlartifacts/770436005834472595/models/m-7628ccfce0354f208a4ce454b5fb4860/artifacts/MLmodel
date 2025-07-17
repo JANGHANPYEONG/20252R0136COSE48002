@@ -1,0 +1,14 @@
+artifact_path: mlflow-artifacts:/770436005834472595/models/m-7628ccfce0354f208a4ce454b5fb4860/artifacts
+flavors:
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.3.2
+mlflow_version: 3.1.1
+model_id: m-7628ccfce0354f208a4ce454b5fb4860
+model_size_bytes: 569
+model_uuid: m-7628ccfce0354f208a4ce454b5fb4860
+prompts: null
+run_id: 54b34c66eef34cbfa929180e6ebd9a26
+utc_time_created: '2025-07-15 06:38:54.644215'
