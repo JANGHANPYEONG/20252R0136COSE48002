@@ -19,6 +19,7 @@ from utils.dataset import VectorDataset, load_vector_data, split_vector_data
 from utils.evaluation import BandSelectionEvaluator
 from utils.add_param import add_arg, add_param, validate_config
 from utils.model_loader import load_preprocessing_model, load_training_model, validate_model_config
+from joblib import Parallel, delayed
 
 class StandardScalerWrapper:
     """StandardScaler를 래핑하여 MLflow 호환성을 개선하는 클래스"""
@@ -251,9 +252,6 @@ def evaluate_band_selection(spectral_data: np.ndarray, labels: np.ndarray,
             # MLflow에 성능 차이 기록
             mlflow.log_metric(f"{label_name}_{model_name}_accuracy_diff", accuracy_diff)
             mlflow.log_metric(f"{label_name}_{model_name}_f1_diff", f1_diff)
-
-            results[f"{model_name}_accuracy_diff"] = accuracy_diff
-            results[f"{model_name}_f1_diff"] = f1_diff
     elif label_type == 'regression':
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import Ridge
@@ -455,6 +453,9 @@ def run_single_label_training(label_idx: int, label_name: str, spectral_data: np
         
         return pre_selected_bands, final_selected_bands, band_scores, evaluation_results
 
+# 단일 라벨에 대한 작업을 수행하는 워커 함수
+
+
 def main():
     # Config 파일 파싱
     config_argparser = argparse.ArgumentParser(description='HSI Multi-Label Vector Band Selection Pipeline')
@@ -597,6 +598,48 @@ def main():
         }
     }
     
+    # 병렬 실행 함수
+    def label_worker(label_idx: int):
+        label_name = label_names[label_idx]
+        train_single_label = dataset.labels[train_indices, label_idx]
+
+        print(f"\n{'='*60}")
+        print(f"Processing Label {label_idx+1}/{num_labels}: {label_name}")
+        print(f"Using TRAIN data only: {len(train_dataset)} samples")
+        print(f"Using pre-normalized data: {train_spectral_data_scaled.shape}")
+        print(f"{'='*60}")
+
+        with mlflow.start_run(run_name=f"label_{label_idx+1}_{label_name}"):
+            mlflow.set_tag("parent_run", mlflow_info['parent_run_id'])
+            mlflow.set_tag("label_name", label_name)
+            evaluator = BandSelectionEvaluator()
+
+            # 실행
+            pre_bands, final_bands, band_scores, eval_results = run_single_label_training(
+                label_idx, label_name, train_spectral_data_scaled, train_single_label,
+                pre_config, train_config, params, evaluator, mlflow_info,
+                train_dataset.indices, val_dataset.indices, test_dataset.indices,
+                global_scaler, label_type,
+                dataset.spectral_data, dataset.labels[:, label_idx]
+            )
+
+            # 결과 패킹 (주의: json 가능하도록 변환)
+            return {
+                'label_name': label_name,
+                'label_index': label_idx,
+                'pre_selected_bands': [int(b) for b in pre_bands],
+                'final_selected_bands': [int(b) for b in final_bands],
+                'band_scores': convert_numpy_types(band_scores),
+                'evaluation_results': convert_numpy_types(eval_results),
+                'label_distribution': {
+                    'total_samples': int(len(train_single_label)),
+                    'positive_samples': int(np.sum(train_single_label)),
+                    'negative_samples': int(np.sum(train_single_label == 0)),
+                    'positive_ratio': float(np.mean(train_single_label))
+                }
+            }
+
+
     # 통합 MLflow run 시작
     with mlflow.start_run(run_name=run_name) as run:
         print(f"MLflow run_id: {run.info.run_id}")
@@ -645,6 +688,19 @@ def main():
         )
         print("StandardScaler saved as MLflow artifact")
         # 각 라벨별로 개별 학습 수행 (정규화된 train 데이터 사용)
+    
+        # 병렬 실행 및 결과 수집        
+        results = Parallel(n_jobs=-1, backend='loky')(
+            delayed(label_worker)(label_idx)
+            for label_idx in range(num_labels)
+        )
+
+        for label_result in results:
+            label_name = label_result['label_name']
+            all_results['label_results'][label_name] = label_result
+
+            mlflow.log_dict(label_result, f'label_results/{label_name}_results.json')
+        """
         for label_idx in range(num_labels):
             label_name = label_names[label_idx]
             
@@ -685,7 +741,7 @@ def main():
             
             # MLflow에 라벨별 결과 기록
             mlflow.log_dict(label_result, f'label_results/{label_name}_results.json')
-        
+        """
         # 전체 요약 통계 계산
         print(f"\n{'='*60}")
         print("     Multi-Label Band Selection Summary")
@@ -739,25 +795,8 @@ def main():
             # 성능 차이 통계 계산
             diff_metrics = {}
             if label_type == 'classification':
-                accuracy_diffs = []
-                f1_diffs = []
-
-                for label_name, result in all_results['label_results'].items():
-                    eval_res = result.get('evaluation_results', {})
-                    accuracy_diff_key = f"{base_model_name}_accuracy_diff"
-                    f1_diff_key = f"{base_model_name}_f1_diff"
-
-                    if accuracy_diff_key in eval_res:
-                        accuracy_diffs.append(eval_res[accuracy_diff_key])
-                    if f1_diff_key in eval_res:
-                        f1_diffs.append(eval_res[f1_diff_key])
-
-                if accuracy_diffs:
-                    diff_metrics['accuracy_diff_mean'] = float(np.mean(accuracy_diffs))
-                    diff_metrics['accuracy_diff_std'] = float(np.std(accuracy_diffs))
-                if f1_diffs:
-                    diff_metrics['f1_diff_mean'] = float(np.mean(f1_diffs))
-                    diff_metrics['f1_diff_std'] = float(np.std(f1_diffs))
+                diff_metrics['accuracy_diff_mean'] = 0.0
+                diff_metrics['f1_diff_mean'] = 0.0
             else:  # regression
                 diff_metrics['r2_diff_mean'] = 0.0
                 diff_metrics['mse_diff_mean'] = 0.0
