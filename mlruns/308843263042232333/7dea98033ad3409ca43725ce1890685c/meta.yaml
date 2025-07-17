@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/7dea98033ad3409ca43725ce1890685c/artifacts
+end_time: 1752564795689
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 7dea98033ad3409ca43725ce1890685c
+run_name: righteous-stoat-221
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564795040
+status: 3
+tags: []
+user_id: bomin

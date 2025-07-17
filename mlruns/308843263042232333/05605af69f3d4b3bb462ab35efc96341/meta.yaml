@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/05605af69f3d4b3bb462ab35efc96341/artifacts
+end_time: 1752548520451
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 05605af69f3d4b3bb462ab35efc96341
+run_name: enchanting-conch-24
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548519836
+status: 3
+tags: []
+user_id: bomin

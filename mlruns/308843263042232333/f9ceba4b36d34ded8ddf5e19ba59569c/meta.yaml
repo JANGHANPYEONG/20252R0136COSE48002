@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/f9ceba4b36d34ded8ddf5e19ba59569c/artifacts
+end_time: 1752548509825
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: f9ceba4b36d34ded8ddf5e19ba59569c
+run_name: classy-frog-792
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548509024
+status: 3
+tags: []
+user_id: bomin

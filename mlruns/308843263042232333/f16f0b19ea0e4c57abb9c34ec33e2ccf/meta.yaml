@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/f16f0b19ea0e4c57abb9c34ec33e2ccf/artifacts
+end_time: 1752546446360
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: f16f0b19ea0e4c57abb9c34ec33e2ccf
+run_name: vector_pipeline
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752546445690
+status: 4
+tags: []
+user_id: bomin

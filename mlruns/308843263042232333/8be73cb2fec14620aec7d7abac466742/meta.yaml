@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/8be73cb2fec14620aec7d7abac466742/artifacts
+end_time: 1752564831191
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 8be73cb2fec14620aec7d7abac466742
+run_name: sedate-fish-500
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564830242
+status: 3
+tags: []
+user_id: bomin

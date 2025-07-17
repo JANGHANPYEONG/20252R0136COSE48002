@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/ba4d82b5f0df42329b6dc4b930e1ffac/artifacts
+end_time: 1752548516871
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: ba4d82b5f0df42329b6dc4b930e1ffac
+run_name: persistent-ram-256
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548516430
+status: 3
+tags: []
+user_id: bomin

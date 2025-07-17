@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/e0a517f4c71c4c36acaec6b309ab8cf7/artifacts
+end_time: 1752548517409
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: e0a517f4c71c4c36acaec6b309ab8cf7
+run_name: wise-bird-363
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548517008
+status: 3
+tags: []
+user_id: bomin
