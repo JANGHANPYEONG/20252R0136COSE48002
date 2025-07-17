@@ -9,7 +9,7 @@ import os
 
 def load_column_config():
     """컬럼 설정을 JSON 파일에서 로드합니다."""
-    config_path = "datasets_HSI/column_config.json"
+    config_path = "../datasets_HSI/column_config.json"
     
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Column config file not found: {config_path}")
