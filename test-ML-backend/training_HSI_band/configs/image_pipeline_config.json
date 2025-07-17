@@ -1,8 +1,7 @@
 {
-  "train_type": "default",
-  "experiment": "hsi_band_selection",
-  "run": "vector_pipeline",
-  "label_type": "classification",
+  "train_type": "image",
+  "experiment": "hsi_image_classification",
+  "run": "image_pipeline",
   "hyperparameters": {
     "seed": 42
   },
@@ -12,13 +11,14 @@
     "test_ratio": 0.1
   },
   "data": {
-    "csv_path": "./datasets_HSI/label/label.csv",
-    "label_column": "label"
+    "csv_path": "./datasets_HSI/label.csv",
+    "num_workers": 4,
+    "pin_memory": true
   },
   "output": {
     "output_dir": "./results",
     "save_results": true,
-    "save_model": false,
+    "save_model": true,
     "save_metrics": true,
     "save_band_info": true
   },
@@ -29,13 +29,7 @@
     "log_parameters": true,
     "log_metrics": true
   },
-  "preprocessing": {
-    "config_path": "configs/pre/pca_config.json",
-    "target_bands": 4
-  },
   "training": {
-    "config_path": "configs/training/shap_model.json",
-    "config_path": "configs/training/shap_config.json",
-    "target_bands": 2
+    "config_path": "configs/training/hsi_cnn_config.json"
   }
-}
+} 

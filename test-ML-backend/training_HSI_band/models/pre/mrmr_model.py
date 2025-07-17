@@ -9,12 +9,13 @@ warnings.filterwarnings('ignore')
 class MRMRBandSelector:
     """MRMR (Minimum Redundancy Maximum Relevance) 밴드 선택기"""
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], label_type: str = 'classification'):
         """
         MRMR 밴드 선택기 초기화
         
         Args:
             config: 설정 딕셔너리
+            label_type: 분류/회귀 타입 ('classification' 또는 'regression')
         """
         self.config = config
         self.mlflow_info = config.get('mlflow_info', {})
@@ -24,7 +25,7 @@ class MRMRBandSelector:
         self.criterion = self.parameters.get('criterion', 'MID')  # MID, MIQ, MIC
         self.k = self.parameters.get('k', 50)
         self.random_state = self.parameters.get('random_state', 42)
-        self.label_type = self.parameters.get('label_type', 'classification')  # classification, regression
+        self.label_type = label_type  # 외부에서 전달받은 label_type 사용
         
         # 결과 저장
         self.selected_bands = None
@@ -193,15 +194,16 @@ class MRMRBandSelector:
         """특성 이름 리스트 반환"""
         return self.feature_names if self.feature_names is not None else []
 
-def create_model(model_name: str, config: Dict[str, Any]) -> MRMRBandSelector:
+def create_model(model_name: str, config: Dict[str, Any], label_type: str = 'classification') -> MRMRBandSelector:
     """
     MRMR 모델 생성 함수
     
     Args:
         model_name: 모델 이름
         config: 설정 딕셔너리
+        label_type: 분류/회귀 타입 ('classification' 또는 'regression')
         
     Returns:
         MRMRBandSelector 인스턴스
     """
-    return MRMRBandSelector(config) 
+    return MRMRBandSelector(config, label_type) 

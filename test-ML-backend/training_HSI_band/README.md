@@ -1,6 +1,6 @@
 # HSI Band Selection Pipeline
 
-이 프로젝트는 Hyperspectral Imaging (HSI) 데이터의 밴드 선택을 위한 통합 파이프라인입니다.
+이 프로젝트는 Hyperspectral Imaging (HSI) 데이터의 밴드 선택을 위한 통합 파이프라인입니다. 벡터 데이터와 이미지 데이터 모두를 지원합니다.
 
 ## 구조
 
@@ -20,6 +20,18 @@
 3. **본처리 설정** (`configs/training/vector_training_config.json`)
    - 학습 기반 밴드 선택 방법 설정
    - GPR+ARD, Random Frog, SHAP 등
+
+### 데이터 타입 지원
+
+#### 1. 벡터 데이터 (기존)
+
+- 반사율 벡터를 입력으로 사용
+- CSV 파일에서 스펙트럼 데이터를 직접 읽어옴
+
+#### 2. 이미지 데이터 (신규)
+
+- 각 밴드별 이미지 파일을 입력으로 사용
+- CSV 파일에 이미지 경로 정보 포함
 
 ### 메인 파이프라인 설정 예시
 
@@ -92,6 +104,70 @@
       "random_state": 42,
       "n_restarts_optimizer": 10
     }
+  }
+}
+```
+
+### HSI 이미지 설정 예시 (`configs/training/hsi_cnn_config.json`)
+
+```json
+{
+  "training": {
+    "model_name": "hsi_cnn",
+    "model_file": "hsi_cnn_model",
+    "method": "learning_based",
+    "parameters": {
+      "learning_rate": 0.001,
+      "batch_size": 16,
+      "epochs": 100,
+      "early_stopping_patience": 10,
+      "optimizer": "adam",
+      "scheduler": "reduce_lr_on_plateau",
+      "scheduler_patience": 5,
+      "scheduler_factor": 0.5,
+      "weight_decay": 0.0001,
+      "label_type": "multilabel_classification"
+    }
+  }
+}
+```
+
+### 이미지 파이프라인 설정 예시 (`configs/image_pipeline_config.json`)
+
+```json
+{
+  "train_type": "image",
+  "experiment": "hsi_image_classification",
+  "run": "image_pipeline",
+  "hyperparameters": {
+    "seed": 42
+  },
+  "data_split": {
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1
+  },
+  "data": {
+    "csv_path": "./datasets_HSI/label.csv",
+    "num_workers": 4,
+    "pin_memory": true
+  },
+  "output": {
+    "output_dir": "./results",
+    "save_results": true,
+    "save_model": true,
+    "save_metrics": true,
+    "save_band_info": true
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "port": 5000,
+    "log_artifacts": true,
+    "log_parameters": true,
+    "log_metrics": true
+  },
+  "training": {
+    "config_path": "configs/training/hsi_cnn_config.json"
   }
 }
 ```
@@ -196,10 +272,16 @@
 
 ## 사용법
 
-### 기본 실행
+### 벡터 데이터 훈련 (기존)
 
 ```bash
 python train_vector.py --config configs/vector_pipeline_config.json
+```
+
+### 이미지 데이터 훈련 (신규)
+
+```bash
+python train_multilabel_HSI_image.py configs/image_pipeline_config.json
 ```
 
 ### 커맨드 라인 인자로 설정 오버라이드
@@ -217,10 +299,33 @@ python train_vector.py \
 
 ## 데이터 형식
 
-### CSV 파일 구조
+### 벡터 데이터 CSV 파일 구조
 
 - 첫 번째 열: 라벨 (기본값: 'label')
 - 나머지 열: 스펙트럼 데이터 (기본값: 1-204열)
+
+### 이미지 데이터 CSV 파일 구조
+
+```
+ID,disease_1,disease_2,...,disease_13,band_10,band_60,band_70,band_100,band_110,band_10_path,band_60_path,band_70_path,band_100_path,band_110_path
+O0015_R01_N112,0,1,1,0,0,0,0,0,0,0,0,0,0,170.35,167.78,135.63,161.77,187.22,/path/to/band_10.png,/path/to/band_60.png,/path/to/band_70.png,/path/to/band_100.png,/path/to/band_110.png
+```
+
+### 컬럼 설정 파일 (`datasets_HSI/column_config.json`)
+
+```json
+{
+  "column_order": {
+    "id_column_index": 0,
+    "label_start_index": 1,
+    "vector_start_index": 14,
+    "image_path_start_index": 19
+  },
+  "label_columns": ["disease_1", "disease_2", ..., "disease_13"],
+  "wavelengths": [10, 60, 70, 100, 110],
+  "image_size": [256, 256]
+}
+```
 
 ### 설정 예시
 
@@ -235,6 +340,17 @@ python train_vector.py \
 }
 ```
 
+## 모델
+
+### 벡터 데이터 모델
+
+- GPR+ARD, Random Frog, SHAP 등
+
+### 이미지 데이터 모델
+
+- **HSICNN**: 기본 CNN 모델
+- **HSICNNResNet**: ResNet 스타일 CNN 모델
+
 ## 출력
 
 ### MLflow 기록
@@ -248,90 +364,3 @@ python train_vector.py \
 
 - `results.json`: 전체 결과
 - `band_info.json`: 밴드 선택 정보
-- `metrics.csv`: 성능 메트릭
-
-## MLflow 사용 가이드라인
-
-### 모델 개발자를 위한 가이드라인
-
-1. **메인 파이프라인에서만 MLflow 사용**
-
-   - 개별 모델에서는 MLflow를 직접 사용하지 마세요
-   - 대신 파라미터로 전달받은 MLflow 정보를 활용하세요
-
-2. **중첩 실행 사용**
-
-   ```python
-   # 모델 내부에서 중첩 실행 사용
-   if 'mlflow_info' in config:
-       with mlflow.start_run(
-           experiment_name=config['mlflow_info']['experiment_name'],
-           run_id=config['mlflow_info']['parent_run_id'],
-           nested=True
-       ):
-           # 모델 학습 및 로깅
-   ```
-
-3. **설정 구조**
-
-   ```python
-   # 전처리 모델 예시
-   class MRMRBandSelector:
-       def __init__(self, config):
-           self.config = config
-           self.mlflow_info = config.get('mlflow_info', {})
-
-       def select_bands(self, spectral_data, labels, target_bands):
-           # 중첩 MLflow 실행
-           if self.mlflow_info:
-               with mlflow.start_run(
-                   experiment_name=self.mlflow_info['experiment_name'],
-                   run_id=self.mlflow_info['parent_run_id'],
-                   nested=True
-               ):
-                   # 밴드 선택 로직
-                   mlflow.log_param("mrmr_target_bands", target_bands)
-                   # ...
-   ```
-
-## 설정 우선순위
-
-1. 커맨드 라인 인자 (최우선)
-2. 메인 파이프라인 설정
-3. 기본값
-
-## 지원하는 밴드 선택 방법
-
-### 전처리 (통계적 방법)
-
-- MRMR (Minimum Redundancy Maximum Relevance)
-- PCA (Principal Component Analysis)
-- CARS (Competitive Adaptive Reweighted Sampling)
-
-### 본처리 (학습 기반 방법)
-
-- GPR+ARD (Gaussian Process Regression with Automatic Relevance Determination)
-- Random Frog
-- SHAP (SHapley Additive exPlanations)
-
-## 파일 구조
-
-```
-training_HSI_band/
-├── configs/
-│   ├── vector_pipeline_config.json    # 메인 파이프라인 설정
-│   ├── pre/
-│   │   └── vector_pre_config.json     # 전처리 설정
-│   └── training/
-│       └── vector_training_config.json # 본처리 설정
-├── models/
-│   ├── preprocessing/                  # 전처리 모델들
-│   └── training/                      # 본처리 모델들
-├── utils/
-│   ├── dataset.py                     # 데이터 로딩
-│   ├── evaluation.py                  # 평가 메트릭
-│   ├── add_param.py                   # 파라미터 파싱
-│   └── model_loader.py                # 모델 로딩
-├── train_vector.py                    # 메인 훈련 스크립트
-└── README.md
-```
