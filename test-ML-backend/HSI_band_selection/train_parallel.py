@@ -563,7 +563,7 @@ def main():
     print(f"Scaler scale shape: {global_scaler.scale_.shape}")
     
     # 라벨 정보 가져오기
-    column_config = json.load(open("datasets_HSI/column_config.json", 'r'))
+    column_config = json.load(open("../datasets_HSI/column_config.json", 'r'))
     label_names = column_config['label_columns']
     num_labels = len(label_names)
     
