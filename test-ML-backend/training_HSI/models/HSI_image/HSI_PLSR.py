@@ -9,7 +9,9 @@ from PIL import Image
 import pandas as pd
 
 # https://resonon.com/content/files/1416-4041-1-PB.pdf
+# 실행: python HSI_PLSR.py
 
+# 현재의 파이프라인에서는 실행 불가, 별도의 train 스크립트가 필요
 # 논문의 mean_spectrum 구하는 함수
 # 각 객체별 5개의 밴드 별 평균값을 구하는 함수
 def extract_mean_spectrum(folder_path):
@@ -149,3 +151,78 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# 만약 별도의 train 스크립트를 구성한다면, 아래와 같습니다.
+# python train_PLSR.py --config configs/plsr_config.json
+
+"""
+import argparse
+import json
+import pandas as pd
+import numpy as np
+import os
+from utils.plsr_utils import extract_mean_spectrum, image_to_tensor, optimize_n_components, HSI_PLSR
+from sklearn.metrics import r2_score, mean_squared_error
+import matplotlib.pyplot as plt
+
+def load_column_config(path):
+    with open(path) as f:
+        return json.load(f)
+
+def load_data(image_dir, label_csv, column_config):
+    df = pd.read_csv(label_csv)
+    id_list = sorted(os.listdir(image_dir))
+    label_columns = column_config["label_columns"]
+    Y = df[label_columns].values
+    X = image_to_tensor(image_dir, id_list)
+    return X, Y
+
+def main(config_path):
+    with open(config_path) as f:
+        config = json.load(f)
+
+    data_cfg = config["data"]
+    plsr_cfg = config["plsr"]
+    column_config = load_column_config(data_cfg["column_config"])
+
+    # Load data
+    X_train, Y_train = load_data(data_cfg["train_image_dir"], data_cfg["train_label_csv"], column_config)
+    X_val, Y_val = load_data(data_cfg["val_image_dir"], data_cfg["val_label_csv"], column_config)
+
+    # Train
+    best_n = optimize_n_components(X_train, Y_train, max_components=plsr_cfg["max_components"])
+    model = HSI_PLSR(X_train, Y_train, best_n)
+    Y_pred = model.predict(X_val)
+
+    # Evaluate
+    r2_scores = r2_score(Y_val, Y_pred, multioutput='raw_values')
+    mse = mean_squared_error(Y_val, Y_pred)
+
+    for i, score in enumerate(r2_scores):
+        print(f"Label {i} R²: {score:.4f}")
+    print(f"Overall R²: {np.mean(r2_scores):.4f}")
+    print(f"MSE: {mse:.4f}")
+
+    # Optional Save
+    if "save_model_path" in plsr_cfg:
+        import joblib
+        os.makedirs(os.path.dirname(plsr_cfg["save_model_path"]), exist_ok=True)
+        joblib.dump(model, plsr_cfg["save_model_path"])
+
+    # Optional Visualization
+    for i in range(Y_val.shape[1]):
+        plt.scatter(Y_val[:, i], Y_pred[:, i], alpha=0.7)
+        plt.plot([0, 1], [0, 1], 'r--')
+        plt.xlabel(f'True Label {i}')
+        plt.ylabel('Prediction')
+        plt.title(f'PLSR Label {i}')
+        plt.grid(True)
+        plt.show()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, required=True)
+    args = parser.parse_args()
+    main(args.config)
+
+"""

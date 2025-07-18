@@ -53,6 +53,7 @@ class HSIDataset(Dataset):
         else:
             self._mean_tensor = None
             self._scale_tensor = None
+        # 정규화 텐서를 한 번만 디바이스로 이동 (삭제)
     
     def _load_column_config(self):
         """컬럼 설정을 로드합니다."""
@@ -67,35 +68,32 @@ class HSIDataset(Dataset):
         """스케일러를 학습 데이터로 fit합니다."""
         print("Fitting StandardScaler...")
         
-        # 메모리 최적화: 무작위 픽셀 샘플링으로 스케일러 fit
+        # 무작위 샘플 인덱스 선택
+        num_samples = min(max_samples, len(self.data))
+        if num_samples > 0:
+            sample_indices = np.random.choice(self.data.index, num_samples, replace=False)
+        else:
+            sample_indices = []
         all_image_data = []
-        num_samples = min(max_samples, len(self.data))  # 샘플 수 제한
-        
-        for idx in range(num_samples):
+        for idx in sample_indices:
             image_cube = self._load_image_cube(idx)
             if image_cube is not None:
-                # 비율 기반 또는 절대값 기반 픽셀 샘플링
                 h, w, c = image_cube.shape
                 total_pixels = h * w
-                
-                # 비율 기반 샘플링 (기본값: 5%)
                 pixels_to_sample = max(1, int(sample_ratio * total_pixels))
-                
-                # 최대 픽셀 수 제한
                 pixels_to_sample = min(pixels_to_sample, max_pixels_per_sample)
-                
                 if total_pixels > pixels_to_sample:
-                    # 무작위 픽셀 인덱스 선택
                     pixel_indices = np.random.choice(total_pixels, pixels_to_sample, replace=False)
                     sampled_pixels = image_cube.reshape(-1, c)[pixel_indices]
                     all_image_data.append(sampled_pixels)
                 else:
                     all_image_data.append(image_cube.reshape(-1, c))
-        
         if all_image_data:
             all_image_data = np.concatenate(all_image_data, axis=0)
             self.scaler.fit(all_image_data)
             print(f"Scaler fitted with {len(all_image_data)} pixels from {num_samples} samples (ratio: {sample_ratio})")
+            self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
+            self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
     
     def _load_image_cube(self, idx):
         """인덱스에 해당하는 이미지 큐브를 로드합니다."""
@@ -103,8 +101,6 @@ class HSIDataset(Dataset):
         wavelengths = self.column_config['wavelengths']
         image_size = self.column_config['image_size']
         image_path_start = self.column_config['column_order']['image_path_start_index']
-        
-        # 각 파장별 이미지 경로 추출
         image_paths = []
         for i, wavelength in enumerate(wavelengths):
             col_idx = image_path_start + i
@@ -116,20 +112,16 @@ class HSIDataset(Dataset):
                     return None
             else:
                 return None
-        
-        # 이미지 큐브 생성
         image_cube = []
         for image_path in image_paths:
             try:
-                # 상대 경로를 절대 경로로 변환 (Pathlib 사용)
                 if not os.path.isabs(image_path):
                     from pathlib import Path
                     base_dir = Path(self.csv_path).parent
                     image_path = str(base_dir.parent / 'image' / image_path)
-                
                 if os.path.exists(image_path):
-                    img = Image.open(image_path).convert('L')  # 그레이스케일로 변환
-                    img = img.resize(image_size)
+                    img = Image.open(image_path).convert('L')
+                    img = img.resize(image_size, resample=Image.NEAREST)
                     img_array = np.array(img, dtype=np.float32) / 255.0
                     image_cube.append(img_array)
                 else:
@@ -138,9 +130,7 @@ class HSIDataset(Dataset):
             except Exception as e:
                 print(f"[Error Loading] row_id={idx} | path={image_path} | wavelength_idx={i} | error={e}")
                 return None
-        
         if len(image_cube) == len(wavelengths):
-            # (H, W, C) 형태로 스택
             image_cube = np.stack(image_cube, axis=-1)
             return image_cube
         else:
@@ -198,16 +188,17 @@ class HSIDataset(Dataset):
                     image_tensor = self.transform(image_tensor)
                 return image_tensor, label_tensor, idx
         
-        mean = self._mean_tensor.to(image_tensor.device)
-        scale = self._scale_tensor.to(image_tensor.device)
+        mean = self._mean_tensor
+        scale = self._scale_tensor
         
         # scale 값이 0일 경우 NaN 방지
         eps = 1e-6
         scale = torch.clamp(scale, min=eps)
-        image_tensor = (image_tensor - mean) / scale
         
+        # 변환(transform) 먼저 적용
         if self.transform:
             image_tensor = self.transform(image_tensor)
+        image_tensor = (image_tensor - mean) / scale
         
         return image_tensor, label_tensor, idx
 
