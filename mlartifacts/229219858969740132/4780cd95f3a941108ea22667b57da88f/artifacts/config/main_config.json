@@ -1,0 +1,84 @@
+<<<<<<< HEAD:test-ML-backend/training_HSI_band/configs/vector_pipeline_config.json
+{
+  "train_type": "default",
+  "experiment": "hsi_band_selection",
+  "run": "vector_pipeline",
+  "label_type": "classification",
+  "hyperparameters": {
+    "seed": 42
+  },
+  "data_split": {
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1
+  },
+  "data": {
+    "csv_path": "./datasets_HSI/label/label.csv",
+    "label_column": "label"
+  },
+  "output": {
+    "output_dir": "./results",
+    "save_results": true,
+    "save_model": false,
+    "save_metrics": true,
+    "save_band_info": true
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "port": 5000,
+    "log_artifacts": true,
+    "log_parameters": true,
+    "log_metrics": true
+  },
+  "preprocessing": {
+    "config_path": "configs/pre/pca_config.json",
+    "target_bands": 5
+  },
+  "training": {
+    "config_path": "configs/training/shap_config.json",
+    "target_bands": 3
+  }
+}
+=======
+{
+  "train_type": "default",
+  "experiment": "hsi_band_selection",
+  "run": "vector_pipeline",
+  "hyperparameters": {
+    "seed": 42
+  },
+  "data_split": {
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1
+  },
+  "data": {
+    "csv_path": "./datasets_HSI/label/label.csv",
+    "label_column": "label",
+    "spectral_start_col": 14,
+    "spectral_end_col": 18
+  },
+  "output": {
+    "output_dir": "./results",
+    "save_results": true,
+    "save_model": false,
+    "save_metrics": true,
+    "save_band_info": true
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "port": 5000,
+    "log_artifacts": true,
+    "log_parameters": true,
+    "log_metrics": true
+  },
+  "preprocessing": {
+    "config_path": "configs/pre/dual_partition.json",
+    "target_bands": 4
+  },
+  "training": {
+    "config_path": "configs/training/BS_3DCNN.json",
+    "target_bands": 2
+  }
+}
+>>>>>>> 10ca16d6ff6700a5357d382edfd27add46cef4f2:mlartifacts/229219858969740132/4780cd95f3a941108ea22667b57da88f/artifacts/config/main_config.json
