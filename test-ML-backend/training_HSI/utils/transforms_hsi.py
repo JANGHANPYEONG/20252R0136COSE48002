@@ -102,7 +102,7 @@ class HSIRandomRotation:
         device = x.device
         y_coords = torch.arange(h, device=device)
         x_coords = torch.arange(w, device=device)
-        y_coords, x_coords = torch.meshgrid(y_coords, x_coords)  # indexing='ij' 제거
+        y_coords, x_coords = torch.meshgrid(y_coords, x_coords, indexing='ij')
         
         # 중심점 기준으로 좌표 이동
         y_coords = y_coords - center_h
@@ -121,7 +121,7 @@ class HSIRandomRotation:
         # (1, C, H, W)로 변환 후 한 번에 회전 적용
         x = x.unsqueeze(0)  # (1, C, H, W)
         rotated = F.grid_sample(
-            x, grid, mode='bilinear', 
+            x, grid, mode='nearest', 
             padding_mode='reflection', align_corners=True
         )
         return rotated.squeeze(0)  # (C, H, W)

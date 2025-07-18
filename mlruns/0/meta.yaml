@@ -1,12 +1,6 @@
 artifact_location: mlflow-artifacts:/0
-<<<<<<< HEAD
 creation_time: 1752480222110
 experiment_id: '0'
 last_update_time: 1752480222110
-=======
-creation_time: 1752545460479
-experiment_id: '0'
-last_update_time: 1752545460479
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
 lifecycle_stage: active
 name: Default
