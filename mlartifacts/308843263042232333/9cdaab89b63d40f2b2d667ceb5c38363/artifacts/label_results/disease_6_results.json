@@ -1,0 +1,25 @@
+{
+  "label_name": "disease_6",
+  "label_index": 5,
+  "pre_selected_bands": [
+    2,
+    3,
+    4,
+    1,
+    0
+  ],
+  "final_selected_bands": [
+    1,
+    2
+  ],
+  "band_scores": [
+    0.03745229663693704,
+    0.03479621477733606
+  ],
+  "label_distribution": {
+    "total_samples": 3414,
+    "positive_samples": 191,
+    "negative_samples": 3223,
+    "positive_ratio": 0.05594610422849655
+  }
+}

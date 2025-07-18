@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/b3d049284b3a424984610f12148d7752/artifacts
+end_time: 1752555957104
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: b3d049284b3a424984610f12148d7752
+run_name: nosy-mare-222
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752555956728
+status: 3
+tags: []
+user_id: bomin

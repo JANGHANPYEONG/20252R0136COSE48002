@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/57639de5d0634f1ea206f98d64580f5b/artifacts
+end_time: 1752564858873
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 57639de5d0634f1ea206f98d64580f5b
+run_name: handsome-turtle-589
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564858438
+status: 3
+tags: []
+user_id: bomin

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/4e310ab7fca54a908be29e298e5e1775/artifacts
+end_time: 1752555950082
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 4e310ab7fca54a908be29e298e5e1775
+run_name: fun-finch-518
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752555948376
+status: 3
+tags: []
+user_id: bomin

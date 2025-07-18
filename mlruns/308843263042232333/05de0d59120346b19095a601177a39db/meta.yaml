@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/05de0d59120346b19095a601177a39db/artifacts
+end_time: 1752564802895
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 05de0d59120346b19095a601177a39db
+run_name: wise-whale-497
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564802024
+status: 3
+tags: []
+user_id: bomin

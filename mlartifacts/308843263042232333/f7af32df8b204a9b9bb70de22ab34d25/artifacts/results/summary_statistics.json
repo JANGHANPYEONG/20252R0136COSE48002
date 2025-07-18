@@ -1,0 +1,95 @@
+{
+  "unique_pre_bands": 4,
+  "unique_final_bands": 4,
+  "most_used_bands": [
+    [
+      2,
+      10
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "band_usage_distribution": {
+    "2": 10,
+    "3": 6,
+    "1": 7,
+    "0": 3
+  },
+  "average_bands_per_label": 0.3076923076923077,
+  "evaluation_summary": {
+    "RandomForest_full": {
+      "test_accuracy_mean": 0.93229869545659,
+      "test_accuracy_std": 0.0545803817540661,
+      "test_accuracy_min": 0.8216374269005848,
+      "test_accuracy_max": 1.0,
+      "test_f1_mean": 0.08597174854454243,
+      "test_f1_std": 0.15462703317573107,
+      "test_f1_min": 0.0,
+      "test_f1_max": 0.528,
+      "test_auc_mean": 0.6581149557416158,
+      "test_auc_std": 0.20147818737777065,
+      "test_auc_min": 0.0,
+      "test_auc_max": 0.8485585021899216
+    },
+    "RandomForest_selected": {
+      "test_accuracy_mean": 0.9233018443544758,
+      "test_accuracy_std": 0.06816116760687929,
+      "test_accuracy_min": 0.7631578947368421,
+      "test_accuracy_max": 1.0,
+      "test_f1_mean": 0.0702270842122093,
+      "test_f1_std": 0.10197380713659887,
+      "test_f1_min": 0.0,
+      "test_f1_max": 0.352,
+      "test_auc_mean": 0.575448284332812,
+      "test_auc_std": 0.18227090327525294,
+      "test_auc_min": 0.0,
+      "test_auc_max": 0.7612103039389396
+    },
+    "RandomForest_diff": {
+      "accuracy_diff_mean": 0.0,
+      "f1_diff_mean": 0.0
+    },
+    "SVM_full": {
+      "test_accuracy_mean": 0.9361223571749886,
+      "test_accuracy_std": 0.04887162062695264,
+      "test_accuracy_min": 0.8421052631578947,
+      "test_accuracy_max": 1.0,
+      "test_f1_mean": 0.04518757104964001,
+      "test_f1_std": 0.14653172905921022,
+      "test_f1_min": 0.0,
+      "test_f1_max": 0.5517241379310345,
+      "test_auc_mean": 0.5957513765853962,
+      "test_auc_std": 0.2017341410391925,
+      "test_auc_min": 0.0,
+      "test_auc_max": 0.8520479376233334
+    },
+    "SVM_selected": {
+      "test_accuracy_mean": 0.9318488529014844,
+      "test_accuracy_std": 0.057975613563108125,
+      "test_accuracy_min": 0.7923976608187134,
+      "test_accuracy_max": 1.0,
+      "test_f1_mean": 0.019653423499577348,
+      "test_f1_std": 0.05854486346280796,
+      "test_f1_min": 0.0,
+      "test_f1_max": 0.2197802197802198,
+      "test_auc_mean": 0.5243130895430038,
+      "test_auc_std": 0.21104680798082318,
+      "test_auc_min": 0.0,
+      "test_auc_max": 0.8475141808475142
+    },
+    "SVM_diff": {
+      "accuracy_diff_mean": 0.0,
+      "f1_diff_mean": 0.0
+    }
+  }
+}

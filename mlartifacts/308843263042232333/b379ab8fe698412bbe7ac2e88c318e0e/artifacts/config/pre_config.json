@@ -1,0 +1,11 @@
+{
+  "preprocessing": {
+    "model_name": "pca",
+    "model_file": "pca_model",
+    "method": "statistical",
+    "parameters": {
+      "n_components": 1,
+      "random_state": 42
+    }
+  }
+}
