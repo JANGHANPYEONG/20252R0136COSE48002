@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/1b7c386992574ca4926c09d46ff9162c/artifacts
+end_time: 1752564870275
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 1b7c386992574ca4926c09d46ff9162c
+run_name: peaceful-stoat-133
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752564869244
+status: 3
+tags: []
+user_id: bomin

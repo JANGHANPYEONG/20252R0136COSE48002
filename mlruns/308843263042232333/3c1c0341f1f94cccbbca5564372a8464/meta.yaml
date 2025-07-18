@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/3c1c0341f1f94cccbbca5564372a8464/artifacts
+end_time: 1752548514771
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 3c1c0341f1f94cccbbca5564372a8464
+run_name: charming-calf-579
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548513794
+status: 3
+tags: []
+user_id: bomin

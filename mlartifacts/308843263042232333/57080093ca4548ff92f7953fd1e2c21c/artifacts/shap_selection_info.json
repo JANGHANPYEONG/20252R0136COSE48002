@@ -1,0 +1,15 @@
+{
+  "selected_bands": [
+    2,
+    3
+  ],
+  "selected_scores": [
+    0.05486668048781253,
+    0.026666217065570003
+  ],
+  "original_features": 4,
+  "reduction_ratio": 0.5,
+  "method": "shap",
+  "explainer_type": "TreeExplainer",
+  "model_type": "RandomForest"
+}

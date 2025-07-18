@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/9e6714286f0b40c39a3d1708924a5152/artifacts
+end_time: 1752548522312
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 9e6714286f0b40c39a3d1708924a5152
+run_name: adaptable-bird-857
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548520587
+status: 3
+tags: []
+user_id: bomin

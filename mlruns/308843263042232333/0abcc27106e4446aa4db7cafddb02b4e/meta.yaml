@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/308843263042232333/0abcc27106e4446aa4db7cafddb02b4e/artifacts
+end_time: 1752548512648
+entry_point_name: ''
+experiment_id: '308843263042232333'
+lifecycle_stage: active
+run_id: 0abcc27106e4446aa4db7cafddb02b4e
+run_name: selective-shrimp-610
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752548511753
+status: 3
+tags: []
+user_id: bomin
