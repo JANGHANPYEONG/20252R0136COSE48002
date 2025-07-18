@@ -8,6 +8,8 @@ import os
 from PIL import Image
 import pandas as pd
 
+# https://resonon.com/content/files/1416-4041-1-PB.pdf
+
 # 논문의 mean_spectrum 구하는 함수
 # 각 객체별 5개의 밴드 별 평균값을 구하는 함수
 def extract_mean_spectrum(folder_path):
@@ -45,14 +47,6 @@ def HSI_PLSR(X_train, Y_train, n_components):
     """
     Perform Partial Least Squares Regression (PLSR) on hyperspectral data.
 
-    Parameters:
-    X : array-like, shape (n_samples, n_features)
-        The input data (hyperspectral features).
-    Y : array-like, shape (n_samples, n_targets)
-        The target data.
-    n_components : int
-        The number of components to use in PLSR.
-
     Returns:
     pls_model : PLSRegression
         The fitted PLS regression model.
@@ -80,6 +74,7 @@ def optimize_n_components(X_train, Y_train, max_components=6):
 
 # data loading functions
 # 파일 경로 수정 필요
+# 현재는 감자 대가리 로컬 path 사용 중임
 def load_train_data():
     folder_root = 'dataset/TS_image'
     label_path = 'dataset/2025_넙치/Training/TS_label.csv'
@@ -132,7 +127,7 @@ def main():
     r2_scores = r2_score(Y_val, Y_pred, multioutput='raw_values')
     for i, score in enumerate(r2_scores):
         print(f'Label {i} R² Score: {score:.4f}')
-
+    print(f'Overall R² Score: {np.mean(r2_scores):.4f}')
 
     # print mean squared error
     mse = mean_squared_error(Y_val, Y_pred)
@@ -149,8 +144,8 @@ def main():
         plt.grid(True)
         plt.show()
 
-    # Save the model
-    joblib.dump(pls_model, 'plsr_model.pkl')
+    # model 저장을 원할 경우 아래 코드 주석 해제후 사용
+    # joblib.dump(pls_model, 'plsr_model.pkl')
 
 if __name__ == "__main__":
     main()
