@@ -99,3 +99,35 @@ class CNNTransformerMT(nn.Module):
         trans = self.transformer(tokens)  # (batch, B, d)
         combined = self.pool1d(trans.transpose(1,2)).squeeze(-1)  # (batch, d)
         return self.head(combined)
+
+
+
+def create_model(config: dict) -> nn.Module:
+    '''
+    학습 스크립트에서 호출하는 팩토리 함수
+    Args:
+        config (dict): 전체 설정 딕셔너리
+    Returns:
+        nn.Module: 모델 인스턴스
+    '''
+    mcfg = config['model']
+    return CNNTransformerMT(
+        in_bands=mcfg['in_bands'],
+        cnn_channels=mcfg.get('cnn_channels', [32, 64, 128]),
+        num_bands=mcfg.get('num_bands', mcfg['in_bands']),
+        token_dim=mcfg.get('token_dim', 64),
+        trans_layers=mcfg.get('trans_layers', 6),
+        trans_heads=mcfg.get('trans_heads', 4),
+        trans_ffn_dim=mcfg.get('trans_ffn_dim', 1024),
+        num_classes=mcfg['num_classes'],
+        num_regression_targets=mcfg.get('num_regression_targets', 0),
+        use_pool=mcfg.get('use_pool', True)
+    )
+
+
+def get_model_info(model):
+    '''
+    모델 정보 요약 반환
+    '''
+    total_params = sum(p.numel() for p in model.parameters())
+    return {'total_parameters': total_params}
