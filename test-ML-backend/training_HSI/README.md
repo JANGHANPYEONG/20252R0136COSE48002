@@ -231,6 +231,298 @@ mlflow ui --port 5000
 2. CSV 파일에서 이미지 경로 및 라벨 매핑
 3. 설정 파일에서 데이터 경로 업데이트
 
+## 🤖 모델 개발 가이드
+
+### 모델 파일 구조
+
+모델 파일은 `models/HSI_image/` 디렉토리에 위치하며, 다음 구조를 따라야 합니다:
+
+```python
+import torch
+import torch.nn as nn
+from torchvision import models
+
+def create_model(num_classes, **kwargs):
+    """
+    모델 생성 함수
+
+    Args:
+        num_classes (int): 분류 클래스 수
+        **kwargs: 추가 모델 파라미터
+
+    Returns:
+        nn.Module: 생성된 모델
+    """
+    # 모델 구현
+    pass
+```
+
+### 입력 데이터 사양
+
+**중요**: 파이프라인에서 이미 모든 전처리가 완료된 상태로 모델에 입력됩니다.
+
+#### 입력 텐서 형태
+
+- **Shape**: `(batch_size, num_channels, height, width)`
+- **Data Type**: `torch.float32`
+- **Normalization**: 이미 StandardScaler로 정규화됨 (평균=0, 표준편차=1)
+- **Device**: 모델과 동일한 디바이스 (CPU/GPU)
+
+#### 채널 정보
+
+- **채널 수**: `column_config.json`의 `wavelengths` 리스트 길이
+- **채널 순서**: `wavelengths` 리스트 순서대로 정렬됨
+- **예시**: `wavelengths: [10, 60, 70, 100, 110]` → 5채널 입력
+
+### 출력 요구사항
+
+#### 멀티태스크 출력
+
+모델은 분류와 회귀 태스크를 동시에 처리해야 합니다:
+
+```python
+class MultiTaskModel(nn.Module):
+    def __init__(self, num_classes, num_regression_targets):
+        super().__init__()
+        # 공통 백본
+        self.backbone = nn.Sequential(...)
+
+        # 분류 헤드
+        self.classification_head = nn.Linear(feature_dim, num_classes)
+
+        # 회귀 헤드
+        self.regression_head = nn.Linear(feature_dim, num_regression_targets)
+
+    def forward(self, x):
+        features = self.backbone(x)
+
+        # 분류 출력 (sigmoid 적용)
+        classification_output = torch.sigmoid(self.classification_head(features))
+
+        # 회귀 출력 (선형)
+        regression_output = self.regression_head(features)
+
+        return {
+            'classification': classification_output,
+            'regression': regression_output
+        }
+```
+
+#### 출력 형태
+
+- **분류**: `(batch_size, num_classification_labels)` - sigmoid 적용
+- **회귀**: `(batch_size, num_regression_labels)` - 선형 출력
+- **반환 형식**: 딕셔너리 형태로 반환
+
+### 모델 구현 예시
+
+#### 1. ResNet 기반 모델
+
+```python
+import torch
+import torch.nn as nn
+from torchvision import models
+
+def create_model(num_classes, num_regression_targets=0, **kwargs):
+    """
+    ResNet 기반 HSI 분류/회귀 모델
+
+    Args:
+        num_classes (int): 분류 클래스 수
+        num_regression_targets (int): 회귀 타겟 수
+        **kwargs: 추가 파라미터
+    """
+    # ResNet 백본 (첫 번째 conv 레이어 수정)
+    model = models.resnet50(pretrained=False)
+
+    # 첫 번째 conv 레이어를 HSI 채널에 맞게 수정
+    # 원본: 3채널 → HSI 채널 수로 변경
+    hsi_channels = kwargs.get('hsi_channels', 5)
+    model.conv1 = nn.Conv2d(hsi_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+    # 분류 헤드 수정
+    feature_dim = model.fc.in_features
+    model.fc = nn.Identity()  # 기존 fc 제거
+
+    # 멀티태스크 헤드 추가
+    classification_head = nn.Linear(feature_dim, num_classes)
+    regression_head = nn.Linear(feature_dim, num_regression_targets) if num_regression_targets > 0 else None
+
+    return MultiTaskResNet(
+        backbone=model,
+        classification_head=classification_head,
+        regression_head=regression_head
+    )
+
+class MultiTaskResNet(nn.Module):
+    def __init__(self, backbone, classification_head, regression_head=None):
+        super().__init__()
+        self.backbone = backbone
+        self.classification_head = classification_head
+        self.regression_head = regression_head
+
+    def forward(self, x):
+        # 백본 특징 추출
+        features = self.backbone(x)
+
+        # 분류 출력
+        classification_output = torch.sigmoid(self.classification_head(features))
+
+        # 회귀 출력 (있는 경우만)
+        if self.regression_head is not None:
+            regression_output = self.regression_head(features)
+            return {
+                'classification': classification_output,
+                'regression': regression_output
+            }
+        else:
+            return {
+                'classification': classification_output,
+                'regression': torch.empty(classification_output.shape[0], 0)
+            }
+```
+
+#### 2. 커스텀 CNN 모델
+
+```python
+import torch
+import torch.nn as nn
+
+def create_model(num_classes, num_regression_targets=0, **kwargs):
+    """
+    커스텀 CNN 모델
+
+    Args:
+        num_classes (int): 분류 클래스 수
+        num_regression_targets (int): 회귀 타겟 수
+        **kwargs: 추가 파라미터
+    """
+    hsi_channels = kwargs.get('hsi_channels', 5)
+
+    return CustomHSICNN(
+        input_channels=hsi_channels,
+        num_classes=num_classes,
+        num_regression_targets=num_regression_targets
+    )
+
+class CustomHSICNN(nn.Module):
+    def __init__(self, input_channels, num_classes, num_regression_targets=0):
+        super().__init__()
+
+        # 특징 추출기
+        self.features = nn.Sequential(
+            # 첫 번째 블록
+            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+
+            # 두 번째 블록
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+
+            # 세 번째 블록
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+
+            # 네 번째 블록
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
+
+        # 분류 헤드
+        self.classification_head = nn.Sequential(
+            nn.Dropout(0.5),
+            nn.Linear(256, num_classes)
+        )
+
+        # 회귀 헤드
+        if num_regression_targets > 0:
+            self.regression_head = nn.Sequential(
+                nn.Dropout(0.5),
+                nn.Linear(256, num_regression_targets)
+            )
+        else:
+            self.regression_head = None
+
+    def forward(self, x):
+        # 특징 추출
+        features = self.features(x)
+        features = features.view(features.size(0), -1)  # Flatten
+
+        # 분류 출력
+        classification_output = torch.sigmoid(self.classification_head(features))
+
+        # 회귀 출력
+        if self.regression_head is not None:
+            regression_output = self.regression_head(features)
+            return {
+                'classification': classification_output,
+                'regression': regression_output
+            }
+        else:
+            return {
+                'classification': classification_output,
+                'regression': torch.empty(classification_output.shape[0], 0)
+            }
+```
+
+### 모델 등록 및 사용
+
+#### 1. 모델 파일 생성
+
+`models/HSI_image/my_model.py` 파일 생성
+
+#### 2. 설정 파일 수정
+
+```json
+{
+  "model": {
+    "file": "my_model",
+    "num_classes": 13,
+    "num_regression_targets": 2,
+    "hsi_channels": 5
+  }
+}
+```
+
+#### 3. 훈련 실행
+
+```bash
+python train_HSI_2d.py --config configs/HSI_image/my_model.json
+```
+
+### 주의사항
+
+#### 모델 개발 시 고려사항
+
+1. **전처리 불필요**: 입력 데이터는 이미 정규화되어 있으므로 모델 내에서 추가 정규화 불필요
+2. **채널 수 확인**: `column_config.json`의 `wavelengths` 길이와 일치하는지 확인
+3. **출력 형태**: 반드시 딕셔너리 형태로 분류/회귀 출력 반환
+4. **메모리 효율성**: HSI 데이터는 메모리를 많이 사용하므로 효율적인 아키텍처 설계
+5. **배치 정규화**: 훈련 안정성을 위해 BatchNorm 사용 권장
+
+#### 디버깅 팁
+
+```python
+# 모델 입력 형태 확인
+print(f"Input shape: {x.shape}")
+print(f"Input dtype: {x.dtype}")
+print(f"Input device: {x.device}")
+print(f"Input range: [{x.min():.3f}, {x.max():.3f}]")
+
+# 모델 출력 형태 확인
+outputs = model(x)
+print(f"Classification output shape: {outputs['classification'].shape}")
+print(f"Regression output shape: {outputs['regression'].shape}")
+```
+
 ## 📝 주의사항
 
 1. **메모리 사용량**: HSI 데이터는 메모리를 많이 사용하므로 배치 크기를 적절히 조정하세요.
