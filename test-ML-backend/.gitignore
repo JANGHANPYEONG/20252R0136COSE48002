@@ -35,4 +35,9 @@ venv/
 .env
 
 # Results (이미 상위 .gitignore에 있음)
-# results/ 
+# results/
+
+# HSI band selection results
+HSI_band_selection/results/
+HSI_band_selection/configs/vector_pipeline_config.json
+HSI_band_selection/configs/image_pipeline_config.json 
