@@ -15,7 +15,8 @@
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
   },
   "train": {
     "epochs": 50,
@@ -23,7 +24,9 @@
     "optimizer": "AdamW",
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
-    "loss_fn": "uncertainty"
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
