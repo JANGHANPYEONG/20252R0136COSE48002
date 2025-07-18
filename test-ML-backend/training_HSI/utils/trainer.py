@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_auc_score
 import time
 from tqdm import tqdm
-from torchmetrics.classification import MultilabelF1Score, BinaryPrecision, BinaryRecall, BinaryAUROC
+from torchmetrics.classification import MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAUROC
 from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError, R2Score
 
 
@@ -25,13 +25,10 @@ class MultiTaskLossWrapper(nn.Module):
         self.loss_fn = loss_fn
         
         if loss_fn == 'uncertainty':
-            # 불확실성 기반 가중치 (Kendall et al., 2018)
             self.log_vars = nn.Parameter(torch.zeros(task_num))
         elif loss_fn == 'equal':
-            # 동일 가중치
-            self.log_vars = nn.Parameter(torch.zeros(task_num))
+            self.register_parameter('log_vars', None)
         elif loss_fn == 'dynamic':
-            # 동적 가중치
             self.log_vars = nn.Parameter(torch.zeros(task_num))
         else:
             raise ValueError(f"Unknown loss function type: {loss_fn}")
@@ -66,7 +63,9 @@ class MultiTaskLossWrapper(nn.Module):
         if self.loss_fn == 'uncertainty':
             return torch.exp(-self.log_vars)
         elif self.loss_fn == 'equal':
-            return torch.ones_like(self.log_vars) / self.task_num
+            # log_vars가 없으므로 device를 안전하게 추출
+            device = next(self.parameters()).device
+            return torch.ones(self.task_num, device=device) / self.task_num
         elif self.loss_fn == 'dynamic':
             return torch.softmax(self.log_vars, dim=0)
 
@@ -88,7 +87,10 @@ class HSITrainer:
         # 라벨 타입 정보 설정
         self._setup_label_info()
         
-        # 옵티마이저 설정
+        # MultiTaskLossWrapper를 먼저 생성
+        self.loss_wrapper = self._setup_loss_wrapper().to(self.device)
+        
+        # 옵티마이저 설정 (model + loss_wrapper 파라미터)
         self.optimizer = self._setup_optimizer()
         
         # 스케줄러 설정
@@ -96,9 +98,6 @@ class HSITrainer:
         
         # 손실 함수 설정
         self.criterions = self._setup_criterions()
-        
-        # MultiTaskLossWrapper 설정
-        self.loss_wrapper = self._setup_loss_wrapper()
         
         # 훈련 상태
         self.best_val_loss = float('inf')
@@ -116,12 +115,17 @@ class HSITrainer:
         lr = train_config.get('lr', 3e-4)
         weight_decay = train_config.get('weight_decay', 1e-4)
         
+        # model + loss_wrapper 파라미터를 모두 포함
+        params = list(self.model.parameters())
+        if hasattr(self.loss_wrapper, 'parameters') and any(p.requires_grad for p in self.loss_wrapper.parameters()):
+            params += list(self.loss_wrapper.parameters())
+        
         if optimizer_name.lower() == 'adamw':
-            return optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
+            return optim.AdamW(params, lr=lr, weight_decay=weight_decay)
         elif optimizer_name.lower() == 'adam':
-            return optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
+            return optim.Adam(params, lr=lr, weight_decay=weight_decay)
         elif optimizer_name.lower() == 'sgd':
-            return optim.SGD(self.model.parameters(), lr=lr, weight_decay=weight_decay)
+            return optim.SGD(params, lr=lr, weight_decay=weight_decay)
         else:
             raise ValueError(f"Unknown optimizer: {optimizer_name}")
     
@@ -172,10 +176,10 @@ class HSITrainer:
         criterions = {}
         
         if self.cls_indices:
-            criterions['classification'] = nn.BCEWithLogitsLoss()
+            criterions['classification'] = nn.BCEWithLogitsLoss().to(self.device)
         
         if self.reg_indices:
-            criterions['regression'] = nn.MSELoss()
+            criterions['regression'] = nn.MSELoss().to(self.device)
         
         return criterions
     
@@ -197,7 +201,9 @@ class HSITrainer:
         return MultiTaskLossWrapper(task_num=task_num, loss_fn=loss_fn)
     
     def _update_metrics(self, outputs: torch.Tensor, targets: torch.Tensor):
-        """배치별 메트릭을 업데이트합니다."""
+        """
+        배치별 메트릭을 업데이트합니다.
+        """
         # 분류 메트릭 업데이트
         if self.cls_indices:
             cls_outputs = outputs[:, self.cls_indices]
@@ -206,14 +212,11 @@ class HSITrainer:
             probs = torch.sigmoid(cls_outputs)
             predictions = (probs > 0.5).float()
             
-            # MultilabelF1Score는 전체 예측과 타겟을 한꺼번에 전달
+            # Multilabel 메트릭은 전체 배치에 대해 한 번에 업데이트
             self.metrics['cls_f1'].update(predictions, cls_targets)
-            
-            # 나머지 메트릭은 기존 방식 유지
-            for i in range(cls_outputs.shape[1]):
-                self.metrics['cls_precision'].update(predictions[:, i], cls_targets[:, i])
-                self.metrics['cls_recall'].update(predictions[:, i], cls_targets[:, i])
-                self.metrics['cls_auc'].update(probs[:, i], cls_targets[:, i])
+            self.metrics['cls_precision'].update(predictions, cls_targets)
+            self.metrics['cls_recall'].update(predictions, cls_targets)
+            self.metrics['cls_auc'].update(probs, cls_targets)
         
         # 회귀 메트릭 업데이트
         if self.reg_indices:
@@ -266,9 +269,9 @@ class HSITrainer:
         if self.cls_indices:
             num_classes = len(self.cls_indices)
             self.metrics['cls_f1'] = MultilabelF1Score(num_labels=num_classes, average="macro").to(self.device)
-            self.metrics['cls_precision'] = BinaryPrecision().to(self.device)
-            self.metrics['cls_recall'] = BinaryRecall().to(self.device)
-            self.metrics['cls_auc'] = BinaryAUROC().to(self.device)
+            self.metrics['cls_precision'] = MultilabelPrecision(num_labels=num_classes, average="macro").to(self.device)
+            self.metrics['cls_recall'] = MultilabelRecall(num_labels=num_classes, average="macro").to(self.device)
+            self.metrics['cls_auc'] = MultilabelAUROC(num_labels=num_classes, average="macro").to(self.device)
         
         # 회귀 메트릭 설정
         if self.reg_indices:
