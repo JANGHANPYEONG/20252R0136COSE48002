@@ -31,10 +31,10 @@
   },
   "preprocessing": {
     "config_path": "configs/pre/mrmr_config.json",
-    "target_bands": 4
+    "target_bands": 5
   },
   "training": {
-    "config_path": "configs/training/shap_config.json",
+    "config_path": "configs/training/gpr_ard_config.json",
     "target_bands": 3
   }
 }
