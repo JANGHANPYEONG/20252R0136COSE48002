@@ -1,0 +1,18 @@
+{
+  "training": {
+    "model_name": "sglm",
+    "model_file": "sglm_model",
+    "method": "structural_graph_learning",
+    "parameters": {
+      "n_segments": 100,
+      "compactness": 10.0,
+      "lambda_spa": 0.1,
+      "lambda_spe": 0.1,
+      "max_iter": 100
+    }
+  },
+  "mlflow_info": {
+    "experiment_name": "SGLM_Band_Selection",
+    "current_label": "disease_3"
+  }
+}
