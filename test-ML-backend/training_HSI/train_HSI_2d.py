@@ -122,6 +122,7 @@ def main():
         
         # 데이터 로더 생성
         print("Creating data loaders...")
+        scaler_mode = config["data"].get("scaler_mode", "normalized")
         train_loader, val_loader, test_loader, scaler, pos_weight_info = create_hsi_data_loaders(
             csv_path=config['data']['csv'],
             column_config_path=config['data']['column_config'],
@@ -132,7 +133,8 @@ def main():
             random_state=seed,
             train_transform=train_transform,
             val_transform=val_transform,
-            test_transform=test_transform
+            test_transform=test_transform,
+            scaler_mode=scaler_mode
         )
         
         # 라벨 정보 가져오기
