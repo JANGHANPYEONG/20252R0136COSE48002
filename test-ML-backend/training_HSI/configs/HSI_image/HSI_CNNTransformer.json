@@ -2,9 +2,9 @@
   "experiment": "hsi_cnn_transformer_mt",
   "model": {
     "file": "HSI_CNNTransformer",
-    "in_bands": 10,
+    "in_bands": 5,
     "cnn_channels": [32, 64, 128],
-    "num_bands": 10,
+    "num_bands": 5,
     "token_dim": 64,
     "trans_layers": 6,
     "trans_heads": 4,
@@ -24,7 +24,8 @@
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
   },
   "train": {
     "epochs": 50,
