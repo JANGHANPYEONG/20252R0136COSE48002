@@ -119,7 +119,7 @@ class HSIResNet(nn.Module):
         return x
 
 
-def create_hsi_resnet_model(config: Dict[str, Any]) -> HSIResNet:
+def create_model(config: Dict[str, Any]) -> HSIResNet:
     """
     설정에 따라 HSI ResNet 모델을 생성합니다.
     
@@ -145,6 +145,19 @@ def create_hsi_resnet_model(config: Dict[str, Any]) -> HSIResNet:
     model = HSIResNet(in_channels=in_channels, num_classes=num_classes)
     
     return model
+
+
+def create_hsi_resnet_model(config: Dict[str, Any]) -> HSIResNet:
+    """
+    설정에 따라 HSI ResNet 모델을 생성합니다. (기존 호환성 유지)
+    
+    Args:
+        config: 설정 딕셔너리
+    
+    Returns:
+        HSIResNet 모델
+    """
+    return create_model(config)
 
 
 def get_model_info(model: HSIResNet) -> Dict[str, Any]:

@@ -2,6 +2,7 @@ import os
 import json
 import mlflow
 import mlflow.pytorch
+import mlflow.sklearn
 from typing import Dict, Any, Optional, List
 import torch
 import numpy as np
@@ -57,6 +58,10 @@ class MLflowLogger:
         """모델을 로깅합니다."""
         mlflow.pytorch.log_model(model, model_name)
         print(f"Model logged: {model_name}")
+
+    def log_model_ml(self, model: Any, model_name: str = "hsi_vector"):
+        mlflow.sklearn.log_model(model, model_name)
+        print(f"Model logged: {model_name}")
     
     def log_artifact(self, local_path: str, artifact_path: Optional[str] = None):
         """아티팩트를 로깅합니다."""
@@ -82,9 +87,9 @@ class MLflowLogger:
         with open(temp_path, 'wb') as f:
             pickle.dump(scaler, f)
         
-        mlflow.log_artifact(temp_path, scaler_name)
+        mlflow.log_artifact(temp_path, artifact_path="scaler")
         os.remove(temp_path)
-        print(f"Scaler logged: {scaler_name}")
+        print(f"Scaler logged: scaler/{scaler_name}")
     
     def log_training_curve(self, train_losses: list, val_losses: list, 
                           train_metrics: Dict[str, list], val_metrics: Dict[str, list],
@@ -133,7 +138,7 @@ class MLflowLogger:
         # 임시 파일로 저장 후 로깅
         temp_path = "training_curves.png"
         plt.savefig(temp_path, dpi=300, bbox_inches='tight')
-        mlflow.log_artifact(temp_path, "training_curves.png")
+        mlflow.log_artifact(temp_path, artifact_path="training_curves")
         plt.close()
         os.remove(temp_path)
         
