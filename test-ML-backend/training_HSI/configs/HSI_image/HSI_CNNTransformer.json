@@ -32,7 +32,12 @@
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau"
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
