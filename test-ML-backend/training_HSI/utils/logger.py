@@ -2,6 +2,7 @@ import os
 import json
 import mlflow
 import mlflow.pytorch
+import mlflow.sklearn
 from typing import Dict, Any, Optional, List
 import torch
 import numpy as np
@@ -56,6 +57,10 @@ class MLflowLogger:
     def log_model(self, model: torch.nn.Module, model_name: str = "hsi_2d_cnn"):
         """모델을 로깅합니다."""
         mlflow.pytorch.log_model(model, model_name)
+        print(f"Model logged: {model_name}")
+
+    def log_model_ml(self, model: Any, model_name: str = "hsi_vector"):
+        mlflow.sklearn.log_model(model, model_name)
         print(f"Model logged: {model_name}")
     
     def log_artifact(self, local_path: str, artifact_path: Optional[str] = None):
