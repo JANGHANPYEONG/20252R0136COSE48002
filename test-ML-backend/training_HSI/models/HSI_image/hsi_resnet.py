@@ -147,18 +147,6 @@ def create_model(config: Dict[str, Any]) -> HSIResNet:
     return model
 
 
-def create_hsi_resnet_model(config: Dict[str, Any]) -> HSIResNet:
-    """
-    설정에 따라 HSI ResNet 모델을 생성합니다. (기존 호환성 유지)
-    
-    Args:
-        config: 설정 딕셔너리
-    
-    Returns:
-        HSIResNet 모델
-    """
-    return create_model(config)
-
 
 def get_model_info(model: HSIResNet) -> Dict[str, Any]:
     """모델 정보를 반환합니다."""
