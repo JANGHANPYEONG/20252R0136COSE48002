@@ -93,6 +93,24 @@ python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json --no-mlflow
 - 설정 가능한 patience 파라미터
 - 최고 성능 모델 자동 저장
 
+### AMP (Automatic Mixed Precision)
+
+- GPU 메모리 절약 및 훈련 속도 향상
+- `use_amp: true`로 활성화
+- GradScaler를 통한 안정적인 mixed precision 훈련
+
+### Gradient Clipping
+
+- 불안정한 gradient로 인한 학습 폭발 방지
+- `grad_clip_norm` 값으로 clipping norm 설정
+- AMP 사용 시에도 안전하게 적용
+
+### StandardScaler 모드 선택
+
+- **`scaler_mode: "normalized"`**: 이미지 픽셀을 255로 나눈 후 StandardScaler 적용 (기본값)
+- **`scaler_mode: "raw"`**: 이미지 픽셀 0~255 범위 그대로 StandardScaler 적용
+- 데이터 특성에 따라 적절한 정규화 방식 선택 가능
+
 ## 🔧 설정 파일 예시
 
 ### column_config.json
@@ -163,14 +181,18 @@ python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json --no-mlflow
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
   },
   "train": {
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau"
+    "scheduler": "ReduceLROnPlateau",
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
@@ -179,6 +201,47 @@ python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json --no-mlflow
   "seed": 42
 }
 ```
+
+### 새로운 설정 옵션
+
+#### StandardScaler 모드 (`data.scaler_mode`)
+
+```json
+{
+  "data": {
+    "scaler_mode": "normalized" // "normalized" 또는 "raw"
+  }
+}
+```
+
+- **`"normalized"`** (기본값): 이미지 픽셀을 255로 나눈 후 StandardScaler 적용
+- **`"raw"`**: 이미지 픽셀 0~255 범위 그대로 StandardScaler 적용
+
+#### AMP 설정 (`train.use_amp`)
+
+```json
+{
+  "train": {
+    "use_amp": true // true 또는 false
+  }
+}
+```
+
+- **`true`**: Automatic Mixed Precision 활성화 (GPU 메모리 절약, 속도 향상)
+- **`false`** (기본값): FP32 훈련
+
+#### Gradient Clipping 설정 (`train.grad_clip_norm`)
+
+```json
+{
+  "train": {
+    "grad_clip_norm": 1.0 // 숫자 값 또는 null
+  }
+}
+```
+
+- **숫자 값**: 해당 norm으로 gradient clipping 적용
+- **`null`** (기본값): gradient clipping 비활성화
 
 ## 📈 평가 메트릭
 

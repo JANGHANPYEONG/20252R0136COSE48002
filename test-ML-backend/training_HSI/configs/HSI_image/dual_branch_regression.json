@@ -1,8 +1,11 @@
 {
-  "experiment": "hsi_resnet_baseline",
+  "experiment": "dual_branch_regression",
   "model": {
-    "file": "hsi_resnet",
-    "num_classes": 13
+    "file": "dual_branch_regression",
+    "num_classes": 13,
+    "num_regression_targets": 2,
+    "hsi_channels": 5,
+    "vector_size": 5
   },
   "data": {
     "csv": "datasets_HSI/label/label.csv",
@@ -11,27 +14,22 @@
     "test_split": 0.1,
     "batch_size": 8,
     "num_workers": 4,
-    "crop_size": [224, 224],
+    "crop_size": [32, 32],
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true,
-    "scaler_mode": "normalized"
+    "use_brightness_contrast": true
   },
   "train": {
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau",
-    "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "scheduler": "ReduceLROnPlateau"
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_2D_CNN"
+    "experiment_name": "HSI_2D_CNN_REGRESSION"
   },
-  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
 }

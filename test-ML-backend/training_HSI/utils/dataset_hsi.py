@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from PIL import Image
@@ -32,6 +32,10 @@ class HSIDataset(Dataset):
         # 설정 로드
         self.column_config = self._load_column_config()
         self.data = self._load_data()
+        
+        # scaler_mode 설정 (raw: 0~255, normalized: 0~1)
+        self.scaler_mode = self.column_config.get('scaler_mode', 'normalized')
+        print(f"Using scaler mode: {self.scaler_mode}")
         
         # 인덱스 필터링 적용
         if self.indices is not None:
@@ -122,7 +126,13 @@ class HSIDataset(Dataset):
                 if os.path.exists(image_path):
                     img = Image.open(image_path).convert('L')
                     img = img.resize(image_size, resample=Image.NEAREST)
-                    img_array = np.array(img, dtype=np.float32) / 255.0
+                    img_array = np.array(img, dtype=np.float32)
+                    
+                    # scaler_mode에 따라 정규화 적용
+                    if self.scaler_mode == 'normalized':
+                        img_array = img_array / 255.0
+                    # raw 모드에서는 0~255 범위 그대로 사용
+                    
                     image_cube.append(img_array)
                 else:
                     print(f"[Missing Image] row_id={idx} | path={image_path} | wavelength_idx={i}")
@@ -163,44 +173,47 @@ class HSIDataset(Dataset):
         # 이미지 큐브 로드
         image_cube = self._load_image_cube(idx)
         if image_cube is None:
-            # 에러 시 더미 데이터 반환
-            image_cube = np.zeros((*self.column_config['image_size'], len(self.column_config['wavelengths'])), dtype=np.float32)
-        
+            # 누락 샘플은 None 반환 (collate_fn에서 필터링)
+            return None
         # NaN/Inf 값 처리 (정규화 전에 적용)
         image_cube = np.nan_to_num(image_cube, nan=0.0, posinf=1.0, neginf=0.0)
-        
         # 라벨 추출
         labels = self._get_labels(idx)
-        
-        # 텐서로 변환 (GPU 친화적 정규화를 위해 먼저 텐서로 변환)
         image_tensor = torch.from_numpy(image_cube).permute(2, 0, 1)  # (C, H, W)
         label_tensor = torch.from_numpy(labels)
         
-        # 캐시된 텐서 사용하여 정규화 (dtype 일치 보장) - 안전한 정규화
+        # StandardScaler 적용 (scaler_mode에 따라)
         if self._mean_tensor is None or self._scale_tensor is None:
-            # Lazy 텐서 생성 (fit_scaler=False인 경우)
             if hasattr(self.scaler, "mean_") and hasattr(self.scaler, "scale_"):
                 self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
                 self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
             else:
-                # 스케일러가 아직 fit되지 않은 경우 정규화 없이 반환
                 if self.transform:
                     image_tensor = self.transform(image_tensor)
                 return image_tensor, label_tensor, idx
         
         mean = self._mean_tensor
         scale = self._scale_tensor
-        
-        # scale 값이 0일 경우 NaN 방지
         eps = 1e-6
         scale = torch.clamp(scale, min=eps)
         
-        # 변환(transform) 먼저 적용
-        if self.transform:
-            image_tensor = self.transform(image_tensor)
+        # StandardScaler 적용
         image_tensor = (image_tensor - mean) / scale
         
+        if self.transform:
+            image_tensor = self.transform(image_tensor)
         return image_tensor, label_tensor, idx
+
+# collate_fn: None 샘플 필터링 및 빈 배치 방지
+from torch.utils.data.dataloader import default_collate
+import torch
+
+def skip_invalid_collate(batch):
+    batch = [b for b in batch if b is not None]
+    if len(batch) == 0:
+        # 빈 배치는 unpack 오류 방지용으로 empty tensor 반환
+        return torch.empty(0), torch.empty(0), []
+    return default_collate(batch)
 
 
 def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_workers=4, 
@@ -222,10 +235,14 @@ def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_work
         test_transform: 테스트용 transform
     
     Returns:
-        train_loader, val_loader, test_loader, scaler
+        train_loader, val_loader, test_loader, scaler, pos_weight_info
     """
-    # 1. 전체 데이터 로드 (스케일러 fit 없이)
-    full_dataset = HSIDataset(csv_path, column_config_path, fit_scaler=False)
+    from torch.utils.data import Subset
+    
+    # 1. 전체 데이터셋 한 번만 생성 (스케일러 fit 포함)
+    print("Creating full dataset and fitting scaler...")
+    full_dataset = HSIDataset(csv_path, column_config_path, fit_scaler=True)
+    scaler = full_dataset.scaler
     
     # 2. 인덱스 분할
     total_size = len(full_dataset)
@@ -247,48 +264,71 @@ def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_work
         temp_indices, test_size=1 - val_prop, random_state=random_state, shuffle=True
     )
     
-    # 3. 각 subset에 대해 별도의 Dataset 생성
-    # Train dataset (스케일러 fit)
-    train_dataset = HSIDataset(
-        csv_path, column_config_path, 
-        transform=train_transform, 
-        fit_scaler=True, 
-        indices=train_indices
-    )
-    scaler = train_dataset.scaler
+    # 3. Subset으로 분할 (중복 생성 방지)
+    train_dataset = Subset(full_dataset, train_indices)
+    val_dataset = Subset(full_dataset, val_indices)
+    test_dataset = Subset(full_dataset, test_indices)
     
-    # Val dataset (스케일러 fit 없음)
-    val_dataset = HSIDataset(
-        csv_path, column_config_path, 
-        transform=val_transform, 
-        scaler=scaler, 
-        fit_scaler=False, 
-        indices=val_indices
-    )
+    # 4. pos_weight 계산을 위한 train 라벨 통계 미리 계산
+    print("Calculating pos_weight statistics...")
+    pos_weight_info = _calculate_pos_weight_info(full_dataset, train_indices)
     
-    # Test dataset (스케일러 fit 없음)
-    test_dataset = HSIDataset(
-        csv_path, column_config_path, 
-        transform=test_transform, 
-        scaler=scaler, 
-        fit_scaler=False, 
-        indices=test_indices
-    )
+    # 5. Transform 적용을 위한 wrapper 클래스
+    class TransformWrapper:
+        def __init__(self, dataset, transform):
+            self.dataset = dataset
+            self.transform = transform
+        
+        def __getitem__(self, idx):
+            item = self.dataset[idx]
+            if item is None:
+                return None
+            images, labels, sample_idx = item
+            if self.transform:
+                images = self.transform(images)
+            return images, labels, sample_idx
+        
+        def __len__(self):
+            return len(self.dataset)
     
-    # 데이터 로더 생성
+    # Transform 적용
+    train_dataset = TransformWrapper(train_dataset, train_transform)
+    val_dataset = TransformWrapper(val_dataset, val_transform)
+    test_dataset = TransformWrapper(test_dataset, test_transform)
+    
+    # DataLoader worker 시드 고정 함수
+    def seed_worker(worker_id):
+        import torch
+        import numpy as np
+        import random
+        worker_seed = random_state + worker_id
+        np.random.seed(worker_seed)
+        torch.manual_seed(worker_seed)
+        random.seed(worker_seed)
+    
+    generator = torch.Generator()
+    generator.manual_seed(random_state)
+    
+    # DataLoader 생성 시 collate_fn 인자로 전달
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,
-        num_workers=num_workers, pin_memory=True
+        num_workers=num_workers, pin_memory=True,
+        worker_init_fn=seed_worker, generator=generator,
+        collate_fn=skip_invalid_collate
     )
     
     val_loader = DataLoader(
         val_dataset, batch_size=batch_size, shuffle=False,
-        num_workers=num_workers, pin_memory=True
+        num_workers=num_workers, pin_memory=True,
+        worker_init_fn=seed_worker, generator=generator,
+        collate_fn=skip_invalid_collate
     )
     
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False,
-        num_workers=num_workers, pin_memory=True
+        num_workers=num_workers, pin_memory=True,
+        worker_init_fn=seed_worker, generator=generator,
+        collate_fn=skip_invalid_collate
     )
     
     print(f"Data loaders created:")
@@ -296,7 +336,60 @@ def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_work
     print(f"  Val: {len(val_dataset)} samples")
     print(f"  Test: {len(test_dataset)} samples")
     
-    return train_loader, val_loader, test_loader, scaler
+    return train_loader, val_loader, test_loader, scaler, pos_weight_info
+
+
+def _calculate_pos_weight_info(dataset, train_indices):
+    """train set의 라벨 통계를 계산하여 pos_weight 정보를 반환합니다."""
+    label_start = dataset.column_config['column_order']['label_start_index']
+    label_columns = dataset.column_config['label_columns']
+    
+    # train set의 라벨만 추출
+    train_labels = []
+    for idx in train_indices:
+        row = dataset.data.iloc[idx]
+        labels = []
+        for i, label_col in enumerate(label_columns):
+            col_idx = label_start + i
+            if col_idx < len(row):
+                label_value = row.iloc[col_idx]
+                if pd.notna(label_value):
+                    labels.append(float(label_value))
+                else:
+                    labels.append(0.0)
+            else:
+                labels.append(0.0)
+        train_labels.append(labels)
+    
+    train_labels = np.array(train_labels, dtype=np.float32)
+    
+    # 분류 라벨 인덱스 찾기 (label_types['classification']에서 직접 가져오기)
+    cls_names = dataset.column_config['label_types'].get('classification', [])
+    cls_indices = []
+    for i, name in enumerate(label_columns):
+        if name in cls_names:
+            cls_indices.append(i)
+    
+    if cls_indices:
+        # pos_weight 계산
+        cls_labels = train_labels[:, cls_indices]
+        pos_counts = cls_labels.sum(axis=0)
+        neg_counts = np.clip(cls_labels.shape[0] - pos_counts, a_min=1, a_max=None)
+        pos_weight = (neg_counts / (pos_counts + 1e-6)).tolist()
+        
+        return {
+            'cls_indices': cls_indices,
+            'pos_weight': pos_weight,
+            'pos_counts': pos_counts.tolist(),
+            'neg_counts': neg_counts.tolist()
+        }
+    else:
+        return {
+            'cls_indices': [],
+            'pos_weight': [],
+            'pos_counts': [],
+            'neg_counts': []
+        }
 
 
 def get_label_info(column_config_path):
