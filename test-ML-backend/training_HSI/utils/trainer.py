@@ -100,7 +100,7 @@ class HSITrainer:
         self._setup_label_info()
         
         # 손실 래퍼 설정 (optimizer보다 먼저 생성)
-        self.loss_wrapper = self._setup_loss_wrapper()
+        self.loss_wrapper = self._setup_loss_wrapper().to(self.device)
         
         # 옵티마이저 설정
         self.optimizer = self._setup_optimizer()
@@ -223,7 +223,7 @@ class HSITrainer:
         # 분류 메트릭 업데이트
         if self.cls_indices:
             cls_outputs = outputs[:, self.cls_indices]
-            cls_targets = targets[:, self.cls_indices]
+            cls_targets = targets[:, self.cls_indices].long()
             
             probs = torch.sigmoid(cls_outputs)
             predictions = (probs > 0.5).float()
