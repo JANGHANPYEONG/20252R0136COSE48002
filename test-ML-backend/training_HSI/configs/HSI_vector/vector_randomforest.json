@@ -1,0 +1,28 @@
+{
+  "experiment": "vector_randomforest_baseline",
+  "model": {
+    "file": "vector_randomforest",
+    "num_classes": 13
+  },
+  "data": {
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
+    "K-fold": 5,
+    "test_split": 0.1
+  },
+  "train": {
+    "n_estimators": 100,
+    "max_depth": 10,
+    "min_samples_split": 2,
+    "min_samples_leaf": 1
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "Vector_ML"
+  },
+  "scaler": {
+    "method": "StandardScaler"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42
+}

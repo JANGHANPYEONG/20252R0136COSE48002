@@ -107,13 +107,31 @@ python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json --no-mlflow
 
 ### StandardScaler 모드 선택
 
-- **`scaler_mode: "normalized"`**: 이미지 픽셀을 255로 나눈 후 StandardScaler 적용 (기본값)
-- **`scaler_mode: "raw"`**: 이미지 픽셀 0~255 범위 그대로 StandardScaler 적용
-- 데이터 특성에 따라 적절한 정규화 방식 선택 가능
+- **설정 위치**: `scaler_mode`는 반드시 `config["data"]["scaler_mode"]`에만 설정합니다. `column_config.json`에는 더 이상 포함되지 않습니다.
+
+- **지원 모드**:
+
+  - **`scaler_mode: "normalized"`** (기본값): 이미지 픽셀을 255로 나눈 후 StandardScaler 적용
+  - **`scaler_mode: "raw"`**: 이미지 픽셀 0~255 범위 그대로 StandardScaler 적용
+  - **`scaler_mode: "off"`**: StandardScaler를 완전히 비활성화 (fit/transform 모두 스킵), 증강만 적용
+
+- **데이터 증강**: 세 모드 모두에서 `train_transform`, `val_transform`, `test_transform`이 항상 적용됩니다.
+
+#### 예시 config
+
+```json
+{
+  "data": {
+    "scaler_mode": "normalized" // "normalized", "raw", "off" 중 하나
+  }
+}
+```
 
 ## 🔧 설정 파일 예시
 
 ### column_config.json
+
+> **Note:** `scaler_mode`는 더 이상 column_config.json에 포함되지 않습니다. 데이터 컬럼, 파장, 이미지 크기 등만 정의합니다.
 
 ```json
 {
