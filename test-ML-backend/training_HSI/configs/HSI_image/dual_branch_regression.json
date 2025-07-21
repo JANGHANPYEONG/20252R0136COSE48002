@@ -1,11 +1,13 @@
 {
   "experiment": "dual_branch_regression",
   "model": {
-    "file": "dual_branch_regression",
-    "num_classes": 13,
-    "num_regression_targets": 2,
-    "hsi_channels": 5,
-    "vector_size": 5
+    "file": "hsi_dual_branch_regression",
+    "in_channels": 6,
+    "num_classes": 0,
+    "num_regression_targets": 6,
+    "base_channels": 32,
+    "depth": 3,
+    "dropout": 0.2
   },
   "data": {
     "csv": "datasets_HSI/label/label.csv",
