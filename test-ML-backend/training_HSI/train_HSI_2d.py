@@ -28,7 +28,7 @@ from utils.dataset_hsi import create_hsi_data_loaders, get_label_info
 from utils.logger import create_logger, log_training_summary
 from utils.trainer import HSITrainer
 from utils.transforms_hsi import get_train_transforms, get_val_transforms, get_test_transforms
-from models.HSI_image.hsi_resnet import create_hsi_resnet_model, get_model_info
+from utils.model_loader import load_model, validate_model_config, get_model_info as get_model_info_from_config
 
 
 def load_config(config_path: str) -> dict:
@@ -122,7 +122,8 @@ def main():
         
         # 데이터 로더 생성
         print("Creating data loaders...")
-        train_loader, val_loader, test_loader, scaler = create_hsi_data_loaders(
+        scaler_mode = config["data"].get("scaler_mode", "normalized")
+        train_loader, val_loader, test_loader, scaler, pos_weight_info = create_hsi_data_loaders(
             csv_path=config['data']['csv'],
             column_config_path=config['data']['column_config'],
             batch_size=config['data']['batch_size'],
@@ -132,24 +133,39 @@ def main():
             random_state=seed,
             train_transform=train_transform,
             val_transform=val_transform,
-            test_transform=test_transform
+            test_transform=test_transform,
+            scaler_mode=scaler_mode
         )
         
         # 라벨 정보 가져오기
         label_info = get_label_info(config['data']['column_config'])
         print(f"Label info: {label_info}")
         
+        # pos_weight 정보 출력
+        if pos_weight_info['cls_indices']:
+            print(f"Pos weight info: {pos_weight_info}")
+        
+        # 모델 설정 검증
+        print("Validating model configuration...")
+        if not validate_model_config(config):
+            raise ValueError("Invalid model configuration")
+        
         # 모델 생성
         print("Creating model...")
-        model = create_hsi_resnet_model(config)
+        model = load_model(config)
         model = model.to(device)
         
         # 모델 정보 출력
-        model_info = get_model_info(model)
-        print(f"Model info: {model_info}")
+        model_info = get_model_info_from_config(config)
+        print(f"Model config info: {model_info}")
         
-        # 훈련기 생성
-        trainer = HSITrainer(model, device, config)
+        # 모델 파라미터 정보 출력
+        total_params = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        print(f"Model parameters: {total_params:,} total, {trainable_params:,} trainable")
+        
+        # 훈련기 생성 (pos_weight_info 전달)
+        trainer = HSITrainer(model, device, config, pos_weight_info=pos_weight_info)
         
         # 플롯 키 설정
         plot_keys = config.get('plot_keys', ["cls_f1_score", "reg_r2", "combined_score"])
