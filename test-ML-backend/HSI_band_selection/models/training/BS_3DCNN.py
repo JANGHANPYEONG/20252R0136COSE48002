@@ -14,15 +14,9 @@ class Simple3DCNN(nn.Module):
         num_classes = params.get("num_classes")
         init_channels = params.get("init_channels", 16)
 
-<<<<<<< HEAD
-        conv_layers_cfg = cnn_cfg.get("conv_layers", [])
-        adaptive_pool_output = tuple(cnn_cfg.get("adaptive_pool_output", [1, 1, 1]))
-        activation_fn = getattr(nn, cnn_cfg.get("activation", "ReLU"))
-=======
         conv_layers_cfg = cnn["conv_layers"]
         adaptive_pool_output = tuple(cnn["adaptive_pool_output"])
         activation_fn = getattr(nn, cnn.get("activation", "ReLU"))
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
 
         layers = []
         cur_in = in_channels
@@ -64,9 +58,6 @@ class Simple3DCNN(nn.Module):
             logits: torch.Tensor of shape (batch_size, num_classes)
         """
         x = self.features(x)
-<<<<<<< HEAD
-        return self.classifier(x)
-=======
         x = self.classifier(x)
         return x
     
@@ -85,7 +76,6 @@ class Simple3DCNN(nn.Module):
         xx = torch.linspace(-1, 1, W, device=x.device)\
                 .view(1,1,1,1,W).expand(B,1,1,H,W)
         return torch.cat([x, yy, xx], dim=2)   # (B,1,C+2,H,W)
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
 
     def select_bands_with_scores(
         self,
@@ -110,11 +100,7 @@ class Simple3DCNN(nn.Module):
         """
         self.eval()
 
-<<<<<<< HEAD
-        # 1) 입력 형태 통일 -> tensor x of shape (B,1,K,H,W)
-=======
         # spectral_data가 Numpy 배열이라면 torch.Tensor로 변환
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
         if isinstance(spectral_data, np.ndarray):
             # numpy: (B, H, W, B_full) -> slice -> (B, H, W, K)
             vol = spectral_data[..., pre_selected_bands]
@@ -128,15 +114,6 @@ class Simple3DCNN(nn.Module):
         else:
             raise TypeError(f"Unsupported data type: {type(spectral_data)}")
 
-<<<<<<< HEAD
-        device = next(self.parameters()).device
-        x = x.to(device).requires_grad_(True)
-
-        # 2) 순전파 & top class score
-        logits = self.forward(x)                          # (B, num_classes)
-        top_idx = logits.argmax(dim=1)
-        scores_tensor = logits[torch.arange(logits.size(0)), top_idx]
-=======
         # spectral_data 차원 검사 및 재구성
         if x.dim() == 2: # x가 (batch, channels) 모양이라면, 
             batch, channels = x.shape
@@ -154,7 +131,6 @@ class Simple3DCNN(nn.Module):
         # 1) Forward pass
         logits = self.forward(x)                  # (batch, num_classes)
         score = logits[:, logits.argmax(dim=1)]   # 가장 높은 클래스에 대한 score
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
 
         # 3) 역전파
         self.zero_grad()
@@ -171,12 +147,7 @@ class Simple3DCNN(nn.Module):
 
         return selected, scores
 
-<<<<<<< HEAD
-
-def create_model(model_name: str, config: Dict) -> nn.Module:
-=======
 def create_model(model_name, config):
->>>>>>> 410d8e3e0f39751cfd703e94c6c76a77eb09da80
     if model_name == "3DCNN":
         return Simple3DCNN(config)
     raise ValueError(f"Unknown model: {model_name}")

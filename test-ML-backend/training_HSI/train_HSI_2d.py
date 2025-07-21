@@ -122,7 +122,7 @@ def main():
         
         # 데이터 로더 생성
         print("Creating data loaders...")
-        train_loader, val_loader, test_loader, scaler = create_hsi_data_loaders(
+        train_loader, val_loader, test_loader, scaler, pos_weight_info = create_hsi_data_loaders(
             csv_path=config['data']['csv'],
             column_config_path=config['data']['column_config'],
             batch_size=config['data']['batch_size'],
@@ -138,6 +138,10 @@ def main():
         # 라벨 정보 가져오기
         label_info = get_label_info(config['data']['column_config'])
         print(f"Label info: {label_info}")
+        
+        # pos_weight 정보 출력
+        if pos_weight_info['cls_indices']:
+            print(f"Pos weight info: {pos_weight_info}")
         
         # 모델 설정 검증
         print("Validating model configuration...")
@@ -158,8 +162,8 @@ def main():
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         print(f"Model parameters: {total_params:,} total, {trainable_params:,} trainable")
         
-        # 훈련기 생성
-        trainer = HSITrainer(model, device, config)
+        # 훈련기 생성 (pos_weight_info 전달)
+        trainer = HSITrainer(model, device, config, pos_weight_info=pos_weight_info)
         
         # 플롯 키 설정
         plot_keys = config.get('plot_keys', ["cls_f1_score", "reg_r2", "combined_score"])

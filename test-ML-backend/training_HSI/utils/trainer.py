@@ -73,41 +73,53 @@ class MultiTaskLossWrapper(nn.Module):
 class HSITrainer:
     """HSI 모델 훈련을 위한 클래스"""
     
-    def __init__(self, model: nn.Module, device: torch.device, config: Dict[str, Any]):
+    def __init__(self, model: nn.Module, device: torch.device, config: Dict[str, Any], pos_weight_info: Dict[str, Any] = None):
         """
         Args:
             model: 훈련할 모델
             device: 사용할 디바이스
             config: 설정 딕셔너리
+            pos_weight_info: pos_weight 계산을 위한 라벨 통계 정보
         """
         self.model = model
         self.device = device
         self.config = config
+        self.pos_weight_info = pos_weight_info
         
-        # 라벨 타입 정보 설정
+        # AMP 및 Gradient Clipping 설정
+        self.use_amp = config.get('train', {}).get('use_amp', False)
+        self.grad_clip_norm = config.get('train', {}).get('grad_clip_norm', None)
+        
+        if self.use_amp and torch.cuda.is_available():
+            self.scaler = torch.cuda.amp.GradScaler()
+            print("AMP (Automatic Mixed Precision) enabled")
+        else:
+            self.scaler = None
+        
+        # 라벨 정보 설정
         self._setup_label_info()
         
-        # MultiTaskLossWrapper를 먼저 생성
-        self.loss_wrapper = self._setup_loss_wrapper().to(self.device)
+        # 손실 래퍼 설정 (optimizer보다 먼저 생성)
+        self.loss_wrapper = self._setup_loss_wrapper()
         
-        # 옵티마이저 설정 (model + loss_wrapper 파라미터)
+        # 옵티마이저 설정
         self.optimizer = self._setup_optimizer()
         
         # 스케줄러 설정
         self.scheduler = self._setup_scheduler()
         
-        # 손실 함수 설정
+        # 손실 함수 설정 (pos_weight_info 사용)
         self.criterions = self._setup_criterions()
         
-        # 훈련 상태
+        # 메트릭 설정
+        self._setup_metrics()
+        
+        # 훈련 상태 초기화
         self.best_val_loss = float('inf')
         self.best_val_metrics = {}
         self.patience_counter = 0
         self.early_stopping_patience = config.get('train', {}).get('early_stopping_patience', 10)
-        
-        # TorchMetrics 초기화 (메모리 효율적 메트릭 계산)
-        self._setup_metrics()
-        
+
     def _setup_optimizer(self) -> optim.Optimizer:
         """옵티마이저를 설정합니다."""
         train_config = self.config.get('train', {})
@@ -174,13 +186,17 @@ class HSITrainer:
     def _setup_criterions(self) -> Dict[str, nn.Module]:
         """손실 함수들을 설정합니다."""
         criterions = {}
-        
         if self.cls_indices:
-            criterions['classification'] = nn.BCEWithLogitsLoss().to(self.device)
-        
+            # pos_weight 계산: 미리 계산된 pos_weight_info 사용
+            if self.pos_weight_info and len(self.pos_weight_info.get('cls_indices', [])) == len(self.cls_indices):
+                pos_weight = torch.tensor(self.pos_weight_info['pos_weight'], dtype=torch.float32).to(self.device)
+                criterions['classification'] = nn.BCEWithLogitsLoss(pos_weight=pos_weight).to(self.device)
+                print(f"BCEWithLogitsLoss with pos_weight: {pos_weight.tolist()}")
+            else:
+                criterions['classification'] = nn.BCEWithLogitsLoss().to(self.device)
+                print("BCEWithLogitsLoss without pos_weight")
         if self.reg_indices:
             criterions['regression'] = nn.MSELoss().to(self.device)
-        
         return criterions
     
     def _setup_loss_wrapper(self) -> MultiTaskLossWrapper:
@@ -231,7 +247,6 @@ class HSITrainer:
     def _compute_metrics(self) -> Dict[str, float]:
         """누적된 메트릭을 계산합니다."""
         metrics = {}
-        
         # 분류 메트릭 계산
         if self.cls_indices:
             metrics.update({
@@ -240,25 +255,26 @@ class HSITrainer:
                 'cls_recall': self.metrics['cls_recall'].compute().item(),
                 'cls_auc': self.metrics['cls_auc'].compute().item()
             })
-        
         # 회귀 메트릭 계산
         if self.reg_indices:
+            r2 = self.metrics['reg_r2'].compute().item()
             metrics.update({
                 'reg_mse': self.metrics['reg_mse'].compute().item(),
                 'reg_mae': self.metrics['reg_mae'].compute().item(),
-                'reg_r2': self.metrics['reg_r2'].compute().item()
+                'reg_r2': r2
             })
-        
         # 전체 메트릭 (가중 평균)
         if self.cls_indices and self.reg_indices:
             total_f1 = metrics.get('cls_f1_score', 0)
             total_r2 = metrics.get('reg_r2', 0)
+            total_r2 = max(0, total_r2)  # R2 음수 클리핑
             metrics['combined_score'] = (total_f1 + total_r2) / 2
         elif self.cls_indices:
             metrics['combined_score'] = metrics.get('cls_f1_score', 0)
         elif self.reg_indices:
-            metrics['combined_score'] = metrics.get('reg_r2', 0)
-        
+            total_r2 = metrics.get('reg_r2', 0)
+            total_r2 = max(0, total_r2)
+            metrics['combined_score'] = total_r2
         return metrics
     
     def _setup_metrics(self):
@@ -324,25 +340,52 @@ class HSITrainer:
         """한 에포크를 훈련합니다 (메모리 효율적)."""
         self.model.train()
         total_loss = 0.0
+        processed = 0  # 실제 처리된 배치 수 추적
         
         # 메트릭 리셋
         for metric in self.metrics.values():
             metric.reset()
         
         pbar = tqdm(train_loader, desc="Training")
-        for batch_idx, (images, targets, _) in enumerate(pbar):
+        for batch_idx, batch in enumerate(pbar):
+            if batch is None or len(batch) == 0 or batch[0].numel() == 0:
+                continue
+            images, targets, _ = batch
             images = images.to(self.device)
             targets = targets.to(self.device)
             
             self.optimizer.zero_grad()
             
-            outputs = self.model(images)
-            loss, loss_components = self._calculate_loss(outputs, targets)
-            
-            loss.backward()
-            self.optimizer.step()
+            # AMP 적용
+            if self.use_amp:
+                with torch.cuda.amp.autocast():
+                    outputs = self.model(images)
+                    loss, loss_components = self._calculate_loss(outputs, targets)
+                
+                # GradScaler를 사용한 backward 및 step
+                self.scaler.scale(loss).backward()
+                
+                # Gradient clipping
+                if self.grad_clip_norm is not None:
+                    self.scaler.unscale_(self.optimizer)
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip_norm)
+                
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                outputs = self.model(images)
+                loss, loss_components = self._calculate_loss(outputs, targets)
+                
+                loss.backward()
+                
+                # Gradient clipping
+                if self.grad_clip_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip_norm)
+                
+                self.optimizer.step()
             
             total_loss += loss.item()
+            processed += 1  # 유효한 배치 처리 완료 시 카운트
             
             # 배치별 메트릭 업데이트 (메모리 효율적)
             self._update_metrics(outputs, targets)
@@ -350,8 +393,8 @@ class HSITrainer:
             # 진행률 업데이트
             pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
-        # 전체 배치의 평균 손실 계산
-        avg_loss = total_loss / len(train_loader)
+        # 실제 처리된 배치의 평균 손실 계산
+        avg_loss = total_loss / max(1, processed)
         
         # 메트릭 계산
         metrics = self._compute_metrics()
@@ -362,6 +405,7 @@ class HSITrainer:
         """한 에포크를 검증합니다 (메모리 효율적)."""
         self.model.eval()
         total_loss = 0.0
+        processed = 0  # 실제 처리된 배치 수 추적
         
         # 메트릭 리셋
         for metric in self.metrics.values():
@@ -369,14 +413,24 @@ class HSITrainer:
         
         with torch.no_grad():
             pbar = tqdm(val_loader, desc="Validation")
-            for batch_idx, (images, targets, _) in enumerate(pbar):
+            for batch_idx, batch in enumerate(pbar):
+                if batch is None or len(batch) == 0 or batch[0].numel() == 0:
+                    continue
+                images, targets, _ = batch
                 images = images.to(self.device)
                 targets = targets.to(self.device)
                 
-                outputs = self.model(images)
-                loss, loss_components = self._calculate_loss(outputs, targets)
+                # AMP 적용 (검증 시에도 일관성 유지)
+                if self.use_amp:
+                    with torch.cuda.amp.autocast():
+                        outputs = self.model(images)
+                        loss, loss_components = self._calculate_loss(outputs, targets)
+                else:
+                    outputs = self.model(images)
+                    loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 total_loss += loss.item()
+                processed += 1  # 유효한 배치 처리 완료 시 카운트
                 
                 # 배치별 메트릭 업데이트 (메모리 효율적)
                 self._update_metrics(outputs, targets)
@@ -384,13 +438,19 @@ class HSITrainer:
                 # 진행률 업데이트
                 pbar.set_postfix({'loss': f'{loss.item():.4f}'})
         
-        # 전체 배치의 평균 손실 계산
-        avg_loss = total_loss / len(val_loader)
+        # 실제 처리된 배치의 평균 손실 계산
+        avg_loss = total_loss / max(1, processed)
         
         # 메트릭 계산
         metrics = self._compute_metrics()
         
         return avg_loss, metrics
+    
+    def set_train_loader(self, train_loader):
+        """train_loader를 외부에서 세팅하고 pos_weight를 재계산한다."""
+        # pos_weight_info를 미리 받았으므로 이 메서드는 더 이상 필요하지 않음
+        # 하위 호환성을 위해 남겨둠
+        pass
     
     def train(self, train_loader: DataLoader, val_loader: DataLoader, 
               num_epochs: int, logger=None) -> Dict[str, List[float]]:

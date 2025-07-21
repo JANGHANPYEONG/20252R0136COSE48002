@@ -133,7 +133,7 @@ class MLflowLogger:
         # 임시 파일로 저장 후 로깅
         temp_path = "training_curves.png"
         plt.savefig(temp_path, dpi=300, bbox_inches='tight')
-        mlflow.log_artifact(temp_path, "training_curves.png")
+        mlflow.log_artifact(temp_path, artifact_path="training_curves")
         plt.close()
         os.remove(temp_path)
         
