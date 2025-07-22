@@ -12,9 +12,9 @@ warnings.filterwarnings('ignore')
 
 
 class HSIDataset(Dataset):
-    """HSI 데이터셋 클래스"""
+    """HSI 데이터셋 클래스 (scaler_mode: 'normalized', 'raw', 'off' 지원)"""
     
-    def __init__(self, csv_path, column_config_path, transform=None, scaler=None, fit_scaler=True, indices=None):
+    def __init__(self, csv_path, column_config_path, transform=None, scaler=None, fit_scaler=True, indices=None, scaler_mode="normalized"):
         """
         Args:
             csv_path: CSV 파일 경로
@@ -23,41 +23,41 @@ class HSIDataset(Dataset):
             scaler: StandardScaler 객체 (None이면 새로 생성)
             fit_scaler: 스케일러를 fit할지 여부
             indices: 사용할 데이터 인덱스 리스트 (None이면 전체 사용)
+            scaler_mode: 'normalized' | 'raw' | 'off' (config["data"]["scaler_mode"]에서만 설정)
         """
         self.csv_path = csv_path
         self.column_config_path = column_config_path
         self.transform = transform
         self.indices = indices
+        self.scaler_mode = scaler_mode
+        assert self.scaler_mode in {"normalized", "raw", "off"}, f"Invalid scaler_mode: {self.scaler_mode}"
         
         # 설정 로드
         self.column_config = self._load_column_config()
         self.data = self._load_data()
-        
-        # scaler_mode 설정 (raw: 0~255, normalized: 0~1)
-        self.scaler_mode = self.column_config.get('scaler_mode', 'normalized')
-        print(f"Using scaler mode: {self.scaler_mode}")
         
         # 인덱스 필터링 적용
         if self.indices is not None:
             self.data = self.data.iloc[self.indices].reset_index(drop=True)
         
         # 스케일러 설정
-        if scaler is None:
-            self.scaler = StandardScaler()
+        if self.scaler_mode != "off":
+            if scaler is None:
+                self.scaler = StandardScaler()
+            else:
+                self.scaler = scaler
+            if fit_scaler:
+                self._fit_scaler()
+            if hasattr(self.scaler, "mean_") and hasattr(self.scaler, "scale_"):
+                self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
+                self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
+            else:
+                self._mean_tensor = None
+                self._scale_tensor = None
         else:
-            self.scaler = scaler
-            
-        if fit_scaler:
-            self._fit_scaler()
-        
-        # 캐시 텐서 생성 (메모리 최적화) - 안전한 초기화
-        if hasattr(self.scaler, "mean_") and hasattr(self.scaler, "scale_"):
-            self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-            self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
-        else:
+            self.scaler = None
             self._mean_tensor = None
             self._scale_tensor = None
-        # 정규화 텐서를 한 번만 디바이스로 이동 (삭제)
     
     def _load_column_config(self):
         """컬럼 설정을 로드합니다."""
@@ -69,7 +69,9 @@ class HSIDataset(Dataset):
         return pd.read_csv(self.csv_path)
     
     def _fit_scaler(self, sample_ratio=0.05, max_samples=50, max_pixels_per_sample=1000):
-        """스케일러를 학습 데이터로 fit합니다."""
+        """스케일러를 학습 데이터로 fit합니다 (off 모드에서는 호출되지 않음)."""
+        if self.scaler_mode == "off":
+            return
         print("Fitting StandardScaler...")
         
         # 무작위 샘플 인덱스 선택
@@ -127,12 +129,11 @@ class HSIDataset(Dataset):
                     img = Image.open(image_path).convert('L')
                     img = img.resize(image_size, resample=Image.NEAREST)
                     img_array = np.array(img, dtype=np.float32)
-                    
-                    # scaler_mode에 따라 정규화 적용
+                    # 0-1 scaling only for normalized mode
                     if self.scaler_mode == 'normalized':
                         img_array = img_array / 255.0
-                    # raw 모드에서는 0~255 범위 그대로 사용
-                    
+                    # raw: use as is (0-255)
+                    # off: same as raw (handled later)
                     image_cube.append(img_array)
                 else:
                     print(f"[Missing Image] row_id={idx} | path={image_path} | wavelength_idx={i}")
@@ -173,33 +174,27 @@ class HSIDataset(Dataset):
         # 이미지 큐브 로드
         image_cube = self._load_image_cube(idx)
         if image_cube is None:
-            # 누락 샘플은 None 반환 (collate_fn에서 필터링)
             return None
-        # NaN/Inf 값 처리 (정규화 전에 적용)
         image_cube = np.nan_to_num(image_cube, nan=0.0, posinf=1.0, neginf=0.0)
-        # 라벨 추출
         labels = self._get_labels(idx)
         image_tensor = torch.from_numpy(image_cube).permute(2, 0, 1)  # (C, H, W)
         label_tensor = torch.from_numpy(labels)
-        
-        # StandardScaler 적용 (scaler_mode에 따라)
-        if self._mean_tensor is None or self._scale_tensor is None:
-            if hasattr(self.scaler, "mean_") and hasattr(self.scaler, "scale_"):
-                self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-                self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
-            else:
-                if self.transform:
-                    image_tensor = self.transform(image_tensor)
-                return image_tensor, label_tensor, idx
-        
-        mean = self._mean_tensor
-        scale = self._scale_tensor
-        eps = 1e-6
-        scale = torch.clamp(scale, min=eps)
-        
-        # StandardScaler 적용
-        image_tensor = (image_tensor - mean) / scale
-        
+        # StandardScaler transform (skip if off)
+        if self.scaler_mode != "off":
+            if self._mean_tensor is None or self._scale_tensor is None:
+                if hasattr(self.scaler, "mean_") and hasattr(self.scaler, "scale_"):
+                    self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
+                    self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
+                else:
+                    if self.transform:
+                        image_tensor = self.transform(image_tensor)
+                    return image_tensor, label_tensor, idx
+            mean = self._mean_tensor
+            scale = self._scale_tensor
+            eps = 1e-6
+            scale = torch.clamp(scale, min=eps)
+            image_tensor = (image_tensor - mean) / scale
+        # Always apply augmentation
         if self.transform:
             image_tensor = self.transform(image_tensor)
         return image_tensor, label_tensor, idx
@@ -218,30 +213,14 @@ def skip_invalid_collate(batch):
 
 def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_workers=4, 
                            val_split=0.1, test_split=0.1, random_state=42, 
-                           train_transform=None, val_transform=None, test_transform=None):
+                           train_transform=None, val_transform=None, test_transform=None, scaler_mode="normalized"):
     """
     HSI 데이터 로더를 생성합니다.
-    
-    Args:
-        csv_path: CSV 파일 경로
-        column_config_path: 컬럼 설정 파일 경로
-        batch_size: 배치 크기
-        num_workers: 워커 수
-        val_split: 검증 데이터 비율
-        test_split: 테스트 데이터 비율
-        random_state: 랜덤 시드
-        train_transform: 훈련용 transform
-        val_transform: 검증용 transform
-        test_transform: 테스트용 transform
-    
-    Returns:
-        train_loader, val_loader, test_loader, scaler, pos_weight_info
+    scaler_mode: 'normalized' | 'raw' | 'off' (config["data"]["scaler_mode"]에서만 설정)
     """
     from torch.utils.data import Subset
-    
-    # 1. 전체 데이터셋 한 번만 생성 (스케일러 fit 포함)
     print("Creating full dataset and fitting scaler...")
-    full_dataset = HSIDataset(csv_path, column_config_path, fit_scaler=True)
+    full_dataset = HSIDataset(csv_path, column_config_path, fit_scaler=True, scaler_mode=scaler_mode)
     scaler = full_dataset.scaler
     
     # 2. 인덱스 분할

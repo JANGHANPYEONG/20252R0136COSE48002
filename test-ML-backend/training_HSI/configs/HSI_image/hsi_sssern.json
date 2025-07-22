@@ -1,17 +1,13 @@
 {
-  "experiment": "hsi_cnn_transformer_mt",
+  "experiment": "hsi_sssern",
   "model": {
-    "file": "HSI_CNNTransformer",
-    "in_bands": 5,
-    "cnn_channels": [32, 64, 128],
-    "num_bands": 5,
-    "token_dim": 64,
-    "trans_layers": 6,
-    "trans_heads": 4,
-    "trans_ffn_dim": 1024,
+    "file": "hsi_sssern",
     "num_classes": 13,
-    "num_regression_targets": 0,
-    "use_pool": true
+    "parameters": {
+      "in_channels": 5,
+      "num_blocks": 4,
+      "reduction": 2
+    }
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
@@ -24,24 +20,18 @@
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true,
-    "scaler_mode": "normalized"
+    "use_brightness_contrast": true
   },
   "train": {
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau",
-    "scheduler_patience": 5,
-    "scheduler_factor": 0.5,
-    "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "scheduler": "ReduceLROnPlateau"
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_CNN_Transformer_MT"
+    "experiment_name": "HSI_SSSERN"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
