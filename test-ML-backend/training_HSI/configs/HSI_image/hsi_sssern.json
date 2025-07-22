@@ -23,7 +23,7 @@
     "use_brightness_contrast": true
   },
   "train": {
-    "epochs": 1,
+    "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
