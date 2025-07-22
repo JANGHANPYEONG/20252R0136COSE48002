@@ -68,7 +68,7 @@ def main():
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
     column_config_path = config.get('data', {}).get(
         'column_config', 'configs/HSI_vector/column_config.json')
-    scaler = config.get('scaler', StandardScaler)
+    scaler = config.get('scaler', "standardscaler")
 
     setup_seed(seed)
 
@@ -128,7 +128,7 @@ def main():
 
         # 훈련 수행
         print("Start training...")
-        training_results, scaler = trainer.train(
+        training_results = trainer.train(
             X_train=X_train,
             y_train=y_train,
             K_fold=K_fold,
