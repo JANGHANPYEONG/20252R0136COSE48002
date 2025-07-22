@@ -76,7 +76,7 @@ def main():
     logger = None
     if not args.no_mlflow:
         logger = create_logger(config)
-        logger.start_run()
+        logger.start_run(run_name="hsi_vector")
         
         # 하이퍼파라미터 로깅
         params_to_log = {
