@@ -31,7 +31,7 @@
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_CNN_Transformer_MT"
+    "experiment_name": "HSI_SSSERN"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
