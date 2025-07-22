@@ -1,8 +1,10 @@
 from typing import Dict, Any, Tuple, List
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_auc_score
+from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, accuracy_score
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold, StratifiedKFold
+from collections import defaultdict
 import time
 from tqdm import tqdm
 
@@ -10,15 +12,17 @@ from tqdm import tqdm
 class vectorTrainer:
     """ML 모델 훈련을 위한 클래스"""
 
-    def __init__(self, model, task: str, config: Dict[str, Any]):
+    def __init__(self, model, config: Dict[str, Any]):
         """
         Args:
             model: 훈련할 모델
             config: 설정 딕셔너리
         """
         self.model = model
-        self.task = task
         self.config = config
+
+        # label info 불러오기
+        self._setup_label_info()
 
         # 메트릭 설정
         self._setup_metrics()
@@ -29,73 +33,123 @@ class vectorTrainer:
         self.seed = config.get('seed', 42)
 
 
+    def _setup_label_info(self):
+        """라벨 타입 정보를 설정합니다."""
+        # 컬럼 설정에서 라벨 정보 로드
+        column_config_path = self.config['data']['column_config']
+        with open(column_config_path, 'r') as f:
+            import json
+            column_config = json.load(f)
+        
+        self.label_types = column_config['label_types']
+        self.label_columns = column_config['label_columns']
+        
+        # 분류/회귀 라벨 인덱스 설정
+        self.cls_indices = []
+        self.reg_indices = []
+        
+        for i, label_name in enumerate(self.label_columns):
+            if label_name in self.label_types['classification']:
+                self.cls_indices.append(i)
+            elif label_name in self.label_types['regression']:
+                self.reg_indices.append(i)
+        
+        print(f"Label setup:")
+        print(f"  Classification indices: {self.cls_indices}")
+        print(f"  Regression indices: {self.reg_indices}")
+
+        
     def _setup_metrics(self):
-        """메트릭을 설정합니다."""
+        """TorchMetrics를 설정합니다."""
         self.metrics = {}
+        
+        # 분류 메트릭 설정
+        if self.cls_indices:
+            self.metrics['cls_f1'] = lambda y_true, y_pred: f1_score(y_true, y_pred, average='macro')
+            self.metrics['cls_precision'] = lambda y_true, y_pred: precision_score(y_true, y_pred, average='macro')
+            self.metrics['cls_recall'] = lambda y_true, y_pred: recall_score(y_true, y_pred, average='macro')
+            self.metrics['cls_auc'] = lambda y_true, y_prob: roc_auc_score(y_true, y_prob, average='macro')
+        
+        # 회귀 메트릭 설정
+        if self.reg_indices:
+            self.metrics['reg_mse'] = lambda y_true, y_pred: mean_squared_error(y_true, y_pred)
+            self.metrics['reg_mae'] = lambda y_true, y_pred: mean_absolute_error(y_true, y_pred)
+            self.metrics['reg_r2'] = lambda y_true, y_pred: r2_score(y_true, y_pred)
 
-        # 분류 메트릭
-        if self.task == "classification":
-            self.metrics['cls_f1'] = []
-            self.metrics['cls_precision'] = []
-            self.metrics['cls_recall'] = []
-            self.metrics['cls_auc'] = []
-
-        # 회귀 메트릭
-        elif self.task == "regression":
-            self.metrics['reg_mse'] = []
-            self.metrics['reg_mae'] = []
-            self.metrics['reg_r2'] = []
-
-        else:
-            raise ValueError(f"Unknown task type: {self.task}")
 
     def _sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
+    
 
-    def _update_metrics(self, y_true, y_pred) -> Dict[str, float]:
-        """메트릭을 업데이트합니다."""
-        if self.task == "classification":
-            probs = self._sigmoid(y_pred)
-            y_pred_binary = (probs > 0.5).astype(int)
-            scores = precision_recall_fscore_support(y_true, y_pred_binary, average='weighted')
-            self.metrics['cls_f1'].append(scores[2])
-            self.metrics['cls_precision'].append(scores[0])
-            self.metrics['cls_recall'].append(scores[1])
-            self.metrics['cls_auc'].append(roc_auc_score(y_true, probs, multi_class='ovr', average='weighted'))
+    def _calculate_metrics(self, y_pred, y_test):
+        """
+        배치별 메트릭을 업데이트합니다.
+        """
+        results = {}
+        # 분류 메트릭 업데이트
+        if self.cls_indices:
+            cls_outputs = y_pred[:, self.cls_indices]
+            cls_targets = y_test[:, self.cls_indices]
+
+            probs = self._sigmoid(cls_outputs)
+            predictions = (probs > 0.5).astype(int)
+
+            # Multilabel 메트릭은 전체 배치에 대해 한 번에 업데이트
+            results['cls_f1'] = self.metrics['cls_f1'](cls_targets, predictions)
+            results['cls_precision'] = self.metrics['cls_precision'](cls_targets, predictions)
+            results['cls_recall'] = self.metrics['cls_recall'](cls_targets, predictions)
+            results['cls_auc'] = self.metrics['cls_auc'](cls_targets, probs)
 
         # 회귀 메트릭 업데이트
-        else:
-            self.metrics['reg_mse'].append(mean_squared_error(y_true, y_pred))
-            self.metrics['reg_mae'].append(mean_absolute_error(y_true, y_pred))
-            self.metrics['reg_r2'].append(r2_score(y_true, y_pred))
+        if self.reg_indices:
+            reg_outputs = y_pred[:, self.reg_indices]
+            reg_targets = y_test[:, self.reg_indices]
+
+            results['reg_mse'] = self.metrics['reg_mse'](reg_targets, reg_outputs)
+            results['reg_mae'] = self.metrics['reg_mae'](reg_targets, reg_outputs)
+            results['reg_r2'] = self.metrics['reg_r2'](reg_targets, reg_outputs)
+
+        # Combined 매트릭 업데이트
+        if self.cls_indices and self.reg_indices:
+            total_f1 = results.get('cls_f1_score', 0)
+            total_r2 = results.get('reg_r2', 0)
+            total_r2 = max(0, total_r2)  # R2 음수 클리핑
+            results['combined_score'] = (total_f1 + total_r2) / 2
+        elif self.cls_indices:
+            results['combined_score'] = results.get('cls_f1', 0)
+        elif self.reg_indices:
+            total_r2 = results.get('reg_r2', 0)
+            total_r2 = max(0, total_r2)
+            results['combined_score'] = total_r2
+
+        return results
 
     def train(self, X_train, y_train, K_fold=5, logger=None) -> Dict[str, List[float]]:
         """전체 훈련을 수행합니다."""
 
         # 훈련 기록
-        train_losses = []
-        val_losses = []
+        train_losses_each_fold = []
+        val_losses_each_fold = []
         train_metrics = {}
         val_metrics = {}
 
+        # 훈련 시간 기록
         start_time = time.time()
 
-        # 결과 저장용 컨테이너
-        train_losses, val_losses = [], []
-        train_metrics, val_metrics = [], []
-
         # K-fold 설정
-        if self.task == "classification":
-            kf = StratifiedKFold(n_splits=K_fold, shuffle=True, random_state=self.seed)
-        elif self.task == "regression":
-            kf = KFold(n_splits=K_fold, shuffle=True, random_state=self.seed)
-        else:
-            raise ValueError(f"Unknown task type: {self.task}")
+        kf = KFold(n_splits=K_fold, shuffle=True, random_state=self.seed)
 
             # ────────────────── K‑fold 루프 ──────────────────
         for fold_idx, (tr_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
             X_tr, X_val = X_train[tr_idx], X_train[val_idx]
             y_tr, y_val = y_train[tr_idx], y_train[val_idx]
+
+            # 모델에서 scaler를 적용하지 않은 경우
+            is_scaler = self.config.get('scaler', None)
+            if is_scaler == None:
+                scaler = StandardScaler()
+                X_tr = scaler.fit_transform(X_tr)
+                X_val = scaler.transform(X_val)
 
             # 모델 인스턴스 생성 & 학습
             self.model.fit(X_tr, y_tr)
@@ -104,25 +158,41 @@ class vectorTrainer:
             y_tr_pred = self.model.predict(X_tr)
             y_val_pred = self.model.predict(X_val)
 
+            # 손실 계산
+            cls_tr_loss, cls_val_loss, reg_tr_loss, reg_val_loss = 0.0, 0.0, 0.0, 0.0
+
             # 손실(회귀는 MSE, 분류는 1‑정확도) 계산
-            if self.task == "classification":
-                tr_loss = 1.0 - accuracy_score(y_tr, y_tr_pred)
-                val_loss = 1.0 - accuracy_score(y_val, y_val_pred)
+            if self.cls_indices:
+                cls_tr_loss = 1.0 - accuracy_score(y_tr[:, self.cls_indices], y_tr_pred[:, self.cls_indices])
+                cls_val_loss = 1.0 - accuracy_score(y_val[:, self.cls_indices], y_val_pred[:, self.cls_indices])
+            if self.reg_indices:
+                reg_tr_loss = mean_squared_error(y_tr[:, self.reg_indices], y_tr_pred[:, self.reg_indices])
+                reg_val_loss = mean_squared_error(y_val[:, self.reg_indices], y_val_pred[:, self.reg_indices])
+
+            cls_len, reg_len = len(self.cls_indices), len(self.reg_indices)
+            if self.cls_indices and self.reg_indices:
+                tr_loss = (cls_tr_loss * cls_len + reg_tr_loss * reg_len) / (cls_len + reg_len)
+                val_loss = (cls_val_loss * cls_len + reg_val_loss * reg_len) / (cls_len + reg_len)
+            elif self.cls_indices:
+                tr_loss = cls_tr_loss
+                val_loss = cls_val_loss
+            elif self.reg_indices:
+                tr_loss = reg_tr_loss
+                val_loss = reg_val_loss
             else:
-                tr_loss = mean_squared_error(y_tr, y_tr_pred)
-                val_loss = mean_squared_error(y_val, y_val_pred)
+                raise ValueError("No task specified (classification or regression)")
 
-            # 지표 계산
-            self._update_metrics(y_tr, y_tr_pred)
-            self._update_metrics(y_val, y_val_pred)
+            # 지표 계산 및 기록
+            train_metrics[f'fold {fold_idx+1}'] = self._calculate_metrics(y_tr, y_tr_pred)
+            val_metrics[f'fold {fold_idx+1}'] = self._calculate_metrics(y_val, y_val_pred)
 
-            # 기록
-            train_losses.append(tr_loss)
-            val_losses.append(val_loss)
+            # loss 기록
+            train_losses_each_fold.append(tr_loss)
+            val_losses_each_fold.append(val_loss)
 
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
-                self.patience_counter = 0
+                self.best_val_metrics = val_metrics[f'fold {fold_idx+1}']
                 
                 # 모델 저장
                 if logger is not None:
@@ -136,19 +206,19 @@ class vectorTrainer:
         print("Metrics for each fold:")
         for i in range(K_fold):
             print(f"  Fold {i+1}:")
-            if self.task == "classification":
-                print(f"    F1 Score: {self.metrics['cls_f1'][i]:.4f}")
-                print(f"    Precision: {self.metrics['cls_precision'][i]:.4f}")
-                print(f"    Recall: {self.metrics['cls_recall'][i]:.4f}")
-                print(f"    AUC: {self.metrics['cls_auc'][i]:.4f}")
-            else:
-                print(f"    MSE: {self.metrics['reg_mse'][i]:.4f}")
-                print(f"    MAE: {self.metrics['reg_mae'][i]:.4f}")
-                print(f"    R2: {self.metrics['reg_r2'][i]:.4f}")
+            if self.cls_indices:
+                print(f"   F1 Score: train set-{train_metrics[f'fold {i+1}']['cls_f1']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_f1']:.4f}")
+                print(f"    Precision: train set-{train_metrics[f'fold {i+1}']['cls_precision']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_precision']:.4f}")
+                print(f"    Recall: train set-{train_metrics[f'fold {i+1}']['cls_recall']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_recall']:.4f}")
+                print(f"    AUC: train set-{train_metrics[f'fold {i+1}']['cls_auc']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_auc']:.4f}")
+            if self.reg_indices:
+                print(f"    MSE: train set-{train_metrics[f'fold {i+1}']['reg_mse']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_mse']:.4f}")
+                print(f"    MAE: train set-{train_metrics[f'fold {i+1}']['reg_mae']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_mae']:.4f}")
+                print(f"    R2: train set-{train_metrics[f'fold {i+1}']['reg_r2']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_r2']:.4f}")
 
         return {
-            'train_losses': train_losses,
-            'val_losses': val_losses,
+            'train_losses': train_losses_each_fold,
+            'val_losses': val_losses_each_fold,
             'train_metrics': train_metrics,
             'val_metrics': val_metrics,
             'best_val_metrics': self.best_val_metrics,
@@ -162,21 +232,27 @@ class vectorTrainer:
         metrics = {}
 
         # 손실(회귀는 MSE, 분류는 1‑정확도) 계산
-        if self.task == "classification":
-            probs = self._sigmoid(y_pred)
-            y_pred_binary = (probs > 0.5).astype(int)
-            loss = 1.0 - accuracy_score(y_test, y_pred_binary)
+        if self.cls_indices:
+            cls_outputs = y_pred[:, self.cls_indices]
+            cls_targets = y_test[:, self.cls_indices]
 
-            metrics['cls_f1_score'] = precision_recall_fscore_support(y_test, y_pred_binary, average='weighted')[2]
-            metrics['cls_precision'] = precision_recall_fscore_support(y_test, y_pred_binary, average='weighted')[0]
-            metrics['cls_recall'] = precision_recall_fscore_support(y_test, y_pred_binary, average='weighted')[1]
-            metrics['cls_auc'] = roc_auc_score(y_test, y_pred_binary, multi_class='ovr', average='weighted')
-        else:
-            loss = mean_squared_error(y_test, y_pred)
+            probs = self._sigmoid(cls_outputs)
+            predictions = (probs > 0.5).astype(int)
+            loss = 1.0 - accuracy_score(cls_targets, predictions)
 
-            metrics['reg_mse'] = mean_squared_error(y_test, y_pred)
-            metrics['reg_mae'] = mean_absolute_error(y_test, y_pred)
-            metrics['reg_r2'] = r2_score(y_test, y_pred)
+            metrics['cls_f1_score'] = self.metrics['cls_f1'](cls_targets, predictions)
+            metrics['cls_precision'] = self.metrics['cls_precision'](cls_targets, predictions)
+            metrics['cls_recall'] = self.metrics['cls_recall'](cls_targets, predictions)
+            metrics['cls_auc'] = self.metrics['cls_auc'](cls_targets, probs)
+        if self.reg_indices:
+            reg_outputs = y_pred[:, self.reg_indices]
+            reg_targets = y_test[:, self.reg_indices]
+
+            loss = mean_squared_error(reg_targets, reg_outputs)
+
+            metrics['reg_mse'] = self.metrics['reg_mse'](reg_targets, reg_outputs)
+            metrics['reg_mae'] = self.metrics['reg_mae'](reg_targets, reg_outputs)
+            metrics['reg_r2'] = self.metrics['reg_r2'](reg_targets, reg_outputs)
 
         # 결과 출력
         print(f"  Test Loss: {loss:.4f}")

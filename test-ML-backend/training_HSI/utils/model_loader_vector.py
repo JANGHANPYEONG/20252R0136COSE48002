@@ -3,7 +3,7 @@ import mlflow
 from typing import Dict, Any, Tuple, List
 import os
 
-def load_model(config: Dict, label_type: str) -> Any:
+def load_model(config: Dict) -> Any:
     """
     설정에 따라 모델을 동적으로 로드합니다.
     
@@ -31,7 +31,7 @@ def load_model(config: Dict, label_type: str) -> Any:
         
         # create_model 함수 호출
         if hasattr(module, 'create_model'):
-            model = module.create_model(config, label_type)
+            model = module.create_model(config)
         else:
             raise AttributeError(f"Module {model_file} does not have create_model function")
         
