@@ -81,7 +81,29 @@ class vectorTrainer:
         return 1 / (1 + np.exp(-x))
     
 
-    def _calculate_metrics(self, y_pred, y_test):
+    def _calculate_loss(self, y_test, y_pred):
+        loss = 0.0
+        cls_loss, reg_loss, loss = 0.0, 0.0, 0.0
+
+        # 손실(회귀는 MSE, 분류는 1‑roc) 계산
+        if self.cls_indices:
+            cls_loss = 1.0 - roc_auc_score(y_test[:, self.cls_indices], y_pred[:, self.cls_indices], average='macro')
+        if self.reg_indices:
+            reg_loss = mean_squared_error(y_test[:, self.reg_indices], y_pred[:, self.reg_indices])
+
+        cls_len, reg_len = len(self.cls_indices), len(self.reg_indices)
+        if self.cls_indices and self.reg_indices:
+            loss = (cls_loss * cls_len + reg_loss * reg_len) / (cls_len + reg_len)
+        elif self.cls_indices:
+            loss = cls_loss
+        elif self.reg_indices:
+            loss = reg_loss
+        else:
+            raise ValueError("No task specified (classification or regression)")
+        
+        return loss
+
+    def _calculate_metrics(self, y_test, y_pred):
         """
         배치별 메트릭을 업데이트합니다.
         """
@@ -158,29 +180,9 @@ class vectorTrainer:
             y_tr_pred = self.model.predict(X_tr)
             y_val_pred = self.model.predict(X_val)
 
-            # 손실 계산
-            cls_tr_loss, cls_val_loss, reg_tr_loss, reg_val_loss = 0.0, 0.0, 0.0, 0.0
-
-            # 손실(회귀는 MSE, 분류는 1‑정확도) 계산
-            if self.cls_indices:
-                cls_tr_loss = 1.0 - accuracy_score(y_tr[:, self.cls_indices], y_tr_pred[:, self.cls_indices])
-                cls_val_loss = 1.0 - accuracy_score(y_val[:, self.cls_indices], y_val_pred[:, self.cls_indices])
-            if self.reg_indices:
-                reg_tr_loss = mean_squared_error(y_tr[:, self.reg_indices], y_tr_pred[:, self.reg_indices])
-                reg_val_loss = mean_squared_error(y_val[:, self.reg_indices], y_val_pred[:, self.reg_indices])
-
-            cls_len, reg_len = len(self.cls_indices), len(self.reg_indices)
-            if self.cls_indices and self.reg_indices:
-                tr_loss = (cls_tr_loss * cls_len + reg_tr_loss * reg_len) / (cls_len + reg_len)
-                val_loss = (cls_val_loss * cls_len + reg_val_loss * reg_len) / (cls_len + reg_len)
-            elif self.cls_indices:
-                tr_loss = cls_tr_loss
-                val_loss = cls_val_loss
-            elif self.reg_indices:
-                tr_loss = reg_tr_loss
-                val_loss = reg_val_loss
-            else:
-                raise ValueError("No task specified (classification or regression)")
+            # 손실(회귀는 MSE, 분류는 1‑roc) 계산
+            tr_loss = self._calculate_loss(y_tr, y_tr_pred)
+            val_loss = self._calculate_loss(y_val, y_val_pred)
 
             # 지표 계산 및 기록
             train_metrics[f'fold {fold_idx+1}'] = self._calculate_metrics(y_tr, y_tr_pred)
@@ -207,14 +209,14 @@ class vectorTrainer:
         for i in range(K_fold):
             print(f"  Fold {i+1}:")
             if self.cls_indices:
-                print(f"   F1 Score: train set-{train_metrics[f'fold {i+1}']['cls_f1']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_f1']:.4f}")
-                print(f"    Precision: train set-{train_metrics[f'fold {i+1}']['cls_precision']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_precision']:.4f}")
-                print(f"    Recall: train set-{train_metrics[f'fold {i+1}']['cls_recall']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_recall']:.4f}")
-                print(f"    AUC: train set-{train_metrics[f'fold {i+1}']['cls_auc']:.4f}, validation set-{val_metrics[f'fold {i+1}']['cls_auc']:.4f}")
+                print(f"   F1 Score: (train set,{train_metrics[f'fold {i+1}']['cls_f1']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['cls_f1']:.4f})")
+                print(f"    Precision: (train set, {train_metrics[f'fold {i+1}']['cls_precision']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['cls_precision']:.4f})")
+                print(f"    Recall: (train set, {train_metrics[f'fold {i+1}']['cls_recall']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['cls_recall']:.4f})")
+                print(f"    AUC: (train set, {train_metrics[f'fold {i+1}']['cls_auc']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['cls_auc']:.4f})")
             if self.reg_indices:
-                print(f"    MSE: train set-{train_metrics[f'fold {i+1}']['reg_mse']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_mse']:.4f}")
-                print(f"    MAE: train set-{train_metrics[f'fold {i+1}']['reg_mae']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_mae']:.4f}")
-                print(f"    R2: train set-{train_metrics[f'fold {i+1}']['reg_r2']:.4f}, validation set-{val_metrics[f'fold {i+1}']['reg_r2']:.4f}")
+                print(f"    MSE: (train set, {train_metrics[f'fold {i+1}']['reg_mse']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['reg_mse']:.4f})")
+                print(f"    MAE: (train set, {train_metrics[f'fold {i+1}']['reg_mae']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['reg_mae']:.4f})")
+                print(f"    R2: (train set, {train_metrics[f'fold {i+1}']['reg_r2']:.4f}), (validation set, {val_metrics[f'fold {i+1}']['reg_r2']:.4f})")
 
         return {
             'train_losses': train_losses_each_fold,
@@ -229,30 +231,9 @@ class vectorTrainer:
     def evaluate(self, X_test, y_test) -> Dict[str, float]:
         """테스트 데이터로 평가합니다."""
         y_pred = self.model.predict(X_test)
-        metrics = {}
-
-        # 손실(회귀는 MSE, 분류는 1‑정확도) 계산
-        if self.cls_indices:
-            cls_outputs = y_pred[:, self.cls_indices]
-            cls_targets = y_test[:, self.cls_indices]
-
-            probs = self._sigmoid(cls_outputs)
-            predictions = (probs > 0.5).astype(int)
-            loss = 1.0 - accuracy_score(cls_targets, predictions)
-
-            metrics['cls_f1_score'] = self.metrics['cls_f1'](cls_targets, predictions)
-            metrics['cls_precision'] = self.metrics['cls_precision'](cls_targets, predictions)
-            metrics['cls_recall'] = self.metrics['cls_recall'](cls_targets, predictions)
-            metrics['cls_auc'] = self.metrics['cls_auc'](cls_targets, probs)
-        if self.reg_indices:
-            reg_outputs = y_pred[:, self.reg_indices]
-            reg_targets = y_test[:, self.reg_indices]
-
-            loss = mean_squared_error(reg_targets, reg_outputs)
-
-            metrics['reg_mse'] = self.metrics['reg_mse'](reg_targets, reg_outputs)
-            metrics['reg_mae'] = self.metrics['reg_mae'](reg_targets, reg_outputs)
-            metrics['reg_r2'] = self.metrics['reg_r2'](reg_targets, reg_outputs)
+        
+        loss = self._calculate_loss(y_test, y_pred)
+        metrics = self._calculate_metrics(y_test, y_pred)
 
         # 결과 출력
         print(f"  Test Loss: {loss:.4f}")
