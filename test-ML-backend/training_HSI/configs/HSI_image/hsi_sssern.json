@@ -4,7 +4,7 @@
     "file": "hsi_sssern",
     "num_classes": 13,
     "parameters": {
-      "in_channels": 6,
+      "in_channels": 5,
       "num_blocks": 4,
       "reduction": 2
     }
