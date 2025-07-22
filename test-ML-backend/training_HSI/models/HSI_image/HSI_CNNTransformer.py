@@ -46,13 +46,12 @@ class MultiTaskHead(nn.Module):
             self.regression_head = None
 
     def forward(self, x):
-        # x: (batch, feature_dim)
-        clf = torch.sigmoid(self.classification_head(x))
+        clf = self.classification_head(x)  # (batch, num_classes)
         if self.regression_head:
-            reg = self.regression_head(x)
+            reg = self.regression_head(x)   # (batch, num_regression_targets)d
+            return clf, reg
         else:
-            reg = torch.empty(x.size(0), 0, device=x.device)
-        return {'classification': clf, 'regression': reg}
+            return clf
 
 
 class CNNTransformerMT(nn.Module):
