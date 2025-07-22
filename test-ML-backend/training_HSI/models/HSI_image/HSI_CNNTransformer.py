@@ -46,12 +46,12 @@ class MultiTaskHead(nn.Module):
             self.regression_head = None
 
     def forward(self, x):
-        clf = torch.sigmoid(self.classification_head(x))
+        clf = self.classification_head(x)  # (batch, num_classes)
         if self.regression_head:
-            reg = self.regression_head(x)
-            return {'classification': clf, 'regression': reg}
+            reg = self.regression_head(x)   # (batch, num_regression_targets)d
+            return clf, reg
         else:
-            return clf   # dict 대신 (batch, num_classes) Tensor만 반환
+            return clf
 
 
 class CNNTransformerMT(nn.Module):
