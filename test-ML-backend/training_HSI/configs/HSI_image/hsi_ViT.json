@@ -1,0 +1,47 @@
+{
+  "experiment": "hsi_vit_baseline",
+  "model": {
+    "file": "hsi_ViT",
+    "in_channels": 5,
+    "img_size": 224,
+    "patch_size": 16,
+    "emb_dim": 128,
+    "depth": 6,
+    "num_heads": 4,
+    "mlp_dim": 256,
+    "num_classes": 13,
+    "dropout": 0.1
+  },
+  "data": {
+    "csv": "datasets_HSI/label/label.csv",
+    "column_config": "datasets_HSI/column_config.json",
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "batch_size": 8,
+    "num_workers": 0,
+    "crop_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
+  },
+  "train": {
+    "epochs": 50,
+    "early_stopping_patience": 10,
+    "optimizer": "AdamW",
+    "lr": 3e-4,
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_ViT"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42
+} 
