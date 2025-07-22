@@ -3,7 +3,6 @@
   "model": {
     "file": "hsi_realtime2dcnn",
     "num_classes": 13,
-    "num_regression_targets": 0,
     "hsi_channels": 5
   },
   "data": {
@@ -21,7 +20,7 @@
     "scalar_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
+    "epochs": 15,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
@@ -31,7 +30,7 @@
     "grad_clip_norm": null
   },
   "mlflow": {
-    "tracking_uri": "http://127.0.0.1:5000",
+    "tracking_uri": "http://127.0.0.1:5001",
     "experiment_name": "HSI_2D_CNN_REALTIME"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
