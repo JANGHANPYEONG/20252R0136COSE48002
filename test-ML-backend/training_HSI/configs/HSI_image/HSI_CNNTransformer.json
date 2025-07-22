@@ -2,9 +2,9 @@
   "experiment": "hsi_cnn_transformer_mt",
   "model": {
     "file": "HSI_CNNTransformer",
-    "in_bands": 10,
+    "in_bands": 5,
     "cnn_channels": [32, 64, 128],
-    "num_bands": 10,
+    "num_bands": 5,
     "token_dim": 64,
     "trans_layers": 6,
     "trans_heads": 4,
@@ -24,14 +24,20 @@
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
   },
   "train": {
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau"
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
