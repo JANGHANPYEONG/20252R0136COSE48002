@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Realtime2DCNNMultilabel(nn.Module):
-    def __init__(self, input_channels=5, num_classes=13, num_regression_targets=0):
+    def __init__(self, input_channels, num_classes):
         super().__init__()
         self.backbone = nn.Sequential(
             nn.Conv2d(input_channels, 16, kernel_size=3, padding=1),
@@ -11,13 +11,7 @@ class Realtime2DCNNMultilabel(nn.Module):
             nn.ReLU(),
             nn.AdaptiveAvgPool2d((1, 1))
         )
-
-        self.classification_head = nn.Linear(16, num_classes)
-
-        self.regression_head = (
-            nn.Linear(16, num_regression_targets)
-            if num_regression_targets > 0 else None
-        )
+        self.head = nn.Linear(16, num_classes)
 
         self.apply(self._init_weights)
 
@@ -28,25 +22,23 @@ class Realtime2DCNNMultilabel(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        features = self.backbone(x)
-        features = torch.flatten(features, 1)
-
-        classification_output = torch.sigmoid(self.classification_head(features))
-
-        if self.regression_head is not None:
-            regression_output = self.regression_head(features)
-        else:
-            regression_output = torch.empty(classification_output.shape[0], 0, device=x.device)
-
-        return {
-            'classification': classification_output,
-            'regression': regression_output
-        }
+        x = self.backbone(x)
+        x = torch.flatten(x, 1)
+        x = torch.sigmoid(self.head(x))  # 멀티레이블 분류
+        return x
 
 
-def create_model(num_classes, num_regression_targets=0, hsi_channels=5, **kwargs):
-    return Realtime2DCNNMultilabel(
-        input_channels=hsi_channels,
-        num_classes=num_classes,
-        num_regression_targets=num_regression_targets
-    )  
+def create_model(config):
+    """
+    모델 생성 함수
+
+    Args:
+        config (dict): 전체 설정 파일 로드된 dict
+
+    Returns:
+        nn.Module: 모델 인스턴스
+    """
+    k = config["model"]["num_classes"]
+    n = config["model"]["hsi_channels"]
+
+    return Realtime2DCNNMultilabel(input_channels=n, num_classes=k)
