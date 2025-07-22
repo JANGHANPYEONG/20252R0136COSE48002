@@ -20,9 +20,7 @@
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "Vector_ML"
   },
-  "scaler": {
-    "method": "StandardScaler"
-  },
+  "scaler": "standardscaler",
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
 }
