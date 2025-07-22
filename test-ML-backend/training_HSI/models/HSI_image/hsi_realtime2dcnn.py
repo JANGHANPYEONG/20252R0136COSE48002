@@ -24,7 +24,7 @@ class Realtime2DCNNMultilabel(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x = torch.flatten(x, 1)
-        x = torch.sigmoid(self.head(x))  # 멀티레이블 분류
+        x = self.head(x)
         return x
 
 
