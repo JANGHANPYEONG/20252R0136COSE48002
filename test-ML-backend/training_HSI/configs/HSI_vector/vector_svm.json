@@ -1,20 +1,21 @@
 {
-  "experiment": "vector_randomforest_baseline",
+  "experiment": "vector_svm_baseline",
   "model": {
-    "file": "vector_randomforest",
+    "file": "vector_svm",
     "num_classes": 13
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
     "column_config": "../datasets_HSI/column_config.json",
     "K-fold": 5,
-    "test_split": 0.2
+    "test_split": 0.1
   },
   "train": {
-    "n_estimators": 10,
-    "max_depth": 5,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1
+    "kernel": "rbf",
+    "C": 1.0,
+    "gamma": "scale",
+    "degree": 3,
+    "coef0": 0.0
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",

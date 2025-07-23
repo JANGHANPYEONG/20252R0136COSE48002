@@ -110,9 +110,6 @@ def main():
         if not validate_model_config(config):
             raise ValueError("Invalid model configuration")
 
-        print("-" * 50)
-        task = 'classification'
-
         # 모델 불러오기
         model = load_model(config)
 
