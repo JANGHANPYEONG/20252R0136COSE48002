@@ -2,16 +2,31 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Realtime2DCNNMultilabel(nn.Module):
+class CNN_2D(nn.Module):
     def __init__(self, input_channels, num_classes):
         super().__init__()
         self.backbone = nn.Sequential(
-            nn.Conv2d(input_channels, 16, kernel_size=3, padding=1),
-            nn.BatchNorm2d(16),
+            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1),
             nn.ReLU(),
+
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             nn.AdaptiveAvgPool2d((1, 1))
         )
-        self.head = nn.Linear(16, num_classes)
+        self.head = nn.Linear(
+            nn.Flatten(),
+            nn.Linear(128, 512),
+            nn.ReLU(),
+            nn.Linear(512, num_classes)
+        )
 
         self.apply(self._init_weights)
 
@@ -23,7 +38,6 @@ class Realtime2DCNNMultilabel(nn.Module):
 
     def forward(self, x):
         x = self.backbone(x)
-        x = torch.flatten(x, 1)
         x = self.head(x)
         return x
 
@@ -32,4 +46,4 @@ def create_model(config):
     k = config["model"]["num_classes"]
     n = config["model"]["hsi_channels"]
 
-    return Realtime2DCNNMultilabel(input_channels=n, num_classes=k)
+    return CNN_2D(input_channels=n, num_classes=k)
