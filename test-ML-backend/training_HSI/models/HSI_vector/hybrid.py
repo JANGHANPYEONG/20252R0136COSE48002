@@ -89,12 +89,12 @@ class HybridModel:
         return tensor_list
     
     # 이미지 추출
-    def extract_vit_features(model, images):
+    def extract_vit_features(self, model, images):
         features = []
         with torch.no.grad():
-            for img in tqdm(images):
+            for img in images:
                 img = img.unsqueeze(0).to(DEVICE)
-                outputs = model(pixel_values=imag)['last_hidden_state'][:, 0, :]
+                outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]
                 features.append(outputs.squeeze(0).cpu().numpy())
         return np.array(features)
 
