@@ -7,15 +7,23 @@
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
     "column_config": "../datasets_HSI/column_config.json",
-    "K-fold": 5,
     "test_split": 0.2
   },
   "train": {
-    "n_components": 5,
-    "scale": true,
-    "max_iter": 500,
-    "tol": 1e-06,
-    "copy": true
+    "method": "gridsearchcv",
+    "cv": 5,
+    "scoring": "mt_scorer",
+    "n_jobs": -1,
+    "verbose": false,
+    "param_fixed": {
+      "tol": 1e-06,
+      "copy": true,
+      "max_iter": 500
+    },
+    "param_grid": {
+      "plsr__n_components": [2, 5, 8, 12],
+      "plsr__scale": [true, false]
+    }
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
