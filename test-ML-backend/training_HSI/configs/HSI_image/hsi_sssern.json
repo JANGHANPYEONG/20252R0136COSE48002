@@ -1,0 +1,38 @@
+{
+  "experiment": "hsi_sssern",
+  "model": {
+    "file": "hsi_sssern",
+    "num_classes": 13,
+    "parameters": {
+      "in_channels": 5,
+      "num_blocks": 4,
+      "reduction": 2
+    }
+  },
+  "data": {
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "batch_size": 8,
+    "num_workers": 4,
+    "crop_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true
+  },
+  "train": {
+    "epochs": 30,
+    "early_stopping_patience": 10,
+    "optimizer": "AdamW",
+    "lr": 3e-4,
+    "scheduler": "ReduceLROnPlateau"
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_SSSERN"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42
+}

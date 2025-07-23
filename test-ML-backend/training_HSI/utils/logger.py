@@ -30,6 +30,8 @@ class MLflowLogger:
         """MLflow run을 시작합니다."""
         if run_name is None:
             run_name = f"hsi_2d_cnn_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        else:
+            run_name = f"{run_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         mlflow.start_run(run_name=run_name)
         self.run_id = mlflow.active_run().info.run_id
