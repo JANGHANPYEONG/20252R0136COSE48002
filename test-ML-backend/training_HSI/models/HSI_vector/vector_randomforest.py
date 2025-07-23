@@ -24,6 +24,19 @@ class RandomForestWrapper:
     def predict(self, X):
         """MLflow 호환성을 위한 predict 메서드 (transform과 동일)"""
         return self.model.predict(X)
+    
+    def get_params(self, deep=True):
+        params = {'config': self.config}
+        if not deep:
+            return params
+        params.update(self.model.get_params(deep=True))
+        return params
+
+    def set_params(self, **params):
+        if 'config' in params:
+            self.config = params.pop('config')
+        self.model.set_params(**params)
+        return self
 
 
 def create_model(config: Dict):

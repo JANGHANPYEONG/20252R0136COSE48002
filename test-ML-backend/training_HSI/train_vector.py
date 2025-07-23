@@ -9,13 +9,11 @@ Vector ML 모델 학습 파이프라인
     python train_vector.py --config configs/HSI_vector/vector_randomforest.json
 """
 
-from utils.trainer_vector import vectorTrainer
+from utils.trainer_vector import SearchHyperparameter
 from utils.model_loader_vector import load_model, validate_model_config, get_model_info
-from utils.transforms_hsi import get_train_transforms, get_val_transforms, get_test_transforms
 from utils.logger import create_logger, log_training_summary
 from utils.dataset_vector import load_vector_data, get_label_info
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 import os
 import sys
 import json
@@ -23,6 +21,7 @@ import argparse
 import numpy as np
 import random
 import warnings
+import time
 warnings.filterwarnings('ignore')
 
 
@@ -45,7 +44,7 @@ def setup_seed(seed: int):
     """랜덤 시드를 설정합니다."""
     np.random.seed(seed)
     random.seed(seed)
-    print(f"Random seed set to: {seed}")
+    print(f"Random seed set to: {seed}\n")
 
 
 def main():
@@ -63,13 +62,8 @@ def main():
 
     # 시드 설정
     seed = config.get('seed', 42)
-    model = config.get('model', {}).get('file', 'vector_randomforest')
-    num_classes = config.get('model', {}).get('num_classes', 13)
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
-    column_config_path = config.get('data', {}).get(
-        'column_config', 'configs/HSI_vector/column_config.json')
-    scaler = config.get('scaler', "standardscaler")
-
+    column_config_path = config.get('data', {}).get('column_config', 'configs/HSI_vector/column_config.json')
     setup_seed(seed)
 
     # MLflow 로거 설정
@@ -80,14 +74,16 @@ def main():
         
         # 하이퍼파라미터 로깅
         params_to_log = {
-            'model_file': model,
-            'num_classes': num_classes,
+            'model_file': config['model']['file'],
+            'num_classes': config['model']['num_classes'],
+            'method': config['train']['method'],
+            'scoring': config['train']['scoring'],
             'seed': seed
         }
         logger.log_params(params_to_log)
     try:
         # 데이터 불러오기
-        dataset = load_vector_data(
+        dataset, pos_weight_info = load_vector_data(
             csv_path=csv_path,
             column_config_path=column_config_path
         )
@@ -98,12 +94,14 @@ def main():
         test_split = config.get('data', {}).get('test_split', 0.1)
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_split, random_state=seed
+            X, y,
+            test_size=test_split,
+            random_state=seed
         )
 
         # 라벨 정보 가져오기
         label_info = get_label_info(column_config_path=column_config_path)
-        print(f"Label info: {label_info}")
+        print(f"Label info: {label_info}\n")
 
         # 모델 설정 검증
         print("Validating model configuration...")
@@ -111,76 +109,63 @@ def main():
             raise ValueError("Invalid model configuration")
 
         # 모델 불러오기
-        model = load_model(config)
+        estimator = load_model(config)
 
         # 모델 정보 출력
-        model_info = get_model_info(config)
-        print(f"Model info: {model_info}")
+        estimator_info = get_model_info(config)
+        print(f"Model info: {estimator_info}\n")
 
-        # 훈련기 생성
-        trainer = vectorTrainer(model, config)
-
-        # K-fold 설정
-        K_fold = config.get('train', {}).get('K_fold', 5)
-
-        # 훈련 수행
-        print("Start training...")
-        training_results = trainer.train(
-            X_train=X_train,
-            y_train=y_train,
-            K_fold=K_fold,
-            logger=logger
+        # Hyperparameter tuning을 위한 class 불러오기
+        grid = SearchHyperparameter(
+            estimator=estimator,
+            config=config,
+            pos_weight_info=pos_weight_info
         )
+        print('Training and tuing model...')
 
-        # 테스트 수행
-        print("Evaluating on test set...")
-        test_metrics = trainer.evaluate(X_test, y_test)
+        start_time = time.time()
+        grid.fit(X_train, y_train)
+        training_time = time.time() - start_time
+        print(f"✅ Training done in {training_time/60:.2f} min")
+
+        best_params = grid.searcher.best_params_
+        best_estimator = grid.searcher.best_estimator_
+        best_val_score = grid.searcher.best_score_
+        print(f"Best Parameter: {best_params}\n")
+
+        # 평가 데이터에 대해 예측 수행
+        y_pred = best_estimator.predict(X_test)
+        results = grid.calculate_metrics(y_test, y_pred)
 
         # 최종 결과 로깅
         if logger is not None:
+            logger.log_model_ml(best_estimator, "best_model")
+            print("Best estimator saved!\n")
 
-            # 스케일러 로깅
-            logger.log_scaler(scaler)
             # 최종 메트릭 로깅
             final_metrics = {
-                **test_metrics,
-                'best_val_loss': trainer.best_val_loss,
-                'best_val_combined_score': training_results['best_val_metrics'].get('combined_score', 0)
+                **results,
+                'best_val_loss': best_val_score
             }
-
-            # 분류 메트릭 추가
-            if 'cls_f1_score' in test_metrics:
-                final_metrics.update({
-                    'best_val_cls_f1': training_results['best_val_metrics'].get('cls_f1', 0),
-                    'best_val_cls_auc': training_results['best_val_metrics'].get('cls_auc', 0)
-                })
-
-            # 회귀 메트릭 추가
-            if 'reg_r2' in test_metrics:
-                final_metrics.update({
-                    'best_val_reg_r2': training_results['best_val_metrics'].get('reg_r2', 0),
-                    'best_val_reg_mse': training_results['best_val_metrics'].get('reg_mse', 0)
-                })
-
             log_training_summary(
                 logger=logger,
                 config=config,
                 final_metrics=final_metrics,
-                training_time=training_results['training_time']
+                training_time=training_time
             )
 
-        print("Training completed successfully!")
+        print("\nTraining completed successfully!")
 
-        if 'cls_f1_score' in test_metrics:
-            print(f"Test F1 Score: {test_metrics['cls_f1_score']:.4f}")
-            print(f"Test AUC: {test_metrics['cls_auc']:.4f}")
+        if 'cls_f1' in results:
+            print(f"  Test F1 Score: {results['cls_f1']:.4f}")
+            print(f"  Test AUC: {results['cls_auc']:.4f}")
 
-        if 'reg_r2' in test_metrics:
-            print(f"Test R2 Score: {test_metrics['reg_r2']:.4f}")
-            print(f"Test MSE: {test_metrics['reg_mse']:.4f}")
+        if 'reg_r2' in results:
+            print(f"  Test R2 Score: {results['reg_r2']:.4f}")
+            print(f"  Test MSE: {results['reg_mse']:.4f}")
 
         print(
-            f"Test Combined Score: {test_metrics.get('combined_score', 0):.4f}")
+            f"Test Combined Score: {results.get('combined_score', 0):.4f}")
 
     except Exception as e:
         print(f"Error during training: {e}")
