@@ -73,20 +73,12 @@ class DualBranchHSICNN(nn.Module):
         }
 
 def create_model(config):
-    """
-    파이프라인 연동용 모델 생성 함수
-    Args:
-        config (dict): 전체 설정 딕셔너리
-    Returns:
-        nn.Module: 학습 가능한 모델
-    """
-    model_cfg = config["model"]
-    in_channels = model_cfg.get("in_channels", 6)
-    num_classes = model_cfg.get("num_classes", 0)
-    num_regression_targets = model_cfg.get("num_regression_targets", 6)
-    base_channels = model_cfg.get("base_channels", 32)
-    depth = model_cfg.get("depth", 3)
-    dropout = model_cfg.get("dropout", 0.2)
+    num_classes = config["model"].get("num_classes", 0)
+    num_regression_targets = config["model"].get("num_regression_targets", 0)
+    in_channels = config["model"].get("in_channels")
+    base_channels = config["model"].get("base_channels", 32)
+    depth = config["model"].get("depth", 3)
+    dropout = config["model"].get("dropout", 0.3)
 
     return DualBranchHSICNN(
         in_channels=in_channels,
