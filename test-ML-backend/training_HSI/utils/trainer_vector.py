@@ -167,8 +167,8 @@ class vectorTrainer:
             y_tr, y_val = y_train[tr_idx], y_train[val_idx]
 
             # 모델에서 scaler를 적용하지 않은 경우
-            is_scaler = self.config.get('scaler', None)
-            if is_scaler == None:
+            is_scaler = self.config.get('scaler', "")
+            if is_scaler == "":
                 scaler = StandardScaler()
                 X_tr = scaler.fit_transform(X_tr)
                 X_val = scaler.transform(X_val)
@@ -231,7 +231,7 @@ class vectorTrainer:
     def evaluate(self, X_test, y_test) -> Dict[str, float]:
         """테스트 데이터로 평가합니다."""
         y_pred = self.model.predict(X_test)
-        
+
         loss = self._calculate_loss(y_test, y_pred)
         metrics = self._calculate_metrics(y_test, y_pred)
 
