@@ -8,8 +8,8 @@
     "vector_size": 5
   },
   "data": {
-    "csv": "datasets_HSI/label/label.csv",
-    "column_config": "datasets_HSI/label/column_config.json",
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
@@ -25,7 +25,11 @@
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau"
+    "scheduler": "ReduceLROnPlateau",
+    "loss_fn": "uncertainty",
+    "use_amp": true,
+    "grad_clip_norm": 1,
+    "save_interval": 5
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
