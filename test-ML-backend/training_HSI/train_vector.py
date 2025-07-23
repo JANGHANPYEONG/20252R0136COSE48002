@@ -68,7 +68,7 @@ def main():
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
     column_config_path = config.get('data', {}).get(
         'column_config', 'configs/HSI_vector/column_config.json')
-    scaler = config.get('scaler', StandardScaler)
+    scaler = config.get('scaler', "standardscaler")
 
     setup_seed(seed)
 
@@ -76,7 +76,7 @@ def main():
     logger = None
     if not args.no_mlflow:
         logger = create_logger(config)
-        logger.start_run()
+        logger.start_run(run_name="hsi_vector")
         
         # 하이퍼파라미터 로깅
         params_to_log = {
@@ -110,9 +110,6 @@ def main():
         if not validate_model_config(config):
             raise ValueError("Invalid model configuration")
 
-        print("-" * 50)
-        task = 'classification'
-
         # 모델 불러오기
         model = load_model(config)
 
@@ -128,7 +125,7 @@ def main():
 
         # 훈련 수행
         print("Start training...")
-        training_results, scaler = trainer.train(
+        training_results = trainer.train(
             X_train=X_train,
             y_train=y_train,
             K_fold=K_fold,
