@@ -1,35 +1,39 @@
 {
-  "experiment": "dual_branch_regression",
+  "experiment": "hsi_dual_branch_regression",
   "model": {
-    "file": "dual_branch_regression",
+    "file": "hsi_dual_branch_regression",
     "num_classes": 13,
-    "num_regression_targets": 2,
-    "hsi_channels": 5,
-    "vector_size": 5
+    "in_channels": 5
   },
   "data": {
-    "csv": "datasets_HSI/label/label.csv",
-    "column_config": "datasets_HSI/label/column_config.json",
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
     "num_workers": 4,
-    "crop_size": [32, 32],
+    "crop_size": [224, 224],
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
-    "use_brightness_contrast": true
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
   },
   "train": {
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau"
+    "scheduler": "ReduceLROnPlateau",
+    "loss_fn": "uncertainty",
+    "use_amp": true,
+    "grad_clip_norm": 1,
+    "save_interval": 1
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_2D_CNN_REGRESSION"
+    "experiment_name": "HSI_DUAL_BRANCH_REGRESSION"
   },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
 }

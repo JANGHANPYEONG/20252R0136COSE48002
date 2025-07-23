@@ -119,6 +119,7 @@ class HSITrainer:
         self.best_val_metrics = {}
         self.patience_counter = 0
         self.early_stopping_patience = config.get('train', {}).get('early_stopping_patience', 10)
+        self.save_interval = config.get('train', {}).get('save_interval', 5)
 
     def _setup_optimizer(self) -> optim.Optimizer:
         """옵티마이저를 설정합니다."""
@@ -515,18 +516,22 @@ class HSITrainer:
                 }
                 logger.log_metrics(epoch_metrics, step=epoch)
             
-            # 최고 성능 모델 저장
-            if val_loss < self.best_val_loss:
-                self.best_val_loss = val_loss
-                self.best_val_metrics = val_epoch_metrics
-                self.patience_counter = 0
+            # 체크포인트 저장 조건 확인
+            should_checkpoint = ((epoch + 1) % self.save_interval == 0) or (val_loss < self.best_val_loss)
+            
+            if should_checkpoint:
+                if val_loss < self.best_val_loss:
+                    self.best_val_loss = val_loss
+                    self.best_val_metrics = val_epoch_metrics
+                    self.patience_counter = 0
                 
                 # 모델 저장
                 if logger is not None:
-                    logger.log_model(self.model, "best_model")
-                    print("New best model saved!")
+                    logger.log_model(self.model, f"model_ep{epoch+1:03d}")
+                    print(f"[Checkpoint] Epoch {epoch+1} saved", flush=True)
             else:
-                self.patience_counter += 1
+                if val_loss >= self.best_val_loss:
+                    self.patience_counter += 1
             
             # Early stopping 체크
             if self.patience_counter >= self.early_stopping_patience:
