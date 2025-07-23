@@ -1,7 +1,7 @@
 {
-  "experiment": "vector_randomforest_baseline",
+  "experiment": "vector_plsr_baseline",
   "model": {
-    "file": "vector_randomforest",
+    "file": "vector_plsr",
     "num_classes": 13
   },
   "data": {
@@ -11,15 +11,16 @@
     "test_split": 0.2
   },
   "train": {
-    "n_estimators": 10,
-    "max_depth": 5,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1
+    "n_components": 5,
+    "scale": true,
+    "max_iter": 500,
+    "tol": 1e-06,
+    "copy": true
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "Vector_ML"
   },
-  "scaler": "",
+  "scaler": "msc",
   "seed": 42
 }
