@@ -64,13 +64,12 @@ class DualBranchHSICNN(nn.Module):
         feat = self.pool(feat)         # (B, C, 1, 1)
         feat = feat.view(feat.size(0), -1)  # (B, C)
 
-        reg_out = self.regressor(feat)
+        reg_out = self.regressor(feat) if self.regressor else torch.empty(x.size(0), 0, device=x.device)
         cls_out = self.classifier(feat) if self.classifier else torch.empty(x.size(0), 0, device=x.device)
 
-        return {
-            "classification": cls_out,
-            "regression": reg_out
-        }
+        # 둘 다 (B, N) 형태이므로 dim=1 기준으로 concat
+        outputs = torch.cat([cls_out, reg_out], dim=1)
+        return outputs  # ← 하나의 Tensor로 반환 (✅)
 
 def create_model(config):
     num_classes = config["model"].get("num_classes", 0)
