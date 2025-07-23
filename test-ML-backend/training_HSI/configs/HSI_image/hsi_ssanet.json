@@ -1,9 +1,31 @@
 {
-  "experiment": "hsi_realtime2dcnn_experiment",
+  "experiment": "hsi_ssanet_baseline",
   "model": {
-    "file": "hsi_realtime2dcnn",
+    "file": "hsi_ssanet",
     "num_classes": 13,
-    "hsi_channels": 5
+    "SeAM": {
+        "out_channels": 30,
+        "reduction": 8
+    },
+    "SaAM": {
+        "conv_kernel_size": 7,
+        "conv_padding": 3,
+        "hidden_dim": 256
+    },
+    "SpectralSpatialAttention": {
+        "kernel_size": 1
+    },
+    "PatchPositionEmbedding": {
+        "patch_size": 15,
+        "in_channels": 5,
+        "embed_dim": 256,
+        "image_size": 225
+    },
+    "TransformerEncoderBlock": {
+        "num_heads": 4,
+        "mlp_ratio": 4.0,
+        "dropout": 0.1
+    }
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
@@ -12,7 +34,7 @@
     "test_split": 0.1,
     "batch_size": 8,
     "num_workers": 4,
-    "crop_size": [224, 224],
+    "crop_size": [225, 225],
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
@@ -25,14 +47,15 @@
     "optimizer": "AdamW",
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
     "loss_fn": "uncertainty",
     "use_amp": false,
-    "grad_clip_norm": null,
-    "save_interval": 5
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_2D_CNN_REALTIME"
+    "experiment_name": "hsi_ssanet"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
