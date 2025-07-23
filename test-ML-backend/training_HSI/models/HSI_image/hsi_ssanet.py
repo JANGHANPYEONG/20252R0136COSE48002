@@ -48,7 +48,6 @@ class SaAM(nn.Module):
         attention = self.sigmoid(self.conv(combined))
         return x * attention
 
-# [270722] 코드 수정중
 # Patchify and Position Embedding
 class PatchifyPositionEmbedding(nn.Module):
     """
@@ -84,7 +83,6 @@ class PatchifyPositionEmbedding(nn.Module):
         x = x + self.pos_embed  # 위치 임베딩 추가
         return x
 
-# [270722] 코드 수정중
 # input -> Norm -> Multi-Head Attention -> Norm -> Feed Forward -> Output
 # FFC(input) = FC(activation_function(FC(input)))
 class TransformerEncoderBlock(nn.Module):
@@ -116,6 +114,27 @@ class TransformerEncoderBlock(nn.Module):
         x = x_res + self.dropout(self.ffn(x))
         return x
 
+class DenseTransformer(nn.Module):
+    def __init__(self, block_cls, num_layers, dim, heads, mlp_ratio, dropout):
+        super().__init__()
+        self.blocks = nn.ModuleList([
+            block_cls(dim, heads, mlp_ratio, dropout) for _ in range(num_layers)
+        ])
+        # concat으로 차원이 늘어나므로 다시 dim으로 줄이는 프로젝션 레이어
+        self.projs = nn.ModuleList([
+            nn.Linear(dim * (i + 1), dim) for i in range(num_layers)
+        ])
+
+    def forward(self, x):
+        feats = [x]           # x: (B, N+1, D)
+        out = x
+        for i, blk in enumerate(self.blocks):
+            out = blk(out)    # (B, N+1, D)
+            feats.append(out) # 누적
+            cat = torch.cat(feats[1:], dim=-1)  # 첫 입력 제외하고 concat (B, N+1, D * (i+1))
+            out = self.projs[i](cat)            # (B, N+1, D)로 압축
+        return out
+
 # Spectral-Spatial Attention Network (SSANet)
 # This combines SeAM and SaAM for HSI data
 # 최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, k는 attention 및 1x1 conv 이후 유지되는 밴드 수
@@ -139,7 +158,6 @@ class SpectralSpatialAttention(nn.Module):
         x = self.reduce(x)
         return x
 
-# [270722] 코드 수정중
 # HSI SSANet Model
 # main model class that uses the SpectralSpatialAttention module
 # HSI_SSANet
@@ -173,14 +191,14 @@ class HSI_SSANet(nn.Module):
         )
 
         # 3. Transformer Encoder Stack
-        self.transformer = nn.Sequential(*[
-            TransformerEncoderBlock(
-                dim=embed_dim,
-                num_heads=num_TransformerEncoder_heads,
-                mlp_ratio=transformer_mlp_ratio,
-                dropout=transformer_dropout
-            ) for _ in range(num_TransformerEncoder_layers)
-        ])
+        self.transformer = DenseTransformer(
+            block_cls=TransformerEncoderBlock,
+            num_layers=num_TransformerEncoder_layers,
+            dim=embed_dim,
+            heads=num_TransformerEncoder_heads,
+            mlp_ratio=transformer_mlp_ratio,
+            dropout=transformer_dropout
+            )
 
         # 4. Classification head
         self.classifier = nn.Linear(embed_dim, num_classes)
@@ -193,8 +211,6 @@ class HSI_SSANet(nn.Module):
         out = self.classifier(cls_token)  # (B, num_classes)
         return out
 
-
-# [270722] 코드 수정중
 def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     column_config_path = config['data']['column_config']
     with open(column_config_path, 'r') as f:
@@ -243,10 +259,6 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
 
     return model
 
-
-
-
-# [270722] 코드 수정중
 def get_model_info(model: HSI_SSANet) -> Dict[str, Any]:
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
