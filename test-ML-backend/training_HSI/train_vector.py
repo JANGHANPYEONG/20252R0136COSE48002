@@ -48,31 +48,6 @@ def setup_seed(seed: int):
     print(f"Random seed set to: {seed}")
 
 
-def setup_label_info(column_config_path: str):
-    """라벨 타입 정보를 설정합니다."""
-    # 컬럼 설정에서 라벨 정보 로드
-    column_config = load_config(column_config_path)
-
-    label_types = column_config['label_types']
-    label_columns = column_config['label_columns']
-
-     # 분류/회귀 라벨 인덱스 설정
-    cls_indices = []
-    reg_indices = []
-
-    for i, label_name in enumerate(label_columns):
-        if label_name in label_types['classification']:
-            cls_indices.append(i)
-        elif label_name in label_types['regression']:
-            reg_indices.append(i)
-
-    print(f"Label setup:")
-    print(f"  Classification indices: {cls_indices}")
-    print(f"  Regression indices: {reg_indices}")
-
-    return cls_indices, reg_indices
-
-
 def main():
     """메인 함수"""
     parser = argparse.ArgumentParser(description='HSI Vector Training')
@@ -93,7 +68,7 @@ def main():
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
     column_config_path = config.get('data', {}).get(
         'column_config', 'configs/HSI_vector/column_config.json')
-    scaler = config.get('scaler', StandardScaler)
+    scaler = config.get('scaler', "standardscaler")
 
     setup_seed(seed)
 
@@ -101,7 +76,7 @@ def main():
     logger = None
     if not args.no_mlflow:
         logger = create_logger(config)
-        logger.start_run()
+        logger.start_run(run_name="hsi_vector")
         
         # 하이퍼파라미터 로깅
         params_to_log = {
@@ -120,7 +95,6 @@ def main():
         X = dataset.spectral_data
         y = dataset.labels
 
-        val_split = config.get('data', {}).get('val_split', 0.2)
         test_split = config.get('data', {}).get('test_split', 0.1)
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -131,85 +105,72 @@ def main():
         label_info = get_label_info(column_config_path=column_config_path)
         print(f"Label info: {label_info}")
 
-        clf_indices, reg_indices = setup_label_info(column_config_path=column_config_path)
-
         # 모델 설정 검증
         print("Validating model configuration...")
         if not validate_model_config(config):
             raise ValueError("Invalid model configuration")
 
-        for i in range(len(y_train)):
-            print("-" * 50)
-            print(f"Training for label {label_info['label_columns'][i]}...")
-            if i in clf_indices:
-                task = 'classification'
-                model = load_model(config, label_type='classification')
-            elif i in reg_indices:
-                task = 'regression'
-                model = load_model(config, label_type='regression')
-            else:
-                raise ValueError(f"Unknown label index: {i}")
+        print("-" * 50)
+        task = 'classification'
 
-            print(f"Task for label index {i}: {task}")
+        # 모델 불러오기
+        model = load_model(config)
 
-            y_train_single_label = y_train[:, i]
-            y_test_single_label = y_test[:, i]
-            
-            # 모델 정보 출력
-            model_info = get_model_info(config)
-            print(f"Model info: {model_info}")
+        # 모델 정보 출력
+        model_info = get_model_info(config)
+        print(f"Model info: {model_info}")
 
-            # 훈련기 생성
-            trainer = vectorTrainer(model, task, config)
+        # 훈련기 생성
+        trainer = vectorTrainer(model, config)
 
-            # K-fold 설정
-            K_fold = config.get('train', {}).get('K_fold', 5)
+        # K-fold 설정
+        K_fold = config.get('train', {}).get('K_fold', 5)
 
-            # 훈련 수행
-            print("Starting training...")
-            training_results = trainer.train(
-                X_train=X_train,
-                y_train=y_train_single_label,
-                K_fold=K_fold,
-                logger=logger
+        # 훈련 수행
+        print("Start training...")
+        training_results = trainer.train(
+            X_train=X_train,
+            y_train=y_train,
+            K_fold=K_fold,
+            logger=logger
+        )
+
+        # 테스트 수행
+        print("Evaluating on test set...")
+        test_metrics = trainer.evaluate(X_test, y_test)
+
+        # 최종 결과 로깅
+        if logger is not None:
+
+            # 스케일러 로깅
+            logger.log_scaler(scaler)
+            # 최종 메트릭 로깅
+            final_metrics = {
+                **test_metrics,
+                'best_val_loss': trainer.best_val_loss,
+                'best_val_combined_score': training_results['best_val_metrics'].get('combined_score', 0)
+            }
+
+            # 분류 메트릭 추가
+            if 'cls_f1_score' in test_metrics:
+                final_metrics.update({
+                    'best_val_cls_f1': training_results['best_val_metrics'].get('cls_f1', 0),
+                    'best_val_cls_auc': training_results['best_val_metrics'].get('cls_auc', 0)
+                })
+
+            # 회귀 메트릭 추가
+            if 'reg_r2' in test_metrics:
+                final_metrics.update({
+                    'best_val_reg_r2': training_results['best_val_metrics'].get('reg_r2', 0),
+                    'best_val_reg_mse': training_results['best_val_metrics'].get('reg_mse', 0)
+                })
+
+            log_training_summary(
+                logger=logger,
+                config=config,
+                final_metrics=final_metrics,
+                training_time=training_results['training_time']
             )
-
-            # 테스트 수행
-            print("Evaluating on test set...")
-            test_metrics = trainer.evaluate(X_test, y_test_single_label)
-
-            # 최종 결과 로깅
-            if logger is not None:
-                # 스케일러 로깅
-                logger.log_scaler(scaler)
-
-                # 최종 메트릭 로깅
-                final_metrics = {
-                    **test_metrics,
-                    'best_val_loss': trainer.best_val_loss,
-                    'best_val_combined_score': training_results['best_val_metrics'].get('combined_score', 0)
-                }
-
-                # 분류 메트릭 추가
-                if 'cls_f1_score' in test_metrics:
-                    final_metrics.update({
-                        'best_val_cls_f1': training_results['best_val_metrics'].get('cls_f1_score', 0),
-                        'best_val_cls_auc': training_results['best_val_metrics'].get('cls_auc', 0)
-                    })
-
-                # 회귀 메트릭 추가
-                if 'reg_r2' in test_metrics:
-                    final_metrics.update({
-                        'best_val_reg_r2': training_results['best_val_metrics'].get('reg_r2', 0),
-                        'best_val_reg_mse': training_results['best_val_metrics'].get('reg_mse', 0)
-                    })
-
-                log_training_summary(
-                    logger=logger,
-                    config=config,
-                    final_metrics=final_metrics,
-                    training_time=training_results['training_time']
-                )
 
         print("Training completed successfully!")
 

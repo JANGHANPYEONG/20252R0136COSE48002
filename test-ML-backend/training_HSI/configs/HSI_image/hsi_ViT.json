@@ -1,25 +1,24 @@
 {
-  "experiment": "hsi_cnn_transformer_mt",
+  "experiment": "hsi_vit_baseline",
   "model": {
-    "file": "HSI_CNNTransformer",
-    "in_bands": 5,
-    "cnn_channels": [32, 64, 128],
-    "num_bands": 5,
-    "token_dim": 64,
-    "trans_layers": 6,
-    "trans_heads": 4,
-    "trans_ffn_dim": 1024,
+    "file": "hsi_ViT",
+    "in_channels": 5,
+    "img_size": 224,
+    "patch_size": 16,
+    "emb_dim": 128,
+    "depth": 6,
+    "num_heads": 4,
+    "mlp_dim": 256,
     "num_classes": 13,
-    "num_regression_targets": 0,
-    "use_pool": true
+    "dropout": 0.1
   },
   "data": {
-    "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../datasets_HSI/column_config.json",
+    "csv": "datasets_HSI/label/label.csv",
+    "column_config": "datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
-    "num_workers": 4,
+    "num_workers": 0,
     "crop_size": [224, 224],
     "use_flip": true,
     "use_rotation": true,
@@ -41,8 +40,8 @@
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_CNN_Transformer_MT"
+    "experiment_name": "HSI_ViT"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
-}
+} 

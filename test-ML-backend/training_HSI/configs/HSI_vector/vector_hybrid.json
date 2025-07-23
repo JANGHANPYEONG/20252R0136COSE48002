@@ -1,7 +1,7 @@
 {
-  "experiment": "vector_randomforest_baseline",
+  "experiment": "hybrid",
   "model": {
-    "file": "vector_randomforest",
+    "file": "hybrid",
     "num_classes": 13
   },
   "data": {
@@ -22,5 +22,9 @@
   },
   "scaler": "standardscaler",
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
-  "seed": 42
+  "seed": 42,
+  "TS_path": "../../../Task2/TS_image/",
+  "VS_path": "../../../Task2/VS_image/",
+  "TS_label":  "../../../datasets_HSI/label/TS_label.csv",
+  "vS_label":  "../../../datasets_HSI/label/vS_label.csv"
 }
