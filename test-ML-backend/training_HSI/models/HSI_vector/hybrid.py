@@ -8,7 +8,13 @@ from torchvision import transforms
 from typing import Dict
 import cv2
 from sklearn.decomposition import PCA
+from tqdm import tqdm
+import torch
+from transformers import ViTModel, ViTFeatureExtractor
+from joblib import Parallel, delayed
+import multiprocessing
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class HybridModel:
     def __init__(self, config):
         self.config = config
@@ -43,7 +49,7 @@ class HybridModel:
             eval_metric='logloss',
             n_jobs=-1
         )
-    
+    # 하나의 폴더 내에 _P로 시작하는 이미지들 path 불러온 뒤 여러 파장대들 묶어 하나의 tensor로 반환
     def load_stack(self, id_folder):
         band_files = sorted(os.listdir(id_folder), key=lambda x: int(x.split('_P')[-1].split('.')[0]))
         bands = []
@@ -53,6 +59,7 @@ class HybridModel:
                 bands.append(img.astype(np.float32))
         return np.stack(bands, axis=-1)  # (H, W, C)
 
+    # 차원 축소 n -> 3(RGB)
     def apply_pca(self, stack_img):
         H, W, C = stack_img.shape
         flat = stack_img.reshape(-1, C)
@@ -65,22 +72,27 @@ class HybridModel:
         reduced_img *= 255
         return reduced_img.astype(np.uint8)
 
+    # 병렬화를 위한 작업 단일화
+    def process_single_folder(self, folder_path):
+        stack = self.load_stack(folder_path)
+        pca_img = self.apply_pca(stack)
+        tensor = self.transform(pca_img)
+        return tensor
+
     def process_all(self, dir):
         tensor_list = []
-        for folder in sorted(os.listdir(dir)):
-            folder_path = os.path.join(dir, folder)
-            if not os.path.isdir(folder_path): continue
-            stack = self.load_stack(folder_path)
-            pca_img = self.apply_pca(stack)
-            tensor = self.transform(pca_img)
-            tensor_list.append(tensor)
+        folder_paths = [os.path.join(dir, f) for f in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, f))]
+        n_jobs = min(len(folder_paths), multiprocessing.cpu_count())
+        tensor_list = Parallel(n_jobs=n_jobs)(
+            delayed(self.process_single_folder)(folder_path) for folder_path in folder_paths
+        )
         return tensor_list
     
     # 이미지 추출
     def extract_vit_features(model, images):
         features = []
         with torch.no.grad():
-            for img in images:
+            for img in tqdm(images):
                 img = img.unsqueeze(0).to(DEVICE)
                 outputs = model(pixel_values=imag)['last_hidden_state'][:, 0, :]
                 features.append(outputs.squeeze(0).cpu().numpy())
