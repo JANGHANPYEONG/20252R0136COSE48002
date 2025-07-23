@@ -1,26 +1,40 @@
 {
-  "experiment": "hsi_cnn_transformer_mt",
+  "experiment": "hsi_ssanet_baseline",
   "model": {
-    "file": "HSI_CNNTransformer",
-    "in_bands": 5,
-    "cnn_channels": [32, 64, 128],
-    "num_bands": 5,
-    "token_dim": 64,
-    "trans_layers": 6,
-    "trans_heads": 4,
-    "trans_ffn_dim": 1024,
+    "file": "hsi_ssanet",
     "num_classes": 13,
-    "num_regression_targets": 0,
-    "use_pool": true
+    "SeAM": {
+        "out_channels": 30,
+        "reduction": 8
+    },
+    "SaAM": {
+        "conv_kernel_size": 7,
+        "conv_padding": 3,
+        "hidden_dim": 256
+    },
+    "SpectralSpatialAttention": {
+        "kernel_size": 1
+    },
+    "PatchPositionEmbedding": {
+        "patch_size": 15,
+        "in_channels": 5,
+        "embed_dim": 256,
+        "image_size": 225
+    },
+    "TransformerEncoderBlock": {
+        "num_heads": 4,
+        "mlp_ratio": 4.0,
+        "dropout": 0.1
+    }
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
     "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
-    "batch_size": 16,
+    "batch_size": 8,
     "num_workers": 4,
-    "crop_size": [224, 224],
+    "crop_size": [225, 225],
     "use_flip": true,
     "use_rotation": true,
     "use_noise": true,
@@ -31,7 +45,7 @@
     "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
-    "lr": 1e-4,
+    "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "scheduler_patience": 5,
     "scheduler_factor": 0.5,
@@ -41,7 +55,7 @@
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_CNN_Transformer_MT"
+    "experiment_name": "hsi_ssanet"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
