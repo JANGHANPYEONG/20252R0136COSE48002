@@ -26,11 +26,11 @@
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "use_amp": true,
+    "grad_clip_norm": 1
   },
   "mlflow": {
-    "tracking_uri": "file:/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI",
+    "tracking_uri": "file:/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/mlruns",
     "experiment_name": "HSI_2D_CNN_REALTIME"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
