@@ -9,7 +9,7 @@ from typing import Dict
     + PLSR (Partial Least Squares Regression)
 """
 
-class PLSRWrapper(BaseEstimator):
+class PLSRWrapper:
     def __init__(self, config: Dict):
         self.config = config
         self.params = self.config.get("train", {}).get("params", {})
