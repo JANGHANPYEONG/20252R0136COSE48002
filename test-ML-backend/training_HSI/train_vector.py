@@ -63,14 +63,7 @@ def main():
     # 시드 설정
     seed = config.get('seed', 42)
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
-<<<<<<< HEAD
     column_config_path = config.get('data', {}).get('column_config', 'configs/HSI_vector/column_config.json')
-=======
-    column_config_path = config.get('data', {}).get(
-        'column_config', 'configs/column_config.json')
-    scaler = config.get('scaler', "standardscaler")
-
->>>>>>> origin/test-ml-backend
     setup_seed(seed)
 
     # MLflow 로거 설정
