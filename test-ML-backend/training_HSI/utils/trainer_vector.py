@@ -1,17 +1,13 @@
-from typing import Dict, Any, Tuple, List
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, accuracy_score
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error, make_scorer
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from skopt import BayesSearchCV
 from sklearn.base import BaseEstimator
-from collections import defaultdict
 import time
 from tqdm import tqdm
 
-
+'''
 class vectorTrainer:
     """ML 모델 훈련을 위한 클래스"""
 
@@ -247,7 +243,7 @@ class vectorTrainer:
             'loss': loss,
             **metrics
         }
-
+'''
 
 class SearchHyperparameter(BaseEstimator):
     """
@@ -263,7 +259,6 @@ class SearchHyperparameter(BaseEstimator):
 
         self.method = self.config.get('train', {}).get('method', 'gridsearchcv')
         self.param_grid = self.config.get('train', {}).get('param_grid', {})
-        self.search_spaces = self.config.get('train', {}).get('search_spaces', {})
         self.cv = self.config.get('train', {}).get('cv', 5)
         self.scoring_method = self.config.get('train', {}).get('scoring', 'r2')
         self.n_iter = self.config.get('train', {}).get('n_iter', 20)
@@ -297,7 +292,7 @@ class SearchHyperparameter(BaseEstimator):
         elif self.method == 'randomizedsearchcv':
             self.searcher = RandomizedSearchCV(
                 estimator=self.estimator,
-                param_grid=self.param_grid,
+                param_distributions=self.param_grid,
                 cv=self.cv,
                 scoring=self.scoring,
                 n_jobs=self.n_jobs,
@@ -307,7 +302,7 @@ class SearchHyperparameter(BaseEstimator):
         elif self.method == 'bayessearchcv':
             self.searcher = BayesSearchCV(
                 estimator=self.estimator,
-                search_spaces=self.search_spaces,
+                search_spaces=self.param_grid,
                 n_iter=self.n_iter,
                 cv=self.cv,
                 scoring=self.scoring,

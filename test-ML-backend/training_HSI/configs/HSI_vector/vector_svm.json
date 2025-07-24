@@ -11,16 +11,24 @@
     "test_split": 0.1
   },
   "train": {
-    "kernel": "rbf",
-    "C": 1.0,
-    "gamma": "scale",
-    "degree": 3,
-    "coef0": 0.0
+    "method": "randomizedsearchcv",
+    "cv": 5,
+    "scoring": "mt_scorer",
+    "n_iter": 30,
+    "n_jobs": -1,
+    "verbose": false,
+    "param_fixed": {},
+    "search_spaces": {
+      "svm__kernel": ["linear", "rbf", "poly", "sigmoid"],
+      "svm__C": [0.01, 0.1, 1, 10, 100],
+      "svm__gamma": ["scale", "auto", 0.001, 0.01, 0.1, 1],
+      "svm__degree": [2, 3, 4, 5],
+      "svm__coef0": [0.0, 0.1, 0.5, 1.0]
+    }
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "Vector_ML"
   },
-  "scaler": "",
   "seed": 42
 }
