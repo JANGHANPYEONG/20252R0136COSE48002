@@ -74,11 +74,17 @@ def main():
                        help='Path to configuration file')
     parser.add_argument('--no-mlflow', action='store_true',
                        help='Disable MLflow logging')
+    parser.add_argument('--save-interval', type=int,
+                       help='Epoch interval for model checkpointing')
     args = parser.parse_args()
     
     # 설정 로드
     print("Loading configuration...")
     config = load_config(args.config)
+    
+    # CLI 파라미터로 save_interval 덮어쓰기
+    if args.save_interval is not None:
+        config['train']['save_interval'] = args.save_interval
     
     # 시드 설정
     seed = config.get('seed', 42)
@@ -102,6 +108,7 @@ def main():
             'optimizer': config['train']['optimizer'],
             'lr': config['train']['lr'],
             'scheduler': config['train']['scheduler'],
+            'save_interval': config['train'].get('save_interval', 5),
             'seed': seed
         }
         logger.log_params(params_to_log)
