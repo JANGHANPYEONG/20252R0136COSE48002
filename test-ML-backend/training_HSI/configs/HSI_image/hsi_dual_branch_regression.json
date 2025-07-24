@@ -27,8 +27,7 @@
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
     "use_amp": true,
-    "grad_clip_norm": 1,
-    "save_interval": 1
+    "grad_clip_norm": 1
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
