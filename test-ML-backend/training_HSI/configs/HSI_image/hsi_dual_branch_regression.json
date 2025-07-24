@@ -1,9 +1,9 @@
 {
-  "experiment": "hsi_realtime2dcnn_experiment",
+  "experiment": "hsi_dual_branch_regression",
   "model": {
-    "file": "hsi_realtime2dcnn",
+    "file": "hsi_dual_branch_regression",
     "num_classes": 13,
-    "hsi_channels": 5
+    "in_channels": 5
   },
   "data": {
     "csv": "/mnt/data/datasets_HSI/label/label.csv",
@@ -26,13 +26,13 @@
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null,
-    "save_interval": 5
+    "use_amp": true,
+    "grad_clip_norm": 1,
+    "save_interval": 1
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_2D_CNN_REALTIME"
+    "experiment_name": "HSI_DUAL_BRANCH_REGRESSION"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42

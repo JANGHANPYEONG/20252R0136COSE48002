@@ -1,13 +1,13 @@
 {
-  "experiment": "hsi_realtime2dcnn_experiment",
+  "experiment": "hsi_2dcnn_experiment",
   "model": {
-    "file": "hsi_realtime2dcnn",
+    "file": "hsi_2dcnn",
     "num_classes": 13,
     "hsi_channels": 5
   },
   "data": {
-    "csv": "/mnt/data/datasets_HSI/label/label.csv",
-    "column_config": "configs/column_config.json",
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
@@ -17,7 +17,7 @@
     "use_rotation": true,
     "use_noise": true,
     "use_brightness_contrast": true,
-    "scaler_mode": "normalized"
+    "scaler_mode": "normalized"    
   },
   "train": {
     "epochs": 50,
@@ -26,13 +26,12 @@
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null,
-    "save_interval": 5
+    "use_amp": true,
+    "grad_clip_norm": 1
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_2D_CNN_REALTIME"
+    "experiment_name": "HSI_2D_CNN"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
