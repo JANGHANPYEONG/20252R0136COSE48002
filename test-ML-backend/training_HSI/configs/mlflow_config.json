@@ -1,0 +1,4 @@
+{
+  "backend-store-uri": "/mnt/data/mlflow_tracking",
+  "default-artifact-root": "/mnt/data/mlflow_artifacts"
+}

@@ -311,7 +311,7 @@ ID,disease_1,disease_2,...,disease_13,band_10,band_60,band_70,band_100,band_110,
 O0015_R01_N112,0,1,1,0,0,0,0,0,0,0,0,0,0,170.35,167.78,135.63,161.77,187.22,/path/to/band_10.png,/path/to/band_60.png,/path/to/band_70.png,/path/to/band_100.png,/path/to/band_110.png
 ```
 
-### 컬럼 설정 파일 (`datasets_HSI/column_config.json`)
+### 컬럼 설정 파일 (`training_HSI/configs/column_config.json`)
 
 ```json
 {
