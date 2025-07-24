@@ -11,7 +11,7 @@ Vector ML 모델 학습 파이프라인
 
 from utils.trainer_vector import SearchHyperparameter
 from utils.model_loader_vector import load_model, validate_model_config, get_model_info
-from utils.logger import create_logger, log_training_summary
+from utils.logger import create_logger, log_training_ml_summary
 from utils.dataset_vector import load_vector_data, get_label_info
 from sklearn.model_selection import train_test_split
 import os
@@ -63,10 +63,7 @@ def main():
     # 시드 설정
     seed = config.get('seed', 42)
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
-    column_config_path = config.get('data', {}).get(
-        'column_config', 'configs/column_config.json')
-    scaler = config.get('scaler', "standardscaler")
-
+    column_config_path = config.get('data', {}).get('column_config', 'configs/HSI_vector/column_config.json')
     setup_seed(seed)
 
     # MLflow 로거 설정
@@ -147,28 +144,31 @@ def main():
 
             # 최종 메트릭 로깅
             final_metrics = {
-                **results,
-                'best_val_loss': best_val_score
+                'best_val_loss': best_val_score,
+                'combined_score': results['combined_score']
             }
-            log_training_summary(
+            if 'cls_f1' in results.keys():
+                final_metrics['cls_f1'] = results['cls_f1']
+            if 'reg_r2' in results.keys():
+                final_metrics['reg_r2'] = results['reg_r2']
+
+            log_training_ml_summary(
                 logger=logger,
                 config=config,
                 final_metrics=final_metrics,
-                training_time=training_time
+                training_time=training_time,
+                to_json=results
             )
-
         print("\nTraining completed successfully!")
 
-        if 'cls_f1' in results:
-            print(f"  Test F1 Score: {results['cls_f1']:.4f}")
-            print(f"  Test AUC: {results['cls_auc']:.4f}")
+        column_names = label_info['label_columns']
+        for column_name in column_names:
+            print(f"Test scores for {column_name}")
+            for metric, val in results[column_name].items():
+                print(f"    Test {metric} score: {val:.4f}")
+            print()
 
-        if 'reg_r2' in results:
-            print(f"  Test R2 Score: {results['reg_r2']:.4f}")
-            print(f"  Test MSE: {results['reg_mse']:.4f}")
-
-        print(
-            f"Test Combined Score: {results.get('combined_score', 0):.4f}")
+        print(f"Test Combined Score: {results.get('combined_score', 0):.4f}")
 
     except Exception as e:
         print(f"Error during training: {e}")

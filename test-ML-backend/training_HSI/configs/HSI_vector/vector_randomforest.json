@@ -6,7 +6,7 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../configs/column_config.json",
+    "column_config": "./configs/column_config.json",
     "test_split": 0.2
   },
   "train": {
