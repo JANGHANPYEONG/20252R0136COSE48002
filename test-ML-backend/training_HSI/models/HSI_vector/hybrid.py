@@ -9,7 +9,7 @@ import multiprocessing
 
 import torch
 from torchvision import transforms
-from transformers import ViTMoel, ViTImageProcessor
+from transformers import ViTModel, ViTImageProcessor
 import xgboost as xgb
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.decomposition import PCA
@@ -34,7 +34,6 @@ class HybridModel:
 
         # Feature Extractor Backbone
         self.processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224-in21k')
-        self.processor.eval()
 
         self.TS_path = config.get("TS_path", None)
         self.VS_path = config.get("VS_path", None)
@@ -57,6 +56,8 @@ class HybridModel:
         )
         self.model = MultiOutputClassifier(self.model)
 
+        self.vit = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k").to(DEVICE)
+        self.vit.eval()
     # 하나의 폴더 내에 _P로 시작하는 이미지들 path 불러온 뒤 여러 파장대들 묶어 하나의 tensor로 반환
     def load_stack(self, id_folder):
         band_files = sorted(os.listdir(id_folder), key=lambda x: int(x.split('_P')[-1].split('.')[0]))
@@ -77,14 +78,16 @@ class HybridModel:
 
         # 0 ~ 255 정규화
         reduced = (reduced - reduced.min()) / (reduced.max() - reduced.min() + 1e-6)
-        return (reduced * 255).astype(np.nint8)
+        return (reduced * 255).astype(np.uint8)
 
     # 병렬화를 위한 작업 단일화
     def process_single_folder(self, folder_path):
         stack = self.load_stack(folder_path)
         pca_img = self.apply_pca(stack)
-        tensor = self.transform(pca_img)
-        return tensor
+
+        inputs = self.processor(images=pca_img, return_tensors="pt")
+        pixel_values = inputs["pixel_values"].squeeze(0)
+        return pixel_values
 
     def process_all(self, dir):
         tensor_list = []
@@ -116,13 +119,26 @@ class HybridModel:
     def fit(self, X, y):
         train_list = self.process_all(self.TS_path)
         val_list = self.process_all(self.VS_path)
-        vit_features_train = self.extract_features(self.processor, train_list)
-        vit_features_val = self.extract_features(self.processor, val_list)
+        vit_features_train = self.extract_features(self.vit, train_list)
+        vit_features_val = self.extract_features(self.vit, val_list)
 
         X_train, X_test = vit_features_train, vit_features_val
         y_train = np.array(self.load_labels(self.TS_label))
         return self.model.fit(X_train, y_train)
-    
+
+    def get_params(self, deep=True):
+        params = {'config': self.config}
+        if not deep:
+            return params
+        params.update(self.model.get_params(deep=True))
+        return params
+
+    def set_params(self, **params):
+        if 'config' in params:
+            self.config = params.pop('config')
+        self.model.set_params(**params)
+        return self
+
     def predict(self, X):
         return self.model.predict(X)
 
