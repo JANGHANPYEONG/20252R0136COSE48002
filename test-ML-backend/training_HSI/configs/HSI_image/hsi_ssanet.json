@@ -4,27 +4,27 @@
     "file": "hsi_ssanet",
     "num_classes": 13,
     "SeAM": {
-        "out_channels": 30,
-        "reduction": 8
+      "out_channels": 30,
+      "reduction": 8
     },
     "SaAM": {
-        "conv_kernel_size": 7,
-        "conv_padding": 3,
-        "hidden_dim": 256
+      "conv_kernel_size": 7,
+      "conv_padding": 3,
+      "hidden_dim": 256
     },
     "SpectralSpatialAttention": {
-        "kernel_size": 1
+      "kernel_size": 1
     },
     "PatchPositionEmbedding": {
-        "patch_size": 15,
-        "in_channels": 5,
-        "embed_dim": 256,
-        "image_size": 225
+      "patch_size": 15,
+      "in_channels": 5,
+      "embed_dim": 256,
+      "image_size": 225
     },
     "TransformerEncoderBlock": {
-        "num_heads": 4,
-        "mlp_ratio": 4.0,
-        "dropout": 0.1
+      "num_heads": 4,
+      "mlp_ratio": 4.0,
+      "dropout": 0.1
     }
   },
   "data": {
