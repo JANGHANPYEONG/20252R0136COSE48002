@@ -17,10 +17,10 @@
     "use_rotation": true,
     "use_noise": true,
     "use_brightness_contrast": true,
-    "scalar_mode": "normalized"
+    "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 15,
+    "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
@@ -31,7 +31,7 @@
     "save_interval": 5
   },
   "mlflow": {
-    "tracking_uri": "http://127.0.0.1:5001",
+    "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "HSI_2D_CNN_REALTIME"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],

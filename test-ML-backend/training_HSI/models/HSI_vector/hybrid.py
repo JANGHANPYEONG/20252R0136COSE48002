@@ -89,12 +89,12 @@ class HybridModel:
         return tensor_list
     
     # 이미지 추출
-    def extract_vit_features(model, images):
+    def extract_features(self, model, images):
         features = []
         with torch.no.grad():
-            for img in tqdm(images):
+            for img in images:
                 img = img.unsqueeze(0).to(DEVICE)
-                outputs = model(pixel_values=imag)['last_hidden_state'][:, 0, :]
+                outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]
                 features.append(outputs.squeeze(0).cpu().numpy())
         return np.array(features)
 
@@ -111,11 +111,11 @@ class HybridModel:
         val_list = self.process_all(self.VS_path)
         vit_model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k').to(DEVICE)
         vit_model.eval()
-        vit_features_train = self.extract_vit_features(vit_model, train_list)
-        vit_features_val = self.extract_vit_features(vit_model, val_list)
+        vit_features_train = self.extract_features(vit_model, train_list)
+        vit_features_val = self.extract_features(vit_model, val_list)
 
         X_train, X_test = vit_features_train, vit_features_val
-        y_train = np.array(self.load_labels(slef.TS_label))
+        y_train = np.array(self.load_labels(self.TS_label))
         return self.model.fit(X_train, y_train)
     
     def predict(self, X):
