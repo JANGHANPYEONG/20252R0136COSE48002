@@ -7,7 +7,7 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../datasets_HSI/column_config.json",
+    "column_config": "../column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
@@ -17,20 +17,21 @@
     "use_rotation": true,
     "use_noise": true,
     "use_brightness_contrast": true,
-    "scalar_mode": "normalized"
+    "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 15,
+    "epochs": 50,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
     "use_amp": false,
-    "grad_clip_norm": null
+    "grad_clip_norm": null,
+    "save_interval": 5
   },
   "mlflow": {
-    "tracking_uri": "http://127.0.0.1:5001",
+    "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "HSI_2D_CNN_REALTIME"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],

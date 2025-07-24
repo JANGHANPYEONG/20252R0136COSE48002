@@ -6,7 +6,7 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../datasets_HSI/column_config.json",
+    "column_config": "../column_config.json",
     "K-fold": 5,
     "test_split": 0.1
   },
@@ -25,6 +25,6 @@
   "seed": 42,
   "TS_path": "../../../Task2/TS_image/",
   "VS_path": "../../../Task2/VS_image/",
-  "TS_label":  "../../../datasets_HSI/label/TS_label.csv",
-  "vS_label":  "../../../datasets_HSI/label/vS_label.csv"
+  "TS_label": "../../../datasets_HSI/label/TS_label.csv",
+  "vS_label": "../../../datasets_HSI/label/vS_label.csv"
 }

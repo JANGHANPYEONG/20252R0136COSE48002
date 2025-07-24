@@ -10,7 +10,7 @@ import json
 # 분류에 유용한 밴드(파장)를 선택하는 모듈
 # 다만, 우리의 입력 데이터는 이미 밴드가 선별되어 오기 때문에, on/off 하며 실험 필요
 class SeAM(nn.Module):
-    def __init__(self, channels, reduction=8):
+    def __init__(self, channels, reduction):
         super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1) # 출력의 크기를 1x1로 조정
         self.max_pool = nn.AdaptiveMaxPool2d(1) # 출력의 크기를 1x1로 조정
@@ -33,9 +33,9 @@ class SeAM(nn.Module):
 # SaAM: Spatial Attention Module
 # 공간적 중요도를 강조하는 모듈
 class SaAM(nn.Module):
-    def __init__(self):
+    def __init__(self, kernel_size: int, padding: int):
         super().__init__()
-        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding)
         self.sigmoid = nn.Sigmoid()
 
     # SeAM에서는 전체 공간 영역 (H, W)을 평균/최대해서 채널별 정보만을 남기는 것이 목적이지만, 
@@ -48,30 +48,6 @@ class SaAM(nn.Module):
         attention = self.sigmoid(self.conv(combined))
         return x * attention
 
-# Spectral-Spatial Attention Network (SSANet)
-# This combines SeAM and SaAM for HSI data
-# 최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, k는 attention 및 1x1 conv 이후 유지되는 밴드 수
-class SpectralSpatialAttention(nn.Module):
-    """
-    This combines SeAM and SaAM for HSI data
-
-    최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, 
-    k는 attention 및 1x1 conv 이후 유지되는 밴드 수
-    """
-
-    def __init__(self, in_channels, out_channels):
-        super().__init__()
-        self.se = SeAM(in_channels)
-        self.sa = SaAM()
-        self.reduce = nn.Conv2d(in_channels, out_channels, kernel_size=1)
-
-    def forward(self, x):
-        x = self.se(x)
-        x = self.sa(x)
-        x = self.reduce(x)
-        return x
-
-# [270722] 코드 수정중
 # Patchify and Position Embedding
 class PatchifyPositionEmbedding(nn.Module):
     """
@@ -88,13 +64,13 @@ class PatchifyPositionEmbedding(nn.Module):
     """
     def __init__(self, patch_size: int, in_channels: int, embed_dim: int, image_size: int):
         super().__init__()
-        self.patch_size = patch_size
-        self.embed_dim = embed_dim
-        self.num_patches = (image_size // patch_size) ** 2
+        self.patch_size = patch_size # 패치 크기
+        self.embed_dim = embed_dim # 각 patch를 flatten한 후 transformer에 입력되는 벡터의 차원
+        self.num_patches = (image_size // patch_size) ** 2 # image_size는 입력 이미지 한 변의 길이, patch_size는 각 패치의 크기
 
         self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=patch_size)
-        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim))
-        self.pos_embed = nn.Parameter(torch.randn(1, self.num_patches + 1, embed_dim))
+        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim)) # class token
+        self.pos_embed = nn.Parameter(torch.randn(1, self.num_patches + 1, embed_dim)) # 위치 임베딩
 
     def forward(self, x):
         # x: (B, C, H, W)
@@ -107,19 +83,19 @@ class PatchifyPositionEmbedding(nn.Module):
         x = x + self.pos_embed  # 위치 임베딩 추가
         return x
 
-# [270722] 코드 수정중
 # input -> Norm -> Multi-Head Attention -> Norm -> Feed Forward -> Output
 # FFC(input) = FC(activation_function(FC(input)))
 class TransformerEncoderBlock(nn.Module):
-    def __init__(self, dim: int, num_heads: int, mlp_ratio=4.0, dropout=0.1):
+    def __init__(self, dim: int, num_heads: int, mlp_ratio: float, dropout: float):
         super().__init__()
+        # dim: 각 토큰 벡터가 가지는 차원, 입력 차원의 크기
         self.norm1 = nn.LayerNorm(dim)
         self.attn = nn.MultiheadAttention(embed_dim=dim, num_heads=num_heads, batch_first=True)
 
         self.norm2 = nn.LayerNorm(dim)
         self.ffn = nn.Sequential(
             nn.Linear(dim, int(dim * mlp_ratio)),
-            nn.GELU(),  # σ: GeLU 함수
+            nn.GELU(),  # activation: GeLU 함수
             nn.Linear(int(dim * mlp_ratio), dim)
         )
 
@@ -138,47 +114,151 @@ class TransformerEncoderBlock(nn.Module):
         x = x_res + self.dropout(self.ffn(x))
         return x
 
-# [270722] 코드 수정중
+class DenseTransformer(nn.Module):
+    def __init__(self, block_cls, num_layers, dim, heads, mlp_ratio, dropout):
+        super().__init__()
+        self.blocks = nn.ModuleList([
+            block_cls(dim, heads, mlp_ratio, dropout) for _ in range(num_layers)
+        ])
+        # concat으로 차원이 늘어나므로 다시 dim으로 줄이는 프로젝션 레이어
+        self.projs = nn.ModuleList([
+            nn.Linear(dim * (i + 1), dim) for i in range(num_layers)
+        ])
+
+    def forward(self, x):
+        feats = [x]           # x: (B, N+1, D)
+        out = x
+        for i, blk in enumerate(self.blocks):
+            out = blk(out)    # (B, N+1, D)
+            feats.append(out) # 누적
+            cat = torch.cat(feats[1:], dim=-1)  # 첫 입력 제외하고 concat (B, N+1, D * (i+1))
+            out = self.projs[i](cat)            # (B, N+1, D)로 압축
+        return out
+
+# Spectral-Spatial Attention Network (SSANet)
+# This combines SeAM and SaAM for HSI data
+# 최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, k는 attention 및 1x1 conv 이후 유지되는 밴드 수
+class SpectralSpatialAttention(nn.Module):
+    """
+    This combines SeAM and SaAM for HSI data
+
+    최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, 
+    k는 attention 및 1x1 conv 이후 유지되는 밴드 수
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, SeAM_reduction, SaAM_kernel_size, SaAM_padding):
+        super().__init__()
+        self.se = SeAM(in_channels, SeAM_reduction)
+        self.sa = SaAM(kernel_size=SaAM_kernel_size, padding=SaAM_padding)
+        self.reduce = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+
+    def forward(self, x):
+        x = self.se(x)
+        x = self.sa(x)
+        x = self.reduce(x)
+        return x
+
 # HSI SSANet Model
 # main model class that uses the SpectralSpatialAttention module
+# HSI_SSANet
 class HSI_SSANet(nn.Module):
-    def __init__(self, in_channels, num_classes):
+    def __init__(self, in_channels, num_classes, ssa_out_channels,
+                 image_size, patch_size, embed_dim,
+                 num_TransformerEncoder_heads, num_TransformerEncoder_layers,
+                 transformer_mlp_ratio, transformer_dropout,
+                 seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size):
         super().__init__()
+
         self.in_channels = in_channels
         self.num_classes = num_classes
 
-        self.ssa = SpectralSpatialAttention(in_channels, out_channels=30)
-        self.flatten = nn.Flatten(start_dim=2)
-        self.classifier = nn.Sequential(
-            nn.Linear(30 * 15 * 15, 256),  # assuming input patch is 15x15
-            nn.ReLU(),
-            nn.Linear(256, num_classes)
+        # 1. SSA module
+        self.ssa = SpectralSpatialAttention(
+            in_channels=in_channels,
+            out_channels=ssa_out_channels,
+            kernel_size=ssa_kernel_size,
+            SeAM_reduction=seam_reduction,
+            SaAM_kernel_size=saam_kernel_size,
+            SaAM_padding=saam_padding
         )
 
-    def forward(self, x):
-        # x: (B, C, H, W) 형태라고 가정
-        x = self.ssa(x)
-        x = self.flatten(x)
-        x = self.classifier(x)
-        return x
+        # 2. Patchify + Position Embedding
+        self.patch_embed = PatchifyPositionEmbedding(
+            patch_size=patch_size,
+            in_channels=ssa_out_channels,
+            embed_dim=embed_dim,
+            image_size=image_size
+        )
 
-# [270722] 코드 수정중
+        # 3. Transformer Encoder Stack
+        self.transformer = DenseTransformer(
+            block_cls=TransformerEncoderBlock,
+            num_layers=num_TransformerEncoder_layers,
+            dim=embed_dim,
+            heads=num_TransformerEncoder_heads,
+            mlp_ratio=transformer_mlp_ratio,
+            dropout=transformer_dropout
+            )
+
+        # 4. Classification head
+        self.classifier = nn.Linear(embed_dim, num_classes)
+
+    def forward(self, x):
+        x = self.ssa(x)               # (B, ssa_out_channels, H, W)
+        x = self.patch_embed(x)      # (B, N+1, D)
+        x = self.transformer(x)      # (B, N+1, D)
+        cls_token = x[:, 0]          # (B, D)
+        out = self.classifier(cls_token)  # (B, num_classes)
+        return out
+
 def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     column_config_path = config['data']['column_config']
     with open(column_config_path, 'r') as f:
         column_config = json.load(f)
 
     in_channels = len(column_config['wavelengths'])
-    num_classes = config['model']['num_classes']
+    model_cfg = config['model']
 
-    print(f"Creating HSI SSANet model:")
-    print(f"  Input channels (wavelengths): {in_channels}")
-    print(f"  Number of classes: {num_classes}")
+    # 구성 파라미터 추출
+    num_classes = model_cfg['num_classes']
+    ssa_out_channels = model_cfg['SeAM']['out_channels']
+    ssa_kernel_size = model_cfg['SpectralSpatialAttention']['kernel_size']
 
-    model = HSI_SSANet(in_channels=in_channels, num_classes=num_classes)
+    # SSA 세부 파라미터
+    seam_reduction = model_cfg['SeAM']['reduction']
+    saam_kernel_size = model_cfg['SaAM']['conv_kernel_size']
+    saam_padding = model_cfg['SaAM']['conv_padding']
+
+    # Patch + Positional Embedding
+    patch_size = model_cfg['PatchPositionEmbedding']['patch_size']
+    image_size = model_cfg['PatchPositionEmbedding']['image_size']
+    embed_dim = model_cfg['PatchPositionEmbedding']['embed_dim']
+
+    # Transformer
+    num_heads = model_cfg['TransformerEncoderBlock']['num_heads']
+    mlp_ratio = model_cfg['TransformerEncoderBlock']['mlp_ratio']
+    dropout = model_cfg['TransformerEncoderBlock']['dropout']
+    num_layers = model_cfg.get('TransformerEncoderBlock').get('num_layers', 1)
+
+    model = HSI_SSANet(
+        in_channels=in_channels,
+        num_classes=num_classes,
+        ssa_out_channels=ssa_out_channels,
+        image_size=image_size,
+        patch_size=patch_size,
+        embed_dim=embed_dim,
+        num_TransformerEncoder_heads=num_heads,
+        num_TransformerEncoder_layers=num_layers,
+        transformer_mlp_ratio=mlp_ratio,
+        transformer_dropout=dropout,
+        seam_reduction=seam_reduction,
+        saam_kernel_size=saam_kernel_size,
+        saam_padding=saam_padding,
+        ssa_kernel_size=ssa_kernel_size
+    )
+
     return model
 
-# [270722] 코드 수정중
 def get_model_info(model: HSI_SSANet) -> Dict[str, Any]:
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
