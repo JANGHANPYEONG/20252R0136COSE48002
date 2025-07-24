@@ -67,7 +67,7 @@ def main():
     num_classes = config.get('model', {}).get('num_classes', 13)
     csv_path = config.get('data', {}).get('csv', 'data/vector_data.csv')
     column_config_path = config.get('data', {}).get(
-        'column_config', 'configs/HSI_vector/column_config.json')
+        'column_config', 'configs/column_config.json')
     scaler = config.get('scaler', "standardscaler")
 
     setup_seed(seed)
