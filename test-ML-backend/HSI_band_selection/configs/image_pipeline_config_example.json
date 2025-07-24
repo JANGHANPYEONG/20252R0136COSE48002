@@ -32,4 +32,4 @@
   "training": {
     "config_path": "configs/training/SGLM.json"
   }
-} 
+}

@@ -25,6 +25,6 @@
   "seed": 42,
   "TS_path": "../../../Task2/TS_image/",
   "VS_path": "../../../Task2/VS_image/",
-  "TS_label":  "../../../datasets_HSI/label/TS_label.csv",
-  "vS_label":  "../../../datasets_HSI/label/vS_label.csv"
+  "TS_label": "../../../datasets_HSI/label/TS_label.csv",
+  "vS_label": "../../../datasets_HSI/label/vS_label.csv"
 }
