@@ -23,8 +23,8 @@ if ! command -v mlflow &> /dev/null; then
   exit 1
 fi
 
-mlflow server \  
-  --backend-store-uri "$BACKEND_STORE_URI" \  
-  --default-artifact-root "$DEFAULT_ARTIFACT_ROOT" \  
-  --host 0.0.0.0 \  
+mlflow server \
+  --backend-store-uri "$BACKEND_STORE_URI" \
+  --default-artifact-root "$DEFAULT_ARTIFACT_ROOT" \
+  --host 0.0.0.0 \
   --port 5000 
