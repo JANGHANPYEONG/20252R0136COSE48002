@@ -1,0 +1,37 @@
+{
+  "experiment": "hsi_spectrumNet",
+  "model": {
+    "file": "hsi_spectrumNet",
+    "num_classes": 13
+  },
+  "data": {
+    "csv": "/mnt/data/datasets_HSI/label/label.csv",
+    "column_config": "../datasets_HSI/column_config.json",
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "batch_size": 8,
+    "num_workers": 4,
+    "crop_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
+  },
+  "train": {
+    "epochs": 50,
+    "early_stopping_patience": 10,
+    "optimizer": "AdamW",
+    "lr": 3e-4,
+    "scheduler": "ReduceLROnPlateau",
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null
+  },
+  "mlflow": {
+    "tracking_uri": "file:/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI",
+    "experiment_name": "HSI_SpectrumNet"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42
+}
