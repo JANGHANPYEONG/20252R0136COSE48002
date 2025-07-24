@@ -6,7 +6,7 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../datasets_HSI/column_config.json",
+    "column_config": "../column_config.json",
     "K-fold": 5,
     "test_split": 0.2
   },
@@ -14,7 +14,7 @@
     "n_components": 5,
     "scale": true,
     "max_iter": 500,
-    "tol": 1e-06,
+    "tol": 1e-6,
     "copy": true
   },
   "mlflow": {
