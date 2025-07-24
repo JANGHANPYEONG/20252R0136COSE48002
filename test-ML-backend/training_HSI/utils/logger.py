@@ -155,6 +155,10 @@ class MLflowLogger:
         if mlflow.active_run():
             return mlflow.active_run().info.experiment_id
         return None
+    
+    def log_dict_metrics(self, to_json):
+        mlflow.log_dict(to_json,
+                        artifact_file='final_metrics.json')
 
 
 def create_logger(config: Dict[str, Any]) -> MLflowLogger:
@@ -179,4 +183,21 @@ def log_training_summary(logger: MLflowLogger, config: Dict[str, Any],
     logger.log_config(config)
     
     print(f"Training completed in {training_time/60:.2f} minutes")
-    print(f"Final metrics: {final_metrics}") 
+    print(f"Final metrics: {final_metrics}")
+
+def log_training_ml_summary(logger: MLflowLogger, config: Dict[str, Any], 
+                        final_metrics: Dict[str, float], training_time: float, to_json: Dict):
+    """훈련 요약을 로깅합니다."""
+    # 최종 메트릭 로깅
+    logger.log_metrics(final_metrics)
+    
+    # 훈련 시간 로깅
+    logger.log_metrics({'training_time_minutes': training_time / 60})
+    
+    # 설정 로깅
+    logger.log_config(config)
+
+    logger.log_dict_metrics(to_json)
+    
+    print(f"Training completed in {training_time/60:.2f} minutes")
+    print(f"Final metrics: {final_metrics}")
