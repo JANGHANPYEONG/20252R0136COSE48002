@@ -36,9 +36,10 @@ pip install -r requirements.txt
 ```
 datasets_HSI/
 ├── label/
-│   ├── label.csv                    # 라벨 데이터 (CSV)
-│   └── column_config.json           # 컬럼 설정
+│   └── label.csv                    # 라벨 데이터 (CSV)
 └── image/                           # HSI 이미지 파일들
+configs/
+└── column_config.json               # 컬럼 설정
 ```
 
 ### 3. 설정 파일 수정
@@ -190,7 +191,7 @@ python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json --no-mlflow
   },
   "data": {
     "csv": "datasets_HSI/label/label.csv",
-    "column_config": "datasets_HSI/label/column_config.json",
+    "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
