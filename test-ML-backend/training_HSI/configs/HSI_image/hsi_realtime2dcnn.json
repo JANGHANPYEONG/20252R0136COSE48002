@@ -27,8 +27,7 @@
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
     "use_amp": false,
-    "grad_clip_norm": null,
-    "save_interval": 1
+    "grad_clip_norm": null
   },
   "mlflow": {
     "tracking_uri": "file:/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI",
