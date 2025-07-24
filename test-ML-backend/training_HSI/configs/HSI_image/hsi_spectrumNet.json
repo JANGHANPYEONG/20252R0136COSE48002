@@ -1,13 +1,12 @@
 {
-  "experiment": "hsi_dual_branch_regression",
+  "experiment": "hsi_spectrumNet",
   "model": {
-    "file": "hsi_dual_branch_regression",
-    "num_classes": 13,
-    "in_channels": 5
+    "file": "hsi_spectrumNet",
+    "num_classes": 13
   },
   "data": {
     "csv": "/mnt/data/datasets_HSI/label/label.csv",
-    "column_config": "configs/column_config.json",
+    "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
@@ -26,12 +25,12 @@
     "lr": 3e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
-    "use_amp": true,
-    "grad_clip_norm": 1
+    "use_amp": false,
+    "grad_clip_norm": null
   },
   "mlflow": {
-    "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "HSI_DUAL_BRANCH_REGRESSION"
+    "tracking_uri": "file:/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI",
+    "experiment_name": "HSI_SpectrumNet"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
