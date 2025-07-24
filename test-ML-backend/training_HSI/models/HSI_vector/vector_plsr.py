@@ -12,19 +12,16 @@ from typing import Dict
 class PLSRWrapper:
     def __init__(self, config: Dict):
         self.config = config
+        self.params = self.config.get("train", {}).get("params", {})
 
-        # PLSR 하이퍼파라미터
-        self.n_components = config.get('n_components', 2)
-        self.scale = config.get('scale', True)
-        self.max_iter = config.get('max_iter', 500)
-        self.tol = config.get('tol', 1e-06)
-        self.copy = config.get('copy', True)
+        # 고정 하이퍼파라미터 설정
+        self.max_iter = self.params.get('max_iter', 500)
+        self.tol = self.params.get('tol', 1e-06)
+        self.copy = self.params.get('copy', True)
 
         self.model = Pipeline([
             ('msc', MultiplicativeScatterCorrection()),
-            ('plsregression', PLSRegression(
-                n_components=self.n_components,
-                scale=self.scale,
+            ('plsr', PLSRegression(
                 max_iter=self.max_iter,
                 tol=self.tol,
                 copy=self.copy
@@ -45,6 +42,19 @@ class PLSRWrapper:
         """
         return self.model.predict(X)
     
+    def get_params(self, deep=True):
+        params = {'config': self.config}
+        if not deep:
+            return params
+        params.update(self.model.get_params(deep=True))
+        return params
+
+    def set_params(self, **params):
+        if 'config' in params:
+            self.config = params.pop('config')
+        self.model.set_params(**params)
+        return self
+
 
 class MultiplicativeScatterCorrection(BaseEstimator, TransformerMixin):
     """
@@ -72,6 +82,7 @@ class MultiplicativeScatterCorrection(BaseEstimator, TransformerMixin):
         y : None
             Ignored.
         """
+        
         X = check_array(X, copy=self.copy)
         if self.reference is None:
             # Use mean spectrum of X as reference

@@ -6,20 +6,28 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../column_config.json",
-    "K-fold": 5,
+    "column_config": "../datasets_HSI/column_config.json",
     "test_split": 0.2
   },
   "train": {
-    "n_estimators": 10,
-    "max_depth": 5,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1
+    "method": "bayessearchcv",
+    "cv": 5,
+    "scoring": "mt_scorer",
+    "n_iter": 30,
+    "n_jobs": -1,
+    "verbose": false,
+    "param_fixed": {},
+    "param_grid": {
+      "n_estimators": [10, 100],
+      "max_depth": [2, 20],
+      "min_samples_split": [2, 10],
+      "min_samples_leaf": [2, 10]
+    }
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "Vector_ML"
   },
-  "scaler": "",
+  "plot_param": [],
   "seed": 42
 }
