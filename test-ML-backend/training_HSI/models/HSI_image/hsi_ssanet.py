@@ -138,6 +138,7 @@ class DenseTransformer(nn.Module):
 # Spectral-Spatial Attention Network (SSANet)
 # This combines SeAM and SaAM for HSI data
 # 최종 결과로는 (n, h, h, k) 형태의 텐서를 반환, k는 attention 및 1x1 conv 이후 유지되는 밴드 수
+# SeAM_use와 SaAM_use는 각각 SeAM과 SaAM을 사용할지 여부를 결정하는 파라미터
 class SpectralSpatialAttention(nn.Module):
     """
     This combines SeAM and SaAM for HSI data
@@ -146,15 +147,21 @@ class SpectralSpatialAttention(nn.Module):
     k는 attention 및 1x1 conv 이후 유지되는 밴드 수
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, SeAM_reduction, SaAM_kernel_size, SaAM_padding):
+    def __init__(self, in_channels, out_channels, kernel_size, 
+                 SeAM_reduction, SaAM_kernel_size, SaAM_padding,
+                 SeAM_use, SaAM_use):
         super().__init__()
         self.se = SeAM(in_channels, SeAM_reduction)
         self.sa = SaAM(kernel_size=SaAM_kernel_size, padding=SaAM_padding)
         self.reduce = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+        self.SeAM_use = SeAM_use
+        self.SaAM_use = SaAM_use
 
     def forward(self, x):
-        x = self.se(x)
-        x = self.sa(x)
+        if self.SeAM_use:
+            x = self.se(x)
+        if self.SaAM_use:
+            x = self.sa(x)
         x = self.reduce(x)
         return x
 
@@ -166,7 +173,8 @@ class HSI_SSANet(nn.Module):
                  image_size, patch_size, embed_dim,
                  num_TransformerEncoder_heads, num_TransformerEncoder_layers,
                  transformer_mlp_ratio, transformer_dropout,
-                 seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size):
+                 seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size,
+                 UsingSeAM, UsingSaAM):
         super().__init__()
 
         self.in_channels = in_channels
@@ -179,7 +187,9 @@ class HSI_SSANet(nn.Module):
             kernel_size=ssa_kernel_size,
             SeAM_reduction=seam_reduction,
             SaAM_kernel_size=saam_kernel_size,
-            SaAM_padding=saam_padding
+            SaAM_padding=saam_padding,
+            SeAM_use=UsingSeAM,
+            SaAM_use=UsingSaAM
         )
 
         # 2. Patchify + Position Embedding
@@ -240,6 +250,10 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     dropout = model_cfg['TransformerEncoderBlock']['dropout']
     num_layers = model_cfg.get('TransformerEncoderBlock').get('num_layers', 1)
 
+    # SeAM, SaAM 사용 여부
+    UsingSeAM = model_cfg.get('UsingSeAM', {}).get('use', True)
+    UsingSaAM = model_cfg.get('UsingSaAM', {}).get('use', True)
+
     model = HSI_SSANet(
         in_channels=in_channels,
         num_classes=num_classes,
@@ -254,7 +268,9 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
         seam_reduction=seam_reduction,
         saam_kernel_size=saam_kernel_size,
         saam_padding=saam_padding,
-        ssa_kernel_size=ssa_kernel_size
+        ssa_kernel_size=ssa_kernel_size,
+        UsingSeAM=UsingSeAM,
+        UsingSaAM=UsingSaAM
     )
 
     return model
