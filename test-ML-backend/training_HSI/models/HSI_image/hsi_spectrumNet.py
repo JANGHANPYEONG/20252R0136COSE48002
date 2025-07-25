@@ -5,23 +5,39 @@ import torch.nn.functional as F
 class SpectralModule(nn.Module):
     def __init__(self, in_channels, squeeze_channels, expand1x1_channels, expand3x3_channels):
         super(SpectralModule, self).__init__()
-        self.squeeze = nn.Conv2d(in_channels, squeeze_channels, kernel_size=1)
-        self.expand1x1 = nn.Conv2d(squeeze_channels, expand1x1_channels, kernel_size=1)
-        self.expand3x3 = nn.Conv2d(squeeze_channels, expand3x3_channels, kernel_size=3, padding=1)
-        self.relu = nn.ReLU(inplace=True)
+        self.squeeze = nn.Sequential(
+            nn.Conv2d(in_channels, squeeze_channels, kernel_size=1),
+            nn.BatchNorm2d(squeeze_channels),
+            nn.ReLU(inplace=True)
+        )
 
+        self.expand1x1 = nn.Sequential(
+            nn.Conv2d(squeeze_channels, expand1x1_channels, kernel_size=1),
+            nn.BatchNorm2d(expand1x1_channels),
+            nn.ReLU(inplace=True)
+        )
+
+        self.expand3x3 = nn.Sequential(
+            nn.Conv2d(squeeze_channels, expand3x3_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(expand3x3_channels),
+            nn.ReLU(inplace=True)
+        )
+    
     def forward(self, x):
-        x = self.relu(self.squeeze(x))
-        out1 = self.relu(self.expand1x1(x))
-        out3 = self.relu(self.expand3x3(x))
+        x = self.squeeze(x)
+        out1 = self.expand1x1(x)
+        out3 = self.expand3x3(x)
         return torch.cat([out1, out3], dim=1)
     
 class SpectrumNet(nn.Module):
     def __init__(self, in_channels, num_classes):
         super(SpectrumNet, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels, 96, kernel_size=2, stride=1)
-        self.relu = nn.ReLU(inplace=True)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(in_channels, 96, kernel_size=2, stride=1),
+            nn.BatchNorm2d(96),
+            nn.ReLU(inplace=True)
+        )
 
         # (squeeze, expand1x1, expand3x3)
         module_settings = [
@@ -49,7 +65,7 @@ class SpectrumNet(nn.Module):
         self.global_pool = nn.AdaptiveAvgPool2d(1)
     
     def forward(self, x):
-        x = self.relu(self.conv1(x))
+        x = self.conv1(x)
         
         for layer in self.layers:
             x = layer(x)
