@@ -9,6 +9,9 @@ import time
 from tqdm import tqdm
 from torchmetrics.classification import MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAUROC
 from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError, R2Score
+import tempfile
+import os
+import torch
 
 
 class MultiTaskLossWrapper(nn.Module):
@@ -517,7 +520,7 @@ class HSITrainer:
                 logger.log_metrics(epoch_metrics, step=epoch)
             
             # 체크포인트 저장 조건 확인
-            should_checkpoint = ((epoch + 1) % self.save_interval == 0) or (val_loss < self.best_val_loss)
+            should_checkpoint = val_loss < self.best_val_loss
             
             if should_checkpoint:
                 if val_loss < self.best_val_loss:
@@ -527,8 +530,11 @@ class HSITrainer:
                 
                 # 모델 저장
                 if logger is not None:
-                    logger.log_model(self.model, f"model_ep{epoch+1:03d}")
-                    print(f"[Checkpoint] Epoch {epoch+1} saved", flush=True)
+                    with tempfile.TemporaryDirectory() as d:
+                        save_path = os.path.join(d, "best_model.pt")
+                        torch.save(self.model.state_dict(), save_path)
+                        logger.log_artifact(save_path, "models")
+                    print(f"[Checkpoint] Best model saved (epoch {epoch+1})", flush=True)
             else:
                 if val_loss >= self.best_val_loss:
                     self.patience_counter += 1
