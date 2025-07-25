@@ -121,7 +121,7 @@ def main():
             config=config,
             pos_weight_info=pos_weight_info
         )
-        print('Training and tuing model...')
+        print('Training and tuning model...')
 
         start_time = time.time()
         grid.fit(X_train, y_train)
