@@ -84,9 +84,9 @@ class HybridModel:
         for folder in sorted(os.listdir(dir)):
             folder_path = os.path.join(dir, folder)
             if not os.path.isdir(folder_path): continue
-            stack = load_stack(folder_path)
-            pca_img = apply_pca(stack)
-            tensor = transform(pca_img)
+            stack = self.load_stack(folder_path)
+            pca_img = self.apply_pca(stack)
+            tensor = self.transform(pca_img)
             tensor_list.append(tensor)
         return tensor_list
     
