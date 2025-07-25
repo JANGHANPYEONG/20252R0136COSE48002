@@ -25,7 +25,14 @@
       "num_heads": 4,
       "mlp_ratio": 4.0,
       "dropout": 0.1
+    },
+    "UsingSeAM": {
+      "use": true
+    },
+    "UsingSaAM": {
+      "use": true
     }
+
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
