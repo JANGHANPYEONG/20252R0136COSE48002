@@ -16,7 +16,6 @@ from sklearn.decomposition import PCA
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class HybridModel:
     def __init__(self, config):
         self.config = config
@@ -80,22 +79,15 @@ class HybridModel:
         reduced = (reduced - reduced.min()) / (reduced.max() - reduced.min() + 1e-6)
         return (reduced * 255).astype(np.uint8)
 
-    # 병렬화를 위한 작업 단일화
-    def process_single_folder(self, folder_path):
-        stack = self.load_stack(folder_path)
-        pca_img = self.apply_pca(stack)
-
-        inputs = self.processor(images=pca_img, return_tensors="pt")
-        pixel_values = inputs["pixel_values"].squeeze(0)
-        return pixel_values
-
     def process_all(self, dir):
         tensor_list = []
-        folder_paths = [os.path.join(dir, f) for f in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, f))]
-        n_jobs = min(len(folder_paths), multiprocessing.cpu_count())
-        tensor_list = Parallel(n_jobs=n_jobs)(
-            delayed(self.process_single_folder)(folder_path) for folder_path in folder_paths
-        )
+        for folder in sorted(os.listdir(dir)):
+            folder_path = os.path.join(dir, folder)
+            if not os.path.isdir(folder_path): continue
+            stack = load_stack(folder_path)
+            pca_img = apply_pca(stack)
+            tensor = transform(pca_img)
+            tensor_list.append(tensor)
         return tensor_list
     
     # 이미지 추출
