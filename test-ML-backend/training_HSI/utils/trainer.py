@@ -12,6 +12,7 @@ from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError, R2Score
 import tempfile
 import os
 import torch
+import torch.nn.functional as F
 
 
 class MultiTaskLossWrapper(nn.Module):
@@ -153,14 +154,47 @@ class HSITrainer:
         if scheduler_name == 'ReduceLROnPlateau':
             patience = train_config.get('scheduler_patience', 5)
             factor = train_config.get('scheduler_factor', 0.5)
+            min_lr = train_config.get('min_lr', 1e-7)
             return optim.lr_scheduler.ReduceLROnPlateau(
-                self.optimizer, mode='min', patience=patience, factor=factor
+                self.optimizer, mode='min', patience=patience, factor=factor, min_lr=min_lr
             )
         elif scheduler_name == 'CosineAnnealingLR':
-            T_max = train_config.get('scheduler_t_max', 50)
-            return optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=T_max)
+            T_max = train_config.get('scheduler_T_max', 50)
+            eta_min = train_config.get('scheduler_eta_min', 1e-7)
+            return optim.lr_scheduler.CosineAnnealingLR(
+                self.optimizer, T_max=T_max, eta_min=eta_min
+            )
+        elif scheduler_name == 'CosineAnnealingWarmRestarts':
+            T_0 = train_config.get('scheduler_T_0', 10)
+            T_mult = train_config.get('scheduler_T_mult', 2)
+            eta_min = train_config.get('scheduler_eta_min', 1e-7)
+            return optim.lr_scheduler.CosineAnnealingWarmRestarts(
+                self.optimizer, T_0=T_0, T_mult=T_mult, eta_min=eta_min
+            )
+        elif scheduler_name == 'OneCycleLR':
+            max_lr = train_config.get('max_lr', 1e-3)
+            epochs = train_config.get('epochs', 50)
+            steps_per_epoch = train_config.get('steps_per_epoch', 100)
+            pct_start = train_config.get('pct_start', 0.3)
+            anneal_strategy = train_config.get('anneal_strategy', 'cos')
+            return optim.lr_scheduler.OneCycleLR(
+                self.optimizer, max_lr=max_lr, epochs=epochs, 
+                steps_per_epoch=steps_per_epoch, pct_start=pct_start,
+                anneal_strategy=anneal_strategy
+            )
+        elif scheduler_name == 'ExponentialLR':
+            gamma = train_config.get('scheduler_gamma', 0.95)
+            return optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=gamma)
+        elif scheduler_name == 'StepLR':
+            step_size = train_config.get('scheduler_step_size', 10)
+            gamma = train_config.get('scheduler_gamma', 0.5)
+            return optim.lr_scheduler.StepLR(self.optimizer, step_size=step_size, gamma=gamma)
+        elif scheduler_name == 'MultiStepLR':
+            milestones = train_config.get('scheduler_milestones', [20, 40, 60])
+            gamma = train_config.get('scheduler_gamma', 0.5)
+            return optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=milestones, gamma=gamma)
         else:
-            return None
+            raise ValueError(f"Unknown scheduler: {scheduler_name}")
     
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
@@ -190,18 +224,120 @@ class HSITrainer:
     def _setup_criterions(self) -> Dict[str, nn.Module]:
         """손실 함수들을 설정합니다."""
         criterions = {}
+        
+        # 분류 손실 함수들
         if self.cls_indices:
-            # pos_weight 계산: 미리 계산된 pos_weight_info 사용
-            if self.pos_weight_info and len(self.pos_weight_info.get('cls_indices', [])) == len(self.cls_indices):
-                pos_weight = torch.tensor(self.pos_weight_info['pos_weight'], dtype=torch.float32).to(self.device)
-                criterions['classification'] = nn.BCEWithLogitsLoss(pos_weight=pos_weight).to(self.device)
-                print(f"BCEWithLogitsLoss with pos_weight: {pos_weight.tolist()}")
+            cls_loss_type = self.config.get('train', {}).get('cls_loss', 'BCEWithLogitsLoss')
+            
+            if cls_loss_type == 'BCEWithLogitsLoss':
+                # pos_weight 적용
+                pos_weights = []
+                for idx in self.cls_indices:
+                    pos_weight = self.pos_weight_info['pos_weights'][idx] if self.pos_weight_info else 1.0
+                    pos_weights.append(pos_weight)
+                
+                if len(pos_weights) > 0:
+                    pos_weight_tensor = torch.tensor(pos_weights, device=self.device)
+                    criterions['classification'] = nn.BCEWithLogitsLoss(pos_weight=pos_weight_tensor)
+                else:
+                    criterions['classification'] = nn.BCEWithLogitsLoss()
+                    
+            elif cls_loss_type == 'FocalLoss':
+                alpha = self.config.get('train', {}).get('focal_alpha', 0.25)
+                gamma = self.config.get('train', {}).get('focal_gamma', 2.0)
+                criterions['classification'] = FocalLoss(alpha=alpha, gamma=gamma)
+                
+            elif cls_loss_type == 'LabelSmoothingLoss':
+                smoothing = self.config.get('train', {}).get('label_smoothing', 0.1)
+                criterions['classification'] = LabelSmoothingLoss(smoothing=smoothing)
+                
+            elif cls_loss_type == 'DiceLoss':
+                criterions['classification'] = DiceLoss()
+                
             else:
-                criterions['classification'] = nn.BCEWithLogitsLoss().to(self.device)
-                print("BCEWithLogitsLoss without pos_weight")
+                raise ValueError(f"Unknown classification loss: {cls_loss_type}")
+        
+        # 회귀 손실 함수들
         if self.reg_indices:
-            criterions['regression'] = nn.MSELoss().to(self.device)
+            reg_loss_type = self.config.get('train', {}).get('reg_loss', 'MSELoss')
+            
+            if reg_loss_type == 'MSELoss':
+                criterions['regression'] = nn.MSELoss()
+            elif reg_loss_type == 'MAELoss':
+                criterions['regression'] = nn.L1Loss()
+            elif reg_loss_type == 'HuberLoss':
+                delta = self.config.get('train', {}).get('huber_delta', 1.0)
+                criterions['regression'] = nn.HuberLoss(delta=delta)
+            elif reg_loss_type == 'SmoothL1Loss':
+                beta = self.config.get('train', {}).get('smooth_l1_beta', 1.0)
+                criterions['regression'] = nn.SmoothL1Loss(beta=beta)
+            elif reg_loss_type == 'LogCoshLoss':
+                criterions['regression'] = LogCoshLoss()
+            else:
+                raise ValueError(f"Unknown regression loss: {reg_loss_type}")
+        
         return criterions
+
+
+class FocalLoss(nn.Module):
+    """Focal Loss for imbalanced classification"""
+    
+    def __init__(self, alpha: float = 0.25, gamma: float = 2.0):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+    
+    def forward(self, inputs, targets):
+        bce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
+        pt = torch.exp(-bce_loss)
+        focal_loss = self.alpha * (1 - pt) ** self.gamma * bce_loss
+        return focal_loss.mean()
+
+
+class LabelSmoothingLoss(nn.Module):
+    """Label Smoothing Loss"""
+    
+    def __init__(self, smoothing: float = 0.1):
+        super(LabelSmoothingLoss, self).__init__()
+        self.smoothing = smoothing
+    
+    def forward(self, inputs, targets):
+        # BCE with logits 적용
+        log_probs = F.logsigmoid(inputs)
+        smooth_targets = targets * (1 - self.smoothing) + 0.5 * self.smoothing
+        loss = -(smooth_targets * log_probs + (1 - smooth_targets) * F.logsigmoid(-inputs))
+        return loss.mean()
+
+
+class DiceLoss(nn.Module):
+    """Dice Loss for better segmentation-like tasks"""
+    
+    def __init__(self, smooth: float = 1e-6):
+        super(DiceLoss, self).__init__()
+        self.smooth = smooth
+    
+    def forward(self, inputs, targets):
+        inputs = torch.sigmoid(inputs)
+        
+        # Flatten
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+        
+        intersection = (inputs * targets).sum()
+        dice = (2. * intersection + self.smooth) / (inputs.sum() + targets.sum() + self.smooth)
+        
+        return 1 - dice
+
+
+class LogCoshLoss(nn.Module):
+    """Log-Cosh Loss for regression (smooth version of MAE)"""
+    
+    def __init__(self):
+        super(LogCoshLoss, self).__init__()
+    
+    def forward(self, inputs, targets):
+        diff = inputs - targets
+        return torch.mean(torch.log(torch.cosh(diff + 1e-8)))
     
     def _setup_loss_wrapper(self) -> MultiTaskLossWrapper:
         """MultiTaskLossWrapper를 설정합니다."""
