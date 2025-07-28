@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import numpy as np
 from typing import Optional, Tuple, List
 import random
-import math
 
 
 class HSIRandomCrop:
@@ -31,18 +30,23 @@ class HSIRandomCrop:
 
 
 class HSICenterCrop:
-    """HSI 이미지 중앙 크롭"""
+    """HSI 이미지 중앙 크롭 (재현성 보장)"""
     
     def __init__(self, size: Tuple[int, int]):
         self.size = size
     
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (C, H, W) 형태의 HSI 이미지
+        """
         c, h, w = x.shape
         th, tw = self.size
         
         if h == th and w == tw:
             return x
         
+        # 중앙 시작점 선택 (재현성 보장)
         i = (h - th) // 2
         j = (w - tw) // 2
         
@@ -76,7 +80,7 @@ class HSIRandomVerticalFlip:
 class HSIRandomRotation:
     """HSI 이미지 랜덤 회전"""
     
-    def __init__(self, degrees: float = 15.0):  # 10도에서 15도로 증가
+    def __init__(self, degrees: float = 10.0):
         self.degrees = degrees
     
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
@@ -117,7 +121,7 @@ class HSIRandomRotation:
         # (1, C, H, W)로 변환 후 한 번에 회전 적용
         x = x.unsqueeze(0)  # (1, C, H, W)
         rotated = F.grid_sample(
-            x, grid, mode='bilinear',  # nearest에서 bilinear로 변경하여 더 부드러운 회전
+            x, grid, mode='nearest', 
             padding_mode='reflection', align_corners=True
         )
         return rotated.squeeze(0)  # (C, H, W)
@@ -126,7 +130,7 @@ class HSIRandomRotation:
 class HSINoise:
     """HSI 이미지에 노이즈 추가"""
     
-    def __init__(self, std: float = 0.02):  # 0.01에서 0.02로 증가
+    def __init__(self, std: float = 0.01):
         self.std = std
     
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
@@ -140,7 +144,7 @@ class HSINoise:
 class HSIBrightnessContrast:
     """HSI 이미지 밝기/대비 조정"""
     
-    def __init__(self, brightness_factor: float = 0.15, contrast_factor: float = 0.15):  # 0.1에서 0.15로 증가
+    def __init__(self, brightness_factor: float = 0.1, contrast_factor: float = 0.1):
         self.brightness_factor = brightness_factor
         self.contrast_factor = contrast_factor
     
@@ -157,95 +161,6 @@ class HSIBrightnessContrast:
             x = (x - mean) * contrast + mean
         
         return x
-
-
-class HSIRandomErasing:
-    """HSI 이미지 랜덤 지우기 (Cutout 효과)"""
-    
-    def __init__(self, p: float = 0.3, scale: Tuple[float, float] = (0.02, 0.33), ratio: Tuple[float, float] = (0.3, 3.3)):
-        self.p = p
-        self.scale = scale
-        self.ratio = ratio
-    
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        if random.random() > self.p:
-            return x
-        
-        c, h, w = x.shape
-        
-        # 지울 영역의 크기 계산
-        area = h * w
-        target_area = random.uniform(self.scale[0], self.scale[1]) * area
-        aspect_ratio = random.uniform(self.ratio[0], self.ratio[1])
-        
-        h_erase = int(round(math.sqrt(target_area * aspect_ratio)))
-        w_erase = int(round(math.sqrt(target_area / aspect_ratio)))
-        
-        if h_erase >= h or w_erase >= w:
-            return x
-        
-        # 지울 위치 선택
-        i = random.randint(0, h - h_erase)
-        j = random.randint(0, w - w_erase)
-        
-        # 영역을 0으로 채우기
-        x[:, i:i+h_erase, j:j+w_erase] = 0
-        
-        return x
-
-
-class HSISpectralAugmentation:
-    """HSI 스펙트럼 채널별 증강"""
-    
-    def __init__(self, p: float = 0.5, std: float = 0.01):
-        self.p = p
-        self.std = std
-    
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        if random.random() > self.p:
-            return x
-        
-        c, h, w = x.shape
-        # 각 채널에 대해 다른 노이즈 적용
-        channel_noise = torch.randn(c, 1, 1) * self.std
-        return x + channel_noise
-
-
-class HSIGaussianBlur:
-    """HSI 이미지 가우시안 블러"""
-    
-    def __init__(self, p: float = 0.3, kernel_size: int = 3, sigma: float = 0.5):
-        self.p = p
-        self.kernel_size = kernel_size
-        self.sigma = sigma
-    
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        if random.random() > self.p:
-            return x
-        
-        # 가우시안 커널 생성
-        kernel = self._get_gaussian_kernel(self.kernel_size, self.sigma)
-        kernel = kernel.to(x.device)
-        
-        # 각 채널에 대해 블러 적용
-        c, h, w = x.shape
-        x_blurred = torch.zeros_like(x)
-        
-        for i in range(c):
-            x_blurred[i] = F.conv2d(
-                x[i:i+1].unsqueeze(0), 
-                kernel.unsqueeze(0).unsqueeze(0),
-                padding=self.kernel_size // 2
-            ).squeeze()
-        
-        return x_blurred
-    
-    def _get_gaussian_kernel(self, kernel_size: int, sigma: float) -> torch.Tensor:
-        """가우시안 커널 생성"""
-        x = torch.arange(-(kernel_size // 2), kernel_size // 2 + 1)
-        kernel = torch.exp(-(x ** 2) / (2 * sigma ** 2))
-        kernel = kernel / kernel.sum()
-        return kernel
 
 
 class HSITransformCompose:
@@ -265,12 +180,9 @@ def get_train_transforms(
     use_flip: bool = True,
     use_rotation: bool = True,
     use_noise: bool = True,
-    use_brightness_contrast: bool = True,
-    use_erasing: bool = True,  # 새로운 옵션
-    use_spectral_aug: bool = True,  # 새로운 옵션
-    use_blur: bool = True  # 새로운 옵션
+    use_brightness_contrast: bool = True
 ) -> HSITransformCompose:
-    """훈련용 transform 생성 (강화된 버전)"""
+    """훈련용 transform 생성"""
     
     transforms = []
     
@@ -285,29 +197,17 @@ def get_train_transforms(
             HSIRandomVerticalFlip(p=0.5)
         ])
     
-    # 회전 (강화됨)
+    # 회전
     if use_rotation:
-        transforms.append(HSIRandomRotation(degrees=15.0))
+        transforms.append(HSIRandomRotation(degrees=10.0))
     
-    # 노이즈 (강화됨)
+    # 노이즈
     if use_noise:
-        transforms.append(HSINoise(std=0.02))
+        transforms.append(HSINoise(std=0.01))
     
-    # 밝기/대비 (강화됨)
+    # 밝기/대비
     if use_brightness_contrast:
-        transforms.append(HSIBrightnessContrast(brightness_factor=0.15, contrast_factor=0.15))
-    
-    # 스펙트럼 증강 (새로 추가)
-    if use_spectral_aug:
-        transforms.append(HSISpectralAugmentation(p=0.5, std=0.01))
-    
-    # 가우시안 블러 (새로 추가)
-    if use_blur:
-        transforms.append(HSIGaussianBlur(p=0.3, kernel_size=3, sigma=0.5))
-    
-    # 랜덤 지우기 (새로 추가)
-    if use_erasing:
-        transforms.append(HSIRandomErasing(p=0.3, scale=(0.02, 0.33), ratio=(0.3, 3.3)))
+        transforms.append(HSIBrightnessContrast(brightness_factor=0.1, contrast_factor=0.1))
     
     return HSITransformCompose(transforms)
 
