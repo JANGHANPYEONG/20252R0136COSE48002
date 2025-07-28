@@ -77,8 +77,7 @@ class SpectrumNet(nn.Module):
 
 def create_model(config):
     num_classes = config['model']['num_classes']
-    params = config['model']['parameters']
-    in_channels = params.get('in_channels', 6)
+    in_channels = config['model']['in_channels']
 
     return SpectrumNet(
         in_channels = in_channels,
