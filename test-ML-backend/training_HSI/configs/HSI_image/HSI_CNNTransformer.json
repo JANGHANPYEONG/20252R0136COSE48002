@@ -1,17 +1,21 @@
 {
-  "experiment": "hsi_cnn_transformer_mt",
+  "experiment": "hsi_cnntransformer_improved",
   "model": {
-    "file": "HSI_CNNTransformer",
+    "file": "hsi_CNNTransformer",
     "in_bands": 5,
     "cnn_channels": [32, 64, 128],
     "num_bands": 5,
     "token_dim": 64,
-    "trans_layers": 6,
+    "trans_layers": 3,
     "trans_heads": 4,
-    "trans_ffn_dim": 1024,
+    "trans_ffn_dim": 512,
     "num_classes": 13,
     "num_regression_targets": 0,
-    "use_pool": true
+    "shared_hidden": 128,
+    "use_pool": true,
+    "dropout": 0.2,
+    "attention_type": "se",
+    "use_pre_norm": true
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
@@ -25,19 +29,28 @@
     "use_rotation": true,
     "use_noise": true,
     "use_brightness_contrast": true,
+    "use_erasing": true,
+    "use_spectral_aug": true,
+    "use_blur": true,
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
-    "early_stopping_patience": 10,
+    "epochs": 80,
+    "early_stopping_patience": 15,
     "optimizer": "AdamW",
     "lr": 1e-4,
-    "scheduler": "ReduceLROnPlateau",
-    "scheduler_patience": 5,
-    "scheduler_factor": 0.5,
-    "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "weight_decay": 1e-4,
+    "scheduler": "CosineAnnealingWarmRestarts",
+    "scheduler_T_0": 10,
+    "scheduler_T_mult": 2,
+    "scheduler_eta_min": 1e-7,
+    "cls_loss": "FocalLoss",
+    "focal_alpha": 0.25,
+    "focal_gamma": 2.0,
+    "reg_loss": "HuberLoss",
+    "huber_delta": 1.0,
+    "use_amp": true,
+    "grad_clip_norm": 1.0
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
@@ -45,4 +58,4 @@
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
-}
+} 
