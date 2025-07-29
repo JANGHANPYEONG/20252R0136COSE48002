@@ -30,6 +30,6 @@
   "seed": 42,
   "TS_path": "/mnt/data/datasets_HSI/image/TS_tmp",
   "VS_path": "/mnt/data/datasets_HSI/image/VS_image",
-  "TS_label": "/mnt/data/datasets_HSI/label/TS_tmp.csv",
+  "TS_label": "/mnt/data/datasets_HSI/label/label_tmp.csv",
   "vS_label": "/mnt/data/datasets_HSI/label/VS_label.csv"
 }

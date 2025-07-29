@@ -7,7 +7,7 @@ class Realtime2DCNNMultilabel(nn.Module):
         super().__init__()
         self.backbone = nn.Sequential(
             nn.Conv2d(input_channels, 16, kernel_size=3, padding=1),
-            nn.BatchNorm2d(16),
+            nn.GroupNorm(num_groups=4, num_channels=16),
             nn.ReLU(),
             nn.AdaptiveAvgPool2d((1, 1))
         )
