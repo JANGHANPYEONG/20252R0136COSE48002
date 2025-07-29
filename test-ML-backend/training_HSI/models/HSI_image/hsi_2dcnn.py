@@ -16,13 +16,14 @@ class CNN_2D(nn.Module):
 
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.ReLU(),
-            
+
             nn.MaxPool2d(kernel_size=2, stride=2),
 
-            nn.AdaptiveAvgPool2d((1, 1))
+            nn.AdaptiveAvgPool2d((1, 1))  # Output shape: (B, 128, 1, 1)
         )
-        self.head = nn.Linear(
-            nn.Flatten(),
+
+        self.head = nn.Sequential(
+            nn.Flatten(),                # (B, 128, 1, 1) → (B, 128)
             nn.Linear(128, 512),
             nn.ReLU(),
             nn.Linear(512, num_classes)
@@ -37,8 +38,8 @@ class CNN_2D(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        x = self.backbone(x)
-        x = self.head(x)
+        x = self.backbone(x)  # shape: (B, 128, 1, 1)
+        x = self.head(x)      # shape: (B, num_classes)
         return x
 
 
