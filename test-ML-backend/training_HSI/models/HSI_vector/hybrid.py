@@ -85,33 +85,34 @@ class HybridModel:
         stack = self.load_stack(dir)
         pca_img = self.apply_pca(stack)
         tensor = self.transform(pca_img)
-        return
+        return tensor
 
-    def process_all(self, dir):
-        tensor_list = []
-        folder_paths = [os.path.join(dir, folder) for folder in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, folder))]
-        generator = Parallel(n_jobs=self.n_jobs, return_as="generator")(
-            delayed(self.process_one)(f) for f in folder_paths
-        )
-        tensor_list = list(tqdm(generator, total=len(folder_paths), desc="Processing folders"))
-        return tensor_list
+    def process_all(self, dir : str) -> List[torch.Tensor]:
+        folders = [os.path.join(dir, d) for d in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, d))]
+
+        results = Parallel(n_jobs=self.n_jobs, prefer="threads")(delayed(self.process_one)(f) for f in folders)
+        return results
+    
     
     # 이미지 추출
     def extract_features(self, model, images):
-        features = []
-        with torch.no_grad():
-            for img in images:
-                outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]
-                features.append(outputs.squeeze(0).cpu().numpy())
-        return np.array(features)
+        np_imgs = [img.mul(255).byte().permute(1, 2, 0).cpu().numpy()
+                for img in images]
 
-    def load_labels(self, file_path):
-        df_list = []
-        df = pd.read_csv(file_path)
-        label_cols = [col for col in df.columns if col.startswith('disease_')]
-        for label in label_cols:
-            df_list.append(df[label].values)
-        return np.array(df_list)
+        # 2) processor 가 resize/normalize 까지 수행, 배치 텐서 반환
+        inputs = self.processor(images=np_imgs, return_tensors="pt")
+        pixel_values = inputs["pixel_values"].to(DEVICE)   # (N,3,224,224)
+
+        # 3) ViT 추론 (batch 처리)
+        with torch.no_grad():
+            cls = self.vit(pixel_values=pixel_values).last_hidden_state[:, 0, :]  # (N,D)
+
+        return cls.cpu().numpy()
+
+    def load_labels(self, csv_path : str) -> np.ndarray:
+        df = pd.read_csv(csv_path)
+        label_cols = [c for c in df.columns if c.startswith("disease_")]
+        return df[label_cols].values    # shape = (N, L)
 
     def fit(self, X, y):
         train_list = self.process_all(self.TS_path)
