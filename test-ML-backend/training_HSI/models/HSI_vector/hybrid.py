@@ -5,7 +5,6 @@ import cv2
 from typing import Dict, List
 from tqdm import tqdm
 from joblib import Parallel, delayed
-from tqdm_joblib import tqdm_joblib
 import multiprocessing
 
 import torch
