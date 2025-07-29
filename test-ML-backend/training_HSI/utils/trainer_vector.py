@@ -73,6 +73,8 @@ class SearchHyperparameter(BaseEstimator):
                 random_state=self.random_state,
                 refit=self.refit
             )
+        elif self.method == 'no':
+            self.searcher == 'no'
         else:
             raise ValueError("search_type must be 'gridsearchcv', 'randomizedsearchcv' or 'bayessearchcv'")
         
