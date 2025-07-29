@@ -19,7 +19,8 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class HybridModel:
     def __init__(self, config):
         self.config = config
-
+        
+        self.n_jobs = config.get("train", {}).get("n_jobs", 1)
         self.mlflow_info = config.get("mlflow_info", {})
         self.n_estimators = config.get("parameters", {}).get("n_estimators", 1)
         self.max_depth = config.get("parameters", {}).get("max_depth", None)
@@ -79,21 +80,24 @@ class HybridModel:
         reduced = (reduced - reduced.min()) / (reduced.max() - reduced.min() + 1e-6)
         return (reduced * 255).astype(np.uint8)
 
+    def process_one(self, dir):
+        stack = self.load_stack(dir)
+        pca_img = self.apply_pca(stack)
+        tensor = self.transform(pca_img)
+        return
+
     def process_all(self, dir):
         tensor_list = []
-        for folder in sorted(os.listdir(dir)):
-            folder_path = os.path.join(dir, folder)
-            if not os.path.isdir(folder_path): continue
-            stack = self.load_stack(folder_path)
-            pca_img = self.apply_pca(stack)
-            tensor = self.transform(pca_img)
-            tensor_list.append(tensor)
+        folder_paths = [os.path.join(dir, folder) for folder in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, folder))]
+        tensor_list = Parallel(n_jobs=self.n_jobs)(
+            delayed(self.process_one)(f) for f in folder_paths
+        )
         return tensor_list
     
     # 이미지 추출
     def extract_features(self, model, images):
         features = []
-        with torch.no.grad():
+        with torch.no_grad():
             for img in images:
                 img = img.unsqueeze(0).to(DEVICE)
                 outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]

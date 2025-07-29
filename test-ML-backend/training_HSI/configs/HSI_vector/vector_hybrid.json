@@ -6,12 +6,12 @@
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "configs/column_config.json",
+    "column_config": "./configs/column_config.json",
     "K-fold": 5,
     "test_split": 0.1
   },
   "train": {
-    "method" : "gridsearchcv",
+    "method" : "no",
     "scoring": "mt_scorer",
     "n_estimators": 10,
     "max_depth": 5,
@@ -30,6 +30,6 @@
   "seed": 42,
   "TS_path": "/mnt/data/datasets_HSI/image/TS_image",
   "VS_path": "/mnt/data/datasets_HSI/image/VS_image",
-  "TS_label": "/mnt/data/datasets_HSI/label/TS_label",
-  "vS_label": "/mnt/data/datasets_HSI/label/VS_label"
+  "TS_label": "/mnt/data/datasets_HSI/label/TS_tmp.csv",
+  "vS_label": "/mnt/data/datasets_HSI/label/VS_label.csv"
 }

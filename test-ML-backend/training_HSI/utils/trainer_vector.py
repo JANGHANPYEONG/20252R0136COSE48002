@@ -207,6 +207,7 @@ class SearchHyperparameter(BaseEstimator):
     
 
     def fit(self, X, y):
+        if self.searcher == 'no': return self.estimator.fit(X, y)
         return self.searcher.fit(X, y)
     
 
