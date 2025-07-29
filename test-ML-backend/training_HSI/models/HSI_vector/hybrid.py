@@ -5,6 +5,7 @@ import cv2
 from typing import Dict, List
 from tqdm import tqdm
 from joblib import Parallel, delayed
+from tqdm_joblib import tqdm_joblib
 import multiprocessing
 
 import torch
@@ -89,9 +90,10 @@ class HybridModel:
     def process_all(self, dir):
         tensor_list = []
         folder_paths = [os.path.join(dir, folder) for folder in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, folder))]
-        tensor_list = Parallel(n_jobs=self.n_jobs)(
+        generator = Parallel(n_jobs=self.n_jobs, return_as="generator")(
             delayed(self.process_one)(f) for f in folder_paths
         )
+        tensor_list = list(tqdm(generator, total=len(folder_paths), desc="Processing folders"))
         return tensor_list
     
     # 이미지 추출
@@ -114,11 +116,11 @@ class HybridModel:
 
     def fit(self, X, y):
         train_list = self.process_all(self.TS_path)
-        val_list = self.process_all(self.VS_path)
+        #val_list = self.process_all(self.VS_path)
         vit_features_train = self.extract_features(self.vit, train_list)
-        vit_features_val = self.extract_features(self.vit, val_list)
+        #vit_features_val = self.extract_features(self.vit, val_list)
 
-        X_train, X_test = vit_features_train, vit_features_val
+        X_train = vit_features_train
         y_train = np.array(self.load_labels(self.TS_label))
         return self.model.fit(X_train, y_train)
 
