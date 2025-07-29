@@ -101,7 +101,6 @@ class HybridModel:
         features = []
         with torch.no_grad():
             for img in images:
-                img = img.unsqueeze(0).to(DEVICE)
                 outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]
                 features.append(outputs.squeeze(0).cpu().numpy())
         return np.array(features)
