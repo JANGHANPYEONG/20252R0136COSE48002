@@ -128,14 +128,20 @@ def main():
         training_time = time.time() - start_time
         print(f"✅ Training done in {training_time/60:.2f} min")
 
-        best_params = grid.searcher.best_params_
-        best_estimator = grid.searcher.best_estimator_
-        best_val_score = grid.searcher.best_score_
-        print(f"Best Parameter: {best_params}\n")
+        if grid.searcher == 'no' :
+            y_pred = estimator.predict(X_test)
+            results = grid.calculate_metrics(y_test, y_pred)
+            best_estimator = estimator
+            best_val_score = 42
+        else :
+            best_params = grid.searcher.best_params_
+            best_estimator = grid.searcher.best_estimator_
+            best_val_score = grid.searcher.best_score_
+            print(f"Best Parameter: {best_params}\n")
 
-        # 평가 데이터에 대해 예측 수행
-        y_pred = best_estimator.predict(X_test)
-        results = grid.calculate_metrics(y_test, y_pred)
+            # 평가 데이터에 대해 예측 수행
+            y_pred = best_estimator.predict(X_test)
+            results = grid.calculate_metrics(y_test, y_pred)
 
         # 최종 결과 로깅
         if logger is not None:
