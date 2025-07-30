@@ -139,7 +139,7 @@ class HybridModel:
     def predict(self, X):
         tmp_list = []
         for x in X:
-            pca_img = self.apply_pca(X)
+            pca_img = self.apply_pca(x)
             tensor = self.transform(pca_img)
             tmp_list.append(tensor)
         tmp = np.ndarray(tmp_list)
