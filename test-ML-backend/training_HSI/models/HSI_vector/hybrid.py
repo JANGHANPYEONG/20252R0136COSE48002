@@ -137,13 +137,9 @@ class HybridModel:
         return self
 
     def predict(self, X):
-        tmp_list = []
-        for x in X:
-            pca_img = self.apply_pca(x)
-            tensor = self.transform(pca_img)
-            tmp_list.append(tensor)
-        tmp = np.ndarray(tmp_list)
-        return self.model.predict(tmp)
+        val_list = self.process_all(self.VS_path)
+        vit_features_val = self.extract_features(self.vit, val_list)
+        return self.model.predict(vit_features_val)
 
 def create_model(config: Dict):
     """RandomForest 모델 생성 함수"""
