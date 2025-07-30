@@ -23,12 +23,10 @@ class CNN_2D(nn.Module):
         )
 
         self.head = nn.Sequential(
-            nn.Flatten(),                # (B, 128)
+            nn.Flatten(),                # (B, 128, 1, 1) → (B, 128)
             nn.Linear(128, 512),
             nn.ReLU(),
-            nn.Linear(512, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, num_classes)
+            nn.Linear(512, num_classes)
         )
 
         self.apply(self._init_weights)
