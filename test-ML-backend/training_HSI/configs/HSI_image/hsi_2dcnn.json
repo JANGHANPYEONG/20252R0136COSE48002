@@ -3,7 +3,8 @@
   "model": {
     "file": "hsi_2dcnn",
     "num_classes": 13,
-    "hsi_channels": 5
+    "hsi_channels": 5,
+    "dropout" : 0.1
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
