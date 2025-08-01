@@ -22,15 +22,13 @@ class SpectralModule(nn.Module):
             nn.BatchNorm2d(expand3x3_channels),
             nn.ReLU(inplace=True)
         )
-
-        self.dropout = nn.Dropout2d(p=dropout) if dropout > 0 else nn.Identity()
     
     def forward(self, x):
         x = self.squeeze(x)
         out1 = self.expand1x1(x)
         out3 = self.expand3x3(x)
         out = torch.cat([out1, out3], dim=1)
-        return self.dropout(out)
+        return out
 
 class SpectrumNet(nn.Module):
     def __init__(self, in_channels, num_classes, dropout=0.0):
