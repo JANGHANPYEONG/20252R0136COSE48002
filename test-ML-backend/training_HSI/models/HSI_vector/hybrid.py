@@ -20,7 +20,7 @@ class HybridModel:
     def __init__(self, config):
         self.config = config
         
-        self.n_jobs = config.get("train", {}).get("n_jobs", 1)
+        self.n_jobs = config.get("train", {}).get("n_jobs", -1)
         self.mlflow_info = config.get("mlflow_info", {})
         self.n_estimators = config.get("parameters", {}).get("n_estimators", 1)
         self.max_depth = config.get("parameters", {}).get("max_depth", None)
@@ -89,7 +89,8 @@ class HybridModel:
     def process_all(self, dir : str) -> List[torch.Tensor]:
         folders = [os.path.join(dir, d) for d in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, d))]
 
-        results = Parallel(n_jobs=self.n_jobs, prefer="threads")(delayed(self.process_one)(f) for f in folders)
+        gen = Parallel(n_jobs=self.n_jobs, return_as = "generator")(delayed(self.process_one)(f) for f in folders)
+        results = [out for out in tqdm(gen, total = len(folders), desc="Processing folder")]
         return results
     
     
@@ -137,7 +138,9 @@ class HybridModel:
         return self
 
     def predict(self, X):
-        return self.model.predict(X)
+        val_list = self.process_all(self.VS_path)
+        vit_features_val = self.extract_features(self.vit, val_list)
+        return self.model.predict(vit_features_val)
 
 def create_model(config: Dict):
     """RandomForest 모델 생성 함수"""
