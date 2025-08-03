@@ -87,7 +87,13 @@ def main():
             csv_path=csv_path,
             column_config_path=column_config_path
         )
-
+        #tmp data for hybrid
+        y_tmp, _ = load_vector_data(
+            csv_path="/mnt/data/datasets_HSI/label/VS_label.csv",
+            column_config_path=column_config_path
+        )
+        y_tmp = y_tmp.labels
+        ############################
         X = dataset.spectral_data
         y = dataset.labels
 
@@ -130,7 +136,7 @@ def main():
 
         if grid.searcher == 'no' :
             y_pred = estimator.predict(X_test)
-            results = grid.calculate_metrics(y_test, y_pred)
+            results = grid.calculate_metrics(y_tmp, y_pred)
             best_estimator = estimator
             best_val_score = 42
         else :

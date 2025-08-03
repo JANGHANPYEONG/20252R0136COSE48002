@@ -19,7 +19,11 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class HybridModel:
     def __init__(self, config):
         self.config = config
-        
+
+        #메모리 최적화
+        self.batch_size   = config.get("train", {}).get("batch_size", 16)
+        self.fp16_enabled = config.get("train", {}).get("fp16", True)
+        ####
         self.n_jobs = config.get("train", {}).get("n_jobs", -1)
         self.mlflow_info = config.get("mlflow_info", {})
         self.n_estimators = config.get("parameters", {}).get("n_estimators", 1)
@@ -96,18 +100,32 @@ class HybridModel:
     
     # 이미지 추출
     def extract_features(self, model, images):
-        np_imgs = [img.mul(255).byte().permute(1, 2, 0).cpu().numpy()
-                for img in images]
+        features = []
 
-        # 2) processor 가 resize/normalize 까지 수행, 배치 텐서 반환
-        inputs = self.processor(images=np_imgs, return_tensors="pt")
-        pixel_values = inputs["pixel_values"].to(DEVICE)   # (N,3,224,224)
+        # ──────────── 배치 전처리를 직접 수행 ────────────
+        for i in range(0, len(images), self.batch_size):
+            # (1) 현재 배치만 뽑아 numpy 로 변환
+            batch_imgs = [
+                img.mul(255).byte().permute(1, 2, 0).cpu().numpy()
+                for img in images[i : i + self.batch_size]
+            ]
+            inputs = self.processor(images=batch_imgs, return_tensors="pt")
+            pixel_values = inputs["pixel_values"].to(
+                DEVICE, non_blocking=True, memory_format=torch.contiguous_format
+            )
+            if self.fp16_enabled:
+                pixel_values = pixel_values.half()
 
-        # 3) ViT 추론 (batch 처리)
-        with torch.no_grad():
-            cls = self.vit(pixel_values=pixel_values).last_hidden_state[:, 0, :]  # (N,D)
+            # (2) 추론
+            with torch.inference_mode(), torch.cuda.amp.autocast(enabled=self.fp16_enabled):
+                cls = self.vit(pixel_values=pixel_values).last_hidden_state[:, 0]  # (B, D)
 
-        return cls.cpu().numpy()
+            # (3) 즉시 CPU로 옮겨 누적 → GPU 메모리 해제
+            features.append(cls.cpu())
+            del pixel_values, cls
+            torch.cuda.empty_cache()
+        
+        return torch.cat(features).numpy()
 
     def load_labels(self, csv_path : str) -> np.ndarray:
         df = pd.read_csv(csv_path)

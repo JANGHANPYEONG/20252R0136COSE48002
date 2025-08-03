@@ -61,10 +61,10 @@ class HybridSN(nn.Module):
 def create_model(config: dict) -> nn.Module:
     mcfg = config['model']
     return HybridSN(
-        in_chs=mcfg.get('in_chs', 15),
+        in_chs=mcfg.get('in_chs', 5),
         patch_size=mcfg.get('patch_size', 25),
-        class_nums=mcfg.get('class_nums', 13),
-        conv1_kernel=mcfg.get('conv1_kernel', [5, 3, 3]),
+        class_nums=mcfg.get('num_classes', 13),  # num_classes 사용
+        conv1_kernel=mcfg.get('conv1_kernel', [3, 3, 3]),  # 5채널에 맞게 조정
         conv2_kernel=mcfg.get('conv2_kernel', [1, 3, 3]),
         conv3_kernel=mcfg.get('conv3_kernel', [1, 3, 3]),
         conv4_kernel=mcfg.get('conv4_kernel', [3, 3]),
