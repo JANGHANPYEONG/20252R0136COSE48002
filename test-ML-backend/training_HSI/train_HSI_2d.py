@@ -6,7 +6,7 @@ HSI 2D CNN 학습 파이프라인
 멀티태스크 학습을 지원하며, 분류 및 회귀 작업을 동시에 수행할 수 있습니다.
 
 사용법:
-    python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
+    python3 train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
 """
 
 import os

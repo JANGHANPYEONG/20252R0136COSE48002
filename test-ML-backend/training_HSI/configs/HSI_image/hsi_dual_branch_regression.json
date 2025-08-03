@@ -10,7 +10,7 @@
     "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
-    "batch_size": 8,
+    "batch_size": 16,
     "num_workers": 4,
     "crop_size": [224, 224],
     "use_flip": true,
@@ -20,12 +20,12 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
+    "epochs": 100,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
-    "lr": 3e-4,
+    "lr": 5e-4,
     "scheduler": "ReduceLROnPlateau",
-    "loss_fn": "uncertainty",
+    "loss_fn": "dynamic",
     "use_amp": true,
     "grad_clip_norm": 1
   },
@@ -33,6 +33,6 @@
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "HSI_DUAL_BRANCH_REGRESSION"
   },
-  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score", "cls_precision", "cls_recall"],
   "seed": 42
 }

@@ -5,15 +5,15 @@
     "num_classes": 13,
     "parameters": {
       "in_channels": 5,
-      "dropout": 0.3
-    }
+      "dropout": 0.2
+    } 
   },
   "data": {
     "csv": "/mnt/data/datasets_HSI/label/label.csv",
     "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
-    "batch_size": 8,
+    "batch_size": 32,
     "num_workers": 4,
     "crop_size": [224, 224],
     "use_flip": true,
@@ -23,14 +23,14 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
-    "early_stopping_patience": 10,
+    "epochs": 80,
+    "early_stopping_patience": 30,
     "optimizer": "AdamW",
-    "lr": 3e-4,
-    "scheduler": "ReduceLROnPlateau",
-    "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "lr": 2e-4,
+    "scheduler": "CosineAnnealingLR",
+    "loss_fn": "dynamic",
+    "use_amp": true,
+    "grad_clip_norm": 1
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
@@ -39,9 +39,9 @@
   "plot_keys": [
     "cls_f1_score",
     "reg_r2",
-    "combined_score",
     "cls_recall",
-    "cls_precision"
+    "cls_precision",
+    "cls_auc"
   ],
   "seed": 42
 }
