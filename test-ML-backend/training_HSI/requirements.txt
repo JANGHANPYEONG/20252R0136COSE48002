@@ -8,4 +8,4 @@ matplotlib>=3.4.0
 mlflow>=1.20.0         
 tqdm>=4.60.0           
 Pillow>=8.0.0          
-sickit-optimize==0.10.2
+scikit-optimize==0.10.2

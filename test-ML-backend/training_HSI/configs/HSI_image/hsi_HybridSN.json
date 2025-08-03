@@ -1,0 +1,55 @@
+{
+  "experiment": "hsi_hybridSN_baseline",
+  "model": {
+    "file": "hsi_HybridSN",
+    "name": "HSIHybridSN",
+    "num_classes": 13,
+    "in_chs": 15,
+    "patch_size": 25,
+    "class_nums": 13,
+    "dropout": 0.4,
+    "activation": "relu",
+    "init_type": "xavier_uniform",
+    "pretrained": false,
+    "conv1_kernel": [5, 3, 3],
+    "conv2_kernel": [1, 3, 3],
+    "conv3_kernel": [1, 3, 3],
+    "conv4_kernel": [3, 3],
+    "conv_channels": [8, 16, 32, 64],
+    "fc_units": [256, 128],
+    "fc_dropout": 0.4
+  },
+  "data": {
+    "csv": "../datasets_HSI/label/label.csv",
+    "column_config": "configs/column_config.json",
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "batch_size": 32,
+    "num_workers": 0,
+    "crop_size": [25, 25],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
+  },
+  "train": {
+    "epochs": 50,
+    "early_stopping_patience": 10,
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "scheduler": "StepLR",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "loss_fn": "uncertainty",
+    "use_amp": false,
+    "grad_clip_norm": null,
+    "save_interval": 5
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_HybridSN"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42
+}
