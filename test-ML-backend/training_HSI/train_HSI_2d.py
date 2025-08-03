@@ -6,7 +6,7 @@ HSI 2D CNN 학습 파이프라인
 멀티태스크 학습을 지원하며, 분류 및 회귀 작업을 동시에 수행할 수 있습니다.
 
 사용법:
-    python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
+    python3 train_HSI_2d.py --config configs/HSI_image/hsi_HybridSN.json
 """
 
 import os
@@ -96,22 +96,27 @@ def main():
     # MLflow 로거 설정
     logger = None
     if not args.no_mlflow:
-        logger = create_logger(config)
-        logger.start_run()
-        
-        # 하이퍼파라미터 로깅
-        params_to_log = {
-            'model_file': config['model']['file'],
-            'num_classes': config['model']['num_classes'],
-            'batch_size': config['data']['batch_size'],
-            'epochs': config['train']['epochs'],
-            'optimizer': config['train']['optimizer'],
-            'lr': config['train']['lr'],
-            'scheduler': config['train']['scheduler'],
-            'save_interval': config['train'].get('save_interval', 5),
-            'seed': seed
-        }
-        logger.log_params(params_to_log)
+        try:
+            logger = create_logger(config)
+            logger.start_run()
+            
+            # 하이퍼파라미터 로깅
+            params_to_log = {
+                'model_file': config['model']['file'],
+                'num_classes': config['model']['num_classes'],
+                'batch_size': config['data']['batch_size'],
+                'epochs': config['train']['epochs'],
+                'optimizer': config['train']['optimizer'],
+                'lr': config['train']['lr'],
+                'scheduler': config['train']['scheduler'],
+                'save_interval': config['train'].get('save_interval', 5),
+                'seed': seed
+            }
+            logger.log_params(params_to_log)
+        except Exception as e:
+            print(f"MLflow connection failed: {e}")
+            print("Continuing without MLflow logging...")
+            logger = None
     
     try:
         # Transform 설정
