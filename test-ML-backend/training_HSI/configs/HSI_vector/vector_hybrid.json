@@ -28,8 +28,8 @@
   "scaler": "standardscaler",
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42,
-  "TS_path": "/mnt/data/datasets_HSI/image/TS_tmp",
+  "TS_path": "/mnt/data/datasets_HSI/image/TS_image",
   "VS_path": "/mnt/data/datasets_HSI/image/VS_image",
-  "TS_label": "/mnt/data/datasets_HSI/label/label_tmp.csv",
+  "TS_label": "/mnt/data/datasets_HSI/label/TS_label",
   "vS_label": "/mnt/data/datasets_HSI/label/VS_label.csv"
 }
