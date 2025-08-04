@@ -3,14 +3,15 @@
   "model": {
     "file": "hsi_2dcnn",
     "num_classes": 13,
-    "hsi_channels": 5
+    "hsi_channels": 5,
+    "dropout" : 0.1
   },
   "data": {
     "csv": "../datasets_HSI/label/label.csv",
     "column_config": "../datasets_HSI/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
-    "batch_size": 8,
+    "batch_size": 16,
     "num_workers": 4,
     "crop_size": [224, 224],
     "use_flip": true,
@@ -20,10 +21,10 @@
     "scaler_mode": "normalized"    
   },
   "train": {
-    "epochs": 50,
+    "epochs": 80,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
-    "lr": 3e-4,
+    "lr": 0.0003,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
     "use_amp": true,

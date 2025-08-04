@@ -14,7 +14,7 @@
     "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
-    "batch_size": 8,
+    "batch_size": 16,
     "num_workers": 4,
     "crop_size": [224, 224],
     "use_flip": true,
@@ -24,12 +24,12 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 80,
+    "epochs": 200,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
-    "lr": 3e-4,
-    "scheduler": "ReduceLRonPlateau",
-    "loss_fn": "uncertainty",
+    "lr": 1e-4,
+    "scheduler": "ReduceLROnPlateau",
+    "loss_fn": "dynamic",
     "use_amp": true,
     "grad_clip_norm": 1
   },
