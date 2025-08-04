@@ -13,12 +13,12 @@
     "dropout": 0.1
   },
   "data": {
-    "csv": "datasets_HSI/label/label.csv",
-    "column_config": "../column_config.json",
+    "csv": "/mnt/data/datasets_HSI/label/label.csv",
+    "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,
-    "num_workers": 0,
+    "num_workers": 6,
     "crop_size": [224, 224],
     "use_flip": true,
     "use_rotation": true,
@@ -27,7 +27,7 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
+    "epochs": 100,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
@@ -45,3 +45,6 @@
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42
 }
+
+
+
