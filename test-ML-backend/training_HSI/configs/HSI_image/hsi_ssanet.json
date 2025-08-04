@@ -31,6 +31,9 @@
     },
     "UsingSaAM": {
       "use": true
+    },
+    "BranchAttention": {
+      "use": false
     }
 
   },
