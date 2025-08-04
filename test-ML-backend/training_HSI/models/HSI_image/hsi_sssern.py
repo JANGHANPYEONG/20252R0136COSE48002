@@ -18,7 +18,8 @@ class SpectralSEBlock(nn.Module):
         b, c, h, w = x.size()
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1, 1)
-        return x * y.expand_as(x)
+        # Scale (B,C,1,1) to (B,C,H,W)
+        return x * y.expand_as(x) 
     
 class SpatialSEBlock(nn.Module):
     def __init__(self, channel):
@@ -29,6 +30,7 @@ class SpatialSEBlock(nn.Module):
     def forward(self, x):
         y = self.conv(x)
         y = self.sigmoid(y)
+        # Scale (B,1,H,W) to (B,C,H,W)
         return x * y
     
 class SSSEBlock(nn.Module):
@@ -46,6 +48,7 @@ class SSSEBlock(nn.Module):
 class SSSEBasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels, reduction=2):
         super(SSSEBasicBlock, self).__init__()
+        # Resnet 구조
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
@@ -53,6 +56,7 @@ class SSSEBasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.conv3 = nn.Conv2d(out_channels, in_channels, kernel_size=1)
         self.bn3 = nn.BatchNorm2d(in_channels)
+        # SSSEBlock 적용
         self.ssse = SSSEBlock(in_channels, reduction)
         
     def forward(self, x):
@@ -68,12 +72,12 @@ class SSSEBasicBlock(nn.Module):
 class SSSERN(nn.Module):
     def __init__(self, in_channels, num_classes, num_blocks=4, reduction=2):
         super(SSSERN, self).__init__()
+        # block 개수 만큼 SSSEBasicBlock
         self.blocks = nn.Sequential(
             *[SSSEBasicBlock(in_channels, 32, reduction) for _ in range(num_blocks)]
         )
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         self.classifier = nn.Linear(in_channels, num_classes)
-        self.fc = nn.Linear(512, num_classes)
     
     def forward(self, x):
         x = self.blocks(x)
@@ -83,6 +87,12 @@ class SSSERN(nn.Module):
         return x
     
 def create_model(config):
+    """
+    num_classes: target labels 개수
+    in_channels: input channel 개수 (default: 5) -> 넙치 data
+    num_blocks: SSSEBasicBlock 개수 (default: 4)
+    reduction: SSSEBlock의 spectral reduction factor (default: 2) -> 파장이 적어서 건들지 않는 것 권장
+    """
     num_classes = config['model']['num_classes']
     params = config['model']['parameters']
     in_channels = params.get('in_channels', 6)
