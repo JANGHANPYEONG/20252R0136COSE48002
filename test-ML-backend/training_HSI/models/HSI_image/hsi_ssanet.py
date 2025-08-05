@@ -181,6 +181,11 @@ class Branch_Attention(nn.Module):
         attention = self.sigmoid(self.conv(combined))
         res_SaAM = SaAM_x * attention  # 공간적 중요도 적용
 
+        # [250805] branch attention comment
+        # concat 및 축소 method를 유의미한 방법으로 변경할 필요가 있어보임
+        # 현재의 단순한 concat은 채널 차원을 단순히 늘리는 것에 불과함
+        # 또한, 현재의 reduce는 단순히 1x1 conv로 채널 차원을 줄이는 것
+
         # 채널 차원 concat: (B, 2C, H, W)
         res = torch.cat([res_SeAM, res_SaAM], dim=1)
 
