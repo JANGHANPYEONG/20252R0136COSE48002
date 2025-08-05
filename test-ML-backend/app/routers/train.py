@@ -44,10 +44,10 @@ class TrainStatus(BaseModel):
 @celery_app.task(bind=True)
 def run_train_task(self, config: Dict):
     import time
+    import os
     
     try:
         # 현재 프로세스 PID 가져오기
-        import os
         current_pid = os.getpid()
         
         # 시작 시간 기록
@@ -109,17 +109,25 @@ def run_train_task(self, config: Dict):
             return {'progress': 1.0, 'mlflow_run_id': mlflow_run_id}
 
         finally:
+            # argv 복원 (에러 발생 시에도)
+            sys.argv = original_argv
+            
             # train_HSI_2d 함수 실행을 위해 임시로 만들었던 config 파일 삭제
             if os.path.exists(config_path):
                 os.remove(config_path)
         
     except Exception as e:
-        # 실패 상태로 업데이트
-        self.update_state(state='FAILURE', meta={'progress': 0.0, 'error_message': str(e)})
-        raise e
+        # Celery가 자동으로 FAILURE 상태로 처리하도록 예외를 다시 발생시킴
+        # 커스텀 에러 정보는 예외 메시지에 포함
+        import traceback
+        error_message = f"{type(e).__name__}: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        print(f"Training failed: {error_message}")
+        
+        # 예외를 다시 발생시켜서 Celery가 자동으로 FAILURE 처리하도록 함
+        raise Exception(error_message)
 
 
-@router.post("/train", response_model=TrainResponse)
+@router.post("/", response_model=TrainResponse)
 async def start_train(request: TrainRequest):
     """
     ML 모델 학습을 시작하는 엔드포인트
@@ -155,7 +163,7 @@ async def start_train(request: TrainRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/train/{train_id}", response_model=TrainStatus)
+@router.get("/{train_id}", response_model=TrainStatus)
 async def get_train_status(train_id: str):
     """
     학습 상태를 확인하는 엔드포인트
@@ -199,8 +207,13 @@ async def get_train_status(train_id: str):
                 status_info["elapsed_time"] = result.info.get("elapsed_time")
 
         elif result.state == 'FAILURE':
-            # 작업 실패
-            status_info["error_message"] = str(result.info)
+            # 작업 실패 - Celery가 자동으로 처리한 예외
+            status_info["progress"] = 0.0
+            if result.info:
+                # result.info는 예외 객체이므로 문자열로 변환
+                status_info["error_message"] = str(result.info)
+            else:
+                status_info["error_message"] = "Training failed with unknown error"
 
         elif result.state == 'REVOKED':
             # 작업 취소됨
@@ -218,7 +231,7 @@ async def get_train_status(train_id: str):
         raise HTTPException(status_code=500, detail=f"Error getting training status: {str(e)}")
 
 
-@router.delete("/train/{train_id}")
+@router.delete("/{train_id}")
 async def cancel_train(train_id: str):
     """
     학습 작업을 취소하는 엔드포인트
