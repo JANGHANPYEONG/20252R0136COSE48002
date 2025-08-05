@@ -27,12 +27,12 @@ class TrainRequest(BaseModel):
 
 class TrainResponse(BaseModel):
     message: str
-    training_id: str
+    train_id: str
     process_pid: Optional[int] = None
     created_at: datetime
 
 class TrainStatus(BaseModel):
-    training_id: str
+    train_id: str
     status: Literal["PENDING", "TRAINING", "SUCCESS", "FAILURE", "REVOKED"]
     progress: float
     elapsed_time: Optional[float] = None  # 실행 시간 (초)
@@ -42,12 +42,12 @@ class TrainStatus(BaseModel):
 
 # Celery 백그라운드에서 학습을 실행하는 함수
 @celery_app.task(bind=True)
-def run_training_task(self, config: Dict):
+def run_train_task(self, config: Dict):
     import time
+    import os
     
     try:
         # 현재 프로세스 PID 가져오기
-        import os
         current_pid = os.getpid()
         
         # 시작 시간 기록
@@ -109,18 +109,26 @@ def run_training_task(self, config: Dict):
             return {'progress': 1.0, 'mlflow_run_id': mlflow_run_id}
 
         finally:
+            # argv 복원 (에러 발생 시에도)
+            sys.argv = original_argv
+            
             # train_HSI_2d 함수 실행을 위해 임시로 만들었던 config 파일 삭제
             if os.path.exists(config_path):
                 os.remove(config_path)
         
     except Exception as e:
-        # 실패 상태로 업데이트
-        self.update_state(state='FAILURE', meta={'progress': 0.0, 'error_message': str(e)})
-        raise e
+        # Celery가 자동으로 FAILURE 상태로 처리하도록 예외를 다시 발생시킴
+        # 커스텀 에러 정보는 예외 메시지에 포함
+        import traceback
+        error_message = f"{type(e).__name__}: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        print(f"Training failed: {error_message}")
+        
+        # 예외를 다시 발생시켜서 Celery가 자동으로 FAILURE 처리하도록 함
+        raise Exception(error_message)
 
 
-@router.post("/training", response_model=TrainResponse)
-async def start_training(request: TrainRequest):
+@router.post("/", response_model=TrainResponse)
+async def start_train(request: TrainRequest):
     """
     ML 모델 학습을 시작하는 엔드포인트
     """
@@ -133,7 +141,7 @@ async def start_training(request: TrainRequest):
         config["input_type"] = request.input_type
         
         # Celery 작업 시작
-        task = run_training_task.apply_async(args=[config])
+        task = run_train_task.apply_async(args=[config])
         
         # 작업이 시작될 때까지 잠시 기다려서 PID 가져오기
         import time
@@ -147,7 +155,7 @@ async def start_training(request: TrainRequest):
         
         return TrainResponse(
             message=f"Training started in background for {request.input_type} model",
-            training_id=task.id,
+            train_id=task.id,
             process_pid=process_pid,
             created_at=datetime.now()
         )
@@ -155,19 +163,19 @@ async def start_training(request: TrainRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/training/{training_id}", response_model=TrainStatus)
-async def get_training_status(training_id: str):
+@router.get("/{train_id}", response_model=TrainStatus)
+async def get_train_status(train_id: str):
     """
     학습 상태를 확인하는 엔드포인트
     """
     import time
     
     try:
-        result = AsyncResult(training_id, app=celery_app)
+        result = AsyncResult(train_id, app=celery_app)
         
         # 기본 상태 정보 (Redis에서 가져온 데이터로 업데이트됨)
         status_info = {
-            "training_id": training_id,
+            "train_id": train_id,
             "status": result.state,
             "progress": 0.0,
             "elapsed_time": None,
@@ -199,8 +207,13 @@ async def get_training_status(training_id: str):
                 status_info["elapsed_time"] = result.info.get("elapsed_time")
 
         elif result.state == 'FAILURE':
-            # 작업 실패
-            status_info["error_message"] = str(result.info)
+            # 작업 실패 - Celery가 자동으로 처리한 예외
+            status_info["progress"] = 0.0
+            if result.info:
+                # result.info는 예외 객체이므로 문자열로 변환
+                status_info["error_message"] = str(result.info)
+            else:
+                status_info["error_message"] = "Training failed with unknown error"
 
         elif result.state == 'REVOKED':
             # 작업 취소됨
@@ -218,19 +231,19 @@ async def get_training_status(training_id: str):
         raise HTTPException(status_code=500, detail=f"Error getting training status: {str(e)}")
 
 
-@router.delete("/training/{training_id}")
-async def cancel_training(training_id: str):
+@router.delete("/{train_id}")
+async def cancel_train(train_id: str):
     """
     학습 작업을 취소하는 엔드포인트
     """
     try:
-        result = AsyncResult(training_id, app=celery_app)
+        result = AsyncResult(train_id, app=celery_app)
         
         if result.state not in ["PENDING", "TRAINING"]:
             raise HTTPException(status_code=400, detail=f"Cannot cancel training in state {result.state}")
         
         # Celery 작업 취소
-        celery_app.control.revoke(training_id, terminate=True)
+        celery_app.control.revoke(train_id, terminate=True)
         
         return {"message": "Training cancelled successfully"}
     except Exception as e:
