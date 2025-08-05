@@ -56,7 +56,7 @@ const DataRegister = () => {
         setLoading(false);
         return;
       }
-      // 1행은 헤더, 빈 문자열 컬럼 제거
+      // 0행은 헤더, 빈 문자열 컬럼 제거
       const origHeader = rowsArray[0].map(String);
       const validIdx = origHeader
         .map((h, i) => ({ h: h.trim(), i }))
@@ -65,7 +65,7 @@ const DataRegister = () => {
       const filteredHeaders = validIdx.map((i) => origHeader[i]);
 
       const dataRows = rowsArray
-        .slice(2)
+        .slice(1) // 1행 제외
         .filter((r) => r.some((c) => c !== ''));
       const mapped = dataRows.map((rowArr) => {
         const obj = {};
