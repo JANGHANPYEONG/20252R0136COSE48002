@@ -165,19 +165,21 @@ class Branch_Attention(nn.Module):
     
     def forward(self, x):
         # SeAM
+        SeAM_x = x
         b, c, _, _ = x.size()  # 입력 텐서 x: (B, C, H, W), 여기서 C는 spectral band 수
-        avg_out = self.fc(self.avg_pool(x).view(b, c))
-        max_out = self.fc(self.max_pool(x).view(b, c))
+        avg_out = self.fc(self.avg_pool(SeAM_x).view(b, c))
+        max_out = self.fc(self.max_pool(SeAM_x).view(b, c))
         out = avg_out + max_out  # 두 결과를 더해 밴드별 중요도 벡터 생성
         scale = self.sigmoid(out).view(b, c, 1, 1)
-        res_SeAM = x * scale  # 입력에 밴드별 중요도 적용: y'' = x * Pse
+        res_SeAM = SeAM_x * scale  # 입력에 밴드별 중요도 적용: y'' = x * Pse
 
         # SaAM
-        avg_out = torch.mean(res_SeAM, dim=1, keepdim=True) # dim=1은 채널 차원(C)을 평균/최대로 줄이는 것
-        max_out, _ = torch.max(res_SeAM, dim=1, keepdim=True)
+        SaAM_x = x
+        avg_out = torch.mean(SaAM_x, dim=1, keepdim=True) # dim=1은 채널 차원(C)을 평균/최대로 줄이는 것
+        max_out, _ = torch.max(SaAM_x, dim=1, keepdim=True)
         combined = torch.cat([avg_out, max_out], dim=1)
         attention = self.sigmoid(self.conv(combined))
-        res_SaAM = res_SeAM * attention  # 공간적 중요도 적용
+        res_SaAM = SaAM_x * attention  # 공간적 중요도 적용
 
         # 채널 차원 concat: (B, 2C, H, W)
         res = torch.cat([res_SeAM, res_SaAM], dim=1)
@@ -219,9 +221,13 @@ class SpectralSpatialAttention(nn.Module):
                 x = self.se(x)
             if self.SaAM_use:
                 x = self.sa(x)
-            x = self.reduce(x)
+            # x = self.reduce(x)
         else:  # branch 사용할 경우
             x = self.branch_attention(x)
+        
+        # PatchifyPositionEmbedding 입력 크기에 맞게 조정
+        x = self.reduce(x) # (SeAM + SaAM) 결과를 1x1 conv로 축소
+
         return x
 
 # HSI SSANet Model
