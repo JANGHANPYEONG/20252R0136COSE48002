@@ -6,6 +6,7 @@ pydantic-settings==2.1.0
 
 # Celery
 celery==5.3.0
+redis>-4.0.0
 
 # 기존 ML 패키지들 (requirements.txt에서 핵심만 가져옴)
 torch>=2.0.0

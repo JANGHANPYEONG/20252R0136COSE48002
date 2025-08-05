@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import training
+from app.routers import train, predict
 from app.core.config import settings
 
 app = FastAPI(
@@ -21,7 +21,8 @@ app.add_middleware(
 )
 
 # 라우터 등록
-app.include_router(training.router, prefix="/api/v1", tags=["training"])
+app.include_router(train.router, prefix="/train", tags=["training"])
+app.include_router(predict.router, prefix="/predict", tags=["prediction"])
 
 @app.get("/")
 async def root():
