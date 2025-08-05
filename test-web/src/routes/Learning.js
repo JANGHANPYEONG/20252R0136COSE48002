@@ -102,7 +102,7 @@ const Learning = () => {
         </span>
       </Box>
 
-      {/**분광 탭 콘텐츠 */}
+      {/**탭별 콘텐츠 */}
       <Box sx={{ marginTop: '30px' }}>
         {value === 'photo' && (
           <Box>
