@@ -39,18 +39,8 @@ const pageListItems = [
   {
     label: 'AI 학습',
     icon: <PsychologyIcon sx={{ fontSize: 30 }} />,
-    path: '/AI',
-    hasSubmenu: true,
-    submenu: [
-      {
-        label: '패턴분석',
-        path: '/Pattern',
-      },
-      {
-        label: '학습하기',
-        path: '/Learning',
-      },
-    ],
+    path: '/Learning',
+    hasSubmenu: false,
   },
   {
     label: '예측하기',
