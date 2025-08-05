@@ -13,7 +13,6 @@ import os
 import sys
 import json
 import argparse
-import torch
 import numpy as np
 from PIL import Image
 import pickle
@@ -36,6 +35,9 @@ class VectorPredictor:
         self._setup_label_info()
 
         self._print_model_info()
+        
+        # Vector는 crop_size가 필요 없지만 호환성을 위해 추가
+        self.crop_size = None
 
     def _build_artifacts(self, model_dir):
         """
@@ -138,47 +140,107 @@ class VectorPredictor:
         데이터 경로 리스트를 받아서 예측을 수행합니다.
         
         Args:
-            image_paths: 각 band의 이미지 경로 리스트
-            crop_size: 크롭할 크기 (height, width), None이면 config에서 가져옴
+            data_paths: 벡터 데이터 경로 리스트
+            crop_size: 사용하지 않음 (호환성을 위해 유지)
             
         Returns:
             dict: 예측 결과 (JSON 직렬화 가능)
         """
-        if crop_size is None:
-            crop_size = self.crop_size
-
-        # 이미지 cube 로드
+        # 벡터 데이터 로드
         vector = self._load_vector_data(data_paths)
         print(f"Predicting on vector {vector.shape}")
         
         # 예측 수행
         y_pred = self.model.predict(vector)
+        
+        # 분류 모델인 경우 확률 예측도 수행
+        y_proba = None
         if hasattr(self.model, 'predict_proba'):
-            y_preds = self.model.predict_proba(vector)
+            y_proba = self.model.predict_proba(vector)
             
-        # 결과 처리 (torch.from_numpy 왕복 제거)
+        # 결과 처리
         results = {}
 
         if self.cls_indices:
             # 분류 인덱스에 해당하는 예측만 추출
-            if hasattr(self.model, 'predict_proba'):
-                cls_probs = y_preds[:, self.cls_indices]
+            if y_proba is not None:
+                # 확률 예측이 가능한 경우
+                if len(y_proba.shape) > 1 and y_proba.shape[1] > 1:
+                    # 다중 클래스: 각 클래스별 확률
+                    cls_results = []
+                    for i, cls_idx in enumerate(self.cls_indices):
+                        if cls_idx < y_proba.shape[1]:
+                            cls_results.append(float(y_proba[0, cls_idx]))
+                        else:
+                            cls_results.append(0.0)
+                else:
+                    # 이진 분류: sigmoid 적용
+                    cls_proba = y_proba[0] if len(y_proba.shape) > 0 else y_proba
+                    cls_results = [float(cls_proba) for _ in self.cls_indices]
             else:
-                cls_preds = y_pred[self.cls_indices]
-                cls_probs = self._sigmoid(cls_preds)
-            cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
+                # 확률 예측이 불가능한 경우: 하드 예측에 sigmoid 적용
+                cls_results = []
+                for i, cls_idx in enumerate(self.cls_indices):
+                    if cls_idx < len(y_pred):
+                        cls_val = float(y_pred[cls_idx])
+                        cls_prob = self._sigmoid(cls_val)
+                        cls_results.append(cls_prob)
+                    else:
+                        cls_results.append(0.0)
+            
             results['classification'] = cls_results
 
         if self.reg_indices:
             # 회귀 인덱스에 해당하는 예측만 추출
-            reg_results = [float(y_pred[i]) for i in self.reg_indices]
+            reg_results = []
+            for i, reg_idx in enumerate(self.reg_indices):
+                if reg_idx < len(y_pred):
+                    reg_results.append(float(y_pred[reg_idx]))
+                else:
+                    reg_results.append(0.0)
             results['regression'] = reg_results
                         
         return results
     
     def _load_vector_data(self, data_paths):
+        """
+        벡터 데이터를 로드합니다.
+        
+        Args:
+            data_paths: 데이터 경로 리스트
+            
+        Returns:
+            numpy.ndarray: 벡터 데이터
+        """
         if not data_paths:
             raise ValueError("Data paths list is empty")
+        
+        # 단일 CSV 파일에서 벡터 데이터 로드
+        import pandas as pd
+        
+        # 첫 번째 경로를 사용 (벡터 데이터는 보통 단일 파일)
+        data_path = data_paths[0]
+        
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(f"Data file not found: {data_path}")
+        
+        # CSV 파일 로드
+        df = pd.read_csv(data_path)
+        
+        # wavelengths에 해당하는 컬럼들만 추출
+        wavelengths = self.column_config.get('wavelengths', [])
+        spectral_columns = [str(w) for w in wavelengths]
+        
+        # 스펙트럼 데이터만 추출
+        if all(col in df.columns for col in spectral_columns):
+            vector_data = df[spectral_columns].values
+        else:
+            # wavelength 컬럼이 없으면 숫자 컬럼들을 사용
+            numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
+            vector_data = df[numeric_columns].values
+        
+        print(f"Loaded vector data shape: {vector_data.shape}")
+        return vector_data
 
 
 def main():
