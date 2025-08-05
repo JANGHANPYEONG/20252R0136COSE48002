@@ -334,7 +334,7 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
         ssa_kernel_size=ssa_kernel_size,
         UsingSeAM=UsingSeAM,
         UsingSaAM=UsingSaAM,
-        BranchAttention=branch_mode
+        branch_mode=branch_mode
     )
 
     return model
