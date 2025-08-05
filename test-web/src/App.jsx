@@ -6,7 +6,6 @@ import Home from './routes/Home';
 import Normal from './routes/Normal';
 import Dashboard from './routes/Dashboard';
 import Stats from './routes/Stats';
-import PA from './routes/PA';
 import Profile from './routes/Profile';
 import DataEdit from './routes/DataEdit';
 import UserManagement from './routes/UserManagement';
@@ -16,7 +15,6 @@ import SpectroPattern from './routes/spectro_pattern';
 import Learning from './routes/Learning';
 import Predict from './routes/Predict';
 import Data from './routes/Data';
-import AI from './routes/AI';
 import DataRegister from './routes/DataRegister';
 
 import { UserProvider } from './Utils/UserContext';
@@ -82,11 +80,6 @@ function App() {
       component: <DataPredict />,
     },
     {
-      path: '/PA',
-      title: 'PA | DeePlant',
-      component: <PA />,
-    },
-    {
       path: '/Pattern',
       title: 'Pattern | DeePlant',
       component: <SpectroPattern />,
@@ -120,11 +113,6 @@ function App() {
       path: '/UserManagement',
       title: 'UserManage | Deeplant',
       component: <UserManagement />,
-    },
-    {
-      path: '/AI',
-      title: 'AI | DeePlant',
-      component: <AI />,
     },
   ];
 
