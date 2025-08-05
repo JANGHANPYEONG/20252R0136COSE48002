@@ -1,14 +1,16 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Literal
-import json
-import tempfile
 from datetime import datetime
 from celery import Celery
 from celery.result import AsyncResult
 
-from training_HSI.predict_hsi import main as predict_hsi
-from training_HSI.predict_vector import main as predict_vector
+from app.utils.cache_model import (
+    load_or_get_cached_model,
+    get_cache_status as get_cache_status_info,
+    clear_cache as clear_model_cache,
+    remove_cached_model
+)
 
 # Celery 및 APIRouter 설정
 celery_app = Celery(
@@ -71,31 +73,18 @@ def run_prediction_task(self, model_uri: str, data_path: str, input_type: str):
         try:
             print(f"Starting prediction with model: {model_uri}, data: {data_path}")
             
-            # sys.argv 백업
-            original_argv = sys.argv
+            # 캐시된 모델 사용 (input_type에 따라 적절한 Predictor 반환)
+            predictor = load_or_get_cached_model(model_uri, input_type)
             
-            # 예측 실행
-            if input_type == "image":
-                # HSI 이미지 예측
-                if len(model_uri) == 32:  # MLflow run_id (32자리)
-                    sys.argv = ['predict_hsi.py', '--run_id', model_uri, '--image_paths', data_path]
-                else:
-                    sys.argv = ['predict_hsi.py', '--model_dir', model_uri, '--image_paths', data_path]
-                
-                prediction_result = predict_hsi()
+            # data_path가 여러 경로인 경우 처리
+            if ',' in data_path:
+                data_paths = data_path.split(',')
             else:
-                # Vector 예측
-                if len(model_uri) == 32:  # MLflow run_id (32자리)
-                    sys.argv = ['predict_vector.py', '--run_id', model_uri, '--data_path', data_path]
-                else:
-                    sys.argv = ['predict_vector.py', '--model_dir', model_uri, '--data_path', data_path]
-                
-                prediction_result = predict_vector()
+                data_paths = [data_path]
+            
+            prediction_result = predictor.predict(data_paths)
             
             print(f"Prediction completed successfully")
-            
-            # argv 복원
-            sys.argv = original_argv
             
             # 완료 시간 계산
             end_time = time.time()
@@ -114,9 +103,9 @@ def run_prediction_task(self, model_uri: str, data_path: str, input_type: str):
                 'elapsed_time': elapsed_time
             }
 
-        finally:
-            # argv 복원 (에러 발생 시에도)
-            sys.argv = original_argv
+        except Exception as inner_e:
+            print(f"Error during prediction: {inner_e}")
+            raise inner_e
         
     except Exception as e:
         # 실패 상태로 업데이트
@@ -240,3 +229,45 @@ async def cancel_predict(prediction_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error cancelling prediction: {str(e)}")
 
+
+@router.get("/cache/status")
+async def get_cache_status():
+    """
+    모델 캐시 상태를 확인하는 엔드포인트
+    """
+    cache_status = get_cache_status_info()
+    
+    # datetime 변환
+    for model_info in cache_status["cached_models"]:
+        model_info["cached_at"] = datetime.fromtimestamp(model_info["cached_at"])
+    
+    return cache_status
+
+
+@router.delete("/cache")
+async def clear_cache():
+    """
+    모델 캐시를 모두 삭제하는 엔드포인트
+    """
+    cleared_count = clear_model_cache()
+    
+    return {
+        "message": f"Cache cleared successfully. {cleared_count} models removed.",
+        "cleared_at": datetime.now()
+    }
+
+
+@router.delete("/cache/{cache_key}")
+async def remove_cached_model_endpoint(cache_key: str):
+    """
+    특정 모델을 캐시에서 제거하는 엔드포인트
+    """
+    removed_model = remove_cached_model(cache_key)
+    
+    if removed_model:
+        return {
+            "message": f"Model removed from cache: {removed_model['model_uri']}",
+            "removed_at": datetime.now()
+        }
+    else:
+        raise HTTPException(status_code=404, detail=f"Cache key not found: {cache_key}")
