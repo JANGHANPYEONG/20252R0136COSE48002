@@ -1,17 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 // style
-import style from './style/dashboardstyle';
+// import style from './style/dashboardstyle';
 // components
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
+import trainSpectralModel from '../API/train/trainSpectralModel';
 
 const navy = '#0F3659';
 
 const Learning = () => {
-  const [value, setValue] = useState('photo');
   const [data, setData] = useState([]);
-  const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState([
@@ -22,10 +21,19 @@ const Learning = () => {
       value: { start: null, end: null },
     },
   ]);
+  const [results, setResults] = useState([]);
+  const [isTraining, setIsTraining] = useState(true);
+  const [history, setHistory] = useState([]);
 
-  const handleValueChange = (newValue) => {
-    setValue(newValue);
-  };
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('cachedResults') || '[]');
+
+    setHistory(saved);
+
+    if (saved.length > 0) {
+      setIsTraining(false);
+    }
+  }, []);
 
   // 데이터 불러오기 함수
   const handleLoadData = () => {
@@ -54,28 +62,30 @@ const Learning = () => {
   };
 
   // 학습하기 함수
-  const handleTrain = () => {
+  const handleTrain = async (trainDataSet) => {
+    setIsTraining(true);
     console.log('학습 시작');
+    const response = await trainSpectralModel(trainDataSet);
+    setResults(response);
+    console.log('학습 결과:', response);
   };
 
-  // 탭별 컬럼 설정
-  const getColumns = () => {
-    switch (value) {
-      case 'photo':
-        return ['ID', '파일명', '회차', '날짜', '마블링', '수분도', '총점'];
-      case 'spectral':
-        return ['ID', '스펙트럼', '파장', '날짜'];
-      case 'cross':
-        return ['ID', '사진ID', '스펙트럼ID', '날짜'];
-      default:
-        return ['ID', '이름', '타입', '날짜'];
-    }
+  // 모델 배포 함수
+  const handleDeploy = () => {
+    console.log('모델 배포 시작');
+    localStorage.setItem('cachedResults', JSON.stringify(results));
+    // 배포 로직
+    setIsTraining(false);
+    console.log('모델 배포 완료');
   };
 
-  // 탭별 모델 컬럼 설정
-  const getModelColumns = () => {
-    return ['모델명', '생성일', '정확도', '상태'];
-  };
+  // 데이터 목록 컬럼 설정
+  const getColumns = () => ['ID', '스펙트럼', '파장', '날짜'];
+
+  // 모델 학습 결과 컬럼 설정
+  const getModelResults = () => ['생성 날짜', 'Test_AUC', 'Recall', 'Loss'];
+
+  const displayResults = [...history, ...results];
 
   return (
     <div
@@ -104,200 +114,87 @@ const Learning = () => {
 
       {/**탭별 콘텐츠 */}
       <Box sx={{ marginTop: '30px' }}>
-        {value === 'photo' && (
-          <Box>
-            {/* 버튼 영역 */}
-            <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleLoadData}
-                disabled={loading}
-                sx={{
-                  backgroundColor: navy,
-                  '&:hover': { backgroundColor: '#0a2a4a' },
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  '데이터 불러오기'
-                )}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleFilter}
-                sx={{ borderColor: navy, color: navy }}
-              >
-                필터
-              </Button>
-            </Box>
-
-            {/* 데이터 리스트 */}
-            <DataList
-              columns={getColumns()}
-              data={data}
-              title="분광 데이터 목록"
-            />
-
-            {/* 데이터 개수 */}
-            <Typography sx={{ marginTop: '10px', color: navy }}>
-              총 {data.length}개의 데이터
-            </Typography>
-
-            {/* 학습하기 버튼 */}
-            <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleTrain}
-                disabled={data.length === 0}
-                sx={{
-                  backgroundColor: '#28a745',
-                  '&:hover': { backgroundColor: '#218838' },
-                  '&:disabled': { backgroundColor: '#6c757d' },
-                }}
-              >
-                학습하기
-              </Button>
-            </Box>
-
-            {/* 모델 목록 */}
-            <DataList
-              columns={getModelColumns()}
-              data={models}
-              title="모델 목록"
-            />
+        <Box>
+          {/* 버튼 영역 */}
+          <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+            <Button
+              variant="contained"
+              onClick={handleLoadData}
+              disabled={loading}
+              sx={{
+                backgroundColor: navy,
+                '&:hover': { backgroundColor: '#0a2a4a' },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                '데이터 불러오기'
+              )}
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleFilter}
+              sx={{ borderColor: navy, color: navy }}
+            >
+              필터
+            </Button>
           </Box>
-        )}
 
-        {value === 'spectral' && (
-          <Box>
-            {/* 버튼 영역 */}
-            <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleLoadData}
-                disabled={loading}
-                sx={{
-                  backgroundColor: navy,
-                  '&:hover': { backgroundColor: '#0a2a4a' },
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  '데이터 불러오기'
-                )}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleFilter}
-                sx={{ borderColor: navy, color: navy }}
-              >
-                필터
-              </Button>
-            </Box>
+          {/* 데이터 리스트 */}
+          <DataList
+            columns={getColumns()}
+            data={data}
+            title="분광 데이터 목록"
+          />
 
-            {/* 데이터 리스트 */}
-            <DataList
-              columns={getColumns()}
-              data={data}
-              title="분광 데이터 목록"
-            />
+          {/* 데이터 개수 */}
+          <Typography sx={{ marginTop: '10px', color: navy }}>
+            총 {data.length}개의 데이터
+          </Typography>
 
-            {/* 데이터 개수 */}
-            <Typography sx={{ marginTop: '10px', color: navy }}>
-              총 {data.length}개의 데이터
-            </Typography>
-
-            {/* 학습하기 버튼 */}
-            <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleTrain}
-                disabled={data.length === 0}
-                sx={{
-                  backgroundColor: '#28a745',
-                  '&:hover': { backgroundColor: '#218838' },
-                  '&:disabled': { backgroundColor: '#6c757d' },
-                }}
-              >
-                학습하기
-              </Button>
-            </Box>
-
-            {/* 모델 목록 */}
-            <DataList
-              columns={getModelColumns()}
-              data={models}
-              title="모델 목록"
-            />
+          {/* 학습하기 버튼 */}
+          <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
+            <Button
+              variant="contained"
+              onClick={handleTrain}
+              disabled={data.length === 0}
+              sx={{
+                backgroundColor: '#28a745',
+                '&:hover': { backgroundColor: '#218838' },
+                '&:disabled': { backgroundColor: '#6c757d' },
+              }}
+            >
+              학습하기
+            </Button>
           </Box>
-        )}
 
-        {value === 'cross' && (
-          <Box>
-            {/* 버튼 영역 */}
-            <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleLoadData}
-                disabled={loading}
-                sx={{
-                  backgroundColor: navy,
-                  '&:hover': { backgroundColor: '#0a2a4a' },
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  '데이터 불러오기'
-                )}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleFilter}
-                sx={{ borderColor: navy, color: navy }}
-              >
-                필터
-              </Button>
-            </Box>
-
-            {/* 데이터 리스트 */}
+          {/* 모델 학습 결과 비교 */}
+          {isTraining ? (
             <DataList
-              columns={getColumns()}
-              data={data}
-              title="Cross 데이터 목록"
+              columns={getModelResults()}
+              data={displayResults}
+              disabled={!isTraining}
+              title="모델 학습 결과 비교"
             />
+          ) : null}
 
-            {/* 데이터 개수 */}
-            <Typography sx={{ marginTop: '10px', color: navy }}>
-              총 {data.length}개의 데이터
-            </Typography>
-
-            {/* 학습하기 버튼 */}
-            <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
-              <Button
-                variant="contained"
-                onClick={handleTrain}
-                disabled={data.length === 0}
-                sx={{
-                  backgroundColor: '#28a745',
-                  '&:hover': { backgroundColor: '#218838' },
-                  '&:disabled': { backgroundColor: '#6c757d' },
-                }}
-              >
-                학습하기
-              </Button>
-            </Box>
-
-            {/* 모델 목록 */}
-            <DataList
-              columns={getModelColumns()}
-              data={models}
-              title="모델 목록"
-            />
+          {/* 배포하기 버튼 */}
+          <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
+            <Button
+              variant="contained"
+              onClick={handleDeploy}
+              disabled={data.length === 0}
+              sx={{
+                backgroundColor: '#28a745',
+                '&:hover': { backgroundColor: '#218838' },
+                '&:disabled': { backgroundColor: '#6c757d' },
+              }}
+            >
+              배포하기
+            </Button>
           </Box>
-        )}
+        </Box>
       </Box>
 
       {/* 필터 모달 */}
