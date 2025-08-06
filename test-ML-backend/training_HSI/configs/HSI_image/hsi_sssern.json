@@ -5,7 +5,7 @@
     "num_classes": 13,
     "parameters": {
       "in_channels": 5,
-      "num_blocks": 4,
+      "num_blocks": 6,
       "reduction": 2
     }
   },
@@ -24,8 +24,8 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 200,
-    "early_stopping_patience": 10,
+    "epochs": 80,
+    "early_stopping_patience": 30,
     "optimizer": "AdamW",
     "lr": 1e-4,
     "scheduler": "ReduceLROnPlateau",

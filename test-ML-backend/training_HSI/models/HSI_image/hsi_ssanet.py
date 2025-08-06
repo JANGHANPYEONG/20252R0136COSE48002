@@ -162,7 +162,14 @@ class Branch_Attention(nn.Module):
 
         # 1x1 conv로 다시 (B, C, H, W)로 축소
         self.reduce = nn.Conv2d(channels * 2, channels, kernel_size=1)
-    
+
+        # MLP based fusion
+        self.fusion_mlp = nn.Sequential(
+            nn.Conv2d(channels * 2, channels, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(channels * 2, channels, kernel_size=1)
+        )
+
     def forward(self, x):
         # SeAM
         SeAM_x = x
@@ -181,11 +188,19 @@ class Branch_Attention(nn.Module):
         attention = self.sigmoid(self.conv(combined))
         res_SaAM = SaAM_x * attention  # 공간적 중요도 적용
 
+        # [250805] branch attention comment
+        # concat 및 축소 method를 유의미한 방법으로 변경할 필요가 있어보임
+        # 현재의 단순한 concat은 채널 차원을 단순히 늘리는 것에 불과함
+        # 또한, 현재의 reduce는 단순히 1x1 conv로 채널 차원을 줄이는 것
+
         # 채널 차원 concat: (B, 2C, H, W)
         res = torch.cat([res_SeAM, res_SaAM], dim=1)
 
         # 1x1 conv로 다시 (B, C, H, W)로 축소
-        res = self.reduce(res)
+        # res = self.reduce(res)
+
+        # [250806] MLP based fusion
+        res = self.fusion_mlp(res)  # MLP based fusion
 
         return res  # (B, C, H, W)
         
