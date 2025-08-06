@@ -165,7 +165,7 @@ class Branch_Attention(nn.Module):
 
         # MLP based fusion
         self.fusion_mlp = nn.Sequential(
-            nn.Conv2d(channels * 2, channels, kernel_size=1),
+            nn.Conv2d(channels * 2, channels * 2, kernel_size=1),
             nn.ReLU(),
             nn.Conv2d(channels * 2, channels, kernel_size=1)
         )
