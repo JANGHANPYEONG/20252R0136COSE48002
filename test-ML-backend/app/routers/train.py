@@ -75,6 +75,12 @@ def run_train_task(self, config: Dict):
         
         try:
             print(f"Starting training with config: {config_path}")
+
+            # 작업 디렉토리를 training_HSI로 변경
+            import os
+            original_cwd = os.getcwd()
+            training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
+            os.chdir(training_dir)
             
             # train_HSI_2d.py 스크립트의 main 함수에 config 경로 전달
             import sys
@@ -111,6 +117,9 @@ def run_train_task(self, config: Dict):
         finally:
             # argv 복원 (에러 발생 시에도)
             sys.argv = original_argv
+
+            # 작업 디렉토리 복원
+            os.chdir(original_cwd)
             
             # train_HSI_2d 함수 실행을 위해 임시로 만들었던 config 파일 삭제
             if os.path.exists(config_path):
