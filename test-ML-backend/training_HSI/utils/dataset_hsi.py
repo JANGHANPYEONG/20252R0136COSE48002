@@ -287,14 +287,6 @@ def create_hsi_data_loaders(csv_path, column_config_path, batch_size=8, num_work
     
     generator = torch.Generator()
     generator.manual_seed(random_state)
-
-    # Celery 환경에서는 num_workers를 0으로 설정 (데몬 프로세스 충돌 방지)
-    import multiprocessing
-    import os
-    current_process = multiprocessing.current_process()
-    if current_process.daemon or 'celery' in os.environ.get('_', '').lower():
-        print(f"Detected Celery/daemon environment. Setting num_workers=0 (was {num_workers})")
-        num_workers = 0
     
     # DataLoader 생성 시 collate_fn 인자로 전달
     train_loader = DataLoader(
