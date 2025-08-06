@@ -193,7 +193,7 @@ const Learning = () => {
           <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
             <Button
               variant="contained"
-              onClick={handleTrain}
+              onClick={handleTrain(data)}
               disabled={data.length === 0}
               sx={{
                 backgroundColor: '#28a745',
