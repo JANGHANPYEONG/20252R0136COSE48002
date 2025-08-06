@@ -162,7 +162,14 @@ class Branch_Attention(nn.Module):
 
         # 1x1 conv로 다시 (B, C, H, W)로 축소
         self.reduce = nn.Conv2d(channels * 2, channels, kernel_size=1)
-    
+
+        # MLP based fusion
+        self.fusion_mlp = nn.Sequential(
+            nn.Conv2d(channels * 2, channels, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(channels * 2, channels, kernel_size=1)
+        )
+
     def forward(self, x):
         # SeAM
         SeAM_x = x
@@ -190,7 +197,10 @@ class Branch_Attention(nn.Module):
         res = torch.cat([res_SeAM, res_SaAM], dim=1)
 
         # 1x1 conv로 다시 (B, C, H, W)로 축소
-        res = self.reduce(res)
+        # res = self.reduce(res)
+
+        # [250806] MLP based fusion
+        res = self.fusion_mlp(res)  # MLP based fusion
 
         return res  # (B, C, H, W)
         
