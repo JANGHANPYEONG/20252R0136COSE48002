@@ -11,7 +11,8 @@ import style from './style/dashboardstyle';
 // components
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
-
+import { fetchFilteredData } from '../API/fetchFileteredData';
+import { Snackbar, Alert } from '@mui/material';
 const navy = '#0F3659';
 
 const Predict = () => {
@@ -29,6 +30,11 @@ const Predict = () => {
       value: { start: null, end: null },
     },
   ]);
+  const [ snackbar, setSnackbar] = useState({
+    open: false,
+    severity: 'info',
+    message:'완료',
+  });
 
   //   const handleValueChange = (newValue) => {
   //     setValue(newValue);
@@ -67,16 +73,28 @@ const Predict = () => {
   //   };
 
   // 데이터 불러오기 함수
-  const handleLoadData = () => {
+  const handleLoadData = async () => {
     setLoading(true);
     // 실제 API 호출 로직이 여기에 들어갈 예정
-    setTimeout(() => {
-      setData([
-        { id: 1, name: '예측데이터1', type: '사진', date: '2024-01-01' },
-        { id: 2, name: '예측데이터2', type: '사진', date: '2024-01-02' },
-      ]);
-      setLoading(false);
-    }, 1000);
+    // 필터 옵현 추가해야함
+    try {
+      const result = await fetchFilteredData(filters, value);
+      setData(result);
+      // 성공 여부 알림
+      setSnackbar({
+        open : true,
+        severity: 'success',
+        message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
+      });
+    } catch (err) {
+      console.error('데이터 불러오기 실패:', err);
+      setSnackbar({
+        open : true,
+        severity: 'error',
+        message: '데이터 불러오기 실패! 서버를 확인해주세요.',
+      });
+    }
+    setLoading(false)
   };
 
   // 필터 함수
@@ -442,6 +460,20 @@ const Predict = () => {
               '데이터 불러오기'
             )}
           </Button>
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={3000}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              severity={snackbar.severity}
+              sx={{ width: '100%' }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
           <Button
             variant="outlined"
             onClick={handleFilter}
