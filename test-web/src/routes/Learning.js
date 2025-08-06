@@ -6,6 +6,8 @@ import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
 import trainSpectralModel from '../API/train/trainSpectralModel';
+import { fetchFilteredData } from '../API/fetchFileteredData';
+import { Snackbar, Alert } from '@mui/material';
 
 const navy = '#0F3659';
 
@@ -35,17 +37,37 @@ const Learning = () => {
     }
   }, []);
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: 'info',
+    message: '완료',
+  });
+
   // 데이터 불러오기 함수
-  const handleLoadData = () => {
+  const handleLoadData = async () => {
     setLoading(true);
     // 실제 API 호출 로직이 여기에 들어갈 예정
-    setTimeout(() => {
-      setData([
-        { id: 1, name: '데이터1', type: '사진', date: '2024-01-01' },
-        { id: 2, name: '데이터2', type: '사진', date: '2024-01-02' },
-      ]);
-      setLoading(false);
-    }, 1000);
+    // 필터 선택 옵션 추가적인 구현 필요
+    try {
+      const result = await fetchFilteredData(filters);
+      setData(result);
+
+      // 성공 여부 알림
+      setSnackbar({
+        open: true,
+        severity: 'success',
+        message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
+      });
+    } catch (err) {
+      console.error('데이터 불러오기 실패:', err);
+
+      setSnackbar({
+        open: true,
+        severity: 'error',
+        message: '데이터 불러오기 실패! 서버를 확인해주세요.',
+      });
+    }
+    setLoading(false);
   };
 
   // 필터 함수
@@ -88,6 +110,7 @@ const Learning = () => {
   const displayResults = [...history, ...results];
 
   return (
+    // 불러오기 Snackbar 랜더링
     <div
       style={{
         overflow: 'auto',
@@ -140,7 +163,20 @@ const Learning = () => {
               필터
             </Button>
           </Box>
-
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={3000}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              severity={snackbar.severity}
+              sx={{ width: '100%' }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
           {/* 데이터 리스트 */}
           <DataList
             columns={getColumns()}
