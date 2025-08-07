@@ -253,47 +253,48 @@ async def cancel_train(train_id: str):
         if result.state not in ["PENDING", "TRAINING"]:
             raise HTTPException(status_code=400, detail=f"Cannot cancel training in state {result.state}")
         
-        # 1. PID를 통해 프로세스 직접 종료 시도
+        # 1. Celery 작업 취소 (부드러운 방식)
+        celery_app.control.revoke(train_id, terminate=True)  # SIGKILL 제거
+        
+        # 2. PID를 통해 학습 프로세스만 정상 종료 시도
         process_pid = None
         if result.info and result.info.get('process_pid'):
             process_pid = result.info.get('process_pid')
             
             try:
-                # 먼저 SIGTERM으로 정상 종료 시도
+                # SIGTERM으로 정상 종료 시도 (SIGKILL 제거)
                 os.kill(process_pid, signal.SIGTERM)
                 print(f"Sent SIGTERM to process {process_pid}")
                 
-                # 잠시 기다린 후 프로세스가 여전히 존재하는지 확인
+                # 프로세스가 정상 종료될 시간을 줌
                 import time
-                time.sleep(2)
+                time.sleep(3)
                 
-                # 프로세스가 여전히 존재하면 SIGKILL로 강제 종료
+                # 프로세스가 여전히 존재하는지 확인만 하고, 강제 종료는 하지 않음
                 try:
                     os.kill(process_pid, 0)  # 프로세스 존재 확인
-                    os.kill(process_pid, signal.SIGKILL)
-                    print(f"Force killed process {process_pid} with SIGKILL")
+                    print(f"Process {process_pid} still running after SIGTERM")
                 except ProcessLookupError:
-                    print(f"Process {process_pid} already terminated")
+                    print(f"Process {process_pid} terminated successfully")
                     
             except ProcessLookupError:
                 print(f"Process {process_pid} not found")
             except PermissionError:
-                print(f"Permission denied to kill process {process_pid}")
-                # 권한이 없는 경우 pkill 명령어 시도
-                try:
-                    subprocess.run(['pkill', '-f', f'python.*train.*{train_id}'], check=False)
-                    print(f"Attempted to kill training processes with pkill")
-                except:
-                    pass
-        
-        # 2. Celery 작업 취소 (상태 업데이트용)
-        celery_app.control.revoke(train_id, terminate=True, signal='SIGKILL')
+                print(f"Permission denied to signal process {process_pid}")
+        else:
+            print(f"No process PID found for train_id {train_id}, only revoking Celery task")
         
         # 3. 수동으로 상태를 REVOKED로 업데이트
         result.revoke(terminate=True)
         
+        # 메시지 구성
+        if process_pid:
+            message = "Training cancellation requested. The process may take a few moments to stop gracefully."
+        else:
+            message = "Training task has been revoked. No running process found to terminate."
+        
         return {
-            "message": "Training cancelled successfully",
+            "message": message,
             "cancelled_pid": process_pid,
             "train_id": train_id
         }
