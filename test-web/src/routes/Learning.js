@@ -85,11 +85,37 @@ const Learning = () => {
 
   // 학습하기 함수
   const handleTrain = async (trainDataSet) => {
+    if (!trainDataSet || trainDataSet.length === 0) {
+      setSnackbar({
+        open: true,
+        severity: 'warning',
+        message: '학습할 데이터가 없습니다.',
+      });
+      return;
+    }
+
     setIsTraining(true);
     console.log('학습 시작');
-    const response = await trainSpectralModel(trainDataSet);
-    setResults(response);
-    console.log('학습 결과:', response);
+    
+    try {
+      const response = await trainSpectralModel(trainDataSet);
+      setResults(response);
+      console.log('학습 결과:', response);
+      
+      setSnackbar({
+        open: true,
+        severity: 'success',
+        message: '모델 학습이 완료되었습니다.',
+      });
+    } catch (error) {
+      console.error('학습 실패:', error);
+      setSnackbar({
+        open: true,
+        severity: 'error',
+        message: '모델 학습 중 오류가 발생했습니다.',
+      });
+      setIsTraining(false);
+    }
   };
 
   // 모델 배포 함수
