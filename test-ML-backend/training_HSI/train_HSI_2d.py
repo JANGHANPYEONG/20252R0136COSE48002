@@ -79,6 +79,8 @@ def main():
                        help='Epoch interval for model checkpointing')
     args = parser.parse_args()
     
+    run_id = None
+    
     # 설정 로드
     print("Loading configuration...")
     config = load_config(args.config)
@@ -100,6 +102,7 @@ def main():
         try:
             logger = create_logger(config)
             logger.start_run()
+            run_id = logger.run.info.run_id  # MLflow run ID 저장
             
             # 하이퍼파라미터 로깅
             params_to_log = {
@@ -260,6 +263,8 @@ def main():
         # MLflow run 종료
         if logger is not None:
             logger.end_run()
+            
+        return run_id
 
 
 if __name__ == "__main__":
