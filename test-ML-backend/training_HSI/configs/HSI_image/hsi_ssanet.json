@@ -24,7 +24,8 @@
     "TransformerEncoderBlock": {
       "num_heads": 4,
       "mlp_ratio": 4.0,
-      "dropout": 0.1
+      "dropout": 0.1,
+      "num_layers": 4
     },
     "UsingSeAM": {
       "use": true
