@@ -102,7 +102,7 @@ const Learning = () => {
   };
 
   // 데이터 목록 컬럼 설정
-  const getColumns = () => ['ID', '스펙트럼', '파장', '날짜'];
+  const getColumns = () => ['ID', 'seqno'];
 
   // 모델 학습 결과 컬럼 설정
   const getModelResults = () => ['생성 날짜', 'Test_AUC', 'Recall', 'Loss'];
