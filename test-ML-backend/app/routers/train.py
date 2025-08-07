@@ -43,7 +43,6 @@ class TrainResponse(BaseModel):
 class TrainStatus(BaseModel):
     train_id: str
     status: Literal["PENDING", "TRAINING", "SUCCESS", "FAILURE", "REVOKED"]
-    progress: float
     elapsed_time: Optional[float] = None  # 실행 시간 (초)
     error_message: Optional[str] = None
     result: Optional[Dict] = None
@@ -195,7 +194,6 @@ async def get_train_status(train_id: str):
         status_info = {
             "train_id": train_id,
             "status": result.state,
-            "progress": 0.0,
             "elapsed_time": None,
             "error_message": None,
             "result": None
@@ -203,7 +201,6 @@ async def get_train_status(train_id: str):
         
         if result.state == 'PENDING':
             # 작업이 아직 시작되지 않음
-            status_info["progress"] = 0.0
             status_info["elapsed_time"] = 0.0
 
         elif result.state == 'TRAINING':
@@ -213,20 +210,17 @@ async def get_train_status(train_id: str):
                 if start_time:
                     current_elapsed = time.time() - start_time
                     status_info["elapsed_time"] = current_elapsed
-                    # 진행률은 시간 기반으로 추정하기 어려우므로 0.1로 설정
-                    status_info["progress"] = 0.1
+                # start_time을 제외한 나머지 정보들 업데이트
                 status_info.update({k: v for k, v in result.info.items() if k != 'start_time'})
 
         elif result.state == 'SUCCESS':
             # 작업 완료
-            status_info["progress"] = 1.0
             status_info["result"] = result.result
             if result.info:
                 status_info["elapsed_time"] = result.info.get("elapsed_time")
 
         elif result.state == 'FAILURE':
             # 작업 실패 - Celery가 자동으로 처리한 예외
-            status_info["progress"] = 0.0
             if result.info:
                 # result.info는 예외 객체이므로 문자열로 변환
                 status_info["error_message"] = str(result.info)
@@ -235,14 +229,12 @@ async def get_train_status(train_id: str):
 
         elif result.state == 'REVOKED':
             # 작업 취소됨
-            status_info["progress"] = 0.0
             status_info["error_message"] = "Training was cancelled"
             if result.info:
                 start_time = result.info.get('start_time')
                 if start_time:
                     status_info["elapsed_time"] = time.time() - start_time
                 status_info.update({k: v for k, v in result.info.items() if k not in ['start_time']})
-                status_info["error_message"] = "Training was cancelled"
         
         return TrainStatus(**status_info)
     except Exception as e:
@@ -254,15 +246,60 @@ async def cancel_train(train_id: str):
     """
     학습 작업을 취소하는 엔드포인트
     """
+    import signal
+    import os
+    import subprocess
+    
     try:
         result = AsyncResult(train_id, app=celery_app)
         
         if result.state not in ["PENDING", "TRAINING"]:
             raise HTTPException(status_code=400, detail=f"Cannot cancel training in state {result.state}")
         
-        # Celery 작업 취소
-        celery_app.control.revoke(train_id, terminate=True)
+        # 1. PID를 통해 프로세스 직접 종료 시도
+        process_pid = None
+        if result.info and result.info.get('process_pid'):
+            process_pid = result.info.get('process_pid')
+            
+            try:
+                # 먼저 SIGTERM으로 정상 종료 시도
+                os.kill(process_pid, signal.SIGTERM)
+                print(f"Sent SIGTERM to process {process_pid}")
+                
+                # 잠시 기다린 후 프로세스가 여전히 존재하는지 확인
+                import time
+                time.sleep(2)
+                
+                # 프로세스가 여전히 존재하면 SIGKILL로 강제 종료
+                try:
+                    os.kill(process_pid, 0)  # 프로세스 존재 확인
+                    os.kill(process_pid, signal.SIGKILL)
+                    print(f"Force killed process {process_pid} with SIGKILL")
+                except ProcessLookupError:
+                    print(f"Process {process_pid} already terminated")
+                    
+            except ProcessLookupError:
+                print(f"Process {process_pid} not found")
+            except PermissionError:
+                print(f"Permission denied to kill process {process_pid}")
+                # 권한이 없는 경우 pkill 명령어 시도
+                try:
+                    subprocess.run(['pkill', '-f', f'python.*train.*{train_id}'], check=False)
+                    print(f"Attempted to kill training processes with pkill")
+                except:
+                    pass
         
-        return {"message": "Training cancelled successfully"}
+        # 2. Celery 작업 취소 (상태 업데이트용)
+        celery_app.control.revoke(train_id, terminate=True, signal='SIGKILL')
+        
+        # 3. 수동으로 상태를 REVOKED로 업데이트
+        result.revoke(terminate=True)
+        
+        return {
+            "message": "Training cancelled successfully",
+            "cancelled_pid": process_pid,
+            "train_id": train_id
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error cancelling training: {str(e)}") 
