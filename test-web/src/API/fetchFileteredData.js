@@ -1,5 +1,7 @@
 // src/api/fetchFilteredData.js
-
+// filters나 type이 누락될 경우 대비 방어 코드 필요
+// 응답 포맷 확인 로그 추가(디버깅용) 필요
+// JS -> TS 필요
 import { apiIP } from '../config';
 
 export const fetchFilteredData = async (filters, type) => {

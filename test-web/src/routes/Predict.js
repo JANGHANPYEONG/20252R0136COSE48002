@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -11,30 +11,92 @@ import style from './style/dashboardstyle';
 // components
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
+import PredictionTable from '../components/PredictionTable';
+import PredictionDetailPanel from '../components/PredictionDetailPanel';
 import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
+import { fetchPrediction } from '../API/predictData';
+
 const navy = '#0F3659';
 
 const Predict = () => {
   const [value, setValue] = useState('spectral');
-  //   const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState(null);
   const [data, setData] = useState([]);
+  const [groupedData, setGroupedData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'info', message: '완료' });
+
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
   const [filters, setFilters] = useState([
-    {
-      name: '날짜',
-      type: 'date',
-      options: [],
-      value: { start: null, end: null },
-    },
+    { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
-  const [ snackbar, setSnackbar] = useState({
-    open: false,
-    severity: 'info',
-    message:'완료',
-  });
+
+  // Dummy data for Predict page
+  useEffect(() => {
+    const dummy = [
+      {
+        id: 'M001',
+        timestamp: '2025-08-07T10:15:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '650nm',
+        prediction: {
+          '색상(Color)': 7.2,
+          '향(Aroma)': 6.8,
+          '조직감(Texture)': 6.9,
+          '즙성(Juiciness)': 6.5,
+          '풍미(Flavor)': 7.1,
+          '전체 기호도': 7.0,
+        },
+        sensory: {
+          '색상(Color)': 7.0,
+          '향(Aroma)': 6.5,
+          '조직감(Texture)': 7.0,
+          '즙성(Juiciness)': 6.2,
+          '풍미(Flavor)': 6.8,
+          '전체 기호도': 6.9,
+        },
+      },
+      {
+        id: 'M002',
+        timestamp: '2025-08-07T10:15:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '650nm',
+        // 예측 없음
+      },
+      {
+        id: 'M003',
+        timestamp: '2025-08-07T11:20:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '660nm',
+        prediction: {
+          '색상(Color)': 8.1,
+          '향(Aroma)': 7.4,
+          '조직감(Texture)': 7.0,
+          '즙성(Juiciness)': 6.8,
+          '풍미(Flavor)': 7.5,
+          '전체 기호도': 7.6,
+        },
+        sensory: {
+          '색상(Color)': 8.0,
+          '향(Aroma)': 7.0,
+          '조직감(Texture)': 6.9,
+          '즙성(Juiciness)': 6.5,
+          '풍미(Flavor)': 7.2,
+          '전체 기호도': 7.4,
+        },
+      },
+    ];
+
+    setData(dummy);
+  }, []);
+
+
 
   //   const handleValueChange = (newValue) => {
   //     setValue(newValue);
@@ -80,6 +142,20 @@ const Predict = () => {
     try {
       const result = await fetchFilteredData(filters, value);
       setData(result);
+      // upload_batch_id 기준으로 그룹핑
+      const groupMap = {};
+      result.forEach((item) => {
+        const batchId = item.upload_batch_id || 'unknown_batch';
+        if (!groupMap[batchId]) groupMap[batchId] = [];
+        groupMap[batchId].push(item);
+      });
+      const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
+        batchId,
+        timestamp: rows[0]?.timestamp || '',
+        rows,
+      }));
+
+      setGroupedData(grouped);
       // 성공 여부 알림
       setSnackbar({
         open : true,
@@ -97,6 +173,37 @@ const Predict = () => {
     setLoading(false)
   };
 
+  // 선택 변경 핸들러
+  const handleSelectionChange = (newSelection) => {
+    setSelectedRows(newSelection);
+  };
+
+  // Rowclick 여부 다루기
+  const handleRowClick = (row) => {
+    if (!row.prediction) return;
+    setDetailData({ id: row.id, prediction: row.prediction, sensory: row.sensory});
+    setOpenPanel(true);
+  };
+
+  // 선택된 데이터 predict하기
+  const handlePredict = async () => {
+    if (selectedRows.length ===0) {
+      setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
+      const newData = data.map(row => (
+        result[row.id] ? { ...row, prediction: result[row.id] } : row
+      ));
+      setData(newData);
+      setSnackbar({  open: true, severity: 'success', message: '예측 성공!'});
+    } catch (err) {
+      setSnackbar({ open: true, severity: 'error', message: '예측 실패! 서버 상태를 확인해주세요.' });
+    }
+    setLoading(false);
+  }
   // 필터 함수
   const handleFilter = () => {
     setFilterModalOpen(true);
@@ -110,54 +217,84 @@ const Predict = () => {
     handleLoadData(); // 필터 적용 후 데이터 다시 로드
   };
 
-  // 예측하기 함수
-  const handlePredict = () => {
-    console.log('예측 시작');
-  };
-
-  // 탭별 모델 컬럼 설정
-  //   const getModelColumns = () => {
-  //     return ['모델명', '생성일', '정확도', '상태'];
-  //   };
-
-  // 탭별 데이터 컬럼 설정
-  const getDataColumns = () => {
-    switch (value) {
-      case 'photo':
-        return ['ID', '파일명', '회차', '날짜', '마블링', '수분도', '총점'];
-      case 'spectral':
-        return ['ID', '스펙트럼', '파장', '날짜'];
-      case 'cross':
-        return ['ID', '사진ID', '스펙트럼ID', '날짜'];
-      default:
-        return ['ID', '이름', '타입', '날짜'];
-    }
-  };
-
-  return (
-    <div
-      style={{
-        overflow: 'auto',
-        width: '100%',
-        marginTop: '100px',
-        height: '100%',
-        paddingLeft: '30px',
-        paddingRight: '20px',
-      }}
-    >
-      {/**페이지 제목 */}
-      <Box
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          minWidth: '634px',
-        }}
-      >
-        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>
-          AI Prediction
-        </span>
+    return (
+    <div style={{ overflow: 'auto', width: '100%', marginTop: '100px', height: '100%', paddingLeft: '30px', paddingRight: '20px' }}>
+      <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '634px' }}>
+        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>AI Prediction</span>
       </Box>
+
+      <Box sx={{ marginTop: '30px' }}>
+        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+          <Button
+            variant="contained"
+            onClick={handleLoadData}
+            disabled={loading}
+            sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+          >
+            {loading ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+          </Button>
+
+          <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
+        </Box>
+
+        <PredictionTable
+          data={data}
+          onSelectionChange={handleSelectionChange}
+          onRowClick={handleRowClick}
+        />
+
+        <Typography sx={{ marginTop: '10px', color: navy }}>
+          총 {data.length}개의 데이터
+        </Typography>
+
+        <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
+          <Button
+            variant="contained"
+            onClick={handlePredict}
+            disabled={data.length === 0}
+            sx={{ marginLeft: 'auto', backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+          >
+            예측하기
+          </Button>
+        </Box>
+
+        <PredictionDetailPanel
+          open={openPanel}
+          onClose={() => setOpenPanel(false)}
+          predictionData={detailData}
+          labels={[
+            '색상(Color)',
+            '향(Aroma)',
+            '조직감(Texture)',
+            '즙성(Juiciness)',
+            '풍미(Flavor)',
+            '전체 기호도'
+          ]}
+          showTableComparison={true}
+        />
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        </Snackbar>
+
+        <FilterModal
+          open={filterModalOpen}
+          onClose={() => setFilterModalOpen(false)}
+          onApply={handleApplyFilters}
+          filters={filters}
+          setFilters={setFilters}
+        />
+      </Box>
+    </div>
+  );
+};
+
+
 
       {/**이동 탭 (사진 데이터 모델, 분광 데이터 모델, Cross 모델) */}
       {/* <Box sx={style.fixedTab}>
@@ -441,87 +578,6 @@ const Predict = () => {
         )}
       </Box> */}
 
-      {/* 공통 영역 - 데이터 불러오기 및 예측 */}
-      <Box sx={{ marginTop: '30px' }}>
-        {/* 데이터 불러오기 버튼 */}
-        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-          <Button
-            variant="contained"
-            onClick={handleLoadData}
-            disabled={loading}
-            sx={{
-              backgroundColor: navy,
-              '&:hover': { backgroundColor: '#0a2a4a' },
-            }}
-          >
-            {loading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              '데이터 불러오기'
-            )}
-          </Button>
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={3000}
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          >
-            <Alert
-              onClose={() => setSnackbar({ ...snackbar, open: false })}
-              severity={snackbar.severity}
-              sx={{ width: '100%' }}
-            >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
-          <Button
-            variant="outlined"
-            onClick={handleFilter}
-            sx={{ borderColor: navy, color: navy }}
-          >
-            필터
-          </Button>
-        </Box>
-
-        {/* 데이터 리스트 */}
-        <DataList
-          columns={getDataColumns()}
-          data={data}
-          title="예측 데이터 목록"
-        />
-
-        {/* 데이터 개수 */}
-        <Typography sx={{ marginTop: '10px', color: navy }}>
-          총 {data.length}개의 데이터
-        </Typography>
-
-        {/* 예측하기 버튼 */}
-        <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
-          <Button
-            variant="contained"
-            onClick={handlePredict}
-            disabled={data.length === 0 || !selectedModel}
-            sx={{
-              backgroundColor: '#28a745',
-              '&:hover': { backgroundColor: '#218838' },
-              '&:disabled': { backgroundColor: '#6c757d' },
-            }}
-          >
-            예측하기
-          </Button>
-        </Box>
-      </Box>
-
-      {/* 필터 모달 */}
-      <FilterModal
-        open={filterModalOpen}
-        onClose={() => setFilterModalOpen(false)}
-        onApply={handleApplyFilters}
-        filters={filters}
-        setFilters={setFilters}
-      />
-    </div>
-  );
-};
+ 
 
 export default Predict;
