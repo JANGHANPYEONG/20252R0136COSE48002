@@ -5,29 +5,32 @@ import torch.nn.functional as F
 class CNN_2D(nn.Module):
     def __init__(self, input_channels, num_classes, dropout=0.0):
         super().__init__()
-        self.backbone = nn.Sequential( 
-            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1),
-            nn.ReLU(), 
-            nn.MaxPool2d(kernel_size=2, stride=2),
+        def conv_block(in_c, out_c):
+            return nn.Sequential(
+                nn.Conv2d(in_c, out_c, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_c),
+                nn.ReLU(),
+                nn.Conv2d(out_c, out_c, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_c),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=2, stride=2)
+            )
 
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), 
-
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(),
-
-            nn.AdaptiveAvgPool2d((1, 1))  # Output shape: (B, 128, 1, 1)
+        self.backbone = nn.Sequential(
+            conv_block(input_channels, 32),
+            conv_block(32, 64),
+            conv_block(64, 128),
         )
 
         self.head = nn.Sequential(
-            nn.Flatten(),                
-            nn.Linear(128, 512),
+            nn.AdaptiveAvgPool2d((1, 1)),  # (B, 128, 1, 1)
+            nn.Flatten(),
+            nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
-            nn.Linear(512, num_classes)  
-        ) 
-
+            nn.Dropout(dropout),
+            nn.Linear(256, num_classes)
+        )
+        
         self.apply(self._init_weights) 
 
     def _init_weights(self, m):
