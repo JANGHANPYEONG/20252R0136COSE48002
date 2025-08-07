@@ -14,7 +14,7 @@ import useLogout from '../../../Utils/useLogout';
 import { useUser } from '../../../Utils/UserContext';
 
 const MainWidgetBars = () => {
-  const [widgetOpen, setWidgetOpen] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -23,29 +23,27 @@ const MainWidgetBars = () => {
   const defaultTheme = createTheme();
 
   // const drawerWidth = `${(345 / 1920) * 100}vw`;
-  const drawerWidth = '345px'; // Width when drawer is open
+  const drawerWidth = '260px'; // Width when drawer is open
 
   const logout = useLogout();
-
-  const toggleDrawer = () => {
-    setWidgetOpen(!widgetOpen);
-  };
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
   const handleListItemClick = (item) => {
-    if (item.label === '사용자 관리' && user.type !== 'Manager') {
+    // 사용자관리 관련 권한 체크
+    if ((item.label === '사용자관리' || item.path === '/UserManagement') && user.type !== 'Manager') {
       setSnackbarMessage('권한이 없습니다');
       setSnackbarOpen(true);
+      return;
+    }
+    
+    const queryParams = new URLSearchParams(location.search).toString();
+    if (item.label !== '홈' && item.label !== '사용자관리') {
+      navigate(`${item.path}?${queryParams}`);
     } else {
-      const queryParams = new URLSearchParams(location.search).toString();
-      if (item.label !== '홈' && item.label !== '사용자 관리') {
-        navigate(`${item.path}?${queryParams}`);
-      } else {
-        navigate(item.path);
-      }
+      navigate(item.path);
     }
   };
 
@@ -53,14 +51,12 @@ const MainWidgetBars = () => {
     <ThemeProvider theme={defaultTheme}>
       <AppBar
         open={widgetOpen}
-        toggleDrawer={toggleDrawer}
         userInfo={user}
         logout={logout}
         drawerWidth={drawerWidth}
       />
       <Drawer
         open={widgetOpen}
-        toggleDrawer={toggleDrawer}
         location={location}
         handleListItemClick={handleListItemClick}
         drawerWidth={drawerWidth}

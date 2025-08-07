@@ -1,0 +1,23 @@
+artifact_path: file:C:/sanhak/20252R0136COSE48002/test-ML-backend/mlruns/1/models/m-892d0f6d02f242ca9062f4b0c29ddbee/artifacts
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.12.6
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.6.0+cpu
+mlflow_version: 3.1.1
+model_id: m-892d0f6d02f242ca9062f4b0c29ddbee
+model_size_bytes: 3979738
+model_uuid: m-892d0f6d02f242ca9062f4b0c29ddbee
+prompts: null
+run_id: 6feb6cf4a5aa4d8e9795d836b9964e97
+utc_time_created: '2025-07-22 06:08:19.298861'

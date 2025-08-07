@@ -10,49 +10,39 @@ import CustomSnackbar from '../components/Base/CustomSnackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Utils/UserContext';
-import home1 from '../src_assets/home1.png';
-import home2 from '../src_assets/home2.png';
-import home3 from '../src_assets/home3.png';
-import home4 from '../src_assets/home4.png';
-import home5 from '../src_assets/home5.png';
-import home6 from '../src_assets/home6.png';
+import home_DATA from '../src_assets/home_DATA.png';
+import home_ML from '../src_assets/home_ML.png';
+import home_PREDICT from '../src_assets/home_PREDICT.png';
+import home_USER from '../src_assets/home_USER.png';
 
 const cards = [
   {
-    title: '홈',
-    image: home1,
-    imageSize: { height: '106px', width: '104px' },
-    link: '/Home',
+    title: '데이터관리',
+    subtitle: 'Data',
+    image: home_DATA,
+    imageSize: { height: '160px', width: '160px' },
+    link: '/Data',
   },
   {
-    title: '대시보드',
-    image: home2,
-    imageSize: { height: '107px', width: '177px' },
-    link: '/DataManage',
+    title: 'AI 학습',
+    subtitle: 'Learning',
+    image: home_ML,
+    imageSize: { height: '160px', width: '160px' },
+    link: '/Learning',
   },
   {
-    title: '통계 분석',
-    image: home3,
-    imageSize: { height: `104px`, width: `158px` },
-    link: '/stats',
+    title: '예측하기',
+    subtitle: 'Predict',
+    image: home_PREDICT,
+    imageSize: { height: '160px', width: '160px' },
+    link: '/Predict',
   },
   {
-    title: '데이터 예측',
-    image: home4,
-    imageSize: { height: '100px', width: '100px' },
-    link: '/PA',
-  },
-  {
-    title: '사용자 관리',
-    image: home5,
-    imageSize: { height: '108px', width: '132px' },
+    title: '사용자관리',
+    subtitle: 'UserManagement',
+    image: home_USER,
+    imageSize: { height: '160px', width: '160px' },
     link: '/UserManagement',
-  },
-  {
-    title: '프로필',
-    image: home6,
-    imageSize: { height: '112px', width: '152px' },
-    link: '/Profile',
   },
 ];
 
@@ -114,37 +104,54 @@ const Home = () => {
         >
           원하시는 작업을 선택해주세요.
         </Typography>
-        <Grid container spacing={5}>
+        <Grid container spacing={4} justifyContent="center" alignItems="center">
           {cards.map((card) => (
-            <Grid item xs={12} sm={4} md={4} lg={4} key={card.title}>
+            <Grid item xs={12} sm={6} md={3} lg={3} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
               <Box
                 sx={{
-                  // width: `${(260 / 1920) * 100}vw`, // Relative width
-                  // height: `${(260 / 1080) * 100}vh`, // Relative height
-                  border: `${(1 / 1920) * 100}vw solid rgba(238, 238, 238, 0.50)`, // Relative border
-                  borderRadius: `${(40 / 1920) * 100}vw`, // Relative border radius
+                  width: '240px', // 고정 크기
+                  height: '280px', // 고정 크기
+                  border: `${(1 / 1920) * 100}vw solid rgba(238, 238, 238, 0.50)`,
+                  borderRadius: `${(40 / 1920) * 100}vw`,
                   overflow: 'hidden',
                   backgroundColor: 'white',
-                  boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${(20 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.50)`, // Relative boxShadow
-                  padding: `${(20 / 1920) * 100}vw ${(20 / 1080) * 100}vh`, // Relative padding
+                  boxShadow: `${(0 / 1920) * 100}vw ${(4 / 1080) * 100}vh ${(20 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.50)`,
+                  padding: `${(20 / 1920) * 100}vw ${(20 / 1080) * 100}vh`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: `${(0 / 1920) * 100}vw ${(8 / 1080) * 100}vh ${(30 / 1920) * 100}vw 0px rgba(238, 238, 238, 0.70)`,
+                  },
                 }}
               >
                 <CardActionArea onClick={() => handleCardClick(card.link)}>
                   <CardMedia
                     sx={{
                       ...card.imageSize,
-                      margin: ' auto',
+                      display: 'block',
+                      margin: '0 auto',
                     }}
                     image={card.image}
                   />
                   <CardContent>
                     <Typography
-                      sx={{ textAlign: 'center' }}
+                      sx={{ textAlign: 'center', fontWeight: 600, fontSize: '18px', color: '#151D48' }}
                       gutterBottom
                       variant="h6"
                       component="div"
                     >
                       {card.title}
+                    </Typography>
+                    <Typography
+                      sx={{ textAlign: 'center', fontSize: '14px', color: '#666', fontWeight: 400 }}
+                      variant="body2"
+                      component="div"
+                    >
+                      {card.subtitle}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

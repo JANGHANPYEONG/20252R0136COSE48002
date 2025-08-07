@@ -3,14 +3,19 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import LogIn from './routes/LogIn';
 import Home from './routes/Home';
+import Normal from './routes/Normal';
 import Dashboard from './routes/Dashboard';
 import Stats from './routes/Stats';
-import PA from './routes/PA';
 import Profile from './routes/Profile';
 import DataEdit from './routes/DataEdit';
 import UserManagement from './routes/UserManagement';
 import DataConfirm from './routes/DataConfirm';
 import DataPredict from './routes/DataPredict';
+import SpectroPattern from './routes/spectro_pattern';
+import Learning from './routes/Learning';
+import Predict from './routes/Predict';
+import Data from './routes/Data';
+import DataRegister from './routes/DataRegister';
 
 import { UserProvider } from './Utils/UserContext';
 
@@ -35,8 +40,28 @@ function App() {
       component: <Home />,
     },
     {
+      path: '/normal',
+      title: 'Normal | DeePlant',
+      component: <Normal />,
+    },
+    {
+      path: '/Data',
+      title: 'Data | DeePlant',
+      component: <Data />,
+    },
+    {
       path: '/DataManage',
       title: 'DataManage | DeePlant',
+      component: <Dashboard />,
+    },
+    {
+      path: '/DataRegister',
+      title: 'DataRegister | DeePlant',
+      component: <DataRegister />,
+    },
+    {
+      path: '/DashBoard',
+      title: 'DashBoard | DeePlant',
       component: <Dashboard />,
     },
     {
@@ -55,9 +80,24 @@ function App() {
       component: <DataPredict />,
     },
     {
-      path: '/PA',
-      title: 'PA | DeePlant',
-      component: <PA />,
+      path: '/Pattern',
+      title: 'Pattern | DeePlant',
+      component: <SpectroPattern />,
+    },
+    {
+      path: '/Learning',
+      title: 'Learning | DeePlant',
+      component: <Learning />,
+    },
+    {
+      path: '/Predict',
+      title: 'Predict | DeePlant',
+      component: <Predict />,
+    },
+    {
+      path: '/Stats',
+      title: 'Statistics | DeePlant',
+      component: <Stats />,
     },
     {
       path: '/stats',
@@ -94,7 +134,7 @@ function App() {
                       <LogIn />
                     ) : (
                       <Box sx={{ display: 'flex' }}>
-                        <MainWidgetBars />
+                        {route.path !== '/' && <MainWidgetBars />}
                         <Box
                           component="main"
                           sx={{
