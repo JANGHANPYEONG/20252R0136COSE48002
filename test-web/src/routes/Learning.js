@@ -6,6 +6,7 @@ import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
 import trainSpectralModel from '../API/train/trainSpectralModel';
+import deploySpectralModel from '../API/train/deploySpectralModel';
 import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
 
@@ -96,12 +97,12 @@ const Learning = () => {
 
     setIsTraining(true);
     console.log('학습 시작');
-    
+
     try {
       const response = await trainSpectralModel(trainDataSet);
       setResults(response);
       console.log('학습 결과:', response);
-      
+
       setSnackbar({
         open: true,
         severity: 'success',
@@ -123,15 +124,22 @@ const Learning = () => {
     console.log('모델 배포 시작');
     localStorage.setItem('cachedResults', JSON.stringify(results));
     // 배포 로직
+    deploySpectralModel();
     setIsTraining(false);
     console.log('모델 배포 완료');
   };
 
   // 데이터 목록 컬럼 설정
-  const getColumns = () => ['ID', 'seqno'];
+  const getColumns = () => ['ID', 'seqno', 'label'];
 
   // 모델 학습 결과 컬럼 설정
-  const getModelResults = () => ['생성 날짜', 'Test_AUC', 'Recall', 'Loss'];
+  const getModelResults = () => [
+    '생성 날짜',
+    'Test_AUC',
+    'r2_score',
+    'Recall',
+    'Loss',
+  ];
 
   const displayResults = [...history, ...results];
 

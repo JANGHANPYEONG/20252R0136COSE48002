@@ -4,8 +4,8 @@ export const trainSpectralModel = async (trainDataSet) => {
   const data = await fetch(`${apiIP}/train/model`).then((res) => res.json());
 
   // HATEOAS link
-  const trainLink = data._links?.train.href;
-  const trainMethod = data._links?.train.method;
+  const trainLink = data._links?.train.model.href;
+  const trainMethod = data._links?.train.model.method;
 
   // debug
   console.log('Train link:', trainLink);
