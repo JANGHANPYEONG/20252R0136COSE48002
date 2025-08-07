@@ -119,6 +119,11 @@ class TransformerEncoderBlock(nn.Module):
         x = x_res + self.dropout(self.ffn(x))
         return x
 
+# Dense Transformer Encoder
+# 여러 Transformer Encoder Block을 쌓아 올리는 구조
+# 각 블록의 출력은 이전 블록의 출력과 concat하여 차원을 늘리고, 
+# 다시 원래 차원으로 줄이는 프로젝션 레이어를 사용
+# 입력은 (B, N+1, D) 형태로, B는 배치 크기, N은 패치의 수, D는 각 패치의 임베딩 차원
 class DenseTransformer(nn.Module):
     def __init__(self, block_cls, num_layers, dim, heads, mlp_ratio, dropout):
         super().__init__()
@@ -134,10 +139,10 @@ class DenseTransformer(nn.Module):
         feats = [x]           # x: (B, N+1, D)
         out = x
         for i, blk in enumerate(self.blocks):
-            out = blk(out)    # (B, N+1, D)
-            feats.append(out) # 누적
+            out = blk(out)    # (B, N+1, D), 현재 입력에 대해 Transformer block 적용
+            feats.append(out) # 누적, 출력 저장
             cat = torch.cat(feats[1:], dim=-1)  # 첫 입력 제외하고 concat (B, N+1, D * (i+1))
-            out = self.projs[i](cat)            # (B, N+1, D)로 압축
+            out = self.projs[i](cat)            # concat된 텐서를 다시 원래 차원으로 (B, N+1, D)로 압축
         return out
 
 # [250731] branch attention
