@@ -16,7 +16,7 @@ import PredictionDetailPanel from '../components/PredictionDetailPanel';
 import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
 import { fetchPrediction } from '../API/predictData';
-
+import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 const navy = '#0F3659';
 
 const Predict = () => {
@@ -247,14 +247,23 @@ const Predict = () => {
           총 {data.length}개의 데이터
         </Typography>
 
-        <Box sx={{ marginTop: '20px', marginBottom: '20px' }}>
+        <Box sx={{ display: 'flex', gap: 2, marginTop: '20px', marginBottom: '20px' }}>
           <Button
             variant="contained"
             onClick={handlePredict}
             disabled={data.length === 0}
-            sx={{ marginLeft: 'auto', backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
           >
             예측하기
+          </Button>
+
+          <Button
+            variant="outlined"
+            disabled={selectedRows.length === 0}
+            onClick={() => ExportSelectedToExcel(selectedRows, data)}
+            sx={{ borderColor: navy, color: navy }}
+          >
+            EXCEL로 다운로드
           </Button>
         </Box>
 
@@ -577,7 +586,4 @@ const Predict = () => {
           </Box>
         )}
       </Box> */}
-
- 
-
 export default Predict;
