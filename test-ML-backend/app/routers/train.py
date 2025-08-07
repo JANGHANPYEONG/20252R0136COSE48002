@@ -21,7 +21,7 @@ celery_app = Celery(
 celery_app.conf.update(
     worker_prefetch_multiplier=1,  # GPU 메모리 절약
     task_acks_late=True,          # 작업 완료 후 ACK
-    worker_max_tasks_per_child=1, # 메모리 누수 방지
+    worker_max_tasks_per_child=None, # worker 재시작 비활성화 (solo pool 안정성 향상)
     # task_time_limit=7200,         # 2시간 제한
     # task_soft_time_limit=6600,    # 1시간 50분 소프트 제한
 )
