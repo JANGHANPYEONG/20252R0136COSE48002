@@ -253,8 +253,8 @@ async def cancel_train(train_id: str):
         if result.state not in ["PENDING", "TRAINING"]:
             raise HTTPException(status_code=400, detail=f"Cannot cancel training in state {result.state}")
         
-        # 1. Celery 작업 취소 (부드러운 방식)
-        celery_app.control.revoke(train_id, terminate=True)  # SIGKILL 제거
+        # 1. Celery 작업 취소 (부드러운 방식 - worker 종료 방지)
+        celery_app.control.revoke(train_id)
         
         # 2. PID를 통해 학습 프로세스만 정상 종료 시도
         process_pid = None
@@ -284,8 +284,8 @@ async def cancel_train(train_id: str):
         else:
             print(f"No process PID found for train_id {train_id}, only revoking Celery task")
         
-        # 3. 수동으로 상태를 REVOKED로 업데이트
-        result.revoke(terminate=True)
+        # 3. 수동으로 상태를 REVOKED로 업데이트 (worker 종료 방지)
+        result.revoke()
         
         # 메시지 구성
         if process_pid:
