@@ -102,7 +102,6 @@ def main():
         try:
             logger = create_logger(config)
             logger.start_run()
-            run_id = logger.run.info.run_id  # MLflow run ID 저장
             
             # 하이퍼파라미터 로깅
             params_to_log = {
@@ -240,6 +239,8 @@ def main():
                 final_metrics=final_metrics,
                 training_time=training_results['training_time']
             )
+
+            run_id = logger.run.info.run_id  # MLflow run ID 저장
         
         print("Training completed successfully!")
         
