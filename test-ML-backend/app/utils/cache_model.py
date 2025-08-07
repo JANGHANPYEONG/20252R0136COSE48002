@@ -94,6 +94,7 @@ def load_or_get_cached_model(model_uri: str, input_type: str):
     print(f"Loading new model for {model_uri}")
     
     if input_type == "image":
+        # model_uri가 MLflow run_id인지, 로컬 디렉토리인지 판별
         # MLflow run_id 판별 (32자리 또는 mlflow:// 접두사)
         if len(model_uri) == 32 or model_uri.startswith('mlflow://'):
             # MLflow에서 임시 다운로드
