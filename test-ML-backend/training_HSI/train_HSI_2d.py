@@ -240,7 +240,7 @@ def main():
                 training_time=training_results['training_time']
             )
 
-            run_id = logger.run.info.run_id  # MLflow run ID 저장
+            run_id = logger.run_id  # MLflow run ID 저장
         
         print("Training completed successfully!")
         
