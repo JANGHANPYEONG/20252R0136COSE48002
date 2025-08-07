@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
+import uploadDataToServer from '../API/add/uploadDataToServer'; // 새로운 API import
 
 const navy = '#0F3659';
 
@@ -14,6 +15,7 @@ const DataRegister = () => {
   const [csvLoading, setCsvLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(''); // 성공 메시지 상태
+  const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 상태 추가
 
   const fileInputRef = useRef(null);
 
@@ -96,18 +98,49 @@ const DataRegister = () => {
 
   const handleRegister = async () => {
     try {
+      // 1. 데이터 존재 여부 확인
+      if (!data || data.length === 0) {
+        alert('업로드할 데이터가 없습니다. 먼저 CSV 파일을 업로드해주세요.');
+        return;
+      }
+
+      // 2. ZIP 파일 존재 여부 확인
+      if (!uploadedZipFile) {
+        alert('ZIP 파일이 업로드되지 않았습니다. 먼저 ZIP 파일을 업로드해주세요.');
+        return;
+      }
+
+      // 3. 매핑 상태 확인
+      const unmappedData = data.filter(row => 
+        row['매핑 상태'] === '매핑안됨' || 
+        !row['매핑 상태'] || 
+        row['매핑 상태'] === ''
+      );
+
+      if (unmappedData.length > 0) {
+        alert(`매핑되지 않은 데이터가 ${unmappedData.length}개 있습니다.\n모든 데이터를 매핑한 후 다시 시도해주세요.`);
+        return;
+      }
+
       setLoading(true);
-      await fetch('/api/data/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data }),
-      });
-      alert('데이터 등록 성공!');
-      // 등록 성공 시 localStorage도 정리
-      clearData();
+      
+      // 4. 서버에 데이터 업로드
+      const result = await uploadDataToServer(data, columns, uploadedZipFile);
+      
+      if (result.success) {
+        alert('데이터 등록이 성공적으로 완료되었습니다!');
+        showSuccessMessage('데이터 등록 완료!');
+        
+        // 등록 성공 시 모든 데이터 초기화
+        clearData();
+        setUploadedZipFile(null);
+      } else {
+        alert(`데이터 등록에 실패했습니다.\n오류: ${result.message}`);
+      }
+      
     } catch (err) {
-      console.error(err);
-      alert('데이터 등록에 실패했습니다.');
+      console.error('데이터 등록 오류:', err);
+      alert(`데이터 등록 중 오류가 발생했습니다.\n${err.message || '알 수 없는 오류가 발생했습니다.'}`);
     } finally {
       setLoading(false);
     }
@@ -117,6 +150,7 @@ const DataRegister = () => {
   const clearData = () => {
     setColumns([]);
     setData([]);
+    setUploadedZipFile(null); // ZIP 파일 상태도 초기화
     localStorage.removeItem('dataRegister_data');
     localStorage.removeItem('dataRegister_columns');
     console.log('모든 데이터가 초기화되었습니다.');
@@ -238,10 +272,12 @@ const DataRegister = () => {
     
     try {
       console.log('ZIP 파일 처리:', file.name);
+      setUploadedZipFile(file); // ZIP 파일을 상태에 저장
       await handleZipFile(file);
     } catch (error) {
       console.error('ZIP 파일 처리 오류:', error);
       alert('ZIP 파일 처리 중 오류가 발생했습니다.');
+      setUploadedZipFile(null); // 오류 시 ZIP 파일 상태 초기화
     } finally {
       setImageLoading(false);
     }
@@ -523,13 +559,34 @@ const DataRegister = () => {
           <Button
             variant="contained"
             onClick={handleRegister}
-            disabled={true} // 임시로 비활성화
+            disabled={
+              loading || 
+              csvLoading || 
+              imageLoading || 
+              data.length === 0 || 
+              !uploadedZipFile ||
+              data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태'])
+            }
             sx={{
-              backgroundColor: '#ccc',
-              '&:hover': { backgroundColor: '#bbb' },
+              backgroundColor: data.length > 0 && uploadedZipFile && 
+                              !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
+                              ? '#28a745' : '#ccc',
+              '&:hover': { 
+                backgroundColor: data.length > 0 && uploadedZipFile && 
+                               !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
+                               ? '#218838' : '#bbb' 
+              },
+              '&:disabled': { backgroundColor: '#ccc' },
             }}
           >
-            데이터 등록 (준비중)
+            {loading ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ marginRight: '8px' }} />
+                업로드 중...
+              </>
+            ) : (
+              '데이터 등록'
+            )}
           </Button>
         </Box>
       </Box>
