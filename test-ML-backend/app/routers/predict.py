@@ -1,22 +1,15 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Literal
+from typing import Optional, Dict, Literal, List
 from datetime import datetime
-from celery import Celery
-from celery.result import AsyncResult
+import asyncio
+import time
 
 from app.utils.cache_model import (
     load_or_get_cached_model,
     get_cache_status as get_cache_status_info,
     clear_cache as clear_model_cache,
     remove_cached_model
-)
-
-# Celery 및 APIRouter 설정
-celery_app = Celery(
-    "tasks",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
 )
 
 router = APIRouter()
@@ -30,204 +23,74 @@ class PredictRequest(BaseModel):
 
 class PredictResponse(BaseModel):
     message: str
-    prediction_id: str
-    process_pid: Optional[int] = None
+    prediction_result: Dict
+    elapsed_time: float
     created_at: datetime
 
-class PredictStatus(BaseModel):
-    prediction_id: str
-    status: Literal["PENDING", "PREDICTING", "SUCCESS", "FAILURE", "REVOKED"]
-    progress: float
-    elapsed_time: Optional[float] = None
-    error_message: Optional[str] = None
-    result: Optional[Dict] = None
 
-
-# Celery 백그라운드에서 예측을 실행하는 함수
-@celery_app.task(bind=True)
-def run_prediction_task(self, model_uri: str, data_path: str, input_type: str):
-    import time
-    import os
-    import sys
-    
+# 비동기 예측 함수
+async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dict:
+    """
+    비동기로 예측을 실행하는 함수
+    """
     try:
-        # 현재 프로세스 PID 가져오기
-        current_pid = os.getpid()
+        print(f"Starting prediction with model: {model_uri}, data: {data_path}")
         
-        # 시작 시간 기록
-        start_time = time.time()
+        # 캐시된 모델 사용 (input_type에 따라 적절한 Predictor 반환)
+        predictor = load_or_get_cached_model(model_uri, input_type)
         
-        # input_type 검증
-        if input_type not in ["image", "vector"]:
-            raise ValueError(f"Invalid input_type: {input_type}. Must be 'image' or 'vector'")
+        # data_path가 여러 경로인 경우 처리
+        if ',' in data_path:
+            data_paths = data_path.split(',')
+        else:
+            data_paths = [data_path]
         
-        # 예측 상태 업데이트: PREDICTING (PID 포함)
-        self.update_state(state='PREDICTING', meta={
-            'progress': 0.0,
-            'elapsed_time': 0.0,
-            'input_type': input_type,
-            'process_pid': current_pid,
-            'start_time': start_time
-        })
+        # 예측 실행 (CPU 집약적 작업을 별도 스레드에서 실행)
+        prediction_result = await asyncio.to_thread(predictor.predict, data_paths)
         
-        try:
-            print(f"Starting prediction with model: {model_uri}, data: {data_path}")
-            
-            # 캐시된 모델 사용 (input_type에 따라 적절한 Predictor 반환)
-            predictor = load_or_get_cached_model(model_uri, input_type)
-            
-            # data_path가 여러 경로인 경우 처리
-            if ',' in data_path:
-                data_paths = data_path.split(',')
-            else:
-                data_paths = [data_path]
-            
-            prediction_result = predictor.predict(data_paths)
-            
-            print(f"Prediction completed successfully")
-            
-            # 완료 시간 계산
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            
-            # 예측 완료 - SUCCESS 상태로 업데이트
-            self.update_state(state='SUCCESS', meta={
-                'progress': 1.0,
-                'elapsed_time': elapsed_time
-            })
-            
-            # 최종 결과 반환
-            return {
-                'progress': 1.0, 
-                'prediction_result': prediction_result,
-                'elapsed_time': elapsed_time
-            }
-
-        except Exception as inner_e:
-            print(f"Error during prediction: {inner_e}")
-            raise inner_e
+        print(f"Prediction completed successfully")
+        
+        return prediction_result
         
     except Exception as e:
-        # 실패 상태로 업데이트
-        self.update_state(state='FAILURE', meta={'progress': 0.0, 'error_message': str(e)})
+        print(f"Error during prediction: {e}")
         raise e
 
 
 @router.post("/predict", response_model=PredictResponse)
-async def start_predict(request: PredictRequest):
+async def predict(request: PredictRequest):
     """
-    ML 모델 예측을 시작하는 엔드포인트
+    ML 모델 예측을 실행하는 엔드포인트
     """
     try:
-        # Celery 작업 시작
-        task = run_prediction_task.apply_async(
-            args=[request.model_uri, request.data_path, request.input_type]
+        start_time = time.time()
+        
+        # input_type 검증
+        if request.input_type not in ["image", "vector"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid input_type: {request.input_type}. Must be 'image' or 'vector'"
+            )
+        
+        # 예측 실행
+        prediction_result = await run_prediction(
+            request.model_uri, 
+            request.data_path, 
+            request.input_type
         )
         
-        # 작업이 시작될 때까지 잠시 기다려서 PID 가져오기
-        import time
-        process_pid = None
-        for _ in range(10):  # 최대 1초 대기
-            result = AsyncResult(task.id, app=celery_app)
-            if result.state == 'PREDICTING' and result.info:
-                process_pid = result.info.get('process_pid')
-                break
-            time.sleep(0.1)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         
         return PredictResponse(
-            message=f"Prediction started in background for {request.input_type} model",
-            prediction_id=task.id,
-            process_pid=process_pid,
+            message=f"Prediction completed successfully for {request.input_type} model",
+            prediction_result=prediction_result,
+            elapsed_time=elapsed_time,
             created_at=datetime.now()
         )
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/predict/{prediction_id}", response_model=PredictStatus)
-async def get_predict_status(prediction_id: str):
-    """
-    예측 상태를 확인하는 엔드포인트
-    """
-    import time
-    
-    try:
-        result = AsyncResult(prediction_id, app=celery_app)
-        
-        # 기본 상태 정보 (Redis에서 가져온 데이터로 업데이트됨)
-        status_info = {
-            "prediction_id": prediction_id,
-            "status": result.state,
-            "progress": 0.0,
-            "elapsed_time": None,
-            "error_message": None,
-            "result": None
-        }
-        
-        if result.state == 'PENDING':
-            # 작업이 아직 시작되지 않음
-            status_info["progress"] = 0.0
-            status_info["elapsed_time"] = 0.0
-
-        elif result.state == 'PREDICTING':
-            # 작업이 진행 중 - 현재 시간으로 경과 시간 계산
-            if result.info:
-                start_time = result.info.get('start_time')
-                if start_time:
-                    current_elapsed = time.time() - start_time
-                    status_info["elapsed_time"] = current_elapsed
-                    # 진행률은 시간 기반으로 추정하기 어려우므로 0.5로 설정
-                    status_info["progress"] = 0.5
-                status_info.update({k: v for k, v in result.info.items() if k != 'start_time'})
-
-        elif result.state == 'SUCCESS':
-            # 작업 완료
-            status_info["progress"] = 1.0
-            status_info["result"] = result.result
-            if result.info:
-                status_info["elapsed_time"] = result.info.get("elapsed_time")
-
-        elif result.state == 'FAILURE':
-            # 작업 실패
-            status_info["error_message"] = str(result.info)
-
-        elif result.state == 'REVOKED':
-            # 작업 취소됨
-            status_info["progress"] = 0.0
-            status_info["error_message"] = "Prediction was cancelled"
-            if result.info:
-                start_time = result.info.get('start_time')
-                if start_time:
-                    status_info["elapsed_time"] = time.time() - start_time
-                status_info.update({k: v for k, v in result.info.items() if k not in ['start_time']})
-                status_info["error_message"] = "Prediction was cancelled"
-        
-        return PredictStatus(**status_info)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting prediction status: {str(e)}")
-
-
-@router.delete("/predict/{prediction_id}")
-async def cancel_predict(prediction_id: str):
-    """
-    예측 작업을 취소하는 엔드포인트
-    """
-    try:
-        result = AsyncResult(prediction_id, app=celery_app)
-        
-        if result.state not in ["PENDING", "PREDICTING"]:
-            raise HTTPException(status_code=400, detail=f"Cannot cancel prediction in state {result.state}")
-        
-        # Celery 작업 취소
-        celery_app.control.revoke(prediction_id, terminate=True)
-        
-        return {
-            "message": "Prediction cancelled successfully",
-            "prediction_id": prediction_id,
-            "cancelled_at": datetime.now()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error cancelling prediction: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
 @router.get("/cache/status")
