@@ -246,7 +246,7 @@ const Learning = () => {
             <Button
               variant="contained"
               onClick={handleDeploy}
-              disabled={data.length === 0 || isTraining || results.length === 0}
+              disabled={!results.length}
               sx={{
                 backgroundColor: '#28a745',
                 '&:hover': { backgroundColor: '#218838' },
