@@ -68,8 +68,6 @@ def run_train_task(self, config: Dict):
         
         # 학습 상태 업데이트: TRAINING (PID 포함)
         self.update_state(state='TRAINING', meta={
-            'progress': 0.0, 
-            'elapsed_time': 0.0,
             'input_type': input_type,
             'process_pid': current_pid,
             'start_time': start_time
@@ -114,13 +112,12 @@ def run_train_task(self, config: Dict):
             
             # 학습 완료 - SUCCESS 상태로 업데이트
             self.update_state(state='SUCCESS', meta={
-                'progress': 1.0,
                 'mlflow_run_id': mlflow_run_id,
                 'elapsed_time': elapsed_time
             })
             
             # 최종 결과 반환
-            return {'progress': 1.0, 'mlflow_run_id': mlflow_run_id}
+            return {'mlflow_run_id': mlflow_run_id}
 
         finally:
             # argv 복원 (에러 발생 시에도)
