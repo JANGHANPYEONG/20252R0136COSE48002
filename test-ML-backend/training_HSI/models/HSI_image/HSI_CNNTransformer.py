@@ -27,7 +27,7 @@ class CNNBackbone(nn.Module):
     def __init__(self, in_channels, channels=[16, 32, 64], use_pool=True, use_se=True):
         super().__init__()
         layers = []
-        prev_ch = in_channels   
+        prev_ch = in_channels
         for ch in channels:
             layers.append(nn.Conv2d(prev_ch, ch, kernel_size=3, padding=1))
             layers.append(nn.BatchNorm2d(ch))
