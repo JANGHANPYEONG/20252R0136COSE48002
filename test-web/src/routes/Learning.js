@@ -130,11 +130,24 @@ const Learning = () => {
   };
 
   // 데이터 목록 컬럼 설정
-  const getColumns = () => ['ID', 'seqno', 'label'];
+  const getColumns = () => [
+    '이력번호',
+    '샘플번호',
+    '부위',
+    '딥에이징',
+    '도축일자',
+    '촬영일자',
+    'Marbling',
+    'Meat Color',
+    'Texture',
+    'Surface Moisture',
+    'Total',
+  ];
 
   // 모델 학습 결과 컬럼 설정
   const getModelResults = () => [
     '생성 날짜',
+    'Train_Time',
     'Test_AUC',
     'r2_score',
     'Recall',
