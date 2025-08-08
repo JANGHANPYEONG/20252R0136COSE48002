@@ -2,6 +2,7 @@
 # 외부 API호출 클라이언트
 import os
 import httpx
+from dotenv import load_dotenv, find_dotenv
 
 OPENAPI_URL = os.environ["LIVESTOCK_OPENAPI_URL"]
 SERVICE_KEY = os.environ["LIVESTOCK_SERVICE_KEY"]
