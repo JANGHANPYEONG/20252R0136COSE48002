@@ -122,12 +122,37 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
                 print("Script output:")
                 print(stdout_text)
             
+            # 에러 출력도 확인
+            if stderr:
+                stderr_text = stderr.decode('utf-8')
+                print("Script stderr:")
+                print(stderr_text)
+            
             # 결과 파일 읽기
             if not os.path.exists(temp_result_path):
                 raise FileNotFoundError(f"Result file was not created: {temp_result_path}")
             
+            # 파일 크기 확인
+            file_size = os.path.getsize(temp_result_path)
+            print(f"Result file size: {file_size} bytes")
+            
+            if file_size == 0:
+                raise ValueError(f"Result file is empty: {temp_result_path}")
+            
+            # 파일 내용 확인 후 JSON 파싱
             with open(temp_result_path, 'r') as f:
-                prediction_result = json.load(f)
+                file_content = f.read()
+                print(f"Result file content preview: {file_content[:200]}")
+                
+                if not file_content.strip():
+                    raise ValueError("Result file is empty or contains only whitespace")
+                
+                try:
+                    prediction_result = json.loads(file_content)
+                except json.JSONDecodeError as e:
+                    print(f"JSON parsing error: {e}")
+                    print(f"File content: {file_content}")
+                    raise ValueError(f"Invalid JSON in result file: {e}")
             
             print(f"Prediction completed successfully")
             print(f"Result: {prediction_result}")
