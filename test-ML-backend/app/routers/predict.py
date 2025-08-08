@@ -4,13 +4,10 @@ from typing import Optional, Dict, Literal, List
 from datetime import datetime
 import asyncio
 import time
-
-from app.utils.cache_model import (
-    load_or_get_cached_model,
-    get_cache_status as get_cache_status_info,
-    clear_cache as clear_model_cache,
-    remove_cached_model
-)
+import subprocess
+import json
+import os
+import tempfile
 
 router = APIRouter()
 
@@ -31,7 +28,7 @@ class PredictResponse(BaseModel):
 # 비동기 예측 함수
 async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dict:
     """
-    비동기로 예측을 실행하는 함수
+    비동기로 예측을 실행하는 함수 (스크립트 실행 방식)
     """
     try:
         print(f"Starting prediction with model: {model_uri}, data: {data_path}, type: {input_type}")
@@ -44,11 +41,6 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
         else:
             print(f"Using local model path: {model_uri}")
         
-        # 캐시된 모델 사용 (input_type에 따라 적절한 Predictor 반환)
-        print("Loading model from cache or creating new instance...")
-        predictor = load_or_get_cached_model(model_uri, input_type)
-        print(f"Model loaded successfully: {type(predictor).__name__}")
-        
         # data_path가 여러 경로인 경우 처리
         if ',' in data_path:
             data_paths = [path.strip() for path in data_path.split(',')]
@@ -58,19 +50,88 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
             print(f"Single data path: {data_path}")
         
         # 파일 존재 여부 확인
-        import os
         for i, path in enumerate(data_paths):
             if not os.path.exists(path):
                 raise FileNotFoundError(f"Data file not found: {path}")
             print(f"Data file {i+1} exists: {path}")
         
-        # 예측 실행 (CPU 집약적 작업을 별도 스레드에서 실행)
-        print("Starting prediction process...")
-        prediction_result = await asyncio.to_thread(predictor.predict, data_paths)
-        print(f"Prediction completed successfully")
-        print(f"Result type: {type(prediction_result)}")
+        # 스크립트 경로 설정
+        if input_type == "image":
+            script_path = "/Users/woojin/project/deeplant/deeplant_MLBE/test-ML-backend/training_HSI/predict_hsi.py"
+        elif input_type == "vector":
+            script_path = "/Users/woojin/project/deeplant/deeplant_MLBE/test-ML-backend/training_HSI/predict_vector.py"
+        else:
+            raise ValueError(f"Unsupported input_type: {input_type}")
         
-        return prediction_result
+        if not os.path.exists(script_path):
+            raise FileNotFoundError(f"Prediction script not found: {script_path}")
+        
+        # 임시 결과 파일 생성
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+            temp_result_path = temp_file.name
+        
+        try:
+            # 명령어 구성
+            cmd = ["python", script_path]
+            
+            # 모델 로딩 방식 결정 (run_id vs model_dir)
+            if len(model_uri) == 32:
+                cmd.extend(["--run_id", model_uri])
+            else:
+                cmd.extend(["--model_dir", model_uri])
+            
+            # 데이터 경로들 추가 (input_type에 따라 파라미터명 다름)
+            if input_type == "image":
+                cmd.extend(["--image_paths"] + data_paths)
+            elif input_type == "vector":
+                cmd.extend(["--data_paths"] + data_paths)
+            
+            # 결과 파일 경로 추가
+            cmd.extend(["--output", temp_result_path])
+            
+            print(f"Executing command: {' '.join(cmd)}")
+            
+            # 스크립트 실행 (비동기)
+            print("Starting prediction script...")
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=os.path.dirname(script_path)
+            )
+            
+            stdout, stderr = await process.communicate()
+            
+            # 프로세스 결과 확인
+            if process.returncode != 0:
+                error_msg = stderr.decode('utf-8') if stderr else "Unknown error"
+                print(f"Script execution failed with return code {process.returncode}")
+                print(f"Error output: {error_msg}")
+                raise RuntimeError(f"Prediction script failed: {error_msg}")
+            
+            # 표준 출력 로그 출력
+            if stdout:
+                stdout_text = stdout.decode('utf-8')
+                print("Script output:")
+                print(stdout_text)
+            
+            # 결과 파일 읽기
+            if not os.path.exists(temp_result_path):
+                raise FileNotFoundError(f"Result file was not created: {temp_result_path}")
+            
+            with open(temp_result_path, 'r') as f:
+                prediction_result = json.load(f)
+            
+            print(f"Prediction completed successfully")
+            print(f"Result: {prediction_result}")
+            
+            return prediction_result
+            
+        finally:
+            # 임시 파일 정리
+            if os.path.exists(temp_result_path):
+                os.unlink(temp_result_path)
+                print(f"Cleaned up temporary result file: {temp_result_path}")
         
     except FileNotFoundError as e:
         print(f"File not found error: {e}")
@@ -138,137 +199,3 @@ async def predict(request: PredictRequest):
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
-
-@router.get("/cache/status")
-async def get_cache_status():
-    """
-    모델 캐시 상태를 확인하는 엔드포인트
-    """
-    cache_status = get_cache_status_info()
-    
-    # datetime 변환
-    for model_info in cache_status["cached_models"]:
-        model_info["cached_at"] = datetime.fromtimestamp(model_info["cached_at"])
-    
-    return cache_status
-
-
-@router.delete("/cache")
-async def clear_cache():
-    """
-    모델 캐시를 모두 삭제하는 엔드포인트
-    """
-    cleared_count = clear_model_cache()
-    
-    return {
-        "message": f"Cache cleared successfully. {cleared_count} models removed.",
-        "cleared_at": datetime.now()
-    }
-
-
-@router.delete("/cache/{cache_key}")
-async def remove_cached_model_endpoint(cache_key: str):
-    """
-    특정 모델을 캐시에서 제거하는 엔드포인트
-    """
-    removed_model = remove_cached_model(cache_key)
-    
-    if removed_model:
-        return {
-            "message": f"Model removed from cache: {removed_model['model_uri']}",
-            "removed_at": datetime.now()
-        }
-    else:
-        raise HTTPException(status_code=404, detail=f"Cache key not found: {cache_key}")
-
-
-@router.get("/debug/model-info/{model_uri}")
-async def get_model_debug_info(model_uri: str, input_type: str):
-    """
-    모델 로딩 디버깅 정보를 제공하는 엔드포인트
-    """
-    try:
-        print(f"Debug info requested for model: {model_uri}, type: {input_type}")
-        
-        # 모델 URI 분석
-        is_mlflow_run = len(model_uri) == 32
-        is_mlflow_uri = model_uri.startswith('mlflow://')
-        is_local_path = not (is_mlflow_run or is_mlflow_uri)
-        
-        debug_info = {
-            "model_uri": model_uri,
-            "input_type": input_type,
-            "uri_analysis": {
-                "is_mlflow_run_id": is_mlflow_run,
-                "is_mlflow_uri": is_mlflow_uri,
-                "is_local_path": is_local_path,
-                "uri_length": len(model_uri)
-            }
-        }
-        
-        # MLflow 연결 테스트
-        if is_mlflow_run or is_mlflow_uri:
-            try:
-                import mlflow.pyfunc
-                run_id = model_uri.replace('mlflow://', '')
-                mlflow_uri = f"runs:/{run_id}/model"
-                
-                # MLflow 모델 정보 가져오기 시도
-                try:
-                    model_info = mlflow.models.get_model_info(mlflow_uri)
-                    debug_info["mlflow_info"] = {
-                        "model_uri": mlflow_uri,
-                        "flavors": list(model_info.flavors.keys()) if model_info.flavors else [],
-                        "model_uuid": model_info.model_uuid,
-                        "utc_time_created": str(model_info.utc_time_created),
-                        "model_size_bytes": model_info.model_size_bytes
-                    }
-                    debug_info["mlflow_status"] = "accessible"
-                except Exception as model_info_error:
-                    debug_info["mlflow_status"] = "model_info_failed"
-                    debug_info["mlflow_error"] = str(model_info_error)
-                    
-            except ImportError:
-                debug_info["mlflow_status"] = "mlflow_not_available"
-            except Exception as mlflow_error:
-                debug_info["mlflow_status"] = "connection_failed"
-                debug_info["mlflow_error"] = str(mlflow_error)
-        
-        # 로컬 경로인 경우 파일 존재 확인
-        if is_local_path:
-            import os
-            debug_info["local_path_info"] = {
-                "exists": os.path.exists(model_uri),
-                "is_directory": os.path.isdir(model_uri) if os.path.exists(model_uri) else False,
-                "is_file": os.path.isfile(model_uri) if os.path.exists(model_uri) else False
-            }
-            
-            if os.path.exists(model_uri) and os.path.isdir(model_uri):
-                try:
-                    files = os.listdir(model_uri)
-                    debug_info["local_path_info"]["directory_contents"] = files[:10]  # 처음 10개만
-                except:
-                    debug_info["local_path_info"]["directory_contents"] = "access_denied"
-        
-        # 캐시 상태 확인
-        from app.utils.cache_model import get_model_cache_key, get_cached_model
-        cache_key = get_model_cache_key(model_uri, input_type)
-        cached_entry = get_cached_model(model_uri, input_type)
-        
-        debug_info["cache_info"] = {
-            "cache_key": cache_key,
-            "is_cached": cached_entry is not None,
-            "cached_at": datetime.fromtimestamp(cached_entry["cached_at"]) if cached_entry else None
-        }
-        
-        return debug_info
-        
-    except Exception as e:
-        import traceback
-        return {
-            "error": str(e),
-            "traceback": traceback.format_exc(),
-            "model_uri": model_uri,
-            "input_type": input_type
-        }
