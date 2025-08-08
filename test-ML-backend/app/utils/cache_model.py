@@ -95,12 +95,32 @@ def load_or_get_cached_model(model_uri: str, input_type: str):
     
     if input_type == "image":
         # model_uri가 MLflow run_id인지, 로컬 디렉토리인지 판별
-        # MLflow run_id 판별 (32자리 또는 mlflow:// 접두사)
         if len(model_uri) == 32 or model_uri.startswith('mlflow://'):
-            # MLflow에서 임시 다운로드
-            import mlflow
-            temp_dir = mlflow.artifacts.download_artifacts(run_id=model_uri.replace('mlflow://', ''))
-            model_instance = HSIPredictor(model_dir=temp_dir)
+            # MLflow에서 모델 직접 로딩 (권장 방식)
+            try:
+                import mlflow.pyfunc
+                # MLflow URI 형태로 변환
+                run_id = model_uri.replace('mlflow://', '')
+                mlflow_uri = f"runs:/{run_id}/model"
+                
+                print(f"Attempting to load MLflow model: {mlflow_uri}")
+                
+                # MLflow pyfunc 모델로 로딩 (범용적)
+                mlflow_model = mlflow.pyfunc.load_model(mlflow_uri)
+                model_instance = HSIPredictor(mlflow_model=mlflow_model)
+                
+                print(f"Successfully loaded MLflow model: {mlflow_uri}")
+                
+            except Exception as mlflow_error:
+                print(f"MLflow model loading failed, falling back to artifact download: {mlflow_error}")
+                # 폴백: artifact 다운로드 방식
+                try:
+                    import mlflow
+                    temp_dir = mlflow.artifacts.download_artifacts(run_id=run_id)
+                    model_instance = HSIPredictor(model_dir=temp_dir)
+                    print(f"Successfully loaded model from artifacts: {temp_dir}")
+                except Exception as artifact_error:
+                    raise Exception(f"Both MLflow loading and artifact download failed. MLflow error: {mlflow_error}, Artifact error: {artifact_error}")
         else:
             # 로컬 디렉토리
             model_instance = HSIPredictor(model_dir=model_uri)
@@ -112,10 +132,31 @@ def load_or_get_cached_model(model_uri: str, input_type: str):
     elif input_type == "vector":
         # Vector 모델 로드 및 캐시 처리
         if len(model_uri) == 32 or model_uri.startswith('mlflow://'):
-            # MLflow에서 임시 다운로드
-            import mlflow
-            temp_dir = mlflow.artifacts.download_artifacts(run_id=model_uri.replace('mlflow://', ''))
-            model_instance = VectorPredictor(model_dir=temp_dir)
+            # MLflow에서 모델 직접 로딩 (권장 방식)
+            try:
+                import mlflow.pyfunc
+                # MLflow URI 형태로 변환
+                run_id = model_uri.replace('mlflow://', '')
+                mlflow_uri = f"runs:/{run_id}/model"
+                
+                print(f"Attempting to load MLflow vector model: {mlflow_uri}")
+                
+                # MLflow pyfunc 모델로 로딩 (범용적)
+                mlflow_model = mlflow.pyfunc.load_model(mlflow_uri)
+                model_instance = VectorPredictor(mlflow_model=mlflow_model)
+                
+                print(f"Successfully loaded MLflow vector model: {mlflow_uri}")
+                
+            except Exception as mlflow_error:
+                print(f"MLflow vector model loading failed, falling back to artifact download: {mlflow_error}")
+                # 폴백: artifact 다운로드 방식
+                try:
+                    import mlflow
+                    temp_dir = mlflow.artifacts.download_artifacts(run_id=run_id)
+                    model_instance = VectorPredictor(model_dir=temp_dir)
+                    print(f"Successfully loaded vector model from artifacts: {temp_dir}")
+                except Exception as artifact_error:
+                    raise Exception(f"Both MLflow loading and artifact download failed. MLflow error: {mlflow_error}, Artifact error: {artifact_error}")
         else:
             # 로컬 디렉토리
             model_instance = VectorPredictor(model_dir=model_uri)

@@ -48,6 +48,7 @@ class TrainStatus(BaseModel):
     result: Optional[Dict] = None
 
 
+# Celery 백그라운드에서 학습을 실행하는 함수
 @celery_app.task(bind=True)
 def run_train_task(self, config: Dict):
     import time
@@ -69,41 +70,27 @@ def run_train_task(self, config: Dict):
             json.dump(config, f, indent=2)
             config_path = f.name
         
-        # 절대 경로 설정 (서버 환경에 맞춤)
-        backend_path = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend"
+        # subprocess로 학습 프로세스 실행
+        training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
         
-        # Python -c로 함수 직접 실행하는 코드 생성
-        if input_type == "image":
-            python_code = f'''
-import sys
-sys.path.append("{backend_path}")
-from training_HSI.train_HSI_2d import main
-sys.argv = ["train_script.py", "--config", "{config_path}"]
-result = main()
-print(f"MLFLOW_RUN_ID:{{result}}")
-'''
+        if config.get("input_type") == "image":
+            script_name = "train_HSI_2d.py"
         else:
-            python_code = f'''
-import sys
-sys.path.append("{backend_path}")
-from training_HSI.train_vector import main
-sys.argv = ["train_script.py", "--config", "{config_path}"]
-result = main()
-print(f"MLFLOW_RUN_ID:{{result}}")
-'''
+            script_name = "train_vector.py"
         
-        # subprocess로 Python 코드 실행
+        # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
         process = subprocess.Popen(
-            [sys.executable, "-c", python_code],
+            [sys.executable, script_name, '--config', config_path],
+            cwd=training_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
         
-        # 학습 상태 업데이트: TRAINING (process PID 포함)
+        # 학습 상태 업데이트: TRAINING (subprocess PID 포함)
         self.update_state(state='TRAINING', meta={
             'input_type': input_type,
-            'process_pid': process.pid,
+            'process_pid': process.pid,  # ← 이제 별도 프로세스 PID
             'start_time': start_time
         })
         
@@ -119,25 +106,18 @@ print(f"MLFLOW_RUN_ID:{{result}}")
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-            # stdout에서 MLflow run ID 추출 (MLFLOW_RUN_ID: 패턴 찾기)
+            # stdout에서 MLflow run ID 추출
             mlflow_run_id = None
             if stdout:
+                import re
                 lines = stdout.strip().split('\n')
                 for line in lines:
-                    if line.startswith('MLFLOW_RUN_ID:'):
-                        mlflow_run_id = line.replace('MLFLOW_RUN_ID:', '').strip()
+                    line = line.strip()
+                    # 32자리 16진수 문자열 패턴으로 MLflow run ID 추출
+                    match = re.search(r'[a-f0-9]{32}', line)
+                    if match:
+                        mlflow_run_id = match.group()
                         break
-                
-                # 백업: 기존 방식도 시도
-                if not mlflow_run_id:
-                    for line in reversed(lines):
-                        line = line.strip()
-                        if line and not line.startswith('[') and len(line) > 10:
-                            mlflow_run_id = line
-                            break
-            
-            if not mlflow_run_id:
-                raise Exception("No MLflow run ID found in training output")
             
             print(f"Training completed with run ID: {mlflow_run_id}")
             
@@ -299,6 +279,7 @@ async def cancel_train(train_id: str):
     """
     import signal
     import os
+    import subprocess
     
     try:
         result = AsyncResult(train_id, app=celery_app)
@@ -355,4 +336,4 @@ async def cancel_train(train_id: str):
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error cancelling training: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error cancelling training: {str(e)}")
