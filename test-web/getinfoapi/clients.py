@@ -1,20 +1,21 @@
 # clients.py
 # 외부 API호출 클라이언트
+
 import os
 import httpx
 from dotenv import load_dotenv, find_dotenv
 
-OPENAPI_URL = os.environ["LIVESTOCK_OPENAPI_URL"]
-SERVICE_KEY = os.environ["LIVESTOCK_SERVICE_KEY"]
+load_dotenv(find_dotenv())  # 여기서 .env 로드
+
+OPENAPI_URL = os.getenv("LIVESTOCK_OPENAPI_URL")
+SERVICE_KEY = os.getenv("LIVESTOCK_SERVICE_KEY")
+
+if not OPENAPI_URL or not SERVICE_KEY:
+    raise RuntimeError("환경변수 누락: LIVESTOCK_OPENAPI_URL / LIVESTOCK_SERVICE_KEY")
 
 async def fetch_trace_info(params: dict) -> httpx.Response:
-    # data.go.kr 샘플 규격: GET + querystring + serviceKey
-    query = {
-        "serviceKey": SERVICE_KEY,
-        **{k: v for k, v in params.items() if v is not None}
-    }
-    timeout = httpx.Timeout(10.0, read=30.0)
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        resp = await client.get(OPENAPI_URL, params=query)
-        resp.raise_for_status()
-        return resp
+    query = {"serviceKey": SERVICE_KEY, **{k: v for k, v in params.items() if v is not None}}
+    async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, read=30.0)) as client:
+        r = await client.get(OPENAPI_URL, params=query)
+        r.raise_for_status()
+        return r
