@@ -149,7 +149,7 @@ const Learning = () => {
     '생성 날짜',
     'Train_Time',
     'Test_AUC',
-    'r2_score',
+    'R2_score',
     'Recall',
     'Loss',
   ];
