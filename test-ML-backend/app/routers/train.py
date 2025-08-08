@@ -79,12 +79,16 @@ def run_train_task(self, config: Dict):
             script_name = "train_vector.py"
         
         # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
+        # MLflow run ID를 파일로 받기 위한 임시 파일 생성
+        run_id_file = f"/tmp/mlflow_run_id_{self.request.id}.txt"
+        
         process = subprocess.Popen(
-            [sys.executable, script_name, '--config', config_path],
+            [sys.executable, script_name, '--config', config_path, '--run-id-file', run_id_file],
             cwd=training_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            env={**os.environ, 'MLFLOW_RUN_ID_FILE': run_id_file}  # 환경 변수도 전달
         )
         
         # 학습 상태 업데이트: TRAINING (subprocess PID 포함)
@@ -106,15 +110,46 @@ def run_train_task(self, config: Dict):
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-            # stdout에서 MLflow run ID 추출
+            # stdout에서 MLflow run ID 추출 (파일 우선, stdout 백업)
             mlflow_run_id = None
-            if stdout:
-                lines = stdout.strip().split('\n')
-                for line in reversed(lines):
+            
+            # 방법 1: 파일에서 run ID 읽기 (가장 안정적)
+            if os.path.exists(run_id_file):
+                try:
+                    with open(run_id_file, 'r') as f:
+                        file_run_id = f.read().strip()
+                        if file_run_id and len(file_run_id) > 10:
+                            mlflow_run_id = file_run_id
+                            print(f"MLflow run ID from file: {mlflow_run_id}")
+                    # 파일 정리
+                    os.remove(run_id_file)
+                except Exception as e:
+                    print(f"Error reading run ID file: {e}")
+            
+            # 방법 2: stdout에서 찾기 (백업)
+            if not mlflow_run_id and stdout:
+                print(f"Trying to extract from stdout:\n{stdout}")
+                lines = stdout.strip().split('\n')               
+                # "MLflow run ended" 다음 줄에서 run ID 찾기
+                for i, line in enumerate(lines):
                     line = line.strip()
-                    if line and "run ID" in line:
-                        mlflow_run_id = line.split("run ID: ")[-1].strip()
-                        break
+                    if "mlflow run ended" in line.lower():
+                        # 다음 줄이 있고 비어있지 않으면 그것이 run ID
+                        if i + 1 < len(lines):
+                            next_line = lines[i + 1].strip()
+                            if next_line and len(next_line) > 10 and not next_line.startswith('-'):
+                                mlflow_run_id = next_line
+                                print(f"MLflow run ID from stdout: {mlflow_run_id}")
+                                break
+                
+                # "run id:" 패턴으로 찾기
+                if not mlflow_run_id:
+                    for line in reversed(lines):
+                        line = line.strip()
+                        if line and "run id:" in line.lower():
+                            mlflow_run_id = line.split(':')[-1].strip()
+                            print(f"MLflow run ID from 'run id:' pattern: {mlflow_run_id}")
+                            break
             
             print(f"Training completed with run ID: {mlflow_run_id}")
             
@@ -132,9 +167,12 @@ def run_train_task(self, config: Dict):
             return {'mlflow_run_id': mlflow_run_id}
 
         finally:
-            # 임시 config 파일 삭제
+            # 임시 파일들 정리
             if os.path.exists(config_path):
                 os.remove(config_path)
+            # run_id_file은 이미 위에서 정리되었지만 확인차 한번 더
+            if 'run_id_file' in locals() and os.path.exists(run_id_file):
+                os.remove(run_id_file)
         
     except Exception as e:
         # Celery가 자동으로 FAILURE 상태로 처리하도록 예외를 다시 발생시킴
@@ -213,22 +251,8 @@ async def get_train_status(train_id: str):
                 if start_time:
                     current_elapsed = time.time() - start_time
                     status_info["elapsed_time"] = current_elapsed
-                
-                # subprocess PID 확인 및 실제 실행 상태 검증
-                process_pid = result.info.get('process_pid')
-                if process_pid:
-                    try:
-                        import os
-                        os.kill(process_pid, 0)  # 프로세스 존재 확인
-                        # 프로세스가 존재하면 정상 진행 중
-                        status_info.update({k: v for k, v in result.info.items() if k != 'start_time'})
-                    except ProcessLookupError:
-                        # subprocess가 종료되었는데 Celery 상태가 아직 업데이트 안됨
-                        status_info["status"] = "FAILURE"
-                        status_info["error_message"] = "Training subprocess terminated unexpectedly"
-                else:
-                    # start_time을 제외한 나머지 정보들 업데이트
-                    status_info.update({k: v for k, v in result.info.items() if k != 'start_time'})
+                # start_time을 제외한 나머지 정보들 업데이트
+                status_info.update({k: v for k, v in result.info.items() if k != 'start_time'})
 
         elif result.state == 'SUCCESS':
             # 작업 완료
@@ -251,17 +275,6 @@ async def get_train_status(train_id: str):
                 start_time = result.info.get('start_time')
                 if start_time:
                     status_info["elapsed_time"] = time.time() - start_time
-                
-                # 취소된 작업의 subprocess 상태 확인
-                process_pid = result.info.get('process_pid')
-                if process_pid:
-                    try:
-                        import os
-                        os.kill(process_pid, 0)  # 프로세스 존재 확인
-                        status_info["error_message"] = "Training cancellation requested, but subprocess is still running"
-                    except ProcessLookupError:
-                        status_info["error_message"] = "Training was cancelled and subprocess terminated successfully"
-                
                 status_info.update({k: v for k, v in result.info.items() if k not in ['start_time']})
         
         return TrainStatus(**status_info)
@@ -287,44 +300,42 @@ async def cancel_train(train_id: str):
         # 1. Celery 작업 취소 (부드러운 방식 - worker 종료 방지)
         celery_app.control.revoke(train_id)
         
-        # 2. 학습 subprocess만 안전하게 종료 (Celery Worker는 유지)
+        # 2. PID를 통해 학습 프로세스만 정상 종료 시도
         process_pid = None
         if result.info and result.info.get('process_pid'):
             process_pid = result.info.get('process_pid')
             
             try:
-                # 학습 subprocess만 종료 (Worker와 완전히 분리됨)
+                # SIGTERM으로 정상 종료 시도 (SIGKILL 제거)
                 os.kill(process_pid, signal.SIGTERM)
-                print(f"Sent SIGTERM to training subprocess {process_pid}")
+                print(f"Sent SIGTERM to process {process_pid}")
                 
-                # 정상 종료 대기
+                # 프로세스가 정상 종료될 시간을 줌
                 import time
                 time.sleep(3)
                 
-                # 여전히 실행 중이면 강제 종료 (Worker에 영향 없음)
+                # 프로세스가 여전히 존재하는지 확인만 하고, 강제 종료는 하지 않음
                 try:
                     os.kill(process_pid, 0)  # 프로세스 존재 확인
-                    print(f"Training subprocess {process_pid} still running, sending SIGKILL")
-                    os.kill(process_pid, signal.SIGKILL)
-                    print(f"Training subprocess {process_pid} force terminated")
+                    print(f"Process {process_pid} still running after SIGTERM")
                 except ProcessLookupError:
-                    print(f"Training subprocess {process_pid} terminated successfully")
+                    print(f"Process {process_pid} terminated successfully")
                     
             except ProcessLookupError:
-                print(f"Training subprocess {process_pid} not found")
+                print(f"Process {process_pid} not found")
             except PermissionError:
-                print(f"Permission denied to signal training subprocess {process_pid}")
+                print(f"Permission denied to signal process {process_pid}")
         else:
-            print(f"No training subprocess PID found for train_id {train_id}, only revoking Celery task")
+            print(f"No process PID found for train_id {train_id}, only revoking Celery task")
         
         # 3. 수동으로 상태를 REVOKED로 업데이트 (worker 종료 방지)
         result.revoke()
         
         # 메시지 구성
         if process_pid:
-            message = "Training cancellation requested. The training subprocess has been terminated while Celery worker remains active."
+            message = "Training cancellation requested. The process may take a few moments to stop gracefully."
         else:
-            message = "Training task has been revoked. No running training subprocess found to terminate."
+            message = "Training task has been revoked. No running process found to terminate."
         
         return {
             "message": message,
