@@ -1,6 +1,6 @@
 # main.py
 # FastAPI endpoint(proxy)
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Query, HTTPException
 from clients import fetch_trace_info
 from schemas import TraceQuery
 
@@ -10,11 +10,15 @@ import xmltodict  # XML만 내려오는 경우를 대비 (필요시 설치: pip 
 app = FastAPI(title="Livestock Trace Proxy")
 
 @app.get("/trace-info", summary="축산물이력정보조회 프록시")
-async def trace_info(q: TraceQuery):
+async def trace_info(
+    traceNo: str = Query(..., description="개체번호"),
+    optionNo: int | None = Query(None, description='옵션번호'),
+    corpNo: int | None = Query(None, description="묶음 구성 업소 사업")
+):
     try:
-        resp = await fetch_trace_info(q.model_dump())
-        ctype = resp.headers.get("Content-Type", "").lower()
-
+        params = {"traceNo": traceNo, "optionNo": optionNo, "corpNo": corpNo}
+        resp = await fetch_trace_info(params)
+        return resp.json() if "application/json" in resp.headers.get("Content-Type","").lower().else{"raw": resp.text}
         # JSON 우선 처리
         if "application/json" in ctype or resp.text.strip().startswith("{"):
             data = resp.json()
