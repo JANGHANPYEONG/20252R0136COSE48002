@@ -18,7 +18,7 @@ opencv-python>=4.5.0
 matplotlib>=3.5.0
 
 # MLOps 관련
-mlflow>=2.8.0
+mlflow==2.8.0
 python-multipart>=0.0.6
 aiofiles>=23.0.0
 
