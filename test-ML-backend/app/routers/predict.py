@@ -55,16 +55,23 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
                 raise FileNotFoundError(f"Data file not found: {path}")
             print(f"Data file {i+1} exists: {path}")
         
-        # 스크립트 경로 설정
+        # 스크립트 경로 설정 (동적 경로 계산)
+        # 현재 파일(predict.py)에서 프로젝트 루트까지 이동: app/routers/predict.py -> ../../
+        current_dir = os.path.dirname(os.path.abspath(__file__))  # app/routers
+        project_root = os.path.dirname(os.path.dirname(current_dir))  # test-ML-backend
+        training_hsi_dir = os.path.join(project_root, "training_HSI")
+        
         if input_type == "image":
-            script_path = "/Users/woojin/project/deeplant/deeplant_MLBE/test-ML-backend/training_HSI/predict_hsi.py"
+            script_path = os.path.join(training_hsi_dir, "predict_hsi.py")
         elif input_type == "vector":
-            script_path = "/Users/woojin/project/deeplant/deeplant_MLBE/test-ML-backend/training_HSI/predict_vector.py"
+            script_path = os.path.join(training_hsi_dir, "predict_vector.py")
         else:
             raise ValueError(f"Unsupported input_type: {input_type}")
         
         if not os.path.exists(script_path):
             raise FileNotFoundError(f"Prediction script not found: {script_path}")
+        
+        print(f"Using script: {script_path}")
         
         # 임시 결과 파일 생성
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:

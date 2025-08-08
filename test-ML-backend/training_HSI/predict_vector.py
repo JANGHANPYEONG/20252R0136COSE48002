@@ -267,11 +267,68 @@ def main():
     temp_dir = None
     
     if args.run_id:
-        # MLflow run_id에서 아티팩트 다운로드
-        print(f"Downloading artifacts from MLflow run: {args.run_id}")
-        temp_dir = mlflow.artifacts.download_artifacts(run_id=args.run_id)
-        model_dir = temp_dir
-        print(f"Artifacts downloaded to: {model_dir}")
+        # MLflow run_id에서 아티팩트 다운로드 (대안 방식)
+        print(f"Loading artifacts from MLflow run: {args.run_id}")
+        try:
+            # MLflow 클라이언트를 사용한 안전한 다운로드
+            import mlflow.tracking
+            client = mlflow.tracking.MlflowClient()
+            
+            # 임시 디렉토리 생성
+            temp_dir = tempfile.mkdtemp()
+            print(f"Created temporary directory: {temp_dir}")
+            
+            # 필요한 파일들 개별 다운로드
+            required_files = ["config.json", "best_model.pkl"]  # Vector는 pkl 파일 사용
+            
+            for file_name in required_files:
+                try:
+                    local_path = client.download_artifacts(args.run_id, file_name, temp_dir)
+                    print(f"Downloaded {file_name}")
+                except Exception as e:
+                    print(f"Failed to download required file {file_name}: {e}")
+                    raise
+            
+            model_dir = temp_dir
+            print(f"Using artifacts from: {model_dir}")
+            
+        except Exception as e:
+            print(f"MLflow download failed: {e}")
+            # 대안: 직접 파일 시스템 접근 시도
+            try:
+                print("Attempting direct filesystem access...")
+                # MLflow tracking URI가 file:// 형태인 경우 직접 접근
+                import mlflow
+                tracking_uri = mlflow.get_tracking_uri()
+                print(f"MLflow tracking URI: {tracking_uri}")
+                
+                if tracking_uri.startswith('file://'):
+                    mlruns_path = tracking_uri[7:]  # file:// 제거
+                    run_path = None
+                    
+                    # mlruns 디렉토리에서 run_id 찾기
+                    for root, dirs, files in os.walk(mlruns_path):
+                        if args.run_id in dirs:
+                            run_path = os.path.join(root, args.run_id)
+                            break
+                    
+                    if run_path and os.path.exists(run_path):
+                        artifacts_path = os.path.join(run_path, "artifacts")
+                        if os.path.exists(artifacts_path):
+                            print(f"Found artifacts at: {artifacts_path}")
+                            model_dir = artifacts_path
+                        else:
+                            raise FileNotFoundError(f"Artifacts directory not found: {artifacts_path}")
+                    else:
+                        raise FileNotFoundError(f"Run directory not found for run_id: {args.run_id}")
+                else:
+                    raise RuntimeError(f"Cannot access remote MLflow server: {tracking_uri}")
+                    
+            except Exception as e2:
+                print(f"Direct filesystem access also failed: {e2}")
+                raise RuntimeError(f"All artifact download methods failed. Run ID: {args.run_id}")
+                
+        print(f"Final model directory: {model_dir}")
     
     # 예측기 생성
     try:
