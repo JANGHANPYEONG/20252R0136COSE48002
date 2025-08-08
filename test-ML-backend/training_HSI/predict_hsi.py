@@ -435,54 +435,15 @@ def main():
                 tracking_uri = mlflow.get_tracking_uri()
                 print(f"MLflow tracking URI: {tracking_uri}")
                 
-                # 여러 위치에서 mlruns 디렉토리 찾기
-                possible_mlruns_paths = []
-                
                 if tracking_uri.startswith('file://'):
                     mlruns_path = tracking_uri[7:]  # file:// 제거
-                    possible_mlruns_paths.append(mlruns_path)
-                elif not tracking_uri.startswith('http'):
-                    # 상대 경로인 경우
-                    possible_mlruns_paths.append(tracking_uri)
-                
-                # 추가 후보 경로들
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                project_root = os.path.dirname(current_dir)  # training_HSI -> test-ML-backend
-                possible_mlruns_paths.extend([
-                    os.path.join(current_dir, "mlruns"),  # training_HSI/mlruns
-                    os.path.join(project_root, "mlruns"),  # test-ML-backend/mlruns
-                    "./mlruns",
-                    "../mlruns"
-                ])
-                
-                print(f"Searching in paths: {possible_mlruns_paths}")
-                run_path = None
-                
-                # 모든 가능한 경로에서 run_id 찾기
-                for mlruns_path in possible_mlruns_paths:
-                    if not os.path.exists(mlruns_path):
-                        continue
-                        
-                    print(f"Searching for run_id in: {mlruns_path}")
+                    run_path = None
                     
-                    # mlruns 디렉토리에서 run_id 찾기 (더 정확한 검색)
+                    # mlruns 디렉토리에서 run_id 찾기
                     for root, dirs, files in os.walk(mlruns_path):
                         if args.run_id in dirs:
                             run_path = os.path.join(root, args.run_id)
-                            print(f"Found run directory: {run_path}")
                             break
-                        # 하위 디렉토리에서도 검색
-                        for dir_name in dirs:
-                            potential_path = os.path.join(root, dir_name, args.run_id)
-                            if os.path.exists(potential_path):
-                                run_path = potential_path
-                                print(f"Found run directory: {run_path}")
-                                break
-                        if run_path:
-                            break
-                    
-                    if run_path:
-                        break
                     
                     if run_path and os.path.exists(run_path):
                         artifacts_path = os.path.join(run_path, "artifacts")
