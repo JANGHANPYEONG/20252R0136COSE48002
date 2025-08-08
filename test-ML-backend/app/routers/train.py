@@ -112,8 +112,8 @@ def run_train_task(self, config: Dict):
                 lines = stdout.strip().split('\n')
                 for line in reversed(lines):
                     line = line.strip()
-                    if line and not line.startswith('[') and len(line) > 10:
-                        mlflow_run_id = line
+                    if line and "run ID" in line:
+                        mlflow_run_id = line.split("run ID: ")[-1].strip()
                         break
             
             print(f"Training completed with run ID: {mlflow_run_id}")
