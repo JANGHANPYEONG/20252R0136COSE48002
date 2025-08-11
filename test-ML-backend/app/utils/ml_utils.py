@@ -10,7 +10,7 @@ import cv2
 import io
 from io import BytesIO
 
-from opencv_utils import *
+from app.utils.opencv_utils import *
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 
 
