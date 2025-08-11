@@ -47,3 +47,7 @@ datasets_HSI/image/
 
 # Roadmap 무시시
 INTEGRATION_ROADMAP.md
+
+# Sensitive files in this module
+serviceAccountKey.json
+roadmap.md
