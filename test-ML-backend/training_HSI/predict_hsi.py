@@ -25,7 +25,7 @@ warnings.filterwarnings('ignore')
 # 현재 디렉토리를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from utils.model_loader import load_model, validate_model_config
+from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
 
 

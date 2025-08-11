@@ -14,8 +14,6 @@ import sys
 import json
 import argparse
 import numpy as np
-from PIL import Image
-import pickle
 import joblib
 import mlflow
 import tempfile
