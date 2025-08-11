@@ -3,6 +3,29 @@
 import { apiIP } from '../config'; // 백엔드 ML 서버 주소
 
 export const fetchPrediction = async (selectedRows) => {
+  // dummy data
+  const dummy = {
+    M001: {
+      '색상(Color)': 7.2,
+      '향(Aroma)': 6.8,
+      '조직감(Texture)': 6.9,
+      '즙성(Juiciness)': 6.5,
+      '풍미(Flavor)': 7.1,
+      '전체 기호도': 7.0,
+    },
+    M003: {
+      '색상(Color)': 8.1,
+      '향(Aroma)': 7.4,
+      '조직감(Texture)': 7.0,
+      '즙성(Juiciness)': 6.8,
+      '풍미(Flavor)': 7.5,
+      '전체 기호도': 7.6,
+    },
+  }
+
+
+  // 목업용 dummy data return
+  return dummy;
   try {
     const ids = selectedRows.map((item) => item.id);
 
@@ -19,6 +42,7 @@ export const fetchPrediction = async (selectedRows) => {
     }
 
     const result = await response.json();
+    // 실제로는 result를 받아야함
     return result;
   } catch (err) {
     console.error('예측 API 실패:', err);

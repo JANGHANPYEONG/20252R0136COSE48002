@@ -5,6 +5,56 @@
 import { apiIP } from '../config';
 
 export const fetchFilteredData = async (filters, type) => {
+  // dummy data
+      const dummy = [
+      {
+        id: 'M001',
+        timestamp: '2025-08-07T10:15:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '650nm',
+        sensory: {
+          '색상(Color)': 7.0,
+          '향(Aroma)': 6.5,
+          '조직감(Texture)': 7.0,
+          '즙성(Juiciness)': 6.2,
+          '풍미(Flavor)': 6.8,
+          '전체 기호도': 6.9,
+        },
+      },
+      {
+        id: 'M002',
+        timestamp: '2025-08-07T10:15:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '650nm',
+        sensory: {
+          '색상(Color)': 7.5,
+          '향(Aroma)': 5.5,
+          '조직감(Texture)': 6.4,
+          '즙성(Juiciness)': 7.7,
+          '풍미(Flavor)': 9.1,
+          '전체 기호도': 8.0,
+        },
+      },
+      {
+        id: 'M003',
+        timestamp: '2025-08-07T11:20:00',
+        date: '2025-08-07',
+        spectrum: '...',
+        wavelength: '660nm',
+        sensory: {
+          '색상(Color)': 8.0,
+          '향(Aroma)': 7.0,
+          '조직감(Texture)': 6.9,
+          '즙성(Juiciness)': 6.5,
+          '풍미(Flavor)': 7.2,
+          '전체 기호도': 7.4,
+        },
+      },
+    ];
+  // 목업용 dummy data return
+  return dummy;
   try {
     const response = await fetch(`http://${apiIP}/data/filter`, {
       method: 'POST',

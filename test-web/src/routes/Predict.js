@@ -35,66 +35,66 @@ const Predict = () => {
   ]);
 
   // Dummy data for Predict page
-  useEffect(() => {
-    const dummy = [
-      {
-        id: 'M001',
-        timestamp: '2025-08-07T10:15:00',
-        date: '2025-08-07',
-        spectrum: '...',
-        wavelength: '650nm',
-        prediction: {
-          '색상(Color)': 7.2,
-          '향(Aroma)': 6.8,
-          '조직감(Texture)': 6.9,
-          '즙성(Juiciness)': 6.5,
-          '풍미(Flavor)': 7.1,
-          '전체 기호도': 7.0,
-        },
-        sensory: {
-          '색상(Color)': 7.0,
-          '향(Aroma)': 6.5,
-          '조직감(Texture)': 7.0,
-          '즙성(Juiciness)': 6.2,
-          '풍미(Flavor)': 6.8,
-          '전체 기호도': 6.9,
-        },
-      },
-      {
-        id: 'M002',
-        timestamp: '2025-08-07T10:15:00',
-        date: '2025-08-07',
-        spectrum: '...',
-        wavelength: '650nm',
-        // 예측 없음
-      },
-      {
-        id: 'M003',
-        timestamp: '2025-08-07T11:20:00',
-        date: '2025-08-07',
-        spectrum: '...',
-        wavelength: '660nm',
-        prediction: {
-          '색상(Color)': 8.1,
-          '향(Aroma)': 7.4,
-          '조직감(Texture)': 7.0,
-          '즙성(Juiciness)': 6.8,
-          '풍미(Flavor)': 7.5,
-          '전체 기호도': 7.6,
-        },
-        sensory: {
-          '색상(Color)': 8.0,
-          '향(Aroma)': 7.0,
-          '조직감(Texture)': 6.9,
-          '즙성(Juiciness)': 6.5,
-          '풍미(Flavor)': 7.2,
-          '전체 기호도': 7.4,
-        },
-      },
-    ];
+  // useEffect(() => {
+  //   const dummy = [
+  //     {
+  //       id: 'M001',
+  //       timestamp: '2025-08-07T10:15:00',
+  //       date: '2025-08-07',
+  //       spectrum: '...',
+  //       wavelength: '650nm',
+  //       prediction: {
+  //         '색상(Color)': 7.2,
+  //         '향(Aroma)': 6.8,
+  //         '조직감(Texture)': 6.9,
+  //         '즙성(Juiciness)': 6.5,
+  //         '풍미(Flavor)': 7.1,
+  //         '전체 기호도': 7.0,
+  //       },
+  //       sensory: {
+  //         '색상(Color)': 7.0,
+  //         '향(Aroma)': 6.5,
+  //         '조직감(Texture)': 7.0,
+  //         '즙성(Juiciness)': 6.2,
+  //         '풍미(Flavor)': 6.8,
+  //         '전체 기호도': 6.9,
+  //       },
+  //     },
+  //     {
+  //       id: 'M002',
+  //       timestamp: '2025-08-07T10:15:00',
+  //       date: '2025-08-07',
+  //       spectrum: '...',
+  //       wavelength: '650nm',
+  //       // 예측 없음
+  //     },
+  //     {
+  //       id: 'M003',
+  //       timestamp: '2025-08-07T11:20:00',
+  //       date: '2025-08-07',
+  //       spectrum: '...',
+  //       wavelength: '660nm',
+  //       prediction: {
+  //         '색상(Color)': 8.1,
+  //         '향(Aroma)': 7.4,
+  //         '조직감(Texture)': 7.0,
+  //         '즙성(Juiciness)': 6.8,
+  //         '풍미(Flavor)': 7.5,
+  //         '전체 기호도': 7.6,
+  //       },
+  //       sensory: {
+  //         '색상(Color)': 8.0,
+  //         '향(Aroma)': 7.0,
+  //         '조직감(Texture)': 6.9,
+  //         '즙성(Juiciness)': 6.5,
+  //         '풍미(Flavor)': 7.2,
+  //         '전체 기호도': 7.4,
+  //       },
+  //     },
+  //   ];
 
-    setData(dummy);
-  }, []);
+  //   setData(dummy);
+  // }, []);
 
 
 
@@ -187,10 +187,10 @@ const Predict = () => {
 
   // 선택된 데이터 predict하기
   const handlePredict = async () => {
-    if (selectedRows.length ===0) {
-      setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
-      return;
-    }
+    // if (selectedRows.length ===0) {
+    //   setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
+    //   return;
+    // }
     setLoading(true);
     try {
       const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
@@ -209,6 +209,9 @@ const Predict = () => {
     setFilterModalOpen(true);
   };
 
+  const initializeData = () => {
+    setData([]);
+  }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
     setFilters(appliedFilters);
@@ -235,6 +238,7 @@ const Predict = () => {
           </Button>
 
           <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
+          <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
         </Box>
 
         <PredictionTable
