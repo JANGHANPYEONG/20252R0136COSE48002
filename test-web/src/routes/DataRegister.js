@@ -230,10 +230,10 @@ const DataRegister = () => {
           // Excel 파일 처리
           const wb = XLSX.read(evt.target.result, { type: 'array' });
           const sheet = wb.Sheets[wb.SheetNames[0]];
-          rowsArray = XLSX.utils.sheet_to_json(sheet, {
-            header: 1,
-            defval: '',
-          });
+          rowsArray = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          
+          // 빈 행 제거
+          rowsArray = rowsArray.filter(row => row.some(cell => cell !== ''));
         }
         
         if (!rowsArray.length) {
@@ -256,36 +256,26 @@ const DataRegister = () => {
           .slice(1)
           .filter((r) => r.some((c) => c !== ''));
         
-        // 날짜 형식 변환 함수
-        const formatDateValue = (value, columnName) => {
-          if (!value) return value;
+        // Excel 날짜 시리얼 번호를 날짜로 변환하는 함수
+        const excelDateToJS = (serial) => {
+          // Excel 1900 시스템: 1900년 1월 1일 = 1
+          // 하지만 실제로는 1899년 12월 31일을 0으로 계산해야 정확함
+          const excelBaseDate = new Date(1900, 0, 1); // 1900년 1월 1일
+          const millisecondsPerDay = 24 * 60 * 60 * 1000;
           
-          // 날짜 관련 컬럼인지 확인
-          const isDateColumn = columnName && (
-            columnName.includes('일자') ||
-            columnName.includes('날짜') ||
-            columnName.includes('Date') ||
-            columnName.includes('date')
-          );
+          // Excel 시리얼 번호에서 1을 빼고 계산 (Excel이 1부터 시작하므로)
+          const resultDate = new Date(excelBaseDate.getTime() + (serial - 1) * millisecondsPerDay);
           
-          if (isDateColumn) {
-            // Excel 날짜 시리얼 번호인지 확인 (숫자이고 일정 범위 내)
-            const numValue = parseFloat(value);
-            if (!isNaN(numValue) && numValue > 40000 && numValue < 50000) {
-              // Excel 날짜 시리얼 번호를 날짜로 변환
-              const excelEpoch = new Date(1900, 0, 1);
-              const convertedDate = new Date(excelEpoch.getTime() + (numValue - 2) * 24 * 60 * 60 * 1000);
-              return convertedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-            }
-            
-            // 이미 날짜 형식인지 확인
-            const dateMatch = value.match(/(\d{4}-\d{2}-\d{2})/);
-            if (dateMatch) {
-              return dateMatch[1]; // 날짜 부분만 추출
-            }
-          }
-          
-          return value;
+          return resultDate;
+        };
+        
+        // 특정 날짜 컬럼인지 확인하는 함수
+        const isSpecificDateColumn = (columnName) => {
+          if (!columnName) return false;
+          const name = columnName.toString();
+          return name.includes('도축일자') || 
+                 name.includes('제조(가공)일자') || 
+                 name.includes('소비기한');
         };
         
         const mapped = dataRows.map((rowArr) => {
@@ -294,8 +284,25 @@ const DataRegister = () => {
           obj['매핑 상태'] = '매핑안됨';
           validIdx.forEach((i, idx) => {
             const columnName = filteredHeaders[idx];
-            const rawValue = rowArr[i];
-            obj[columnName] = formatDateValue(rawValue, columnName);
+            let cellValue = rowArr[i] || '';
+            
+            // 특정 날짜 컬럼이고 숫자(시리얼 번호)인 경우 날짜로 변환
+            if (isSpecificDateColumn(columnName)) {
+              // 문자열을 숫자로 변환 시도
+              const numValue = parseFloat(cellValue);
+              if (!isNaN(numValue) && numValue > 1 && numValue < 100000) {
+                try {
+                  const date = excelDateToJS(numValue);
+                  cellValue = date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+                  console.log(`날짜 변환: ${columnName} ${numValue} -> ${cellValue}`);
+                } catch (e) {
+                  console.error('날짜 변환 오류:', e);
+                  cellValue = cellValue.toString();
+                }
+              }
+            }
+            
+            obj[columnName] = cellValue;
           });
           return obj;
         });
