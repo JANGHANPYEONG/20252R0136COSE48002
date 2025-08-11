@@ -12,15 +12,11 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 from utils import *
 
-
-statistic_api = APIRouter(
-    # prefix="/meat/statistic", # URL prefix
-    # tags=["meat-statistic"] # API documentation tag
-)
+router = APIRouter()
 
 # 1. 신선육, 숙성육 비율(소, 돼지 전체)
 # 최종 엔드포인트: /meat/statistic/ratio/fresh-and-processed
-@statistic_api.get("/ratio/fresh-and-processed")
+@router.get("/ratio/fresh-and-processed")
 def getRatioFreshAndProcessed(
     request: Request,
 
@@ -51,7 +47,7 @@ def getRatioFreshAndProcessed(
         )
 
 # 2. 대분류 부위 별 개수(소, 돼지)
-@statistic_api.get("/counts/by-large-part")
+@router.get("/counts/by-large-part")
 def getCountsByLargePart(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -79,7 +75,7 @@ def getCountsByLargePart(
         )
     
 # 3. 농장 지역 별 개수(소, 돼지)
-@statistic_api.get("/counts/by-farm-location")
+@router.get("/counts/by-farm-location")
 def getCountsByFarmLocation(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -108,7 +104,7 @@ def getCountsByFarmLocation(
 
 # 4. 신선육 맛데이터 항목 별 평균, 최대, 최소
 # probexpt = Probe/Profiling Experiment (관능평가·맛 분석 실험 데이터)로 추정됨
-@statistic_api.get("/probexbt-stats/fresh")
+@router.get("/probexbt-stats/fresh")
 def getProbexptStatsOfFresh(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -140,7 +136,7 @@ def getProbexptStatsOfFresh(
         )
 
 # 5. 처리육 맛데이터 항목 별 평균, 최대, 최소
-@statistic_api.get("/probexbt-stats/processed")
+@router.get("/probexbt-stats/processed")
 def getProbexptStatsOfProcessed(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -172,7 +168,7 @@ def getProbexptStatsOfProcessed(
         )
 
 # 6. 신선역 관능검사 데이터 항목 별 평균, 최대, 최소
-@statistic_api.get("/sensory-stats/fresh")
+@router.get("/sensory-stats/fresh")
 def getSensoryStatsOfFresh(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -204,7 +200,7 @@ def getSensoryStatsOfFresh(
         )
     
 # 7. 가공육 관능검사 데이터 항목 별 평균, 최대, 최소
-@statistic_api.get("/sensory-stats/processed")
+@router.get("/sensory-stats/processed")
 def getSensoryStatsOfProcessed(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -236,7 +232,7 @@ def getSensoryStatsOfProcessed(
         )
 
 # 8. 가열된 신선육 관능 데이터 각 항목 별 평균, 최대, 최소
-@statistic_api.get("/sensory-stats/heated-fresh")
+@router.get("/sensory-stats/heated-fresh")
 def getSensoryStatsOfHeatedFresh(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -268,7 +264,7 @@ def getSensoryStatsOfHeatedFresh(
         )
 
 # # 9. 가열된 가공육 관능 데이터 각 항목 별 평균, 최대, 최소
-# @statistic_api.get("/sensory-stats/heated-processed")
+# @router.get("/sensory-stats/heated-processed")
 # def getSensoryStatsOfHeatedProcessed(
 #     request: Request,
 #     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -297,7 +293,7 @@ def getSensoryStatsOfHeatedFresh(
 #         )
 
 # # 10. 가열된 가공육 맛 데이터 각 항목 별 평균, 최대, 최소
-# @statistic_api.get("/probexbt-stats/heated-processed")
+# @router.get("/probexbt-stats/heated-processed")
 # def getProbexptStatsOfHeatedProcessed(
 #     request: Request,
 #     start: str = Query(None, description="[format] YYYY-MM-DD"),
@@ -324,7 +320,7 @@ def getSensoryStatsOfHeatedFresh(
 #         )
 
 # 11. 시계열 데이터 조회
-@statistic_api.get("/time")
+@router.get("/time")
 def getTimeSeriesData(
     request: Request,
     start: str = Query(None, description="[format] YYYY-MM-DD"),
