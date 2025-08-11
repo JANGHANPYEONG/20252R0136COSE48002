@@ -52,7 +52,7 @@ from fastapi import APIRouter, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 
 # 원본 비즈니스 로직 함수 모음
-from db.db_controller import (
+from app.db.db_controller import (
     create_raw_meat_deep_aging_info,
     create_specific_sensory_eval,
     create_specific_std_meat_data,
@@ -76,10 +76,10 @@ from db.db_controller import (
 )
 
 # 모델 (일부 엔드포인트에서 사용)
-from db.db_model import Meat, User  # 경로 유지. 이동했다면 수정 요망.
+from app.db.db_model import Meat, User  # 경로 유지. 이동했다면 수정 요망.
 
 # 유틸 (원본 코드 그대로 사용)
-from utils import (
+from app.utils.utils import (
     safe_int,
     safe_bool,
     safe_str,

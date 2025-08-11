@@ -44,3 +44,6 @@ HSI_band_selection/configs/image_pipeline_config.json
 
 # HSI 이미지 데이터 무시
 datasets_HSI/image/
+
+# Roadmap 무시시
+INTEGRATION_ROADMAP.md
