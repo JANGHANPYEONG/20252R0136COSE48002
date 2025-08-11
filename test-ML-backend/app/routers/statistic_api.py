@@ -1,4 +1,4 @@
-from .db.db_controller import (
+from app.db.db_controller import (
     get_num_of_processed_raw,
     get_num_of_primal_part,
     get_num_by_farmAddr,
