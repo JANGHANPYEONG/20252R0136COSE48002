@@ -190,12 +190,41 @@ const DataRegister = () => {
         let rowsArray = [];
         
         if (file.name.toLowerCase().endsWith('.csv')) {
-          // CSV 파일 처리
+          // CSV 파일 처리 - 개선된 파싱
           const csvText = evt.target.result;
           const lines = csvText.split('\n');
           rowsArray = lines.map(line => {
-            // CSV 파싱 (간단한 버전, 콤마로 구분)
-            return line.split(',').map(cell => cell.trim().replace(/"/g, ''));
+            // 개선된 CSV 파싱 - RFC 4180 호환
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              const nextChar = line[i + 1];
+              
+              if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                  // 연속된 따옴표는 이스케이프된 따옴표
+                  current += '"';
+                  i++; // 다음 문자 건너뛰기
+                } else {
+                  // 따옴표 상태 토글
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                // 따옴표 밖의 콤마는 구분자
+                result.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            
+            // 마지막 셀 추가
+            result.push(current.trim());
+            
+            return result;
           }).filter(row => row.some(cell => cell !== ''));
         } else {
           // Excel 파일 처리
@@ -226,12 +255,47 @@ const DataRegister = () => {
         const dataRows = rowsArray
           .slice(1)
           .filter((r) => r.some((c) => c !== ''));
+        
+        // 날짜 형식 변환 함수
+        const formatDateValue = (value, columnName) => {
+          if (!value) return value;
+          
+          // 날짜 관련 컬럼인지 확인
+          const isDateColumn = columnName && (
+            columnName.includes('일자') ||
+            columnName.includes('날짜') ||
+            columnName.includes('Date') ||
+            columnName.includes('date')
+          );
+          
+          if (isDateColumn) {
+            // Excel 날짜 시리얼 번호인지 확인 (숫자이고 일정 범위 내)
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue) && numValue > 40000 && numValue < 50000) {
+              // Excel 날짜 시리얼 번호를 날짜로 변환
+              const excelEpoch = new Date(1900, 0, 1);
+              const convertedDate = new Date(excelEpoch.getTime() + (numValue - 2) * 24 * 60 * 60 * 1000);
+              return convertedDate.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+            }
+            
+            // 이미 날짜 형식인지 확인
+            const dateMatch = value.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+              return dateMatch[1]; // 날짜 부분만 추출
+            }
+          }
+          
+          return value;
+        };
+        
         const mapped = dataRows.map((rowArr) => {
           const obj = {};
           // 상태 컬럼을 먼저 추가 (초기값: 매핑안됨)
           obj['매핑 상태'] = '매핑안됨';
           validIdx.forEach((i, idx) => {
-            obj[filteredHeaders[idx]] = rowArr[i];
+            const columnName = filteredHeaders[idx];
+            const rawValue = rowArr[i];
+            obj[columnName] = formatDateValue(rawValue, columnName);
           });
           return obj;
         });
@@ -250,7 +314,34 @@ const DataRegister = () => {
     };
     
     if (file.name.toLowerCase().endsWith('.csv')) {
-      reader.readAsText(file);
+      // CSV 파일의 경우 여러 인코딩 시도
+      const tryEncodings = async () => {
+        const encodings = ['UTF-8', 'EUC-KR', 'CP949'];
+        
+        for (const encoding of encodings) {
+          try {
+            const text = await new Promise((resolve, reject) => {
+              const testReader = new FileReader();
+              testReader.onload = (e) => resolve(e.target.result);
+              testReader.onerror = reject;
+              testReader.readAsText(file, encoding);
+            });
+            
+            // 한글이 깨지지 않는지 확인
+            if (!text.includes('�') && text.includes(',')) {
+              reader.onload({target: {result: text}});
+              return;
+            }
+          } catch (err) {
+            console.log(`${encoding} 인코딩 실패:`, err);
+          }
+        }
+        
+        // 모든 인코딩이 실패하면 기본 UTF-8로 읽기
+        reader.readAsText(file, 'UTF-8');
+      };
+      
+      tryEncodings();
     } else {
       reader.readAsArrayBuffer(file);
     }
@@ -298,43 +389,44 @@ const DataRegister = () => {
         const isImage = /\.(jpg|jpeg|png|gif|bmp)$/i.test(fileName);
         if (!isImage) continue;
         
-        // 파일 경로에서 ID 추출
+        // 파일 경로에서 ID와 샘플번호 추출
         const pathParts = fileName.split('/');
-        let id = null;
-        let imageNumber = null;
+        let historyId = null;
+        let sampleNumber = null;
+        let wavelength = null;
         
-        if (pathParts.length > 1) {
-          // 폴더 구조: ID/ID_P숫자.확장자 (예: O0260_R01_N112/O0260_R01_N112_P10.png)
-          id = pathParts[pathParts.length - 2]; // 폴더명이 ID
-          const imageFileName = pathParts[pathParts.length - 1];
-          
-          // ID_P숫자.확장자 패턴 매칭
-          const match = imageFileName.match(/^(.+)_P(\d+)\./);
-          if (match && match[1] === id) {
-            imageNumber = match[2]; // P 뒤의 숫자
-          }
-        } else {
-          // 직접 파일: ID_P숫자.확장자 패턴
-          const match = fileName.match(/^(.+)_P(\d+)\./);
-          if (match) {
-            id = match[1];
-            imageNumber = match[2];
-          }
+        // 파일명만 추출 (폴더 구조와 관계없이)
+        const imageFileName = pathParts[pathParts.length - 1];
+        
+        // 새로운 패턴: 이력번호_s숫자_파장nm.확장자 (예: 140184300252_s1_430nm.png)
+        const newPatternMatch = imageFileName.match(/^(\d+)_s(\d+)_(\d+nm)\./i);
+        if (newPatternMatch) {
+          historyId = newPatternMatch[1];     // 이력번호
+          sampleNumber = newPatternMatch[2];  // s 뒤의 숫자
+          wavelength = newPatternMatch[3];    // 파장 (430nm, 540nm 등)
         }
         
-        if (id && imageNumber) {
-          if (!imageMap[id]) {
-            imageMap[id] = {};
+        if (historyId && sampleNumber && wavelength) {
+          // 이력번호를 키로 사용
+          if (!imageMap[historyId]) {
+            imageMap[historyId] = {};
+          }
+          
+          // 샘플번호를 서브키로 사용
+          if (!imageMap[historyId][sampleNumber]) {
+            imageMap[historyId][sampleNumber] = {};
           }
           
           // 파일 데이터를 Blob URL로 변환
           const blob = await fileObj.async('blob');
           const objectUrl = URL.createObjectURL(blob);
           
-          imageMap[id][imageNumber] = {
-            fileName: fileName.split('/').pop(),
-            url: objectUrl, // 임시 URL 사용
-            number: imageNumber
+          // 파장별로 이미지 저장
+          imageMap[historyId][sampleNumber][wavelength] = {
+            fileName: imageFileName,
+            url: objectUrl,
+            wavelength: wavelength,
+            sampleNumber: sampleNumber
           };
         }
       }
@@ -355,22 +447,34 @@ const DataRegister = () => {
       return;
     }
     
-    // ID 컬럼 찾기
-    const idColumn = columns.find(col => 
-      col.toLowerCase().includes('id') || 
-      col.toLowerCase().includes('ID') ||
-      col === 'ID' ||
-      col === 'id'
+    // 이력번호 컬럼 찾기 (새로운 데이터셋에 맞게)
+    const historyIdColumn = columns.find(col => 
+      col.includes('이력번호') || 
+      col.includes('이력') ||
+      col.toLowerCase().includes('history') ||
+      col.toLowerCase().includes('id')
     );
     
-    if (!idColumn) {
-      alert('CSV 파일에서 ID 컬럼을 찾을 수 없습니다.');
+    // 샘플번호 컬럼 찾기
+    const sampleIdColumn = columns.find(col => 
+      col.includes('샘플번호') || 
+      col.includes('샘플') ||
+      col.toLowerCase().includes('sample')
+    );
+    
+    if (!historyIdColumn) {
+      alert('CSV 파일에서 이력번호 컬럼을 찾을 수 없습니다.');
       return;
     }
     
-    // 상태 컬럼과 이미지 관련 컬럼 추가 (이미지_URL 제외)
+    if (!sampleIdColumn) {
+      alert('CSV 파일에서 샘플번호 컬럼을 찾을 수 없습니다.');
+      return;
+    }
+    
+    // 상태 컬럼과 이미지 관련 컬럼 추가
     const statusColumn = '매핑 상태';
-    const imageColumns = ['이미지 파일명', '이미지 개수']; // 이미지_URL 제거
+    const imageColumns = ['이미지 파일명', '이미지 개수', '파장 정보'];
     
     // 기존 컬럼에서 매핑_상태가 이미 있는지 확인
     let newColumns = [...columns];
@@ -387,51 +491,71 @@ const DataRegister = () => {
       }
     });
     
-    // 기존 데이터 업데이트 및 새로운 데이터 추가
+    // 기존 데이터 업데이트
     const updatedData = [...data];
-    const existingIds = new Set(data.map(row => String(row[idColumn])));
+    const existingKeys = new Set(data.map(row => `${row[historyIdColumn]}_${row[sampleIdColumn]}`));
     
     // 기존 데이터 업데이트
     updatedData.forEach(row => {
-      const rowId = String(row[idColumn]);
-      if (imageMap[rowId]) {
-        const images = Object.values(imageMap[rowId]);
+      const historyId = String(row[historyIdColumn]);
+      const sampleId = String(row[sampleIdColumn]).replace(/^S/i, ''); // S1 -> 1, s2 -> 2
+      
+      if (imageMap[historyId] && imageMap[historyId][sampleId]) {
+        const sampleImages = imageMap[historyId][sampleId];
+        const wavelengths = Object.keys(sampleImages);
+        const fileNames = wavelengths.map(wl => sampleImages[wl].fileName);
+        
         row[statusColumn] = '매핑됨';
-        row['이미지 파일명'] = images.map(img => img.fileName).join(', ');
-        row['이미지 개수'] = images.length;
+        row['이미지 파일명'] = fileNames.join(', ');
+        row['이미지 개수'] = fileNames.length;
+        row['파장 정보'] = wavelengths.join(', ');
       } else {
         row[statusColumn] = '매핑안됨';
         row['이미지 파일명'] = '';
         row['이미지 개수'] = 0;
+        row['파장 정보'] = '';
       }
     });
     
-    // 새로운 ID 데이터 추가 (CSV에 없지만 이미지에는 있는 경우)
-    Object.keys(imageMap).forEach(imageId => {
-      if (!existingIds.has(imageId)) {
-        const images = Object.values(imageMap[imageId]);
-        const newRow = {};
-        
-        // 상태 컬럼 먼저 설정
-        newRow[statusColumn] = '매핑됨';
-        
-        // 기존 컬럼들을 빈 값으로 초기화
-        columns.forEach(col => {
-          newRow[col] = col === idColumn ? imageId : '';
-        });
-        
-        // 이미지 정보 추가 (URL 제외)
-        newRow['이미지 파일명'] = images.map(img => img.fileName).join(', ');
-        newRow['이미지 개수'] = images.length;
-        
-        updatedData.push(newRow);
-      }
+    // 새로운 데이터 추가 (CSV에 없지만 이미지에는 있는 경우)
+    Object.keys(imageMap).forEach(historyId => {
+      Object.keys(imageMap[historyId]).forEach(sampleId => {
+        const dataKey = `${historyId}_S${sampleId}`;
+        if (!existingKeys.has(dataKey)) {
+          const sampleImages = imageMap[historyId][sampleId];
+          const wavelengths = Object.keys(sampleImages);
+          const fileNames = wavelengths.map(wl => sampleImages[wl].fileName);
+          
+          const newRow = {};
+          
+          // 상태 컬럼 먼저 설정
+          newRow[statusColumn] = '매핑됨';
+          
+          // 기존 컬럼들을 빈 값으로 초기화
+          columns.forEach(col => {
+            if (col === historyIdColumn) {
+              newRow[col] = historyId;
+            } else if (col === sampleIdColumn) {
+              newRow[col] = `S${sampleId}`;
+            } else {
+              newRow[col] = '';
+            }
+          });
+          
+          // 이미지 정보 추가
+          newRow['이미지 파일명'] = fileNames.join(', ');
+          newRow['이미지 개수'] = fileNames.length;
+          newRow['파장 정보'] = wavelengths.join(', ');
+          
+          updatedData.push(newRow);
+        }
+      });
     });
     
     setColumns(newColumns);
     setData(updatedData);
     
-    console.log('이미지 매칭 완료:', Object.keys(imageMap).length, '개 ID의 이미지 처리됨');
+    console.log('이미지 매칭 완료:', Object.keys(imageMap).length, '개 이력번호의 이미지 처리됨');
   };
 
   return (
