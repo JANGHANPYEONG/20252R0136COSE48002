@@ -30,6 +30,11 @@ class VectorPredictor:
 
     def __init__(self, model_dir):
         
+        # config 먼저 열어 필요한 정보 확보
+        cfg_path = os.path.join(model_dir, "configs", "temp_config.json")
+        with open(cfg_path, 'r') as _f:
+            _cfg_tmp = json.load(_f)
+        
         self.model, self.config, self.column_config = self._build_artifacts(model_dir)
 
         self._setup_label_info()
@@ -41,10 +46,11 @@ class VectorPredictor:
 
     def _build_artifacts(self, model_dir):
         """
-        모델 디렉토리에서 아티팩트들을 로드합니다.
+        MLflow artifacts 디렉토리에서 아티팩트들을 로드합니다.
         
         Args:
-            model_dir: 모델 디렉토리 경로
+            model_dir: MLflow artifacts 디렉토리 경로 
+                      (/mnt/data/mlflow_artifacts/experiment_id/run_id/artifacts)
             
         Returns:
             tuple: (model, config, column_config)
@@ -52,42 +58,30 @@ class VectorPredictor:
         if not os.path.exists(model_dir):
             raise FileNotFoundError(f"Model directory not found: {model_dir}")
             
-        print(f"Loading artifacts from: {model_dir}")
+        print(f"Loading artifacts from MLflow directory: {model_dir}")
         
-        # 1. config.json 로드
-        config_path = os.path.join(model_dir, "config.json")
+        # 1. config 로드 (./configs/temp_config.json)
+        config_path = os.path.join(model_dir, "configs", "temp_config.json")
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"Config file not found: {config_path}")
             
         with open(config_path, 'r') as f:
             config = json.load(f)
+        print(f"Loaded config from: {config_path}")
+
+        # 2. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
+        column_config_path = config['data'].get('column_config',
+                                                "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json")
             
-        # 2. column_config.json 로드
-        column_config_path = config['data']['column_config']
-        if not os.path.isabs(column_config_path):
-            # model_dir 기준과 프로젝트 루트 모두 시도
-            possible_paths = [
-                os.path.join(model_dir, column_config_path),
-                os.path.join(os.path.dirname(model_dir), column_config_path)
-            ]
-            column_config_path = None
-            for path in possible_paths:
-                if os.path.exists(path):
-                    column_config_path = path
-                    break
-            if column_config_path is None:
-                raise FileNotFoundError(f"Column config file not found in any of: {possible_paths}")
         if not os.path.exists(column_config_path):
             raise FileNotFoundError(f"Column config file not found: {column_config_path}")
             
         with open(column_config_path, 'r') as f:
             column_config = json.load(f)
+        print(f"Loaded column_config from: {column_config_path}")
             
-        # 3. 모델 아키텍처 생성 및 state_dict 로드
-        print("Creating model architecture from config...")
-
-        # best_model.pkl 로드
-        model_path = os.path.join(model_dir, "best_model.pkl")
+        # 3. 모델 로드 (./models/best_model.pkl)
+        model_path = os.path.join(model_dir, "models", "best_model.pkl")
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found: {model_path}")
             
@@ -267,66 +261,32 @@ def main():
     temp_dir = None
     
     if args.run_id:
-        # MLflow run_id에서 아티팩트 다운로드 (대안 방식)
+        # MLflow run_id에서 아티팩트 직접 접근
         print(f"Loading artifacts from MLflow run: {args.run_id}")
-        try:
-            # MLflow 클라이언트를 사용한 안전한 다운로드
-            import mlflow.tracking
-            client = mlflow.tracking.MlflowClient()
+        
+        # /mnt/data/mlflow_artifacts에서 run_id 찾기
+        mlflow_artifacts_base = "/mnt/data/mlflow_artifacts"
+        model_dir = None
+        
+        if os.path.exists(mlflow_artifacts_base):
+            print(f"Searching for run_id in: {mlflow_artifacts_base}")
             
-            # 임시 디렉토리 생성
-            temp_dir = tempfile.mkdtemp()
-            print(f"Created temporary directory: {temp_dir}")
-            
-            # 필요한 파일들 개별 다운로드
-            required_files = ["config.json", "best_model.pkl"]  # Vector는 pkl 파일 사용
-            
-            for file_name in required_files:
-                try:
-                    local_path = client.download_artifacts(args.run_id, file_name, temp_dir)
-                    print(f"Downloaded {file_name}")
-                except Exception as e:
-                    print(f"Failed to download required file {file_name}: {e}")
-                    raise
-            
-            model_dir = temp_dir
-            print(f"Using artifacts from: {model_dir}")
-            
-        except Exception as e:
-            print(f"MLflow download failed: {e}")
-            # 대안: 직접 파일 시스템 접근 시도
-            try:
-                print("Attempting direct filesystem access...")
-                # MLflow tracking URI가 file:// 형태인 경우 직접 접근
-                import mlflow
-                tracking_uri = mlflow.get_tracking_uri()
-                print(f"MLflow tracking URI: {tracking_uri}")
-                
-                if tracking_uri.startswith('file://'):
-                    mlruns_path = tracking_uri[7:]  # file:// 제거
-                    run_path = None
-                    
-                    # mlruns 디렉토리에서 run_id 찾기
-                    for root, dirs, files in os.walk(mlruns_path):
-                        if args.run_id in dirs:
-                            run_path = os.path.join(root, args.run_id)
-                            break
-                    
-                    if run_path and os.path.exists(run_path):
+            # experiment_id 디렉토리들을 순회하면서 run_id 찾기
+            for experiment_dir in os.listdir(mlflow_artifacts_base):
+                experiment_path = os.path.join(mlflow_artifacts_base, experiment_dir)
+                if os.path.isdir(experiment_path):
+                    run_path = os.path.join(experiment_path, args.run_id)
+                    if os.path.exists(run_path):
                         artifacts_path = os.path.join(run_path, "artifacts")
                         if os.path.exists(artifacts_path):
-                            print(f"Found artifacts at: {artifacts_path}")
                             model_dir = artifacts_path
-                        else:
-                            raise FileNotFoundError(f"Artifacts directory not found: {artifacts_path}")
-                    else:
-                        raise FileNotFoundError(f"Run directory not found for run_id: {args.run_id}")
-                else:
-                    raise RuntimeError(f"Cannot access remote MLflow server: {tracking_uri}")
-                    
-            except Exception as e2:
-                print(f"Direct filesystem access also failed: {e2}")
-                raise RuntimeError(f"All artifact download methods failed. Run ID: {args.run_id}")
+                            print(f"Found artifacts at: {artifacts_path}")
+                            break
+            
+            if model_dir is None:
+                raise FileNotFoundError(f"Run ID {args.run_id} not found in {mlflow_artifacts_base}")
+        else:
+            raise FileNotFoundError(f"MLflow artifacts directory not found: {mlflow_artifacts_base}")
                 
         print(f"Final model directory: {model_dir}")
     
