@@ -10,6 +10,20 @@ import deploySpectralModel from '../API/train/deploySpectralModel';
 import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
 
+// mock Data 생성 hardcoded (나중에 delete)
+const USE_MOCK_TRAIN = true;
+const makeMockTrainResult = () => {
+  const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const minutes = Math.floor(10 + Math.random() * 30); // 10~40분
+  const auc = (0.78 + Math.random() * 0.1).toFixed(4); // 0.78~0.88
+  const r2 = (0.55 + Math.random() * 0.2).toFixed(2); // 0.55~0.75
+  const recall = (0.7 + Math.random() * 0.15).toFixed(2); // 0.70~0.85
+  const loss = (0.85 + Math.random() * 0.1).toFixed(4); // 0.85~0.95
+  return [dateStr, `${minutes}min`, auc, r2, recall, loss];
+};
+
 const navy = '#0F3659';
 
 const Learning = () => {
@@ -99,15 +113,30 @@ const Learning = () => {
     console.log('학습 시작');
 
     try {
-      const response = await trainSpectralModel(trainDataSet);
-      setResults(response);
-      console.log('학습 결과:', response);
+      // mock Data 생성
+      if (USE_MOCK_TRAIN) {
+        const mockRow = makeMockTrainResult();
 
-      setSnackbar({
-        open: true,
-        severity: 'success',
-        message: '모델 학습이 완료되었습니다.',
-      });
+        setResults(mockRow);
+
+        setSnackbar({
+          open: true,
+          severity: 'success',
+          message: '모델 학습이 완료되었습니다. (MOCK)',
+        });
+        console.log('학습 결과(MOCK):', mockRow);
+      } else {
+        // mock Data delete -> if else delete
+        const response = await trainSpectralModel(trainDataSet);
+        setResults(response);
+        console.log('학습 결과:', response);
+
+        setSnackbar({
+          open: true,
+          severity: 'success',
+          message: '모델 학습이 완료되었습니다.',
+        });
+      }
     } catch (error) {
       console.error('학습 실패:', error);
       setSnackbar({
@@ -154,7 +183,7 @@ const Learning = () => {
     'Loss',
   ];
 
-  const displayResults = [...history, ...results];
+  const displayResults = [...history, ...(results.length ? [results] : [])];
 
   return (
     // 불러오기 Snackbar 랜더링
@@ -253,7 +282,7 @@ const Learning = () => {
           </Box>
 
           {/* 모델 학습 결과 비교 */}
-          {isTraining ? (
+          {results ? (
             <DataList
               columns={getModelResults()}
               data={displayResults}
