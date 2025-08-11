@@ -11,3 +11,36 @@ export const apiIP = 'localhost:8080';
 
 // 기타 서버 (필요에 따라 추가)
 // export const apiIP = 'your-server-ip:port';
+
+// ==================== 스토리지 설정 ====================
+// 파일 업로드 방식 선택
+
+export const STORAGE_CONFIG = {
+  // 업로드 방식: 'server' | 's3-direct' | 's3-presigned'
+  uploadMethod: 'server',
+  
+  // 서버 업로드 방식 설정 (현재 사용 중)
+  server: {
+    endpoint: `/mnt/data`,
+    csvPath: 'label',
+    imagePath: 'image'
+  },
+  
+  // S3 직접 업로드 설정 (AWS SDK 사용)
+  s3Direct: {
+    bucketName: 'your-bucket-name',
+    region: 'ap-northeast-2',
+    accessKeyId: '', // 환경변수나 IAM Role 사용 권장
+    secretAccessKey: '', // 환경변수나 IAM Role 사용 권장
+    csvFolder: 'data/csv/',
+    imageFolder: 'data/images/'
+  },
+  
+  // S3 Presigned URL 방식 설정
+  s3Presigned: {
+    presignedUrlEndpoint: '/api/s3/presigned-url',
+    bucketName: 'your-bucket-name',
+    csvFolder: 'data/csv/',
+    imageFolder: 'data/images/'
+  }
+};

@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
-import uploadDataToServer from '../API/add/uploadDataToServer'; // 새로운 API import
+import uploadFiles from '../API/add/uploadToS3'; // 통합 업로드 API import
 
 const navy = '#0F3659';
 
@@ -124,8 +124,8 @@ const DataRegister = () => {
 
       setLoading(true);
       
-      // 4. 서버에 데이터 업로드
-      const result = await uploadDataToServer(data, columns, uploadedZipFile);
+      // 4. 설정에 따른 파일 업로드 (서버/S3 자동 선택)
+      const result = await uploadFiles(data, columns, uploadedZipFile);
       
       if (result.success) {
         alert('데이터 등록이 성공적으로 완료되었습니다!');
