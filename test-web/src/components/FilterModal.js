@@ -5,7 +5,6 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    TextField,
     Box,
     Typography,
     IconButton,
@@ -19,13 +18,17 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 
 const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
-    const [newFilterName, setNewFilterName] = useState('');
-    const [newFilterOptions, setNewFilterOptions] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+
+    // 필터 후보 목록 - 사용자가 선택할 수 있는 필터들
+    const filterCandidates = [
+        { name: '품종', options: ['소', '돼지', '닭'] },
+        { name: '지역', options: ['서울', '부산', '대구', '인천', '광주', '대전', '울산'] },
+    ];
 
     // 날짜 필터는 항상 존재
     const dateFilter = filters.find(f => f.name === '날짜') || {
@@ -35,19 +38,23 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
         value: { start: null, end: null }
     };
 
-    const handleAddFilter = () => {
-        if (newFilterName.trim() && newFilterOptions.trim()) {
-            const options = newFilterOptions.split(',').map(opt => opt.trim());
-            const newFilter = {
-                name: newFilterName.trim(),
-                type: 'select',
-                options: options,
-                value: ''
-            };
-
-            setFilters(prev => [...prev.filter(f => f.name !== newFilterName.trim()), newFilter]);
-            setNewFilterName('');
-            setNewFilterOptions('');
+    // 선택된 필터 후보를 실제 필터로 추가
+    const handleAddSelectedFilter = (filterName) => {
+        if (!filterName) return; // 빈 값 선택 시 무시
+        
+        const selectedCandidate = filterCandidates.find(f => f.name === filterName);
+        if (selectedCandidate) {
+            // 이미 존재하는 필터인지 확인
+            const existingFilter = filters.find(f => f.name === filterName);
+            if (!existingFilter) {
+                const newFilter = {
+                    name: selectedCandidate.name,
+                    type: 'select',
+                    options: selectedCandidate.options,
+                    value: ''
+                };
+                setFilters(prev => [...prev, newFilter]);
+            }
         }
     };
 
@@ -96,6 +103,14 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
         if (!date) return '';
         return date.format('YYYY-MM-DD');
     };
+
+    // 이미 추가된 필터들의 이름 목록
+    const addedFilterNames = filters.filter(f => f.name !== '날짜').map(f => f.name);
+    
+    // 아직 추가되지 않은 필터 후보들만 표시
+    const availableCandidates = filterCandidates.filter(candidate => 
+        !addedFilterNames.includes(candidate.name)
+    );
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -174,44 +189,32 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                         </Box>
                     ))}
 
-                    {/* 새 필터 추가 */}
-                    <Box mt={3} p={2} border={1} borderColor="grey.300" borderRadius={1}>
-                        <Typography variant="subtitle1" gutterBottom>
-                            새 필터 추가
-                        </Typography>
-                        <Grid container spacing={2} alignItems="flex-end">
-                            <Grid item xs={4}>
-                                <TextField
-                                    label="필터명"
-                                    value={newFilterName}
-                                    onChange={(e) => setNewFilterName(e.target.value)}
-                                    fullWidth
-                                    size="small"
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextField
-                                    label="옵션들 (쉼표로 구분)"
-                                    value={newFilterOptions}
-                                    onChange={(e) => setNewFilterOptions(e.target.value)}
-                                    fullWidth
-                                    size="small"
-                                    placeholder="예: 소, 돼지, 닭"
-                                />
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button
-                                    variant="contained"
-                                    onClick={handleAddFilter}
-                                    disabled={!newFilterName.trim() || !newFilterOptions.trim()}
-                                    startIcon={<AddIcon />}
-                                    fullWidth
+                    {/* 새 필터 추가 (드롭다운 방식) */}
+                    {availableCandidates.length > 0 && (
+                        <Box mt={3} p={2} border={1} borderColor="grey.300" borderRadius={1}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                필터 추가
+                            </Typography>
+                            <FormControl fullWidth>
+                                <InputLabel>필터 선택</InputLabel>
+                                <Select
+                                    value=""
+                                    onChange={(e) => handleAddSelectedFilter(e.target.value)}
+                                    label="필터 선택"
                                 >
-                                    추가
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                                    <MenuItem value="">필터를 선택하세요</MenuItem>
+                                    {availableCandidates.map((candidate) => (
+                                        <MenuItem key={candidate.name} value={candidate.name}>
+                                            {candidate.name} ({candidate.options.join(', ')})
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                                * 선택한 필터는 자동으로 추가됩니다
+                            </Typography>
+                        </Box>
+                    )}
 
                     {/* 현재 적용된 필터 표시 */}
                     {filters.some(f => f.value && (f.type === 'select' ? f.value !== '' : true)) && (
