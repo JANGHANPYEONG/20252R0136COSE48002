@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat
+from app.routers import train, predict, meat, user, statistic_api
 from app.core.config import settings
 
 app = FastAPI(
@@ -21,9 +21,11 @@ app.add_middleware(
 )
 
 # 라우터 등록
-app.include_router(train.router, prefix="/train", tags=["training"])
+app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
 app.include_router(predict.router, prefix="/predict", tags=["prediction"])
 app.include_router(meat.router, prefix="/meat", tags=["meat"])  # 육류 데이터 관리
+app.include_router(user.router, prefix="/user", tags=["user"])  # 사용자 관리
+app.include_router(statistic_api.router, prefix="/statistic", tags=["statistic"])  # 통계 데이터 관리   
 
 @app.get("/")
 async def root():
