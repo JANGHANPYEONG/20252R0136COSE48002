@@ -14,7 +14,7 @@ export const fetchFilteredData = async (filters, type) => {
         spectrum: '...',
         wavelength: '650nm',
         sensory: {
-          '색상(Color)': 7.0,
+          '색상': 7.0,
           '향(Aroma)': 6.5,
           '조직감(Texture)': 7.0,
           '즙성(Juiciness)': 6.2,

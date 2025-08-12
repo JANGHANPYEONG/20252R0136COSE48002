@@ -254,8 +254,8 @@ const Predict = () => {
         <Box sx={{ display: 'flex', gap: 2, marginTop: '20px', marginBottom: '20px' }}>
           <Button
             variant="contained"
-            onClick={handlePredict}
-            disabled={data.length === 0}
+            disabled={selectedRows.length === 0}
+            onClick={() => handlePredict()}
             sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
           >
             예측하기
@@ -276,7 +276,7 @@ const Predict = () => {
           onClose={() => setOpenPanel(false)}
           predictionData={detailData}
           labels={[
-            '색상(Color)',
+            '색상',
             '향(Aroma)',
             '조직감(Texture)',
             '즙성(Juiciness)',
@@ -302,7 +302,7 @@ const Predict = () => {
           filters={filters}
           setFilters={setFilters}
         />
-      </Box>
+      </Box>  
     </div>
   );
 };

@@ -219,7 +219,7 @@ const Learning = () => {
           <Button
             variant="contained"
             onClick={() => handleTrain(data)}
-            disabled={data.length === 0}
+            disabled={selectedRows.length === 0}
             sx={{ backgroundColor: '#28a745', '&:hover': { backgroundColor: '#218838' }, '&:disabled': { backgroundColor: '#6c757d' } }}
           >
             학습하기

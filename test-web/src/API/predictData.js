@@ -6,7 +6,7 @@ export const fetchPrediction = async (selectedRows) => {
   // dummy data
   const dummy = {
     M001: {
-      '색상(Color)': 7.2,
+      '색상': 7.2,
       '향(Aroma)': 6.8,
       '조직감(Texture)': 6.9,
       '즙성(Juiciness)': 6.5,
