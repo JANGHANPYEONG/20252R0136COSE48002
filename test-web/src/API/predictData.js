@@ -13,8 +13,16 @@ export const fetchPrediction = async (selectedRows) => {
       '풍미(Flavor)': 7.1,
       '전체 기호도': 7.0,
     },
+    M002: {
+      '색상': 7.8,
+      '향(Aroma)': 5.8,
+      '조직감(Texture)': 6.6,
+      '즙성(Juiciness)': 7.9,
+      '풍미(Flavor)': 9.3,
+      '전체 기호도': 8.2,
+    },
     M003: {
-      '색상(Color)': 8.1,
+      '색상': 8.1,
       '향(Aroma)': 7.4,
       '조직감(Texture)': 7.0,
       '즙성(Juiciness)': 6.8,
