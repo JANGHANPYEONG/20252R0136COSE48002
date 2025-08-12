@@ -2,6 +2,13 @@
 mlruns/
 mlartifacts/
 
+# Environment variables (실제 설정 파일들)
+.env
+.env.local
+.env.staging
+.env.production
+.env.*.local
+
 # Python cache
 __pycache__/
 *.pyc
