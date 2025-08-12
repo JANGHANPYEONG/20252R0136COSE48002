@@ -4,7 +4,6 @@ from app.routers import train, predict, meat, user, statistic_api
 from app.core.config import settings
 
 # 미들웨어 임포트
-from app.middleware.security import SecurityHeadersMiddleware, HostValidationMiddleware
 from app.middleware.logging import LoggingMiddleware, DetailedLoggingMiddleware
 from app.middleware.error_handler import GlobalExceptionMiddleware, ValidationErrorMiddleware
 from app.middleware.performance import PerformanceMonitoringMiddleware, ResourceLimitMiddleware
@@ -25,12 +24,7 @@ app.state.settings = settings
 app.add_middleware(GlobalExceptionMiddleware)
 app.add_middleware(ValidationErrorMiddleware)
 
-# 2. 보안 미들웨어
-if settings.ENABLE_SECURITY_HEADERS:
-    app.add_middleware(SecurityHeadersMiddleware)
-
-if settings.ALLOWED_HOSTS != ["*"]:
-    app.add_middleware(HostValidationMiddleware, allowed_hosts=settings.ALLOWED_HOSTS)
+# 보안 미들웨어 제거됨 (Swagger UI 호환성 문제로 인해)
 
 # 3. 로깅 미들웨어
 if settings.ENABLE_LOGGING:

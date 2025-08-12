@@ -26,13 +26,9 @@ class Settings(BaseSettings):
     ALLOW_CREDENTIALS: bool = True
     
     # 미들웨어 설정
-    ENABLE_SECURITY_HEADERS: bool = True
     ENABLE_LOGGING: bool = True
     ENABLE_PERFORMANCE_MONITORING: bool = True
     ENABLE_DETAILED_LOGGING: bool = False  # 개발환경에서만 사용
-    
-    # 보안 설정
-    ALLOWED_HOSTS: List[str] = ["*"]  # 프로덕션에서는 특정 도메인만 허용
     
     # 성능 제한 설정
     MAX_MEMORY_MB: int = 1000
