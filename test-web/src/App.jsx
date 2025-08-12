@@ -14,6 +14,8 @@ import DataPredict from './routes/DataPredict';
 import SpectroPattern from './routes/spectro_pattern';
 import Learning from './routes/Learning';
 import Predict from './routes/Predict';
+import LearningRGB from './routes/LearningRGB';
+import PredictRGB from './routes/PredictRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
 
@@ -90,9 +92,19 @@ function App() {
       component: <Learning />,
     },
     {
+      path: '/Learning/RGB',
+      title: 'LearningRGB | DeePlant',
+      component: <LearningRGB />,
+    },
+    {
       path: '/Predict',
       title: 'Predict | DeePlant',
       component: <Predict />,
+    },
+    {
+      path: '/Predict/RGB',
+      title: 'PredictRGB | DeePlant',
+      component: <PredictRGB />,
     },
     {
       path: '/Stats',

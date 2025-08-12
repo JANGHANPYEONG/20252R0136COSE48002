@@ -15,7 +15,7 @@ const DataPredict = () => {
   const endDate = new URLSearchParams(searchParams).get('end');
 
   //관리번호
-  const idParam = useParams();
+  const idParam = useParams();    
 
   return (
     <Box
