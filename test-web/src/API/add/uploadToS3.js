@@ -179,21 +179,21 @@ export const uploadToS3Presigned = async (data, columns, zipFile) => {
 /**
  * 설정에 따라 적절한 업로드 방식을 선택하는 통합 함수
  */
-export const uploadFiles = async (data, columns, zipFile) => {
+export const uploadFiles = async (data, columns, zipFile, dataFormat = 'HSI') => {
   const method = STORAGE_CONFIG.uploadMethod;
   
   switch (method) {
     case 's3-direct':
-      return await uploadToS3Direct(data, columns, zipFile);
+      return await uploadToS3Direct(data, columns, zipFile, dataFormat);
     
     case 's3-presigned':
-      return await uploadToS3Presigned(data, columns, zipFile);
+      return await uploadToS3Presigned(data, columns, zipFile, dataFormat);
     
     case 'server':
     default:
       // 기존 서버 업로드 방식 사용
       const { uploadDataToServer } = await import('./uploadDataToServer');
-      return await uploadDataToServer(data, columns, zipFile);
+      return await uploadDataToServer(data, columns, zipFile, dataFormat);
   }
 };
 
