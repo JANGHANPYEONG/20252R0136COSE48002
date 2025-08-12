@@ -10,7 +10,7 @@ Vector ML 모델 학습 파이프라인
 """
 
 from utils.trainer_vector import SearchHyperparameter
-from utils.model_loader_vector import load_model, validate_model_config, get_model_info
+from utils.model_loader import load_vector_model as load_model, validate_vector_model_config as validate_model_config, get_vector_model_info as get_model_info
 from utils.logger import create_logger, log_training_ml_summary
 from utils.dataset_vector import load_vector_data, get_label_info
 from sklearn.model_selection import train_test_split

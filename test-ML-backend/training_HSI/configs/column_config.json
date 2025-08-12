@@ -3,7 +3,9 @@
     "id_column_index": 0,
     "label_start_index": 1,
     "vector_start_index": 14,
-    "image_path_start_index": 19
+    "image_path_start_index": 19,
+    "rgb_image_path_start_index": 20,
+    "rgb_mask_path_index": 21
   },
   "label_columns": [
     "disease_1",
@@ -39,5 +41,11 @@
     "regression": []
   },
   "wavelengths": [10, 60, 70, 100, 110],
-  "image_size": [256, 256]
+  "image_size": [256, 256],
+  "rgb_image_size": [224, 224],
+  "base_dirs": {
+    "rgb_image_dir": "data/rgb/images",
+    "rgb_mask_dir": "data/rgb/masks"
+  },
+  "mask_template": "{stem}_mask.png"
 }

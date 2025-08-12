@@ -11,7 +11,6 @@ from torchmetrics.classification import MultilabelF1Score, MultilabelPrecision, 
 from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError, R2Score
 import tempfile
 import os
-import torch
 
 
 class MultiTaskLossWrapper(nn.Module):
@@ -67,7 +66,11 @@ class MultiTaskLossWrapper(nn.Module):
             return torch.exp(-self.log_vars)
         elif self.loss_fn == 'equal':
             # log_vars가 없으므로 device를 안전하게 추출
-            device = next(self.parameters()).device
+            try:
+                device = next(self.parameters()).device
+            except StopIteration:
+                # 파라미터가 없는 경우 기본 디바이스 사용
+                device = torch.device('cpu')
             return torch.ones(self.task_num, device=device) / self.task_num
         elif self.loss_fn == 'dynamic':
             return torch.softmax(self.log_vars, dim=0)
@@ -90,14 +93,12 @@ class HSITrainer:
         self.pos_weight_info = pos_weight_info
         
         # AMP 및 Gradient Clipping 설정
-        self.use_amp = config.get('train', {}).get('use_amp', False)
+        self.use_amp = config.get('train', {}).get('use_amp', True)
         self.grad_clip_norm = config.get('train', {}).get('grad_clip_norm', None)
-        
-        if self.use_amp and torch.cuda.is_available():
-            self.scaler = torch.cuda.amp.GradScaler()
-            print("AMP (Automatic Mixed Precision) enabled")
-        else:
-            self.scaler = None
+        # GPU-only 전제: AMP 설정 간소화
+        self.scaler = torch.cuda.amp.GradScaler() if self.use_amp else None
+        if self.use_amp:
+            print("AMP (Automatic Mixed Precision) enabled on CUDA")
         
         # 라벨 정보 설정
         self._setup_label_info()
@@ -227,16 +228,17 @@ class HSITrainer:
         # 분류 메트릭 업데이트
         if self.cls_indices:
             cls_outputs = outputs[:, self.cls_indices]
-            cls_targets = targets[:, self.cls_indices].long()
+            cls_targets_f = targets[:, self.cls_indices]          # for loss (float)
+            cls_targets_i = (cls_targets_f > 0.5).long()          # for metrics
             
             probs = torch.sigmoid(cls_outputs)
             predictions = (probs > 0.5).float()
             
             # Multilabel 메트릭은 전체 배치에 대해 한 번에 업데이트
-            self.metrics['cls_f1'].update(predictions, cls_targets)
-            self.metrics['cls_precision'].update(predictions, cls_targets)
-            self.metrics['cls_recall'].update(predictions, cls_targets)
-            self.metrics['cls_auc'].update(probs, cls_targets)
+            self.metrics['cls_f1'].update(predictions, cls_targets_i)
+            self.metrics['cls_precision'].update(predictions, cls_targets_i)
+            self.metrics['cls_recall'].update(predictions, cls_targets_i)
+            self.metrics['cls_auc'].update(probs, cls_targets_i)
         
         # 회귀 메트릭 업데이트
         if self.reg_indices:
@@ -307,7 +309,7 @@ class HSITrainer:
         # 분류 손실 계산
         if self.cls_indices and 'classification' in self.criterions:
             cls_outputs = outputs[:, self.cls_indices]
-            cls_targets = targets[:, self.cls_indices]
+            cls_targets = targets[:, self.cls_indices]  # float 타깃 그대로 사용
             cls_loss = self.criterions['classification'](cls_outputs, cls_targets)
             losses.append(cls_loss)
             loss_components['classification_loss'] = cls_loss.item()
@@ -355,8 +357,8 @@ class HSITrainer:
             if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                 continue
             images, targets, _ = batch
-            images = images.to(self.device)
-            targets = targets.to(self.device)
+            images = images.to(self.device, non_blocking=True)
+            targets = targets.to(self.device, non_blocking=True)
             
             self.optimizer.zero_grad()
             
@@ -421,8 +423,8 @@ class HSITrainer:
                 if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                     continue
                 images, targets, _ = batch
-                images = images.to(self.device)
-                targets = targets.to(self.device)
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
                 
                 # AMP 적용 (검증 시에도 일관성 유지)
                 if self.use_amp:
@@ -517,7 +519,13 @@ class HSITrainer:
                     **{f'train_{k}': v for k, v in train_epoch_metrics.items()},
                     **{f'val_{k}': v for k, v in val_epoch_metrics.items()}
                 }
-                logger.log_metrics(epoch_metrics, step=epoch)
+                # NaN 가드 (torchmetrics가 데이터 부족 시 NaN이 나올 수 있음)
+                import math
+                safe_epoch_metrics = {
+                    k: (0.0 if (isinstance(v, float) and (math.isnan(v) or math.isinf(v))) else v)
+                    for k, v in epoch_metrics.items()
+                }
+                logger.log_metrics(safe_epoch_metrics, step=epoch)
             
             # 체크포인트 저장 조건 확인
             should_checkpoint = val_loss < self.best_val_loss
@@ -543,6 +551,13 @@ class HSITrainer:
             if self.patience_counter >= self.early_stopping_patience:
                 print(f"Early stopping triggered after {epoch+1} epochs")
                 break
+            
+            # 주기 스냅샷(선택)
+            if self.save_interval and ((epoch + 1) % self.save_interval == 0) and logger is not None:
+                with tempfile.TemporaryDirectory() as d:
+                    snap_path = os.path.join(d, f"epoch_{epoch+1}.pt")
+                    torch.save(self.model.state_dict(), snap_path)
+                    logger.log_artifact(snap_path, "models_snapshots")
         
         training_time = time.time() - start_time
         
