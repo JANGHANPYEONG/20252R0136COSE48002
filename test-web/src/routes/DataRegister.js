@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Button, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Switch, FormControlLabel, Typography, Paper } from '@mui/material';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import style from './style/dashboardstyle';
@@ -16,6 +16,7 @@ const DataRegister = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(''); // 성공 메시지 상태
   const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 또는 폴더 상태 추가
+  const [dataFormat, setDataFormat] = useState('HSI'); // 데이터 형식 상태 (기본값: HSI)
 
   const fileInputRef = useRef(null);
 
@@ -121,8 +122,8 @@ const DataRegister = () => {
 
       setLoading(true);
       
-      // 4. 설정에 따른 파일 업로드 (서버/S3 자동 선택)
-      const result = await uploadFiles(data, columns, uploadedZipFile);
+      // 4. 설정에 따른 파일 업로드 (서버/S3 자동 선택) + 데이터 형식 포함
+      const result = await uploadFiles(data, columns, uploadedZipFile, dataFormat);
       
       if (result.success) {
         // 성공 시 상세 정보와 함께 알림
@@ -774,12 +775,100 @@ const DataRegister = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           minWidth: '634px',
+          marginBottom: '24px', // 제목 아래 여백 추가
         }}
       >
         <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>
           데이터 등록
         </span>
       </Box>
+
+      {/* 데이터 형식 선택 스위치 */}
+      <Paper 
+        elevation={1}
+        sx={{
+          p: 2,
+          mb: 3, // 아래 여백도 조금 늘림
+          backgroundColor: '#f8f9fa',
+          border: `1px solid ${dataFormat === 'HSI' ? '#4caf50' : '#ff9800'}`,
+          borderRadius: 2,
+          minWidth: '634px'
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 1, color: navy, fontWeight: '500' }}>
+          데이터 형식 선택
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: dataFormat === 'RGB' ? navy : '#666',
+              fontWeight: dataFormat === 'RGB' ? '600' : '400'
+            }}
+          >
+            RGB
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={dataFormat === 'HSI'}
+                onChange={(e) => setDataFormat(e.target.checked ? 'HSI' : 'RGB')}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#4caf50',
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    backgroundColor: '#4caf50',
+                  },
+                  '& .MuiSwitch-switchBase': {
+                    color: '#ff9800',
+                  },
+                  '& .MuiSwitch-track': {
+                    backgroundColor: '#ff9800',
+                  },
+                }}
+              />
+            }
+            label=""
+            sx={{ m: 0 }}
+          />
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: dataFormat === 'HSI' ? navy : '#666',
+              fontWeight: dataFormat === 'HSI' ? '600' : '400'
+            }}
+          >
+            HSI
+          </Typography>
+          <Box
+            sx={{
+              ml: 2,
+              px: 2,
+              py: 0.5,
+              backgroundColor: dataFormat === 'HSI' ? '#e8f5e8' : '#fff3e0',
+              border: `1px solid ${dataFormat === 'HSI' ? '#4caf50' : '#ff9800'}`,
+              borderRadius: 1,
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: dataFormat === 'HSI' ? '#2e7d32' : '#f57c00',
+                fontWeight: '600'
+              }}
+            >
+              현재: {dataFormat}
+            </Typography>
+          </Box>
+        </Box>
+        <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
+          {dataFormat === 'HSI' 
+            ? 'Hyperspectral Image - 다중 스펙트럼 데이터' 
+            : 'RGB - 컬러 이미지 데이터'
+          }
+        </Typography>
+      </Paper>
 
       {/* 숨겨진 입력들 */}
       <input

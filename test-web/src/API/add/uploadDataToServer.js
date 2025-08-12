@@ -6,9 +6,10 @@ import { apiIP, STORAGE_CONFIG } from '../../config';
  * @param {Array} data - 테이블 데이터 배열
  * @param {Array} columns - 컬럼 이름 배열  
  * @param {File} zipFile - ZIP 이미지 파일
+ * @param {string} dataFormat - 데이터 형식 ('HSI' 또는 'RGB')
  * @returns {Promise} - 업로드 결과
  */
-export const uploadDataToServer = async (data, columns, zipFile) => {
+export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'HSI') => {
   try {
     // 1. 데이터 유효성 검사
     if (!data || data.length === 0) {
@@ -66,6 +67,9 @@ export const uploadDataToServer = async (data, columns, zipFile) => {
     formData.append('basePath', serverConfig.basePath);
     formData.append('csvPath', serverConfig.csvPath);
     formData.append('imagePath', serverConfig.imagePath);
+    
+    // 데이터 형식 정보 추가
+    formData.append('dataFormat', dataFormat);
 
     console.log('업로드 시작:', {
       serverIP: apiIP,
@@ -75,6 +79,7 @@ export const uploadDataToServer = async (data, columns, zipFile) => {
       zipFile: zipFile.name,
       managementNumber: managementNumber,
       dataCount: data.length,
+      dataFormat: dataFormat,
       excludedColumns: ['매핑 상태']
     });
 
