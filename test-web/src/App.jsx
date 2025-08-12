@@ -18,7 +18,8 @@ import LearningRGB from './routes/LearningRGB';
 import PredictRGB from './routes/PredictRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
-
+import NewDashboard from './routes/NewDashboard';
+import MeatDetailPage from './routes/MeatDetailPage'; // 목업 페이지 임포트
 import { UserProvider } from './Utils/UserContext';
 
 import Box from '@mui/material/Box';
@@ -126,6 +127,16 @@ function App() {
       title: 'UserManage | Deeplant',
       component: <UserManagement />,
     },
+    {
+      path: '/NewDashboard',
+      title: 'NewDashboard | Deeplant',
+      component: <NewDashboard />,
+    },
+    {
+      path: '/meat/:id',
+      title: 'Meat Detail | Deeplant',
+      component: <MeatDetailPage />,
+    }, // 목업 페이지 라우팅
   ];
 
   return (
