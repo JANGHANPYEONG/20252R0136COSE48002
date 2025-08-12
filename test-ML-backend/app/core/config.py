@@ -1,8 +1,10 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 import os
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
+
     # 기본 설정
     PROJECT_NAME: str = "ML Server"
     PROJECT_DESCRIPTION: str = "MLops Server"
@@ -59,16 +61,14 @@ class Settings(BaseSettings):
     MLFLOW_TRACKING_URI: str = "http://localhost:5000"
     
     # 데이터베이스 설정
-    DB_URI: str = "postgresql://username:password@localhost:5432/database_name"
+    DB_URI: str
     
     # AWS S3 설정
-    S3_BUCKET_NAME: str = "your-s3-bucket-name"
-    S3_REGION_NAME: str = "ap-northeast-2"
-    AWS_ACCESS_KEY_ID: str = "your-aws-access-key"
-    AWS_SECRET_ACCESS_KEY: str = "your-aws-secret-key"
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    S3_BUCKET_NAME: str
+    S3_REGION_NAME: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    FIREBASE_BUCKET_ADDRESS: str
+    API_URL: str
 
-settings = Settings() 
+settings = Settings()
