@@ -5,9 +5,12 @@ import zipfile, tempfile, os, io, shutil, re
 from datetime import datetime, timedelta
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
+import uuid
 
-# from app.db import get_db_sync
-# from app.models import Sample
+from app.db.database import get_db
+from app.db.db_model import Meat, CategoryInfo, SpeciesInfo
+from app.db.db_controller import find_id
+from app.utils import logger, safe_str, safe_int, convert_to_datetime, DEFAULT_USER_ID
 
 router = APIRouter(prefix="/data", tags=["Data"])
 
@@ -35,11 +38,14 @@ def _iter_zip_files(zdir: str) -> List[str]:
 # 데이터 업로드
 # input: xlsx(csv 파일),zip파일 (이미지 파일), output: 성공 메시지
 # csv 파일 내부의 컬럼 이름과 이미지 파일 이름이 매칭되어야 함
+
+# [수정 필요 사항] rgb 정수 0, hsi 정수 1
 @router.post("/upload")
 async def upload_data(
     csv_file: UploadFile = File(..., description="CSV/XLSX (serial_no 필수)"),
     images_zip: UploadFile = File(..., description="이미지 ZIP (컬럼명과 파일명 매칭)"),
-    entity_column: str = Form(..., description="엔티티 컬럼명")
+    entity_column: str = Form(..., description="엔티티 컬럼명"),
+    db: Session = Depends(get_db)
 ):
     # 1) CSV 읽기
     try:
@@ -155,18 +161,85 @@ async def upload_data(
                     }
                 }
 
-            # 전부 깔끔히 매핑된 경우
-            return {
-                "message": "성공: 모든 ZIP 이미지가 CSV 개체와 정상 매핑되었습니다.",
-                "summary": {
-                    "csv_entities_count": len(entity_set),
-                    "mapped_entities_count": len(entity_set),
-                    "total_mapped_files": sum(len(v) for v in mapping.values())
-                },
-                "mapping_preview": {
-                    e: mapping[e][:5] for e in list(mapping.keys())[:10]
+            # 전부 깔끔히 매핑된 경우 - DB에 데이터 저장
+            try:
+                saved_records = []
+                for _, row in df.iterrows():
+                    # 필수 컬럼 확인
+                    entity_value = safe_str(row.get(entity_col))
+                    if not entity_value or entity_value not in entity_set:
+                        continue
+                    
+                    # 새로운 Meat 레코드 생성
+                    meat_id = str(uuid.uuid4())
+                    
+                    # CSV에서 필요한 필드 추출 (컬럼이 있는 경우에만)
+                    trace_num = safe_str(row.get('traceNum', row.get('trace_num', meat_id)))
+                    farm_addr = safe_str(row.get('farmAddr', row.get('farm_addr')))
+                    farmer_name = safe_str(row.get('farmerName', row.get('farmer_name')))
+                    butchery_ymd = convert_to_datetime(safe_str(row.get('butcheryYmd', row.get('butchery_ymd'))), 2) if row.get('butcheryYmd') or row.get('butchery_ymd') else datetime.now()
+                    birth_ymd = convert_to_datetime(safe_str(row.get('birthYmd', row.get('birth_ymd'))), 2) if row.get('birthYmd') or row.get('birth_ymd') else None
+                    sex_type = safe_int(row.get('sexType', row.get('sex_type', 0)))  # 기본값: 0(수)
+                    grade_num = safe_int(row.get('gradeNum', row.get('grade_num', 0)))  # 기본값: 0(1++)
+                    
+                    # 카테고리 ID 계산 (기본값 설정)
+                    species_value = safe_str(row.get('species', '소'))  # 기본값: 소
+                    primal_value = safe_str(row.get('primal', row.get('part', '등심')))  # 기본값: 등심
+                    secondary_value = safe_str(row.get('secondary', row.get('subpart', '윗등심')))  # 기본값: 윗등심
+                    
+                    try:
+                        category_id = find_id(species_value, primal_value, secondary_value, db)
+                    except Exception:
+                        # 카테고리를 찾을 수 없는 경우 기본값 사용 (소-등심-윗등심)
+                        category_id = find_id('소', '등심', '윗등심', db)
+                    
+                    # Meat 객체 생성
+                    new_meat = Meat(
+                        id=meat_id,
+                        userId=DEFAULT_USER_ID,
+                        sexType=sex_type,
+                        categoryId=category_id,
+                        gradeNum=grade_num,
+                        statusType=0,  # 기본값: 대기중
+                        createdAt=datetime.now(),
+                        traceNum=trace_num,
+                        farmAddr=farm_addr,
+                        farmerName=farmer_name,
+                        butcheryYmd=butchery_ymd,
+                        birthYmd=birth_ymd,
+                        imagePath=None  # 이미지는 별도 처리
+                    )
+                    
+                    db.add(new_meat)
+                    saved_records.append({
+                        "meat_id": meat_id,
+                        "entity": entity_value,
+                        "trace_num": trace_num,
+                        "category_id": category_id
+                    })
+                
+                # 변경사항 커밋
+                db.commit()
+                logger.info(f"Successfully saved {len(saved_records)} meat records to database")
+                
+                return {
+                    "message": "성공: 모든 ZIP 이미지가 CSV 개체와 정상 매핑되고 DB에 저장되었습니다.",
+                    "summary": {
+                        "csv_entities_count": len(entity_set),
+                        "mapped_entities_count": len(entity_set),
+                        "total_mapped_files": sum(len(v) for v in mapping.values()),
+                        "saved_db_records": len(saved_records)
+                    },
+                    "saved_records": saved_records[:10],  # 처음 10개만 미리보기
+                    "mapping_preview": {
+                        e: mapping[e][:5] for e in list(mapping.keys())[:10]
+                    }
                 }
-            }
+                
+            except Exception as db_error:
+                db.rollback()
+                logger.error(f"Database save error: {db_error}")
+                raise HTTPException(status_code=500, detail=f"DB 저장 실패: {str(db_error)}")
 
     except zipfile.BadZipFile:
         raise HTTPException(status_code=400, detail="ZIP 파일이 손상되었거나 올바르지 않습니다.")
@@ -186,66 +259,49 @@ def list_data(
     location: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    # db: Session = Depends(get_db_sync),  # DB 연결 주석 처리
+    db: Session = Depends(get_db)
 ):
     try:
-        # 임시 샘플 데이터 반환 (실제 DB 연결 시 활성화)
-        sample_data = {
-            "total": 100,
-            "items": [
-                {
-                    "serial_no": "S001",
-                    "part": part or "등심",
-                    "region": location or "서울",
-                    "registered_at": "2025-08-12T10:00:00",
-                },
-                {
-                    "serial_no": "S002", 
-                    "part": "안심",
-                    "region": "부산",
-                    "registered_at": "2025-08-11T15:30:00",
-                }
-            ]
-        }
-        return sample_data
+        # DB에서 데이터 조회
+        query = db.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
         
-        # 실제 DB 연결 코드 (주석 처리)
-        """
-        conds = []
+        # 필터링 조건 적용
         if part:
-            conds.append(Sample.part == part)
+            query = query.filter(CategoryInfo.primalValue == part)
         if location:
-            conds.append(Sample.region == location)
+            query = query.filter(Meat.farmAddr.contains(location))
         if date:
             d0 = _parse_date_yyyy_mm_dd(date)
             d1 = d0 + timedelta(days=1)
-            conds.append(and_(Sample.registered_at >= d0, Sample.registered_at < d1))
-
-        where_clause = and_(*conds) if conds else True
-
-        total = db.execute(select(func.count()).select_from(Sample).where(where_clause)).scalar_one()
-
-        rows = db.execute(
-            select(Sample.serial_no, Sample.part, Sample.region, Sample.registered_at)
-            .where(where_clause)
-            .order_by(Sample.registered_at.desc())
-            .limit(limit)
-            .offset(offset)
-        ).all()
-
-        items = [
-            {
-                "serial_no": r[0],
-                "part": r[1],
-                "region": r[2],
-                "registered_at": r[3].isoformat() if r[3] else None,
-            }
-            for r in rows
-        ]
+            query = query.filter(and_(Meat.createdAt >= d0, Meat.createdAt < d1))
+        
+        # 전체 개수 조회
+        total = query.count()
+        
+        # 페이징 적용하여 데이터 조회
+        results = query.order_by(Meat.createdAt.desc()).offset(offset).limit(limit).all()
+        
+        # 결과 포맷팅
+        items = []
+        for meat in results:
+            category = db.query(CategoryInfo).filter(CategoryInfo.id == meat.categoryId).first()
+            items.append({
+                "meat_id": meat.id,
+                "trace_num": meat.traceNum,
+                "part": category.primalValue if category else "N/A",
+                "subpart": category.secondaryValue if category else "N/A",
+                "farm_addr": meat.farmAddr,
+                "farmer_name": meat.farmerName,
+                "butchery_date": meat.butcheryYmd.isoformat() if meat.butcheryYmd else None,
+                "created_at": meat.createdAt.isoformat() if meat.createdAt else None,
+                "status": meat.statusType,
+                "image_path": meat.imagePath
+            })
+        
         return {"total": total, "items": items}
-        """
 
     except ValueError:
         raise HTTPException(status_code=400, detail="date는 YYYY-MM-DD 형식이어야 합니다.")
     except Exception as e:
+        logger.error(f"Data list error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
