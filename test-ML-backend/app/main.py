@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import train, predict, meat, user, statistic_api
 from app.core.config import settings
 
+# 미들웨어 임포트
+from app.middleware.security import SecurityHeadersMiddleware, HostValidationMiddleware
+from app.middleware.logging import LoggingMiddleware, DetailedLoggingMiddleware
+from app.middleware.error_handler import GlobalExceptionMiddleware, ValidationErrorMiddleware
+from app.middleware.performance import PerformanceMonitoringMiddleware, ResourceLimitMiddleware
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -11,13 +17,44 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS 설정
+# 설정을 app.state에 저장 (미들웨어에서 접근 가능)
+app.state.settings = settings
+
+# 미들웨어 등록 (순서 중요: 역순으로 실행됨)
+# 1. 전역 예외 처리 (가장 바깥쪽)
+app.add_middleware(GlobalExceptionMiddleware)
+app.add_middleware(ValidationErrorMiddleware)
+
+# 2. 보안 미들웨어
+if settings.ENABLE_SECURITY_HEADERS:
+    app.add_middleware(SecurityHeadersMiddleware)
+
+if settings.ALLOWED_HOSTS != ["*"]:
+    app.add_middleware(HostValidationMiddleware, allowed_hosts=settings.ALLOWED_HOSTS)
+
+# 3. 로깅 미들웨어
+if settings.ENABLE_LOGGING:
+    app.add_middleware(LoggingMiddleware)
+
+if settings.ENABLE_DETAILED_LOGGING and settings.ENVIRONMENT == "development":
+    app.add_middleware(DetailedLoggingMiddleware, enable_body_logging=True)
+
+# 4. 성능 모니터링
+if settings.ENABLE_PERFORMANCE_MONITORING:
+    app.add_middleware(PerformanceMonitoringMiddleware)
+    app.add_middleware(
+        ResourceLimitMiddleware,
+        max_memory_mb=settings.MAX_MEMORY_MB,
+        max_requests_per_minute=settings.MAX_REQUESTS_PER_MINUTE
+    )
+
+# 5. CORS 설정 (가장 안쪽)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=settings.ALLOW_CREDENTIALS,
+    allow_methods=settings.ALLOWED_METHODS,
+    allow_headers=settings.ALLOWED_HEADERS,
 )
 
 # 라우터 등록
@@ -33,4 +70,30 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "ml-training-api"} 
+    return {"status": "healthy", "service": "ml-training-api"}
+
+@app.get("/config/cors")
+async def get_cors_config():
+    """개발 환경에서 CORS 설정 확인용 (프로덕션에서는 제거 권장)"""
+    if settings.DEBUG:
+        return {
+            "environment": settings.ENVIRONMENT,
+            "allowed_origins": settings.ALLOWED_ORIGINS,
+            "allowed_methods": settings.ALLOWED_METHODS,
+            "allow_credentials": settings.ALLOW_CREDENTIALS,
+        }
+    return {"message": "Config endpoint disabled in production"}
+
+@app.get("/stats/performance")
+async def get_performance_stats():
+    """성능 통계 확인 (개발/스테이징 환경에서만)"""
+    if settings.ENVIRONMENT == "production":
+        return {"message": "Performance stats disabled in production"}
+    
+    # 성능 미들웨어에서 통계 가져오기
+    for middleware in app.user_middleware:
+        if hasattr(middleware, 'cls') and middleware.cls.__name__ == 'PerformanceMonitoringMiddleware':
+            if hasattr(middleware, 'kwargs') and 'instance' in middleware.kwargs:
+                return middleware.kwargs['instance'].get_stats()
+    
+    return {"message": "Performance monitoring not enabled"} 
