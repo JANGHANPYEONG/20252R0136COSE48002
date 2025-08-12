@@ -101,6 +101,12 @@ const DataRegister = () => {
         return;
       }
 
+      // ZIP 파일 형태인지 확인
+      if (!(uploadedZipFile instanceof File)) {
+        alert('업로드된 이미지가 올바른 형식이 아닙니다. 다시 업로드해주세요.');
+        return;
+      }
+
       // 3. 매핑 상태 확인
       const unmappedData = data.filter(row => 
         row['매핑 상태'] === '매핑안됨' || 
@@ -119,7 +125,12 @@ const DataRegister = () => {
       const result = await uploadFiles(data, columns, uploadedZipFile);
       
       if (result.success) {
-        alert('데이터 등록이 성공적으로 완료되었습니다!');
+        // 성공 시 상세 정보와 함께 알림
+        const successDetails = result.data 
+          ? `\n- 데이터 ${result.data.dataCount || 0}건 등록\n- CSV: ${result.data.csvPath || 'N/A'}\n- 이미지: ${result.data.imagePath || 'N/A'}`
+          : '';
+        
+        alert(`데이터 등록이 성공적으로 완료되었습니다!${successDetails}`);
         showSuccessMessage('데이터 등록 완료!');
         
         // 등록 성공 시 모든 데이터 초기화
@@ -381,10 +392,18 @@ const DataRegister = () => {
     
     try {
       console.log('폴더 처리:', files.length, '개 파일');
-      // 폴더 구조를 나타내는 가상 객체 생성
-      const folderData = { files: files, type: 'folder' };
-      setUploadedZipFile(folderData); // 폴더 데이터를 상태에 저장
+      
+      // 1. 이미지 매핑 처리
       await handleFolderFiles(files);
+      
+      // 2. 폴더 파일들을 ZIP으로 압축
+      console.log('폴더를 ZIP 파일로 압축 중...');
+      const zipFile = await createZipFromFiles(files);
+      
+      // 3. ZIP 파일을 상태에 저장
+      setUploadedZipFile(zipFile);
+      
+      console.log('폴더 처리 및 ZIP 생성 완료');
     } catch (error) {
       console.error('폴더 처리 오류:', error);
       alert('폴더 처리 중 오류가 발생했습니다.');
@@ -392,6 +411,42 @@ const DataRegister = () => {
     } finally {
       setImageLoading(false);
     }
+  };
+
+  // 폴더 파일들을 ZIP 파일로 압축하는 함수
+  const createZipFromFiles = async (files) => {
+    const zip = new JSZip();
+    
+    // 루트 폴더명 추출 (첫 번째 파일의 경로에서)
+    const firstFilePath = files[0].webkitRelativePath || files[0].name;
+    const rootFolderName = firstFilePath.split('/')[0] || 'folder';
+    
+    console.log(`ZIP 파일 생성: 루트 폴더명 = ${rootFolderName}`);
+    
+    // 모든 파일을 ZIP에 추가
+    for (const file of files) {
+      const relativePath = file.webkitRelativePath || file.name;
+      console.log(`ZIP에 파일 추가: ${relativePath}`);
+      zip.file(relativePath, file);
+    }
+    
+    // ZIP 파일 생성
+    const zipBlob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 6
+      }
+    });
+    
+    // File 객체로 변환 (원본 ZIP 파일과 동일한 형태)
+    const zipFile = new File([zipBlob], `${rootFolderName}.zip`, {
+      type: 'application/zip'
+    });
+    
+    console.log(`ZIP 파일 생성 완료: ${zipFile.name} (${(zipFile.size / 1024 / 1024).toFixed(2)} MB)`);
+    
+    return zipFile;
   };
 
   // 폴더 파일들 처리
@@ -671,7 +726,8 @@ const DataRegister = () => {
     setData(updatedData);
     
     console.log('=== 매칭 완료 ===');
-    alert(`매칭 완료!\n총 ${data.length}개 데이터 중 ${matchedCount}개 매칭됨`);
+    // alert 대신 자동으로 사라지는 메시지 사용
+    showSuccessMessage(`매칭 완료! 총 ${data.length}개 데이터 중 ${matchedCount}개 매칭됨`);
   };
 
   return (
@@ -778,7 +834,7 @@ const DataRegister = () => {
             {imageLoading ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              '사진 불러오기(ZIP)'
+              '이미지 불러오기 (ZIP)'
             )}
           </Button>
           <Button
@@ -800,7 +856,7 @@ const DataRegister = () => {
             {imageLoading ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              '사진 불러오기(폴더)'
+              '이미지 불러오기 (폴더)'
             )}
           </Button>
           {data.length > 0 && (
