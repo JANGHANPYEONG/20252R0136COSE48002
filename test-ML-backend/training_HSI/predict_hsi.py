@@ -6,7 +6,11 @@ HSI 예측 모듈 (학습 파이프라인과 완전 호환)
 학습 파이프라인과 완전히 호환되도록 설계되었습니다.
 
 사용법:
+    # 방법 1: 로컬 모델 디렉토리 사용
     python predict_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
+    
+    # 방법 2: MLflow run ID 사용
+    python predict_hsi.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
 """
 
 import os
@@ -363,6 +367,9 @@ def main():
                            help='Model directory containing best_model.pt, config.json, scaler.pkl')
     model_group.add_argument('--run_id', type=str,
                            help='MLflow run ID to download artifacts from')
+    
+    parser.add_argument('--experiment_id', type=str,
+                       help='MLflow experiment ID (required when using --run_id)')
     
     parser.add_argument('--image_paths', nargs='+', required=True,
                        help='Paths to band images')

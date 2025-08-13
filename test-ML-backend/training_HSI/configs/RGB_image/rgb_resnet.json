@@ -1,0 +1,47 @@
+{
+  "seed": 42,
+  "data": {
+    "csv": "data/rgb/train.masked.csv",
+    "column_config": "configs/column_config.json",
+    "image_size": [224, 224],
+    "batch_size": 32,
+    "num_workers": 4,
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "aug": true
+  },
+  "seg": {
+    "enabled": true,
+    "mode": "precomputed",
+    "apply": "mul",
+    "threshold": 0.5
+  },
+  "model": {
+    "namespace": "RGB_image",
+    "file": "rgb_resnet",
+    "num_classes": 13,
+    "parameters": {
+      "in_channels": 3,
+      "pretrained": true
+    }
+  },
+  "train": {
+    "epochs": 50,
+    "optimizer": "AdamW",
+    "lr": 3e-4,
+    "weight_decay": 1e-4,
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "use_amp": true,
+    "early_stopping_patience": 10,
+    "save_interval": 5,
+    "loss_fn": "uncertainty",
+    "grad_clip_norm": 1.0
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "RGB_SEG"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"]
+}

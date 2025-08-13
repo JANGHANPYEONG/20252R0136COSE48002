@@ -8,6 +8,11 @@ import torch
 import numpy as np
 from datetime import datetime
 
+# 헤드리스 안전을 위한 matplotlib 백엔드 고정
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 
 class MLflowLogger:
     """MLflow 로깅을 위한 클래스"""
@@ -97,7 +102,6 @@ class MLflowLogger:
                           train_metrics: Dict[str, list], val_metrics: Dict[str, list],
                           plot_keys: Optional[List[str]] = None):
         """훈련 곡선을 로깅합니다."""
-        import matplotlib.pyplot as plt
         
         # 기본 플롯 키 설정
         if plot_keys is None:
