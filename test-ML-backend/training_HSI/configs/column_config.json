@@ -44,6 +44,7 @@
   "image_size": [256, 256],
   "rgb_image_size": [224, 224],
   "base_dirs": {
+    "hsi_image_dir": "datasets_HSI/image",
     "rgb_image_dir": "data/rgb/images",
     "rgb_mask_dir": "data/rgb/masks"
   },

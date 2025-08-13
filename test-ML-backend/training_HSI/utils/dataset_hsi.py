@@ -107,24 +107,25 @@ class HSIDataset(Dataset):
         wavelengths = self.column_config['wavelengths']
         image_size = self.column_config['image_size']
         image_path_start = self.column_config['column_order']['image_path_start_index']
+        hsi_base_dir = self.column_config['base_dirs']['hsi_image_dir']
+        
         image_paths = []
         for i, wavelength in enumerate(wavelengths):
             col_idx = image_path_start + i
             if col_idx < len(row):
-                image_path = row.iloc[col_idx]
-                if pd.notna(image_path) and image_path != '':
-                    image_paths.append(image_path)
+                image_filename = row.iloc[col_idx]  # 파일명만 받음
+                if pd.notna(image_filename) and image_filename != '':
+                    # base_dir과 파일명을 결합하여 전체 경로 생성
+                    full_image_path = os.path.join(hsi_base_dir, image_filename)
+                    image_paths.append(full_image_path)
                 else:
                     return None
             else:
                 return None
+        
         image_cube = []
         for image_path in image_paths:
             try:
-                if not os.path.isabs(image_path):
-                    from pathlib import Path
-                    base_dir = Path(self.csv_path).parent
-                    image_path = str(base_dir.parent / 'image' / image_path)
                 if os.path.exists(image_path):
                     img = Image.open(image_path).convert('L')
                     img = img.resize(image_size, resample=Image.NEAREST)
