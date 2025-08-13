@@ -1,14 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Literal
-import json
-import tempfile
+from typing import Optional, Dict, Literal
 from datetime import datetime
 from celery import Celery
 from celery.result import AsyncResult
-
-from training_HSI.train_HSI_2d import main as train_hsi_2d
-from training_HSI.train_vector import main as train_vector
+from multiprocessing import get_context, Queue
+import contextlib, io, re
 
 # Celery 및 APIRouter 설정
 celery_app = Celery(
@@ -53,100 +50,94 @@ class TrainStatus(BaseModel):
 def run_train_task(self, config: Dict):
     import time
     import os
-    import subprocess
     import sys
-    
+    import json
+    import tempfile
+
+    # 자식 프로세스에서 실행할 엔트리 함수
+    def _train_entry(cfg: Dict, q: Queue):
+        """
+        별도 프로세스에서 학습 함수를 직접 호출.
+        stdout/stderr 캡처 후 mlflow_run_id를 파싱해서 큐로 전달.
+        """
+        from training_HSI.train_HSI_2d import main as train_hsi_2d
+        from training_HSI.train_vector import main as train_vector
+
+        # 임시 config 파일 생성 (기존 스크립트가 --config CLI 인자를 기대한다면)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(cfg, f, indent=2)
+            cfg_path = f.name
+
+        # main()이 argparse로 sys.argv를 읽는 경우를 대비해 sys.argv 주입
+        old_argv = sys.argv[:]
+        sys.argv = [old_argv[0], "--config", cfg_path]
+
+        buf = io.StringIO()
+        try:
+            mlflow_run_id = None
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                if cfg.get("input_type") == "image":
+                    mlflow_run_id = train_hsi_2d()     # 함수 직접 호출
+                else:
+                    mlflow_run_id = train_vector()     # 함수 직접 호출
+            out = buf.getvalue()
+
+            q.put({"ok": True, "mlflow_run_id": mlflow_run_id, "logs": out})
+        except Exception as e:
+            q.put({"ok": False, "error": f"{type(e).__name__}: {e}"})
+        finally:
+            # 정리
+            try:
+                os.remove(cfg_path)
+            except Exception:
+                pass
+            sys.argv = old_argv
+
     try:
-        # 시작 시간 기록
         start_time = time.time()
-        
-        # input_type 검증
+
         input_type = config.get("input_type")
         if input_type not in ["image", "vector"]:
             raise ValueError(f"Invalid input_type: {input_type}. Must be 'image' or 'vector'")
-        
-        # 임시 config 파일 생성
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(config, f, indent=2)
-            config_path = f.name
-        
-        # subprocess로 학습 프로세스 실행
-        training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
-        
-        if config.get("input_type") == "image":
-            script_name = "train_HSI_2d.py"
-        else:
-            script_name = "train_vector.py"
-        
-        # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
-        process = subprocess.Popen(
-            [sys.executable, script_name, '--config', config_path],
-            cwd=training_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        
-        # 학습 상태 업데이트: TRAINING (subprocess PID 포함)
-        self.update_state(state='TRAINING', meta={
-            'input_type': input_type,
-            'process_pid': process.pid,  # ← 이제 별도 프로세스 PID
-            'start_time': start_time
-        })
-        
-        try:
-            print(f"Starting training with config: {config_path}")
-            print(f"Training subprocess PID: {process.pid}")
-            
-            # 프로세스 완료 대기
-            stdout, stderr = process.communicate()
-            
-            # 프로세스 종료 코드 확인
-            if process.returncode != 0:
-                error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
-                raise Exception(error_message)
-            
-            # stdout에서 MLflow run ID 추출
-            mlflow_run_id = None
-            if stdout:
-                import re
-                lines = stdout.strip().split('\n')
-                for line in lines:
-                    line = line.strip()
-                    # 32자리 16진수 문자열 패턴으로 MLflow run ID 추출
-                    match = re.search(r'[a-f0-9]{32}', line)
-                    if match:
-                        mlflow_run_id = match.group()
-                        break
-            
-            print(f"Training completed with run ID: {mlflow_run_id}")
-            
-            # 완료 시간 계산
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            
-            # 학습 완료 - SUCCESS 상태로 업데이트
-            self.update_state(state='SUCCESS', meta={
-                'mlflow_run_id': mlflow_run_id,
-                'elapsed_time': elapsed_time
-            })
-            
-            # 최종 결과 반환
-            return {'mlflow_run_id': mlflow_run_id}
 
-        finally:
-            # 임시 config 파일 삭제
-            if os.path.exists(config_path):
-                os.remove(config_path)
-        
+        # 별도 프로세스 생성 (macOS에서는 spawn 권장)
+        ctx = get_context("spawn")
+        q: Queue = ctx.Queue()
+        proc = ctx.Process(target=_train_entry, args=(config, q))
+        proc.start()
+
+        # 상태 업데이트 (자식 PID 노출)
+        self.update_state(state="TRAINING", meta={
+            "input_type": input_type,
+            "process_pid": proc.pid,
+            "start_time": start_time
+        })
+
+        # 자식 종료 대기
+        proc.join()
+
+        # 결과 수거
+        if not q.empty():
+            res = q.get()
+        else:
+            res = {"ok": False, "error": "No result returned from training process"}
+
+        if not res.get("ok"):
+            raise Exception(res.get("error", "Training failed without error message"))
+
+        mlflow_run_id = res.get("mlflow_run_id")
+
+        elapsed = time.time() - start_time
+        self.update_state(state="SUCCESS", meta={
+            "mlflow_run_id": mlflow_run_id,
+            "elapsed_time": elapsed
+        })
+        return {"mlflow_run_id": mlflow_run_id}
+
     except Exception as e:
-        # Celery가 자동으로 FAILURE 상태로 처리하도록 예외를 다시 발생시킴
-        # 커스텀 에러 정보는 예외 메시지에 포함
         import traceback
-        error_message = f"{type(e).__name__}: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        error_message = f"{type(e).__name__}: {e}\n\nTraceback:\n{traceback.format_exc()}"
         print(f"Training failed: {error_message}")
-        
-        # 예외를 다시 발생시켜서 Celery가 자동으로 FAILURE 처리하도록 함
         raise Exception(error_message)
 
 
