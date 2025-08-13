@@ -6,16 +6,42 @@ from datetime import datetime, timedelta
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 import uuid
+import time
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.database import get_db
 from app.db.db_model import Meat, CategoryInfo, SpeciesInfo
 from app.db.db_controller import find_id
 from app.utils import logger, safe_str, safe_int, convert_to_datetime, DEFAULT_USER_ID
 
-router = APIRouter(prefix="/data", tags=["Data"])
+router = APIRouter()
 
 # 이미지 파일 확장자 정의
 IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
+
+# 기본 info api
+@router.get("/")
+def get_data_api_info():
+    return {
+        "description": "Data API for managing and processing data files",
+        "endpoints": [
+            {"path": "/upload", "method": "POST", "description": "Upload data files (CSV/XLSX and images)"},
+            {"path": "/list", "method": "GET", "description": "Get a list of all entities"},
+        ]
+    }
+
+def db_healthcheck(db: Session = Depends(get_db)):
+    t0 = time.monotonic()
+    try:
+        # DB가 무엇이든 안전한 헬스체크 쿼리
+        db.execute(select(1))          # 또는: db.execute(text("SELECT 1"))
+        db.commit()                    # 트랜잭션 정리 (읽기라도 commit/rollback 중 하나 권장)
+        latency_ms = (time.monotonic() - t0) * 1000
+        return {"ok": True, "latency_ms": round(latency_ms, 2)}
+    except SQLAlchemyError as e:
+        # 연결 불가, 인증 실패, 타임아웃 등 모두 여기서 잡힘
+        db.rollback()
+        return False
 
 # 정규화: 공백 제거 + 소문자화. 폴더/파일명과 개체명을 케이스 무시로 비교하기 위해 사용.
 def _norm(s: str) -> str:
@@ -34,11 +60,9 @@ def _iter_zip_files(zdir: str) -> List[str]:
         for f in files:
             paths.append(os.path.join(root, f))
     return paths
-
 # 데이터 업로드
 # input: xlsx(csv 파일),zip파일 (이미지 파일), output: 성공 메시지
 # csv 파일 내부의 컬럼 이름과 이미지 파일 이름이 매칭되어야 함
-
 # [수정 필요 사항] rgb 정수 0, hsi 정수 1
 @router.post("/upload")
 async def upload_data(
@@ -77,7 +101,8 @@ async def upload_data(
     entity_set: Set[str] = set(entities)
     if not entity_set:
         raise HTTPException(status_code=422, detail="CSV에 유효한 개체 값이 없습니다.")
-# 소문자 비교용 세트 (폴더/파일명 매칭은 케이스 무시)
+
+    # 소문자 비교용 세트 (폴더/파일명 매칭은 케이스 무시)
     entity_set_norm: Set[str] = { _norm(e) for e in entity_set }
 
     # 2) ZIP 압축 해제 → 임시 폴더
@@ -261,10 +286,13 @@ def list_data(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
+    
+    if db_healthcheck(db) is False:
+        raise HTTPException(status_code=503, detail="DB 연결 실패")
     try:
         # DB에서 데이터 조회
         query = db.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
-        
+
         # 필터링 조건 적용
         if part:
             query = query.filter(CategoryInfo.primalValue == part)
