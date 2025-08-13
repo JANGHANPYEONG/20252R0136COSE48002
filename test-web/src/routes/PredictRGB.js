@@ -19,7 +19,7 @@ import { fetchPrediction } from '../API/predictData';
 import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 const navy = '#0F3659';
 
-const Predict = () => {
+const PredictRGB = () => {
   const [value, setValue] = useState('spectral');
   const [data, setData] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
@@ -590,4 +590,4 @@ const Predict = () => {
           </Box>
         )}
       </Box> */}
-export default Predict;
+export default PredictRGB;

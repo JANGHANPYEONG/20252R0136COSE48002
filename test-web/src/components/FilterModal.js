@@ -26,6 +26,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
 
     // 필터 후보 목록 - 사용자가 선택할 수 있는 필터들
     const filterCandidates = [
+        { name: '데이터 타입', options: ['RGB', 'MSI'] },
         { name: '품종', options: ['소', '돼지', '닭'] },
         { name: '지역', options: ['서울', '부산', '대구', '인천', '광주', '대전', '울산'] },
     ];

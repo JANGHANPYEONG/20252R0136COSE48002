@@ -15,7 +15,6 @@ import SpectroPattern from './routes/spectro_pattern';
 import Learning from './routes/Learning';
 import Predict from './routes/Predict';
 import LearningRGB from './routes/LearningRGB';
-import PredictRGB from './routes/PredictRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
 import NewDashboard from './routes/NewDashboard';
@@ -105,11 +104,6 @@ function App() {
       component: <Predict />,
     },
     {
-      path: '/Predict/RGB',
-      title: 'PredictRGB | DeePlant',
-      component: <PredictRGB />,
-    },
-    {
       path: '/Stats',
       title: 'Statistics | DeePlant',
       component: <Stats />,
@@ -176,6 +170,7 @@ function App() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexDirection: 'column',
+                            paddingTop: '0', // 상단 AppBar가 없어졌으므로 패딩 제거
                           }}
                         >
                           {route.component}

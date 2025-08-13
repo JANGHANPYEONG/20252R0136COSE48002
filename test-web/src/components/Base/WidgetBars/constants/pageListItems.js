@@ -60,18 +60,8 @@ const pageListItems = [
   {
     label: '예측하기',
     icon: <AutoAwesomeIcon sx={{ fontSize: 30 }} />,
-    path: '/Predict/RGB',
-    hasSubmenu: true,
-    submenu: [
-      {
-        label: 'RGB',
-        path: '/Predict/RGB',
-      },
-      {
-        label: 'MSI',
-        path  : '/Predict',
-      },
-    ],
+    path: '/Predict',
+    hasSubmenu: false,
   },
   {
     label: '사용자관리',
