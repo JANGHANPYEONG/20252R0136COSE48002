@@ -1,5 +1,6 @@
 // src/routes/Learning.js
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Button, CircularProgress, Typography, Snackbar, Alert } from '@mui/material';
 
 // components
@@ -44,6 +45,8 @@ const Learning = () => {
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
 
+  // from Dashboard.js
+  const location = useLocation();
   // 학습 결과
   const [results, setResults] = useState([]);        // 한 행([...]) 단위
   const [history, setHistory] = useState([]);        // 과거 결과들(행 배열)
@@ -61,6 +64,15 @@ const Learning = () => {
     if (Array.isArray(saved) && saved.length > 0) setIsTraining(false);
   }, []);
 
+
+  useEffect(() => {
+    if (location.state?.data) {
+      setData(location.state.data);
+    }
+    if (location.state?.selectedRows) {
+      setSelectedRows(location.state.selectedRows);
+    }
+  }, [location.state]);
   // 데이터 불러오기
   const handleLoadData = async () => {
     setLoading(true);
@@ -219,7 +231,7 @@ const Learning = () => {
           <Button
             variant="contained"
             onClick={() => handleTrain(data)}
-            disabled={data.length === 0}
+            disabled={selectedRows.length === 0}
             sx={{ backgroundColor: '#28a745', '&:hover': { backgroundColor: '#218838' }, '&:disabled': { backgroundColor: '#6c757d' } }}
           >
             학습하기

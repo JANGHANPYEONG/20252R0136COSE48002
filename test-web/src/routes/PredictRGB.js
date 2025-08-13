@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -21,7 +20,6 @@ import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 const navy = '#0F3659';
 
 const Predict = () => {
-  const location = useLocation();
   const [value, setValue] = useState('spectral');
   const [data, setData] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
@@ -35,15 +33,7 @@ const Predict = () => {
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
-  // Dashboard에서 넘어온 데이터로 초기화 + 새로고침 대비 sessionStorage 사용
-useEffect(() => {
-  if (location.state?.data) {
-    setData(location.state.data);
-  }
-  if (location.state?.selectedRows) {
-    setSelectedRows(location.state.selectedRows);
-  }
-}, [location.state]);
+
   // Dummy data for Predict page
   // useEffect(() => {
   //   const dummy = [
@@ -234,9 +224,6 @@ useEffect(() => {
     <div style={{ overflow: 'auto', width: '100%', marginTop: '100px', height: '100%', paddingLeft: '30px', paddingRight: '20px' }}>
       <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '634px' }}>
         <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>AI Prediction</span>
-
-        {/* 오른쪽 끝에 RGB 추가*/}
-        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>RGB</span>
       </Box>
 
       <Box sx={{ marginTop: '30px' }}>
@@ -308,13 +295,13 @@ useEffect(() => {
           <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
         </Snackbar>
 
-          <FilterModal
-            open={filterModalOpen}
-            onClose={() => setFilterModalOpen(false)}
-            onApply={handleApplyFilters}
-            filters={filters}
-            setFilters={setFilters}
-          />
+        <FilterModal
+          open={filterModalOpen}
+          onClose={() => setFilterModalOpen(false)}
+          onApply={handleApplyFilters}
+          filters={filters}
+          setFilters={setFilters}
+        />
       </Box>  
     </div>
   );

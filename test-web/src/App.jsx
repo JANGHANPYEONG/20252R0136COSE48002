@@ -14,8 +14,12 @@ import DataPredict from './routes/DataPredict';
 import SpectroPattern from './routes/spectro_pattern';
 import Learning from './routes/Learning';
 import Predict from './routes/Predict';
+import LearningRGB from './routes/LearningRGB';
+import PredictRGB from './routes/PredictRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
+import NewDashboard from './routes/NewDashboard';
+import MeatDetailPage from './routes/MeatDetailPage';
 import XAI from './routes/XAI';
 
 import { UserProvider } from './Utils/UserContext';
@@ -91,9 +95,19 @@ function App() {
       component: <Learning />,
     },
     {
+      path: '/Learning/RGB',
+      title: 'LearningRGB | DeePlant',
+      component: <LearningRGB />,
+    },
+    {
       path: '/Predict',
       title: 'Predict | DeePlant',
       component: <Predict />,
+    },
+    {
+      path: '/Predict/RGB',
+      title: 'PredictRGB | DeePlant',
+      component: <PredictRGB />,
     },
     {
       path: '/Stats',
@@ -106,11 +120,6 @@ function App() {
       component: <Stats />,
     },
     {
-      path: '/XAI',
-      title: 'XAI 분석 | DeePlant',
-      component: <XAI />,
-    },
-    {
       path: '/profile',
       title: 'Profile | DeePlant',
       component: <Profile />,
@@ -119,6 +128,21 @@ function App() {
       path: '/UserManagement',
       title: 'UserManage | Deeplant',
       component: <UserManagement />,
+    },
+    {
+      path: '/NewDashboard',
+      title: 'NewDashboard | Deeplant',
+      component: <NewDashboard />,
+    },
+    {
+      path: '/meat/:id',
+      title: 'Meat Detail | Deeplant',
+      component: <MeatDetailPage />,
+    },
+    {
+      path: '/XAI',
+      title: 'XAI 분석 | DeePlant',
+      component: <XAI />,
     },
   ];
 

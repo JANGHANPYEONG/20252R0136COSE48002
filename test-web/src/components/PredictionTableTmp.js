@@ -1,33 +1,9 @@
-//데이터 예시 구조
-/*
-const data = [
-  {
-    id: 'M001',
-    spectrum: '123,124,...',
-    wavelength: '650nm',
-    timestamp: '2025-08-07T10:15:00',
-    date: '2025-08-07',
-  },
-  {
-    id: 'M002',
-    spectrum: '...',
-    timestamp: '2025-08-07T10:15:00',
-    date: '2025-08-07',
-  },
-  {
-    id: 'M003',
-    timestamp: '2025-08-07T11:20:00',
-    date: '2025-08-07',
-  },
-]
-*/
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 추가
 import {
   Table, TableHead, TableRow, TableCell, TableBody, Checkbox, Button
 } from '@mui/material';
 
-// timestamp 기준 그룹화 함수
 const groupByTimestamp = (data) => {
   const groups = {};
   data.forEach(row => {
@@ -38,9 +14,10 @@ const groupByTimestamp = (data) => {
   return groups;
 };
 
-const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
+const PredictionTableTmp = ({ data, onSelectionChange }) => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const navigate = useNavigate(); // 추가
 
   const groups = groupByTimestamp(data);
 
@@ -50,11 +27,9 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
 
     let newSelectedIds;
     if (selectedGroup === timestamp) {
-      // 그룹 선택 해제
       newSelectedIds = selectedIds.filter(id => !groupIds.includes(id));
       setSelectedGroup(null);
     } else {
-      // 그룹 선택
       newSelectedIds = [...selectedIds, ...groupIds.filter(id => !selectedIds.includes(id))];
       setSelectedGroup(timestamp);
     }
@@ -68,7 +43,7 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
       ? selectedIds.filter(item => item !== id)
       : [...selectedIds, id];
     setSelectedIds(newSelectedIds);
-    setSelectedGroup(null);  // 개별 선택 시 그룹 선택 해제
+    setSelectedGroup(null);
     onSelectionChange(newSelectedIds);
   };
 
@@ -96,25 +71,20 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(row => {
-                const isPredicted = !!row.prediction;
-
-                return (
-                    <TableRow
-                        key={row.id}
-                        hover={isPredicted}
-                        onClick={() => isPredicted && onRowClick?.(row)}
-                        sx={{
-                            cursor: isPredicted ? 'pointer' : 'default',
-                            backgroundColor : isPredicted ? 'inherit' : '#f5f5f5',
-                            opacity : isPredicted ? 1 : 0.6,
-                        }}
-                    >
+              {rows.map(row => (
+                <TableRow
+                  key={row.id}
+                  hover
+                  onClick={() => navigate(`/meat/${row.id}`, { state: { item : row}})} // 여기서 navigate
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>
                     <Checkbox
                       checked={selectedIds.includes(row.id)}
-                      onChange={(e) =>
-                        e.stopPropagation() || handleRowSelect(row.id)} // 클릭 시 row 클릭 이벤트 막기 
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleRowSelect(row.id);
+                      }}
                     />
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
@@ -123,8 +93,7 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
                   <TableCell>{row.deepAging}</TableCell>
                   <TableCell>{row.slDate}</TableCell>
                 </TableRow>
-                );
-              })}
+              ))}
             </TableBody>
           </Table>
         </div>
@@ -133,4 +102,4 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
   );
 };
 
-export default PredictionTable;
+export default PredictionTableTmp;
