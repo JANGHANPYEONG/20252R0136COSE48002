@@ -16,6 +16,7 @@ import Learning from './routes/Learning';
 import Predict from './routes/Predict';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
+import XAI from './routes/XAI';
 
 import { UserProvider } from './Utils/UserContext';
 
@@ -103,6 +104,11 @@ function App() {
       path: '/stats',
       title: 'Statistics | DeePlant',
       component: <Stats />,
+    },
+    {
+      path: '/XAI',
+      title: 'XAI 분석 | DeePlant',
+      component: <XAI />,
     },
     {
       path: '/profile',

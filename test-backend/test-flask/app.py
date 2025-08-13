@@ -67,6 +67,7 @@ from api.update_api import update_api
 from api.delete_api import delete_api
 from api.statistic_api import statistic_api
 from api.predict_api import predict_api
+from api.xai_api import xai_bp
     
 app.register_blueprint(user_api, url_prefix="/user")  # user 관련 API
 app.register_blueprint(add_api, url_prefix="/meat/add")  # 육류 정보 생성 API
@@ -75,6 +76,7 @@ app.register_blueprint(update_api, url_prefix="/meat/update")  # 육류 정보 �
 app.register_blueprint(delete_api, url_prefix="/meat/delete")  # 육류 정보 삭제 API
 app.register_blueprint(statistic_api, url_prefix="/meat/statistic")  # 통계 데이터 조회 API
 app.register_blueprint(predict_api, url_prefix="/meat/predict") # 예측 데이터 조회 API
+app.register_blueprint(xai_bp, url_prefix="/xai")  # XAI 관련 API
 
 @app.route("/")
 def hello_world():

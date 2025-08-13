@@ -34,6 +34,10 @@ const pageListItems = [
         label: '통계분석',
         path: '/Stats',
       },
+      {
+        label: 'XAI',
+        path: '/XAI',
+      },
     ],
   },
   {

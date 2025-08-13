@@ -10,6 +10,7 @@ import Container from '@mui/material/Container';
 import home_DATA from '../src_assets/home_DATA.png';
 import data_BOARD from '../src_assets/data_BOARD.png';
 import data_ANA from '../src_assets/data_ANA.png';
+import home_ML from '../src_assets/home_ML.png';
 
 const cards = [
     {
@@ -26,6 +27,11 @@ const cards = [
         title: '통계분석',
         image: data_ANA,
         link: '/Stats',
+    },
+    {
+        title: 'XAI',
+        image: home_ML,
+        link: '/XAI',
     },
 ];
 
@@ -48,7 +54,7 @@ const Data = () => {
                 </Typography>
                 <Grid container spacing={5} justifyContent="center" alignItems="center">
                     {cards.map((card) => (
-                        <Grid item xs={12} sm={4} md={4} lg={4} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
+                        <Grid item xs={12} sm={6} md={3} lg={3} key={card.title} style={{ display: 'flex', justifyContent: 'center' }}>
                             <Box
                                 sx={{
                                     width: '240px',
