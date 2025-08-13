@@ -276,7 +276,7 @@ const Predict = () => {
           onClose={() => setOpenPanel(false)}
           predictionData={detailData}
           labels={[
-            '색상',
+            '색상(Color)',
             '향(Aroma)',
             '조직감(Texture)',
             '즙성(Juiciness)',
