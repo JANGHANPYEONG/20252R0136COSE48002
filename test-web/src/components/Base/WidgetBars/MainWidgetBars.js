@@ -1,12 +1,11 @@
 /* 웹페이지 위젯바 표시 및 조작 컴포넌트 */
 
-/* 화면 상단 및 좌측 위젯인 AppBar와 Drawer를 불러와 표시 */
+/* 좌측 사이드바 위젯인 Drawer를 불러와 표시 */
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 // import mui component
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 // import widget components
-import AppBar from './Children/AppBar';
 import Drawer from './Children/Drawer';
 
 import CustomSnackbar from '../../Base/CustomSnackbar';
@@ -22,10 +21,13 @@ const MainWidgetBars = () => {
   const user = useUser();
   const defaultTheme = createTheme();
 
-  // const drawerWidth = `${(345 / 1920) * 100}vw`;
   const drawerWidth = '260px'; // Width when drawer is open
 
   const logout = useLogout();
+
+  const handleWidgetToggle = () => {
+    setWidgetOpen(!widgetOpen);
+  };
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -49,17 +51,14 @@ const MainWidgetBars = () => {
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <AppBar
-        open={widgetOpen}
-        userInfo={user}
-        logout={logout}
-        drawerWidth={drawerWidth}
-      />
       <Drawer
         open={widgetOpen}
+        toggleDrawer={handleWidgetToggle}
         location={location}
         handleListItemClick={handleListItemClick}
         drawerWidth={drawerWidth}
+        userInfo={user}
+        logout={logout}
       />
       <CustomSnackbar
         open={snackbarOpen}

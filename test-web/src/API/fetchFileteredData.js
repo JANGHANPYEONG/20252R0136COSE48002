@@ -5,8 +5,12 @@
 import { apiIP } from '../config';
 
 export const fetchFilteredData = async (filters, type) => {
+  // 필터 객체에서 dataType 가져오기
+  const dataTypeFilter = filters.find(f => f.name === '데이터 타입');
+  const dataType = dataTypeFilter?.value || null;
+  
   // dummy data
-      const dummy = [
+  let dummy = [
   {
     id: 'L01709271277001',
     sampleNo: 'S001',
@@ -180,6 +184,15 @@ export const fetchFilteredData = async (filters, type) => {
 ];
 
 
+  // 데이터 타입에 따라 필터링 (실제 API에서는 서버에서 처리됨)
+  if (dataType === 'RGB') {
+    // RGB 데이터만 표시 (짝수 ID 데이터를 RGB로 가정)
+    dummy = dummy.filter(item => parseInt(item.id.slice(-2)) % 2 === 0);
+  } else if (dataType === 'MSI') {
+    // MSI 데이터만 표시 (홀수 ID 데이터를 MSI로 가정)
+    dummy = dummy.filter(item => parseInt(item.id.slice(-2)) % 2 !== 0);
+  }
+  
   // 목업용 dummy data return
   return dummy;
   try {
