@@ -20,6 +20,7 @@ import argparse
 import torch
 import numpy as np
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 import pickle
 import mlflow
 import tempfile
@@ -31,6 +32,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.model_loader import load_model
 from utils.transforms_rgb import get_test_transforms
+
+
+class InferenceDataset(Dataset):
+    def __init__(self, image_paths, image_size):
+        self.image_paths = image_paths
+        self.transform = get_test_transforms(image_size=image_size)
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        path = self.image_paths[idx]
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Image not found: {path}")
+        img = Image.open(path).convert("RGB")
+        return self.transform(img)  # (C,H,W)
 
 
 class RGBPredictor:
@@ -45,18 +62,8 @@ class RGBPredictor:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         print(f"Using device: {self.device}")
 
-        """
-        config_path = os.path.join(model_dir, "configs", "temp_config.json")
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Config file not found: {config_path}")
-            
-        with open(config_path, 'r') as f:
-            self.config = json.load(f)
-        print(f"Loaded config from: {config_path}")
-        """
-
         # 아티팩트 로드
-        self.config, self.column_config, self.model, self.scaler = self._build_artifacts(model_dir)
+        self.config, self.column_config, self.model = self._build_artifacts(model_dir)
         self.model.eval()
         
         # 라벨 타입 정보 설정
@@ -78,16 +85,17 @@ class RGBPredictor:
                       (/mnt/data/mlflow_artifacts/experiment_id/run_id/artifacts)
             
         Returns:
-            tuple: (model, config, scaler, column_config)
+            tuple: (config, column_config, model)
+            RGB에서는 HSI에서와 달리 scaler가 없음.
         """
         if not os.path.exists(model_dir):
-            raise FileNotFoundError(f"Model directory not found: {model_dir}")
+            raise FileNotFoundError(f"Model directory를 찾을 수 없습니다: {model_dir}")
         print(f"Loading artifacts from MLflow directory: {model_dir}")
         
         # 1. config 파일 로드
-        config_path = os.path.join(model_dir, "configs", "temp_config.json")
+        config_path = os.path.join(model_dir, "configs", "temp_rgb_config.json")
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Config file not found: {config_path}")
+            raise FileNotFoundError(f"Config file을 찾을 수 없습니다: {config_path}")
             
         with open(config_path, 'r') as f:
             config = json.load(f)
@@ -98,7 +106,7 @@ class RGBPredictor:
         column_config_path = config['data'].get('column_config', column_config_path)
 
         if not os.path.exists(column_config_path):
-            raise FileNotFoundError(f"Column config file not found: {column_config_path}")
+            raise FileNotFoundError(f"Column config file을 찾을 수 없습니다: {column_config_path}")
             
         with open(column_config_path, 'r') as f:
             column_config = json.load(f)
@@ -126,19 +134,9 @@ class RGBPredictor:
             
         model.load_state_dict(state_dict)
         model = model.to(self.device)
-        
-        # 4. scaler 로드 (./scaler/temp_scaler.pkl)
-        scaler = None
-        scaler_path = os.path.join(model_dir, "scaler", "temp_scaler.pkl")
-        if os.path.exists(scaler_path):
-            print(f"Loading scaler from: {scaler_path}")
-            with open(scaler_path, 'rb') as f:
-                scaler = pickle.load(f)
-        else:
-            raise ValueError(f"scaler_mode is '{self.scaler_mode}' but scaler not found at {scaler_path}")
-            
-        return config, column_config, model, scaler
-        
+
+        return config, column_config, model
+
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
         self.label_types = self.column_config.get('label_types', {})
@@ -163,12 +161,6 @@ class RGBPredictor:
                     
         print(f"Classification indices: {self.cls_indices}")
         print(f"Regression indices: {self.reg_indices}")
-        
-        # scaler.mean_ shape와 wavelengths 수 일치 확인
-        if self.scaler is not None and hasattr(self.scaler, 'mean_'):
-            in_channels = self.config.get('model', {}).get('parameters', {}).get('in_channels', 3)
-            if len(getattr(self.scaler, "mean_", [])) != in_channels:
-                print(f"Warning: scaler.mean_ shape ({len(self.scaler.mean_)}) doesn't match input channels ({in_channels})")
 
     def _print_model_info(self):
         """모델 정보를 출력합니다."""
@@ -199,51 +191,34 @@ class RGBPredictor:
 
         img = Image.open(image_path).convert("RGB")
 
+        """
         # 학습 해상도와 맞추기
         if self.target_hw and img.size[::-1] != self.target_hw:  # PIL: (W,H)
             img = img.resize(self.target_hw[::-1], resample=Image.BILINEAR)
 
         arr = np.asarray(img, dtype=np.float32)
-        if self.scaler_mode == "normalized":
-            arr /= 255.0
+        """
 
-        return arr
+        return img
         
     def _preprocess_image(self, image_cube, image_size=(224, 224)):
         """
-        이미지 cube를 전처리합니다.
-        HSI 이미지를 전처리 하는 방식과 동일.
-        
-        Args:
-            image_cube: (height, width, channels) 형태의 이미지 cube
-            image_size: 학습에서와 동일한 이미지 사이즈 사용
-            
-        Returns:
-            torch.Tensor: (1, channels, height, width) 형태의 텐서
+        RGB 이미지 또는 HSI 이미지를 전처리.
         """
-        # 1. cube (H,W,C) → tensor (C,H,W) 변환
-        image_tensor = torch.from_numpy(image_cube).permute(2, 0, 1).float()
-        
-        # 2. StandardScaler 정규화 (있는 경우) - 학습 파이프라인과 동일한 순서
-        if self.scaler is not None:
-            # scaler의 mean_와 scale_를 사용하여 정규화
-            mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-            scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
-            
-            # 0으로 나누기 방지
-            eps = 1e-6
-            scale_tensor = torch.clamp(scale_tensor, min=eps)
-            
-            image_tensor = (image_tensor - mean_tensor) / scale_tensor
-        
-        # 3. 중앙 크롭 적용 - 학습 파이프라인과 동일한 순서
+        # 1. numpy(H,W,C) → PIL.Image 변환 (RGB는 그대로, HSI는 변환 로직 추가 가능)
+        if isinstance(image_cube, np.ndarray):
+            image_pil = Image.fromarray(image_cube.astype(np.uint8))
+        else:
+            raise TypeError("image_cube should be a numpy array in HWC format.")
+    
+        # 2. 테스트용 변환 적용
         transform = get_test_transforms(image_size=image_size)
-        image_tensor = transform(image_tensor)
-        
-        # 4. 배치 차원 추가 (1, C, H, W)
-        image_tensor = image_tensor.unsqueeze(0)
-        
-        return image_tensor.to(self.device)
+        x = transform(image_pil)  # (C,H,W)
+    
+        # 3. 배치 차원 추가
+        x = x.unsqueeze(0)  # (1,C,H,W)
+    
+        return x.to(self.device)
         
     def predict(self, image_path, image_size=None):
         """
@@ -324,7 +299,7 @@ class RGBPredictor:
                         
         return results
         
-    def predict_batch(self, image_paths_list, image_size=None):
+    def predict_batch(self, image_paths_list, image_size=None, batch_size=32):
         """
         여러 이미지 경로 리스트를 받아서 배치 예측을 수행합니다.
         
@@ -335,21 +310,23 @@ class RGBPredictor:
         Returns:
             list: 예측 결과 리스트 (JSON 직렬화 가능)
         """
-        if image_size is None:
+        if image_size == None:
             image_size = self.image_size
 
-        results = []
+        dataset = InferenceDataset(image_paths_list, image_size=image_size)
+        batch_size = min(len(image_paths_list), batch_size)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        all_preds = []
         
-        for i, image_paths in enumerate(image_paths_list):
-            print(f"Predicting batch {i+1}/{len(image_paths_list)}")
-            try:
-                result = self.predict(image_paths, image_size)
-                results.append(result)
-            except Exception as e:
-                print(f"Error predicting batch {i+1}: {e}")
-                results.append(None)
-                
-        return results
+        with torch.no_grad():
+            for batch in loader:
+                batch = batch.to(self.device)
+                outputs = self.model(batch)
+                preds = outputs.cpu().numpy()
+                all_preds.extend(preds)
+
+        return all_preds
 
 
 def main():
@@ -439,8 +416,10 @@ def main():
         predictor = RGBPredictor(model_dir=model_dir)
         
         # 예측 수행
-        results = predictor.predict(args.image_paths,
-                                    tuple(args.image_size) if args.image_size else None)
+        results = predictor.predict_batch(args.image_paths,
+                                          tuple(args.image_size) if args.image_size else None)
+        
+        print(results)
 
         # 결과 출력
         print("\n=== Prediction Results ===")
