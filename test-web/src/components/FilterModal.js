@@ -14,15 +14,62 @@ import {
     Select,
     MenuItem,
     Grid,
+    Tabs,
+    Tab,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Delete as DeleteIcon } from '@mui/icons-material';
+import dayjs from 'dayjs';
 
 const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+    const [duration, setDuration] = useState('week'); // 기간 선택 상태 추가
+
+    // 기간별 날짜 계산 함수
+    const calculateDateRange = (durationType) => {
+        const today = dayjs();
+        let start, end;
+        
+        switch (durationType) {
+            case 'week':
+                start = today.subtract(7, 'day');
+                end = today;
+                break;
+            case 'month':
+                start = today.subtract(1, 'month');
+                end = today;
+                break;
+            case 'quarter':
+                start = today.subtract(3, 'month');
+                end = today;
+                break;
+            case 'year':
+                start = today.subtract(1, 'year');
+                end = today;
+                break;
+            case 'all':
+                start = null;
+                end = null;
+                break;
+            default:
+                start = today.subtract(7, 'day');
+                end = today;
+        }
+        
+        return { start, end };
+    };
+
+    // 기간 탭 변경 핸들러
+    const handleDurationChange = (event, newValue) => {
+        setDuration(newValue);
+        const { start, end } = calculateDateRange(newValue);
+        setStartDate(start);
+        setEndDate(end);
+        handleFilterValueChange('날짜', { start, end });
+    };
 
     // 필터 후보 목록 - 사용자가 선택할 수 있는 필터들
     const filterCandidates = [
@@ -97,6 +144,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
         }]);
         setStartDate(null);
         setEndDate(null);
+        setDuration('week'); // 기간도 초기화
     };
 
     // dayjs 날짜를 문자열로 변환하는 함수
@@ -126,6 +174,38 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
 
             <DialogContent>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    {/* 기간 선택 탭 추가 */}
+                    <Box mb={3}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            조회 기간
+                        </Typography>
+                        <Tabs 
+                            value={duration} 
+                            onChange={handleDurationChange}
+                            variant="fullWidth"
+                            sx={{
+                                '& .MuiTab-root': {
+                                    minHeight: '40px',
+                                    fontSize: '0.875rem',
+                                    fontWeight: '500',
+                                },
+                                '& .Mui-selected': {
+                                    color: '#1976d2',
+                                    fontWeight: '600',
+                                },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: '#1976d2',
+                                }
+                            }}
+                        >
+                            <Tab label="1주" value="week" />
+                            <Tab label="1개월" value="month" />
+                            <Tab label="1분기" value="quarter" />
+                            <Tab label="1년" value="year" />
+                            <Tab label="전체" value="all" />
+                        </Tabs>
+                    </Box>
+
                     {/* 날짜 필터 */}
                     <Box mb={3}>
                         <Typography variant="subtitle1" gutterBottom>
@@ -157,6 +237,11 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                                 />
                             </Grid>
                         </Grid>
+                        {duration !== 'all' && startDate && endDate && (
+                            <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                                선택된 기간: {formatDate(startDate)} ~ {formatDate(endDate)}
+                            </Typography>
+                        )}
                     </Box>
 
                     {/* 기존 필터들 */}

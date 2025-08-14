@@ -6,6 +6,7 @@ import TasteTime from './Charts/Time/TasteTime';
 import CorrelationChart from './Charts/Corr/CorrelationChart';
 import HeatMapChart from './Charts/HeatMap/HeatMapChart';
 import BoxPlotChart from './Charts/BoxPlot/BoxPlotChart';
+import AgingBoxPlotChart from './Charts/BoxPlot/AgingBoxPlotChart';
 
 const CustomTabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -98,6 +99,7 @@ const StatsTabs = ({ startDate, endDate }) => {
           <Tab label="분포" {...a11yProps(1)} />
           <Tab label="상관관계" {...a11yProps(2)} />
           <Tab label="시계열" {...a11yProps(3)} />
+          <Tab label="숙성도 비교 차트" {...a11yProps(4)} />  {/* 숙성과 non숙성 비교 차트 */}
         </Tabs>
         <Box>
           {value === 3 ? (
@@ -125,6 +127,20 @@ const StatsTabs = ({ startDate, endDate }) => {
                 <MenuItem value="4">4회차</MenuItem>
               </Select>
             </>
+          ) : value === 4 ? (
+            <div>
+              <Select
+              labelId="animal-label"
+              id="animal"
+              value={animalType}
+              onChange={handleAnimalChange}
+              label="동물 종류"
+              >
+                <MenuItem value="소">소</MenuItem>
+                <MenuItem value="돼지">돼지</MenuItem>  
+              </Select>
+            </div>
+
           ) : (
             <div>
               <Select
@@ -245,6 +261,32 @@ const StatsTabs = ({ startDate, endDate }) => {
           seqnoValue={seqnoValue}
           meatValue={meatValue}
         />
+      </CustomTabPanel>
+
+      
+
+      {/* BoxPlot(통계) (숙성도 비교 차트) */}
+      <CustomTabPanel value={value} index={4}>
+        <AgingBoxPlotChart
+          key={`sens-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+          meatState={meatState}
+          dataType="sensory"
+          startDate={startDate}
+          endDate={endDate}
+          animalType={animalType}
+          grade={grade}
+        />
+        {meatState !== '가열육' && (
+          <AgingBoxPlotChart
+            key={`taste-${startDate}-${endDate}-${animalType}-${grade}-${meatState}`}
+            meatState={meatState}
+            dataType="taste"
+            startDate={startDate}
+            endDate={endDate}
+            animalType={animalType}
+            grade={grade}
+          />
+        )}
       </CustomTabPanel>
     </Box>
   );
