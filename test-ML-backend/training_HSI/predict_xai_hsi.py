@@ -384,7 +384,7 @@ class HSIPredictor:
                         else:
                             reg_labels_order.append(None)
 
-                # ★ pred 매칭: 라벨명 → 값 (results['regression'] 배열과 라벨명을 안전하게 정합)
+                # pred 매칭: 라벨명 → 값 (results['regression'] 배열과 라벨명을 안전하게 정합)
                 pred_by_label = {}
                 if 'regression' in results and isinstance(results['regression'], list):
                     # 우선 label_types['regression'] 길이가 같으면 그 순서를 신뢰
@@ -494,7 +494,7 @@ class HSIPredictor:
                         'target_label': target_label,
                         'pred': pred_value,
                         'layer': cam_pack['layer'],
-                        'image_bytes': heatmap_png_bytes
+                        'image_base64': base64.b64encode(heatmap_png_bytes).decode("utf-8")
                     }]
                 }
 
