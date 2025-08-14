@@ -29,7 +29,7 @@ warnings.filterwarnings('ignore')
 # 현재 디렉토리를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from utils.model_loader import load_model, validate_model_config
+from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
 
 
@@ -46,13 +46,18 @@ class HSIPredictor:
         print(f"Using device: {self.device}")
 
         # config 먼저 열어 scaler_mode 확보 (scaler.pkl 존재 여부 판단용)
-        cfg_path = os.path.join(model_dir, "config.json")
-        with open(cfg_path, 'r') as _f:
-            _cfg_tmp = json.load(_f)
-        self.scaler_mode = _cfg_tmp.get("data", {}).get("scaler_mode", "normalized")
+        config_path = os.path.join(model_dir, "configs", "temp_config.json")
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Config file not found: {config_path}")
+            
+        with open(config_path, 'r') as f:
+            self.config = json.load(f)
+        print(f"Loaded config from: {config_path}")
+
+        self.scaler_mode = self.config.get("data", {}).get("scaler_mode", "normalized")
 
         # 아티팩트 로드
-        self.model, self.config, self.scaler, self.column_config = self._build_artifacts(model_dir)
+        self.model, self.scaler, self.column_config = self._build_artifacts(model_dir)
         self.model.eval()
         
         # 라벨 타입 정보 설정
@@ -67,10 +72,11 @@ class HSIPredictor:
         
     def _build_artifacts(self, model_dir):
         """
-        모델 디렉토리에서 아티팩트들을 로드합니다.
+        MLflow artifacts 디렉토리에서 아티팩트들을 로드합니다.
         
         Args:
-            model_dir: 모델 디렉토리 경로
+            model_dir: MLflow artifacts 디렉토리 경로 
+                      (/mnt/data/mlflow_artifacts/experiment_id/run_id/artifacts)
             
         Returns:
             tuple: (model, config, scaler, column_config)
@@ -78,46 +84,27 @@ class HSIPredictor:
         if not os.path.exists(model_dir):
             raise FileNotFoundError(f"Model directory not found: {model_dir}")
             
-        print(f"Loading artifacts from: {model_dir}")
-        
-        # 1. config.json 로드
-        config_path = os.path.join(model_dir, "config.json")
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Config file not found: {config_path}")
+        print(f"Loading artifacts from MLflow directory: {model_dir}")
+
+        # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
+        column_config_path = self.config['data'].get('column_config',
+                                                "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json")
             
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-            
-        # 2. column_config.json 로드
-        column_config_path = config['data']['column_config']
-        if not os.path.isabs(column_config_path):
-            # model_dir 기준과 프로젝트 루트 모두 시도
-            possible_paths = [
-                os.path.join(model_dir, column_config_path),
-                os.path.join(os.path.dirname(model_dir), column_config_path)
-            ]
-            column_config_path = None
-            for path in possible_paths:
-                if os.path.exists(path):
-                    column_config_path = path
-                    break
-            if column_config_path is None:
-                raise FileNotFoundError(f"Column config file not found in any of: {possible_paths}")
         if not os.path.exists(column_config_path):
             raise FileNotFoundError(f"Column config file not found: {column_config_path}")
             
         with open(column_config_path, 'r') as f:
             column_config = json.load(f)
+        print(f"Loaded column_config from: {column_config_path}")
             
-        # 3. 모델 아키텍처 생성 및 state_dict 로드
-        print("Creating model architecture from config...")
-        model = load_model(config)
-        
-        # best_model.pt 로드
-        model_path = os.path.join(model_dir, "best_model.pt")
+        # 2. 모델 로드 (./models/best_model.pt)
+        model_path = os.path.join(model_dir, "models", "best_model.pt")
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found: {model_path}")
             
+        print("Creating model architecture from config...")
+        model = load_model(self.config)
+        
         print(f"Loading state dict from: {model_path}")
         state_dict = torch.load(model_path, map_location=self.device)
         
@@ -133,20 +120,20 @@ class HSIPredictor:
         model.load_state_dict(state_dict)
         model = model.to(self.device)
         
-        # 4. scaler.pkl 로드 (필수 - scaler_mode != "off"인 경우)
+        # 3. scaler 로드 (./scaler/temp_scaler.pkl)
         scaler = None
-        scaler_path = os.path.join(model_dir, "scaler.pkl")
+        scaler_path = os.path.join(model_dir, "scaler", "temp_scaler.pkl")
         if self.scaler_mode != "off":
             if os.path.exists(scaler_path):
                 print(f"Loading scaler from: {scaler_path}")
                 with open(scaler_path, 'rb') as f:
                     scaler = pickle.load(f)
             else:
-                raise ValueError(f"scaler_mode is '{self.scaler_mode}' but scaler.pkl not found in {model_dir}")
+                raise ValueError(f"scaler_mode is '{self.scaler_mode}' but scaler not found at {scaler_path}")
         else:
             print("scaler_mode is 'off', skipping normalization")
             
-        return model, config, scaler, column_config
+        return model, scaler, column_config
         
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
@@ -398,17 +385,34 @@ def main():
     temp_dir = None
     
     if args.run_id:
-        # MLflow run_id에서 아티팩트 다운로드
-        print(f"Downloading artifacts from MLflow run: {args.run_id}")
+        # MLflow run_id에서 아티팩트 직접 접근
+        print(f"Loading artifacts from MLflow run: {args.run_id}")
         
-        # experiment_id가 제공된 경우 experiment 설정
-        if args.experiment_id:
-            print(f"Setting experiment ID: {args.experiment_id}")
-            mlflow.set_experiment(experiment_id=args.experiment_id)
+        # /mnt/data/mlflow_artifacts에서 run_id 찾기
+        mlflow_artifacts_base = "/mnt/data/mlflow_artifacts"
+        model_dir = None
         
-        temp_dir = mlflow.artifacts.download_artifacts(run_id=args.run_id)
-        model_dir = temp_dir
-        print(f"Artifacts downloaded to: {model_dir}")
+        if os.path.exists(mlflow_artifacts_base):
+            print(f"Searching for run_id in: {mlflow_artifacts_base}")
+            
+            # experiment_id 디렉토리들을 순회하면서 run_id 찾기
+            for experiment_dir in os.listdir(mlflow_artifacts_base):
+                experiment_path = os.path.join(mlflow_artifacts_base, experiment_dir)
+                if os.path.isdir(experiment_path):
+                    run_path = os.path.join(experiment_path, args.run_id)
+                    if os.path.exists(run_path):
+                        artifacts_path = os.path.join(run_path, "artifacts")
+                        if os.path.exists(artifacts_path):
+                            model_dir = artifacts_path
+                            print(f"Found artifacts at: {artifacts_path}")
+                            break
+            
+            if model_dir is None:
+                raise FileNotFoundError(f"Run ID {args.run_id} not found in {mlflow_artifacts_base}")
+        else:
+            raise FileNotFoundError(f"MLflow artifacts directory not found: {mlflow_artifacts_base}")
+                
+        print(f"Final model directory: {model_dir}")
     
     # 예측기 생성
     try:
