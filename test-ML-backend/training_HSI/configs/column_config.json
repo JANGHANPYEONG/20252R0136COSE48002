@@ -1,7 +1,7 @@
 {
   "column_order": {
     "id_column_index": 0,
-    "label_start_index": 2,
+    "label_start_index": 1,
     "rgb_image_path_start_index": 11,
     "rgb_mask_path_index": null
   },
