@@ -34,7 +34,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
-from utils.xai import generate_cam_arrays, _infer_task_from_outputs, cam_to_png_bytes
+from utils.xai import generate_cam_arrays, _infer_task_from_outputs, cam_to_png_bytes, save_cam_arrays
 
 class HSIPredictor:
     """HSI 예측을 위한 클래스 (학습 파이프라인과 완전 호환)"""
@@ -267,7 +267,7 @@ class HSIPredictor:
         
         return image_tensor.to(self.device)
         
-    def predict(self, image_paths, crop_size=None, *, xai: bool = False, xai_layer: Optional[str] = None, xai_index: Optional[int] = None):
+    def predict(self, image_paths, crop_size=None, *, xai: bool = False, xai_layer: Optional[str] = None, xai_index: Optional[int] = None, xai_save_dir: Optional[str] = None):
         """
         이미지 경로 리스트를 받아서 예측을 수행합니다.
         
@@ -345,7 +345,7 @@ class HSIPredictor:
 
         # XAI 부분
         if xai:
-            # task 결정(분류 우선, 불명확하면 xai의 infer 사용)
+            # task 결정(분류 우선, 불명확하면 infer)
             if isinstance(outputs, dict):
                 if 'classification' in outputs:
                     task_to_cam = 'classification'
@@ -356,23 +356,96 @@ class HSIPredictor:
             else:
                 task_to_cam = 'classification' if (outputs.ndim == 2 and outputs.shape[1] > 1) else 'regression'
 
-            wavelengths = self.column_config.get('wavelengths', None)
-
-            # ---------- 멀티라벨 회귀 전 라벨 반복 생성만 추가 (다른 부분은 그대로) ----------
-            xai_items = []
+            wavelengths   = self.column_config.get('wavelengths', None)
             label_columns = self.column_config.get('label_columns', [])
+            lt            = self.column_config.get('label_types', {})
 
-            if task_to_cam == 'regression' and (isinstance(outputs, dict) and 'regression' in outputs):
-                # 회귀 헤드 출력 길이 (로컬 인덱스 범위)
+            # ---------- [A] 멀티라벨 분류: 모든 클래스에 대해 per-target CAM ----------
+            if (isinstance(outputs, dict) and 'classification' in outputs):
+                cls_out = outputs['classification']
+                C = int(cls_out.shape[1]) if cls_out.ndim == 2 else int(cls_out.numel())
+
+                # 분류 라벨명 순서: label_types['classification'] 우선 → 길이 다르면 self.cls_indices 기반 fallback
+                cls_labels_order = list(lt.get('classification', [])) if isinstance(lt.get('classification', []), list) else []
+                if len(cls_labels_order) != C:
+                    cls_labels_order = []
+                    for i in range(C):
+                        if i < len(getattr(self, 'cls_indices', [])):
+                            gidx = self.cls_indices[i]
+                            if 0 <= gidx < len(label_columns):
+                                cls_labels_order.append(label_columns[gidx])
+                            else:
+                                cls_labels_order.append(None)
+                        else:
+                            cls_labels_order.append(None)
+
+                # 예측 확률 매핑 (라벨명 → 확률)
+                pred_by_label = {}
+                if 'classification' in results and isinstance(results['classification'], list):
+                    cls_preds = results['classification']
+                    lt_cls = list(lt.get('classification', [])) if isinstance(lt.get('classification', []), list) else []
+                    if len(lt_cls) == len(cls_preds) and len(lt_cls) > 0:
+                        for name, val in zip(lt_cls, cls_preds):
+                            pred_by_label[name] = val
+                    else:
+                        for i, val in enumerate(cls_preds):
+                            if i < len(getattr(self, 'cls_indices', [])):
+                                gidx = self.cls_indices[i]
+                                if 0 <= gidx < len(label_columns):
+                                    pred_by_label[label_columns[gidx]] = val
+
+                xai_items = []
+                for ci in range(C):
+                    cam_pack = generate_cam_arrays(
+                        model=self.model,
+                        image_tensor_bchw=image_tensor,
+                        outputs=outputs,
+                        task='classification',
+                        target_index=ci,             # ★ 각 클래스별 CAM
+                        target_layer_name=None,
+                        image_cube_hwc=image_cube,
+                        wavelengths=wavelengths,
+                        rgb_strategy='auto',
+                        alpha=0.35
+                    )
+                    heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
+                    heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
+
+                    target_label = cls_labels_order[ci] if ci < len(cls_labels_order) else None
+                    pred_value = None
+                    if target_label is not None and target_label in pred_by_label:
+                        pred_value = float(pred_by_label[target_label])
+
+                    # 파일 저장
+                    if xai_save_dir:
+                        base = f"class_{ci}" if target_label is None else f"class_{ci}_{str(target_label)}"
+                        save_cam_arrays(cam=cam_pack['cam'], save_dir=xai_save_dir,
+                                        basename=base, save_heatmap=True,
+                                        save_rgb=False, save_overlay=False)
+
+
+                    xai_items.append({
+                        'task': 'classification',
+                        'target_index': int(ci),
+                        'target_label': target_label,
+                        'pred': pred_value,
+                        'layer': cam_pack['layer'],
+                        'image_base64': heatmap_b64
+                    })
+
+                results['xai'] = {
+                    'task': 'classification',
+                    'mode': 'per_target',
+                    'items': xai_items
+                }
+
+            # ---------- [B] 멀티라벨 회귀: 기존처럼 모든 타깃에 대해 per-target CAM ----------
+            elif (isinstance(outputs, dict) and 'regression' in outputs):
                 reg_out = outputs['regression']
                 R = int(reg_out.shape[1]) if reg_out.ndim == 2 else int(reg_out.numel())
 
-                # 회귀 라벨의 "로컬 순서"를 우선 label_types['regression']에서 가져오고,
-                # 길이가 안 맞으면 fallback: self.reg_indices(글로벌) -> label_columns로 라벨명 매핑
-                lt = self.column_config.get('label_types', {})
                 reg_labels_order = list(lt.get('regression', [])) if isinstance(lt.get('regression', []), list) else []
                 if len(reg_labels_order) != R:
-                    # fallback: 글로벌 인덱스 목록에서 앞 R개를 사용
                     reg_labels_order = []
                     for i in range(R):
                         if i < len(getattr(self, 'reg_indices', [])):
@@ -384,38 +457,30 @@ class HSIPredictor:
                         else:
                             reg_labels_order.append(None)
 
-                # pred 매칭: 라벨명 → 값 (results['regression'] 배열과 라벨명을 안전하게 정합)
                 pred_by_label = {}
                 if 'regression' in results and isinstance(results['regression'], list):
-                    # 우선 label_types['regression'] 길이가 같으면 그 순서를 신뢰
                     reg_preds = results['regression']
                     lt_reg = list(lt.get('regression', [])) if isinstance(lt.get('regression', []), list) else []
                     if len(lt_reg) == len(reg_preds) and len(lt_reg) > 0:
                         for name, val in zip(lt_reg, reg_preds):
                             pred_by_label[name] = val
                     else:
-                        # fallback: self.reg_indices(글로벌 인덱스) 기준으로 label_columns 매핑
                         for i, val in enumerate(reg_preds):
                             if i < len(getattr(self, 'reg_indices', [])):
                                 gidx = self.reg_indices[i]
                                 if 0 <= gidx < len(label_columns):
                                     pred_by_label[label_columns[gidx]] = val
 
-                # 대상 타깃: 전체(0..R-1)
-                target_locals = list(range(R))
-
-                for li in target_locals:
-                    if not (0 <= li < R):
-                        continue  # 방어코드
-
+                xai_items = []
+                for ri in range(R):
                     cam_pack = generate_cam_arrays(
                         model=self.model,
-                        image_tensor_bchw=image_tensor,   # (1,C,H,W)
-                        outputs=outputs,                  # fresh forward 참고용
+                        image_tensor_bchw=image_tensor,
+                        outputs=outputs,
                         task='regression',
-                        target_index=li,                  # 로컬 인덱스
-                        target_layer_name=None,           # 현재 CLI에 xai_layer 없음
-                        image_cube_hwc=image_cube,        # (H,W,C)
+                        target_index=ri,             # ★ 각 타깃별 CAM
+                        target_layer_name=None,
+                        image_cube_hwc=image_cube,
                         wavelengths=wavelengths,
                         rgb_strategy='auto',
                         alpha=0.35
@@ -423,17 +488,16 @@ class HSIPredictor:
                     heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
                     heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
 
-                    target_label = reg_labels_order[li] if li < len(reg_labels_order) else None
-                    # ★ 라벨명으로 예측값 찾아서 넣기
+                    target_label = reg_labels_order[ri] if ri < len(reg_labels_order) else None
                     pred_value = None
                     if target_label is not None and target_label in pred_by_label:
                         pred_value = float(pred_by_label[target_label])
 
                     xai_items.append({
                         'task': 'regression',
-                        'target_index': int(li),                  # 로컬
+                        'target_index': int(ri),
                         'target_label': target_label,
-                        'pred': pred_value,                       # 라벨명 기반으로 안전하게 매칭된 값
+                        'pred': pred_value,
                         'layer': cam_pack['layer'],
                         'image_base64': heatmap_b64
                     })
@@ -444,16 +508,16 @@ class HSIPredictor:
                     'items': xai_items
                 }
 
+            # ---------- [C] 단일(분류/회귀) 케이스는 기존 single 로직 유지 ----------
             else:
-                # 기존 단일 타깃(분류 또는 회귀) 처리 (호환성 유지)
                 cam_pack = generate_cam_arrays(
                     model=self.model,
-                    image_tensor_bchw=image_tensor,   # (1,C,H,W)
-                    outputs=outputs,                  # xai.py 시그니처: 참고용
-                    task=task_to_cam,                 # 'classification' | 'regression'
-                    target_index=None,                # None이면 내부 자동(분류=argmax, 회귀=0)
-                    target_layer_name=None,           # 현재 CLI에 xai_layer 없음
-                    image_cube_hwc=image_cube,        # (H,W,C)
+                    image_tensor_bchw=image_tensor,
+                    outputs=outputs,
+                    task=task_to_cam,
+                    target_index=None,            # 내부에서 argmax(분류)/0번(회귀)
+                    target_layer_name=None,
+                    image_cube_hwc=image_cube,
                     wavelengths=wavelengths,
                     rgb_strategy='auto',
                     alpha=0.35
@@ -467,12 +531,10 @@ class HSIPredictor:
                 except Exception:
                     pass
 
-                # 단일 모드에서도 라벨명으로 pred 매칭 시도
                 pred_value = None
-                lt = self.column_config.get('label_types', {})
                 if 'regression' in results and isinstance(results['regression'], list):
-                    lt_reg = list(lt.get('regression', [])) if isinstance(lt.get('regression', []), list) else []
                     pred_by_label = {}
+                    lt_reg = list(lt.get('regression', [])) if isinstance(lt.get('regression', []), list) else []
                     if len(lt_reg) == len(results['regression']) and len(lt_reg) > 0:
                         for name, val in zip(lt_reg, results['regression']):
                             pred_by_label[name] = val
@@ -562,6 +624,8 @@ def main():
     parser.add_argument('--output', type=str,
                        help='Output file path for results')
     parser.add_argument('--xai', action='store_true', help='Enable Grad-CAM')
+    parser.add_argument('--xai-save-dir', type=str, default=None,
+                    help='If set, save per-label CAM heatmaps to this directory')
 
     
     args = parser.parse_args()
@@ -609,6 +673,7 @@ def main():
             args.image_paths,
             tuple(args.crop_size) if args.crop_size else None,
             xai=args.xai,
+            xai_save_dir=args.xai_save_dir,
         )
 
         # 결과 출력
