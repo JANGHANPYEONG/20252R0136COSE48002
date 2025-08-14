@@ -24,6 +24,7 @@ import pickle
 import mlflow
 import tempfile
 import warnings
+import base64
 warnings.filterwarnings('ignore')
 
 from typing import List, Optional, Dict, Any
@@ -420,6 +421,7 @@ class HSIPredictor:
                         alpha=0.35
                     )
                     heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
+                    heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
 
                     target_label = reg_labels_order[li] if li < len(reg_labels_order) else None
                     # ★ 라벨명으로 예측값 찾아서 넣기
@@ -433,7 +435,7 @@ class HSIPredictor:
                         'target_label': target_label,
                         'pred': pred_value,                       # 라벨명 기반으로 안전하게 매칭된 값
                         'layer': cam_pack['layer'],
-                        'image_bytes': heatmap_png_bytes
+                        'image_base64': heatmap_b64
                     })
 
                 results['xai'] = {
