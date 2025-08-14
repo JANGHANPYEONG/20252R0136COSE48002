@@ -76,16 +76,19 @@ class RGBDataset(Dataset):
         if not os.path.isabs(image_path):
             base_dir = self.column_config['base_dirs']['rgb_image_dir']
             image_path = os.path.join(base_dir, image_path)
-        
+
         return image_path
     
     def _get_mask_path(self, idx: int) -> str:
         """마스크 경로를 반환합니다."""
         if not self.seg_enabled or self.seg_mode != 'precomputed':
             return None
-        
-        mask_idx = self.column_config['column_order']['rgb_mask_path_index']
+
+        mask_idx = self.column_config.get('column_order', {}).get('rgb_mask_path_index', None)
+        if mask_idx is None:
+            return None
         mask_path = self.data.iloc[idx, mask_idx]
+        
         # 빈값/NaN 가드
         if pd.isna(mask_path) or str(mask_path).strip() == "":
             return None
@@ -251,7 +254,7 @@ def create_rgb_data_loaders(csv_path: str, column_config_path: str,
         transform=None,  # 나중에 설정
         seg_config=seg_config
     )
-    
+
     # 데이터 분할 - sklearn 사용
     total = len(full_dataset)
     val_size = int(total * val_split)
