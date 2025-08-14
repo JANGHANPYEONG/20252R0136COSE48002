@@ -10,6 +10,7 @@ import json
 import pandas as pd
 import numpy as np
 import torch
+import glob
 from torch.utils.data import Dataset, DataLoader, random_split, Subset
 from PIL import Image
 import warnings
@@ -99,10 +100,27 @@ class RGBDataset(Dataset):
     def _load_image(self, image_path: str) -> Image.Image:
         """이미지를 로드합니다."""
         if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Image not found: {image_path}")
-        
+            # 같은 폴더에서 파일명(확장자 대소문자 무시) 검색
+            dir_name = os.path.dirname(image_path) or "."
+            base_name = os.path.basename(image_path)
+            name_root, ext = os.path.splitext(base_name)
+
+            # 패턴 매칭: 같은 이름, 확장자만 다른 모든 경우
+            candidates = glob.glob(os.path.join(dir_name, f"{name_root}.*"))
+            matched_path = None
+            for cand in candidates:
+                if cand.lower() == os.path.join(dir_name, base_name).lower():
+                    matched_path = cand
+                    break
+
+            if matched_path is None:
+                raise FileNotFoundError(f"Image not found (case-insensitive search failed): {image_path}")
+
+            image_path = matched_path  # 실제 존재하는 경로로 갱신
+
         image = Image.open(image_path).convert('RGB')
         return image
+
     
     def _load_mask(self, mask_path: str) -> np.ndarray:
         """마스크를 로드합니다."""
