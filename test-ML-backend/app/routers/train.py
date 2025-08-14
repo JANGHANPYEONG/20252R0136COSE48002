@@ -7,6 +7,9 @@ from datetime import datetime
 from celery import Celery
 from celery.result import AsyncResult
 
+from training_HSI.train_HSI_2d import main as train_hsi_2d
+from training_HSI.train_vector import main as train_vector
+
 # Celery 및 APIRouter 설정
 celery_app = Celery(
     "tasks",
