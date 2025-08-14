@@ -15,8 +15,9 @@ router = APIRouter()
 # Pydantic 모델 정의
 class PredictRequest(BaseModel):
     model_uri: str  # MLflow run_id 또는 모델 디렉토리 경로
+    experiment_id: Optional[str]  # MLflow experiment_id (선택 사항)
     data_path: str  # 예측할 데이터 경로
-    input_type: Literal["image", "vector"]
+    input_type: Literal["hsi_image", "vector", "rgb_image"]
 
 class PredictResponse(BaseModel):
     message: str
@@ -26,7 +27,7 @@ class PredictResponse(BaseModel):
 
 
 # 비동기 예측 함수
-async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dict:
+async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path: str, input_type: str) -> Dict:
     """
     비동기로 예측을 실행하는 함수 (스크립트 실행 방식)
     """
@@ -60,8 +61,8 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
         current_dir = os.path.dirname(os.path.abspath(__file__))  # app/routers
         project_root = os.path.dirname(os.path.dirname(current_dir))  # test-ML-backend
         training_hsi_dir = os.path.join(project_root, "training_HSI")
-        
-        if input_type == "image":
+
+        if input_type == "hsi_image":
             script_path = os.path.join(training_hsi_dir, "predict_hsi.py")
         elif input_type == "vector":
             script_path = os.path.join(training_hsi_dir, "predict_vector.py")
@@ -82,7 +83,9 @@ async def run_prediction(model_uri: str, data_path: str, input_type: str) -> Dic
             cmd = ["python", script_path]
             
             # 모델 로딩 방식 결정 (run_id vs model_dir)
-            if len(model_uri) == 32:
+            if len(model_uri) == 32 and experiment_id is not None:
+                cmd.extend(["--run_id", model_uri, "--experiment_id", experiment_id])
+            elif len(model_uri) == 32:
                 cmd.extend(["--run_id", model_uri])
             else:
                 cmd.extend(["--model_dir", model_uri])
@@ -206,9 +209,10 @@ async def predict(request: PredictRequest):
         
         # 예측 실행
         prediction_result = await run_prediction(
-            request.model_uri, 
-            request.data_path, 
-            request.input_type
+            model_uri=request.model_uri, 
+            experiment_id=request.experiment_id,
+            data_path=request.data_path, 
+            input_type=request.input_type
         )
         
         end_time = time.time()

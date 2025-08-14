@@ -87,9 +87,9 @@ class HSIPredictor:
         print(f"Loading artifacts from MLflow directory: {model_dir}")
 
         # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
-        column_config_path = self.config['data'].get('column_config',
-                                                "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json")
-            
+        column_config_path = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json"
+        column_config_path = self.config['data'].get('column_config', column_config_path)
+
         if not os.path.exists(column_config_path):
             raise FileNotFoundError(f"Column config file not found: {column_config_path}")
             
@@ -383,9 +383,34 @@ def main():
     # 모델 디렉토리 설정
     model_dir = args.model_dir
     temp_dir = None
-    
-    if args.run_id:
-        # MLflow run_id에서 아티팩트 직접 접근
+
+    if args.run_id and args.experiment_id:
+        # MLflow run_id와 experiment_id를 통해 아티팩트 직접 접근
+        print(f"Loading artifacts from MLflow run: {args.run_id} (Experiment ID: {args.experiment_id})")
+
+        # /mnt/data/mlflow_artifacts에서 run_id 찾기
+        mlflow_artifacts_base = "/mnt/data/mlflow_artifacts"
+        model_dir = None
+
+        if os.path.exists(mlflow_artifacts_base):
+            if os.path.exists(mlflow_artifacts_base):
+                print(f"Searching for experiment_id and run_id in: {mlflow_artifacts_base}")
+                experiment_path = os.path.join(mlflow_artifacts_base, args.experiment_id)
+                if os.path.exists(experiment_path):
+                    run_path = os.path.join(experiment_path, args.run_id)
+                    if os.path.exists(run_path):
+                        artifacts_path = os.path.join(run_path, "artifacts")
+                        if os.path.exists(artifacts_path):
+                            model_dir = artifacts_path
+                            print(f"Found artifacts at: {artifacts_path}")
+
+            if model_dir is None:
+                raise FileNotFoundError(f"Run ID {args.run_id} not found in {mlflow_artifacts_base}")
+        else:
+            raise FileNotFoundError(f"MLflow artifacts directory not found: {mlflow_artifacts_base}")
+
+    elif args.run_id:
+        # MLflow run_id를 통해 아티팩트 직접 접근
         print(f"Loading artifacts from MLflow run: {args.run_id}")
         
         # /mnt/data/mlflow_artifacts에서 run_id 찾기
