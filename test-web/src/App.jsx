@@ -26,7 +26,38 @@ import { UserProvider } from './Utils/UserContext';
 import Box from '@mui/material/Box';
 import MainWidgetBars from './components/Base/WidgetBars/MainWidgetBars';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-const defaultTheme = createTheme();
+import CssBaseline from '@mui/material/CssBaseline';
+
+// 기본 테마에 오버라이딩 스타일 추가
+const defaultTheme = createTheme({
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          margin: 0,
+          padding: 0,
+        },
+      },
+    },
+    // AppBar 관련 스타일 재정의
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          display: 'none', // AppBar 완전히 숨김
+        },
+      },
+    },
+    // Toolbar 관련 스타일 재정의
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          minHeight: 0, // Toolbar 높이 최소화
+          padding: 0,
+        },
+      },
+    },
+  },
+});
 
 function App() {
   const isLoggedin = localStorage.getItem('isLoggedIn') === 'true';
@@ -154,10 +185,11 @@ function App() {
                     <title>{route.title}</title>
                   </Helmet>
                   <ThemeProvider theme={defaultTheme}>
+                    <CssBaseline />
                     {!isLoggedin ? (
                       <LogIn />
                     ) : (
-                      <Box sx={{ display: 'flex' }}>
+                      <Box sx={{ display: 'flex', margin: 0, padding: 0 }}>
                         {route.path !== '/' && <MainWidgetBars />}
                         <Box
                           component="main"
@@ -167,10 +199,14 @@ function App() {
                             height: '100vh',
                             overflow: 'auto',
                             display: 'flex',
-                            alignItems: 'flex-start',  // 상단 정렬로 변경
+                            alignItems: 'flex-start', 
                             justifyContent: 'center',
                             flexDirection: 'column',
-                            paddingTop: '0', // 상단 AppBar가 없어졌으므로 패딩 제거
+                            paddingTop: '0', 
+                            paddingBottom: '0',
+                            margin: '0', // 모든 방향의 마진 제거
+                            position: 'relative', // 위치 지정
+                            top: '0', // 상단에서 시작
                           }}
                         >
                           {route.component}

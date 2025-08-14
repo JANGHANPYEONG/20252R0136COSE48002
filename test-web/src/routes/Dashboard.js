@@ -119,7 +119,7 @@ const Dashboard = () => {
       style={{
         overflow: 'auto',
         width: '100%',
-        marginTop: '100px',
+        marginTop: '20px', // Reduced top margin to align with the sidebar
         height: '100%',
         paddingLeft: '30px',
         paddingRight: '20px',
@@ -132,6 +132,7 @@ const Dashboard = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           minWidth: '634px', // minimum width
+          marginBottom: '20px', // Added spacing below the header
         }}
       >
         {value === 'reject' ? (

@@ -80,11 +80,11 @@ const Stats = () => {
   }
 
   return (
-    <Container maxWidth="xl" style={{ height: '80%' }}>
+    <Container maxWidth="xl" style={{ height: '80%', marginTop: '20px' }}>
       <Box
         sx={{
           width: '100%',
-          paddingLeft: '210px',
+          paddingLeft: '30px', // Reduced padding to align with sidebar
           paddingBottom: '20px',
         }}
       >

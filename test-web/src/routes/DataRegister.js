@@ -736,7 +736,7 @@ const DataRegister = () => {
       style={{
         overflow: 'auto',
         width: '100%',
-        marginTop: '100px',
+        marginTop: '20px', // Reduced top margin to match with sidebar
         height: '100%',
         paddingLeft: '30px',
         paddingRight: '20px',

@@ -41,6 +41,8 @@ const StyledDrawer = styled(MuiDrawer, {
     position: 'relative',
     whiteSpace: 'nowrap',
     width: open ? drawerWidth : '64px',
+    top: 0, // 상단에 붙임
+    marginTop: 0, // 상단 마진 제거
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,

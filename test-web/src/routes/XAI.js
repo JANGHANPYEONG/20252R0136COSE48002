@@ -127,7 +127,7 @@ const XAI = () => {
   }, []);
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '1200px', margin: '0 auto', p: 3 }}>
+    <Box sx={{ width: '100%', maxWidth: '1200px', margin: '20px auto', p: 3 }}>
       {/* 제목 */}
       <Box sx={{ mb: 4 }}>
         <Typography
