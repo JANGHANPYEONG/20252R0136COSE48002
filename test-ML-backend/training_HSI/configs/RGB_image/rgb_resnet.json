@@ -1,7 +1,7 @@
 {
   "seed": 42,
   "data": {
-    "csv": "data/rgb/train.masked.csv",
+    "csv": "/mnt/data/datasets_RGB/label/rgb_meat_label.csv",
     "column_config": "configs/column_config.json",
     "image_size": [224, 224],
     "batch_size": 32,
@@ -26,7 +26,7 @@
     }
   },
   "train": {
-    "epochs": 50,
+    "epochs": 3,
     "optimizer": "AdamW",
     "lr": 3e-4,
     "weight_decay": 1e-4,
