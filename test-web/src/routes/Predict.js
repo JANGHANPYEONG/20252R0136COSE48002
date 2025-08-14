@@ -28,23 +28,37 @@ const Predict = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'info', message: '완료' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: 'info',
+    message: '완료',
+  });
 
   const [openPanel, setOpenPanel] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [filters, setFilters] = useState([
-    { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
-    { name: '데이터 타입', type: 'select', options: ['RGB', 'MSI'], value: null },
+    {
+      name: '날짜',
+      type: 'date',
+      options: [],
+      value: { start: null, end: null },
+    },
+    {
+      name: '데이터 타입',
+      type: 'select',
+      options: ['RGB', 'MSI'],
+      value: null,
+    },
   ]);
   // Dashboard에서 넘어온 데이터로 초기화 + 새로고침 대비 sessionStorage 사용
-useEffect(() => {
-  if (location.state?.data) {
-    setData(location.state.data);
-  }
-  if (location.state?.selectedRows) {
-    setSelectedRows(location.state.selectedRows);
-  }
-}, [location.state]);
+  useEffect(() => {
+    if (location.state?.data) {
+      setData(location.state.data);
+    }
+    if (location.state?.selectedRows) {
+      setSelectedRows(location.state.selectedRows);
+    }
+  }, [location.state]);
   // Dummy data for Predict page
   // useEffect(() => {
   //   const dummy = [
@@ -107,8 +121,6 @@ useEffect(() => {
   //   setData(dummy);
   // }, []);
 
-
-
   //   const handleValueChange = (newValue) => {
   //     setValue(newValue);
   //     setSelectedModel(null); // 탭 변경 시 선택된 모델 초기화
@@ -169,19 +181,19 @@ useEffect(() => {
       setGroupedData(grouped);
       // 성공 여부 알림
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'success',
         message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'error',
         message: '데이터 불러오기 실패! 서버를 확인해주세요.',
       });
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   // 선택 변경 핸들러
@@ -192,7 +204,11 @@ useEffect(() => {
   // Rowclick 여부 다루기
   const handleRowClick = (row) => {
     if (!row.prediction) return;
-    setDetailData({ id: row.id, prediction: row.prediction, sensory: row.sensory});
+    setDetailData({
+      id: row.id,
+      prediction: row.prediction,
+      sensory: row.sensory,
+    });
     setOpenPanel(true);
   };
 
@@ -205,16 +221,24 @@ useEffect(() => {
     setLoading(true);
     try {
       const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
-      const newData = data.map(row => (
-        result[row.id] ? { ...row, prediction: result[row.id] } : row
-      ));
+      const newData = data.map((row) => {
+        // 선택된 행이고 예측 결과가 있는 경우에만 업데이트
+        if (selectedRows.includes(row.id) && result[row.id]) {
+          return { ...row, prediction: result[row.id] };
+        }
+        return row;
+      });
       setData(newData);
-      setSnackbar({  open: true, severity: 'success', message: '예측 성공!'});
+      setSnackbar({ open: true, severity: 'success', message: '예측 성공!' });
     } catch (err) {
-      setSnackbar({ open: true, severity: 'error', message: '예측 실패! 서버 상태를 확인해주세요.' });
+      setSnackbar({
+        open: true,
+        severity: 'error',
+        message: '예측 실패! 서버 상태를 확인해주세요.',
+      });
     }
     setLoading(false);
-  }
+  };
   // 필터 함수
   const handleFilter = () => {
     setFilterModalOpen(true);
@@ -222,11 +246,11 @@ useEffect(() => {
 
   const initializeData = () => {
     setData([]);
-  }
-  
+  };
+
   // 필터 제거 함수
   const handleRemoveFilter = (filterName) => {
-    const updatedFilters = filters.map(filter => {
+    const updatedFilters = filters.map((filter) => {
       if (filter.name === filterName) {
         if (filter.type === 'date') {
           return { ...filter, value: { start: null, end: null } };
@@ -236,10 +260,10 @@ useEffect(() => {
       }
       return filter;
     });
-    
+
     setFilters(updatedFilters);
     handleLoadData(); // 필터 제거 후 데이터 다시 로드
-  }
+  };
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
     setFilters(appliedFilters);
@@ -248,102 +272,185 @@ useEffect(() => {
     handleLoadData(); // 필터 적용 후 데이터 다시 로드
   };
 
-    return (
-    <div style={{ overflow: 'auto', width: '100%', marginTop: '20px', height: '100%', paddingLeft: '30px', paddingRight: '20px' }}>
-      <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '634px' }}>
-        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>AI Prediction</span>
+  return (
+    <div
+      style={{
+        overflow: 'auto',
+        width: '100%',
+        marginTop: '20px',
+        height: '100%',
+        paddingLeft: '30px',
+        paddingRight: '20px',
+      }}
+    >
+      <Box
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          minWidth: '634px',
+        }}
+      >
+        <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>
+          AI Prediction
+        </span>
       </Box>
 
       <Box sx={{ marginTop: '30px' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: '20px' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            marginBottom: '20px',
+          }}
+        >
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
               variant="contained"
               onClick={handleLoadData}
               disabled={loading}
-              sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+              sx={{
+                backgroundColor: navy,
+                '&:hover': { backgroundColor: '#0a2a4a' },
+              }}
             >
-              {loading ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                '데이터 불러오기'
+              )}
             </Button>
 
-            <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
-            <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
+            <Button
+              variant="outlined"
+              onClick={handleFilter}
+              sx={{ borderColor: navy, color: navy }}
+            >
+              필터
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={initializeData}
+              sx={{ borderColor: navy, color: navy }}
+            >
+              데이터 초기화
+            </Button>
           </Box>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginLeft: '2px' }}>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              marginLeft: '2px',
+            }}
+          >
             <Typography variant="subtitle2" sx={{ color: '#444' }}>
               적용된 필터:
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {filters.map((filter) => {
-              // 날짜 필터 처리
-              if (filter.name === '날짜' && filter.value && (filter.value.start || filter.value.end)) {
-                return (
-                  <Chip
-                    key={filter.name}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', marginRight: '4px' }}>
-                          {filter.name}:
-                        </Typography>
-                        <Typography variant="body2">
-                          {filter.value.start ? filter.value.start.format('YYYY-MM-DD') : '처음'} ~ {filter.value.end ? filter.value.end.format('YYYY-MM-DD') : '현재'}
-                        </Typography>
-                      </Box>
-                    }
-                    onDelete={() => handleRemoveFilter(filter.name)}
-                    sx={{ 
-                      backgroundColor: '#e3f2fd',
-                      borderRadius: '16px',
-                      padding: '4px'
-                    }}
-                    variant="outlined"
-                  />
-                );
-              } 
-              // 선택 필터 처리
-              else if (filter.type === 'select' && filter.value) {
-                const isDataTypeFilter = filter.name === '데이터 타입';
-                return (
-                  <Chip
-                    key={filter.name}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', marginRight: '4px' }}>
-                          {filter.name}:
-                        </Typography>
-                        <Typography variant="body2">
-                          {filter.value}
-                          {isDataTypeFilter && (
-                            <span style={{ fontSize: '0.8rem', marginLeft: '4px', color: '#555' }}>
-                              ({filter.value === 'RGB' ? '일반 컬러 이미지' : '다중 스펙트럼 이미지'})
-                            </span>
-                          )}
-                        </Typography>
-                      </Box>
-                    }
-                    onDelete={() => handleRemoveFilter(filter.name)}
-                    sx={{ 
-                      backgroundColor: isDataTypeFilter 
-                        ? (filter.value === 'RGB' ? '#e8f5e9' : '#e0f7fa') 
-                        : '#e3f2fd',
-                      borderRadius: '16px',
-                      padding: '4px'
-                    }}
-                    variant="outlined"
-                  />
-                );
-              }
-              return null;
-            })}
-            {!filters.some(f => 
-              (f.name === '날짜' && f.value && (f.value.start || f.value.end)) || 
-              (f.type === 'select' && f.value)
-            ) && (
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                필터 버튼을 클릭하여 데이터 타입(RGB/MSI) 및 기타 필터 조건을 설정할 수 있습니다.
-              </Typography>
-            )}
+              {filters.map((filter) => {
+                // 날짜 필터 처리
+                if (
+                  filter.name === '날짜' &&
+                  filter.value &&
+                  (filter.value.start || filter.value.end)
+                ) {
+                  return (
+                    <Chip
+                      key={filter.name}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 'bold', marginRight: '4px' }}
+                          >
+                            {filter.name}:
+                          </Typography>
+                          <Typography variant="body2">
+                            {filter.value.start
+                              ? filter.value.start.format('YYYY-MM-DD')
+                              : '처음'}{' '}
+                            ~{' '}
+                            {filter.value.end
+                              ? filter.value.end.format('YYYY-MM-DD')
+                              : '현재'}
+                          </Typography>
+                        </Box>
+                      }
+                      onDelete={() => handleRemoveFilter(filter.name)}
+                      sx={{
+                        backgroundColor: '#e3f2fd',
+                        borderRadius: '16px',
+                        padding: '4px',
+                      }}
+                      variant="outlined"
+                    />
+                  );
+                }
+                // 선택 필터 처리
+                else if (filter.type === 'select' && filter.value) {
+                  const isDataTypeFilter = filter.name === '데이터 타입';
+                  return (
+                    <Chip
+                      key={filter.name}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 'bold', marginRight: '4px' }}
+                          >
+                            {filter.name}:
+                          </Typography>
+                          <Typography variant="body2">
+                            {filter.value}
+                            {isDataTypeFilter && (
+                              <span
+                                style={{
+                                  fontSize: '0.8rem',
+                                  marginLeft: '4px',
+                                  color: '#555',
+                                }}
+                              >
+                                (
+                                {filter.value === 'RGB'
+                                  ? '일반 컬러 이미지'
+                                  : '다중 스펙트럼 이미지'}
+                                )
+                              </span>
+                            )}
+                          </Typography>
+                        </Box>
+                      }
+                      onDelete={() => handleRemoveFilter(filter.name)}
+                      sx={{
+                        backgroundColor: isDataTypeFilter
+                          ? filter.value === 'RGB'
+                            ? '#e8f5e9'
+                            : '#e0f7fa'
+                          : '#e3f2fd',
+                        borderRadius: '16px',
+                        padding: '4px',
+                      }}
+                      variant="outlined"
+                    />
+                  );
+                }
+                return null;
+              })}
+              {!filters.some(
+                (f) =>
+                  (f.name === '날짜' &&
+                    f.value &&
+                    (f.value.start || f.value.end)) ||
+                  (f.type === 'select' && f.value)
+              ) && (
+                <Typography variant="body2" sx={{ color: '#666' }}>
+                  필터 버튼을 클릭하여 데이터 타입(RGB/MSI) 및 기타 필터 조건을
+                  설정할 수 있습니다.
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>
@@ -358,12 +465,22 @@ useEffect(() => {
           총 {data.length}개의 데이터
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 2, marginTop: '20px', marginBottom: '20px' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            marginTop: '20px',
+            marginBottom: '20px',
+          }}
+        >
           <Button
             variant="contained"
             disabled={selectedRows.length === 0}
             onClick={() => handlePredict()}
-            sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            sx={{
+              backgroundColor: navy,
+              '&:hover': { backgroundColor: '#0a2a4a' },
+            }}
           >
             예측하기
           </Button>
@@ -388,7 +505,7 @@ useEffect(() => {
             '조직감(Texture)',
             '즙성(Juiciness)',
             '풍미(Flavor)',
-            '전체 기호도'
+            '전체 기호도',
           ]}
           showTableComparison={true}
         />
@@ -402,22 +519,23 @@ useEffect(() => {
           <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
         </Snackbar>
 
-          <FilterModal
-            open={filterModalOpen}
-            onClose={() => setFilterModalOpen(false)}
-            onApply={handleApplyFilters}
-            filters={filters}
-            setFilters={setFilters}
-          />
-      </Box>  
+        <FilterModal
+          open={filterModalOpen}
+          onClose={() => setFilterModalOpen(false)}
+          onApply={handleApplyFilters}
+          filters={filters}
+          setFilters={setFilters}
+        />
+      </Box>
     </div>
   );
 };
 
-
-
-      {/**이동 탭 (사진 데이터 모델, 분광 데이터 모델, Cross 모델) */}
-      {/* <Box sx={style.fixedTab}>
+{
+  /**이동 탭 (사진 데이터 모델, 분광 데이터 모델, Cross 모델) */
+}
+{
+  /* <Box sx={style.fixedTab}>
         <div style={{ display: 'flex' }}>
           <Button
             style={value === 'photo' ? style.tabBtnCilcked : style.tabBtn}
@@ -450,14 +568,22 @@ useEffect(() => {
             Cross 모델
           </Button>
         </div>
-      </Box> */}
+      </Box> */
+}
 
-      {/**탭별 콘텐츠 */}
-      {/* <Box sx={{ marginTop: '30px' }}>
+{
+  /**탭별 콘텐츠 */
+}
+{
+  /* <Box sx={{ marginTop: '30px' }}>
         {value === 'photo' && (
-          <Box> */}
-      {/* 모델 불러오기 버튼 */}
-      {/* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+          <Box> */
+}
+{
+  /* 모델 불러오기 버튼 */
+}
+{
+  /* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
               <Button
                 variant="contained"
                 onClick={handleLoadModels}
@@ -473,18 +599,26 @@ useEffect(() => {
                   '모델 불러오기'
                 )}
               </Button>
-            </Box> */}
+            </Box> */
+}
 
-      {/* 모델 목록 */}
-      {/* <DataList
+{
+  /* 모델 목록 */
+}
+{
+  /* <DataList
               columns={getModelColumns()}
               data={models}
               title="사진 데이터 모델 목록"
               onRowClick={handleModelSelect}
-            /> */}
+            /> */
+}
 
-      {/* 선택된 모델 정보 */}
-      {/* {selectedModel && (
+{
+  /* 선택된 모델 정보 */
+}
+{
+  /* {selectedModel && (
               <Paper
                 sx={{
                   padding: '20px',
@@ -533,12 +667,18 @@ useEffect(() => {
               </Paper>
             )}
           </Box>
-        )} */}
+        )} */
+}
 
-      {/* {value === 'spectral' && (
-          <Box> */}
-      {/* 모델 불러오기 버튼 */}
-      {/* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+{
+  /* {value === 'spectral' && (
+          <Box> */
+}
+{
+  /* 모델 불러오기 버튼 */
+}
+{
+  /* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
               <Button
                 variant="contained"
                 onClick={handleLoadModels}
@@ -554,18 +694,26 @@ useEffect(() => {
                   '모델 불러오기'
                 )}
               </Button>
-            </Box> */}
+            </Box> */
+}
 
-      {/* 모델 목록 */}
-      {/* <DataList
+{
+  /* 모델 목록 */
+}
+{
+  /* <DataList
               columns={getModelColumns()}
               data={models}
               title="분광 데이터 모델 목록"
               onRowClick={handleModelSelect}
-            /> */}
+            /> */
+}
 
-      {/* 선택된 모델 정보 */}
-      {/* {selectedModel && (
+{
+  /* 선택된 모델 정보 */
+}
+{
+  /* {selectedModel && (
               <Paper
                 sx={{
                   padding: '20px',
@@ -614,12 +762,18 @@ useEffect(() => {
               </Paper>
             )}
           </Box>
-        )} */}
+        )} */
+}
 
-      {/* {value === 'cross' && (
-          <Box> */}
-      {/* 모델 불러오기 버튼 */}
-      {/* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+{
+  /* {value === 'cross' && (
+          <Box> */
+}
+{
+  /* 모델 불러오기 버튼 */
+}
+{
+  /* <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
               <Button
                 variant="contained"
                 onClick={handleLoadModels}
@@ -635,18 +789,26 @@ useEffect(() => {
                   '모델 불러오기'
                 )}
               </Button>
-            </Box> */}
+            </Box> */
+}
 
-      {/* 모델 목록 */}
-      {/* <DataList
+{
+  /* 모델 목록 */
+}
+{
+  /* <DataList
               columns={getModelColumns()}
               data={models}
               title="Cross 모델 목록"
               onRowClick={handleModelSelect}
-            /> */}
+            /> */
+}
 
-      {/* 선택된 모델 정보 */}
-      {/* {selectedModel && (
+{
+  /* 선택된 모델 정보 */
+}
+{
+  /* {selectedModel && (
               <Paper
                 sx={{
                   padding: '20px',
@@ -696,5 +858,6 @@ useEffect(() => {
             )}
           </Box>
         )}
-      </Box> */}
+      </Box> */
+}
 export default Predict;
