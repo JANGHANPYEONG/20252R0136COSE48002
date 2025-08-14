@@ -248,21 +248,15 @@ const Drawer = ({
         onClick={toggleDrawer}
       >
         {open ? (
-          <Link to="/Home" style={{ width: '100%', textAlign: 'center' }}>
-            <img 
-              src={deeplant_long} 
-              alt="Deeplant Logo" 
-              style={{ 
-                width: '90%',  // 너비를 퍼센트로 지정하여 컨테이너에 맞추고 비율 유지
-                height: 'auto',  // 높이는 자동으로 계산하여 원본 비율 유지
-                maxWidth: '100%',
-                transition: 'transform 0.2s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)'  // 호버 효과 추가
-                }
-              }} 
-            />
-          </Link>
+          <img 
+            src={deeplant_long} 
+            alt="Deeplant Logo" 
+            style={{ 
+              width: '90%',  // 너비를 퍼센트로 지정하여 컨테이너에 맞추고 비율 유지
+              height: 'auto',  // 높이는 자동으로 계산하여 원본 비율 유지
+              maxWidth: '100%'
+            }} 
+          />
         ) : (
           <img 
             src={logo} 

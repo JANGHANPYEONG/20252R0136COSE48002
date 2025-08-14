@@ -224,7 +224,10 @@ const PredictRGB = () => {
     <div style={{ overflow: 'auto', width: '100%', marginTop: '100px', height: '100%', paddingLeft: '30px', paddingRight: '20px' }}>
       <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '634px' }}>
         <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>AI Prediction</span>
+      {/* 오른쪽 끝에 RGB 추가*/}
+      <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>RGB</span>      
       </Box>
+
 
       <Box sx={{ marginTop: '30px' }}>
         <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
