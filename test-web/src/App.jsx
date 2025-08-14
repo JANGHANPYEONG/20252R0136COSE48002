@@ -19,7 +19,6 @@ import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
 import NewDashboard from './routes/NewDashboard';
 import MeatDetailPage from './routes/MeatDetailPage';
-import XAI from './routes/XAI';
 
 import { UserProvider } from './Utils/UserContext';
 
@@ -163,11 +162,6 @@ function App() {
       path: '/meat/:id',
       title: 'Meat Detail | Deeplant',
       component: <MeatDetailPage />,
-    },
-    {
-      path: '/XAI',
-      title: 'XAI 분석 | DeePlant',
-      component: <XAI />,
     },
   ];
 

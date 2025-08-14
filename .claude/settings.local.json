@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(copy:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)"
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}
