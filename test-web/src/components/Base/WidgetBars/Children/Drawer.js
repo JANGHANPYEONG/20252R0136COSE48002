@@ -237,8 +237,9 @@ const Drawer = ({
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          padding: '16px',
-          height: '120px',  // 높이 증가
+          padding: '24px 16px',  // 위아래 패딩 증가
+          height: 'auto',  // 자동 높이로 변경하여 컨텐츠에 맞춤
+          minHeight: '120px',  // 최소 높이 설정
           cursor: 'pointer',
           backgroundColor: '#f9f9f9'  // 약간의 배경색 추가
         }}
@@ -250,7 +251,8 @@ const Drawer = ({
               src={deeplant_long} 
               alt="Deeplant Logo" 
               style={{ 
-                height: '65px',  // 로고 높이 증가
+                width: '90%',  // 너비를 퍼센트로 지정하여 컨테이너에 맞추고 비율 유지
+                height: 'auto',  // 높이는 자동으로 계산하여 원본 비율 유지
                 maxWidth: '100%',
                 transition: 'transform 0.2s ease',
                 '&:hover': {
@@ -264,8 +266,9 @@ const Drawer = ({
             src={logo} 
             alt="LOGO" 
             style={{ 
-              width: '50px',  // 크기 증가
-              height: '50px'  // 크기 증가
+              width: '54px',  // 고정 너비로 설정 - 사이드바가 64px이므로 적절한 여백 확보
+              height: '54px',  // 정사각형 비율 유지
+              padding: '2px'   // 작은 패딩 추가
             }} 
           />
         )}

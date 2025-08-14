@@ -167,7 +167,7 @@ function App() {
                             height: '100vh',
                             overflow: 'auto',
                             display: 'flex',
-                            alignItems: 'center',
+                            alignItems: 'flex-start',  // 상단 정렬로 변경
                             justifyContent: 'center',
                             flexDirection: 'column',
                             paddingTop: '0', // 상단 AppBar가 없어졌으므로 패딩 제거

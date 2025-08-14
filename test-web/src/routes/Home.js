@@ -68,7 +68,7 @@ const Home = () => {
         // alignContent: 'center',
         overflow: 'auto',
         // width: '100%',
-        marginTop: '100px',
+        marginTop: '20px',  // 상단 여백 줄임
         paddingBottom: '100px',
         // height: '100%',
         // paddingLeft: '30px',
