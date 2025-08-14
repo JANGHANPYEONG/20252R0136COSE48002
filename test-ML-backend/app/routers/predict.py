@@ -15,7 +15,7 @@ router = APIRouter()
 # Pydantic 모델 정의
 class PredictRequest(BaseModel):
     model_uri: str  # MLflow run_id 또는 모델 디렉토리 경로
-    experiment_id: Optional[str]  # MLflow experiment_id (선택 사항)
+    experiment_id: Optional[str] = None # MLflow experiment_id (선택 사항)
     data_path: str  # 예측할 데이터 경로
     input_type: Literal["hsi_image", "vector", "rgb_image"]
 
