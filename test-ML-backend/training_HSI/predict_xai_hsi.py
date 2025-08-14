@@ -360,12 +360,20 @@ class HSIPredictor:
             label_columns = self.column_config.get('label_columns', [])
             lt            = self.column_config.get('label_types', {})
 
-            # ---------- [A] 멀티라벨 분류: 모든 클래스에 대해 per-target CAM ----------
-            if (isinstance(outputs, dict) and 'classification' in outputs):
-                cls_out = outputs['classification']
+            # ---------- [A] 멀티라벨 분류 ----------
+            if ( (isinstance(outputs, dict) and 'classification' in outputs) or
+                (not isinstance(outputs, dict) and task_to_cam == 'classification') ):
+                
+                # outputs 형태에 맞춰 cls_out 준비
+                if isinstance(outputs, dict):
+                    cls_out = outputs['classification']
+                else:
+                    cls_out = outputs  # 단일 텐서(멀티클래스/멀티라벨)
+
+                # 클래스 개수
                 C = int(cls_out.shape[1]) if cls_out.ndim == 2 else int(cls_out.numel())
 
-                # 분류 라벨명 순서: label_types['classification'] 우선 → 길이 다르면 self.cls_indices 기반 fallback
+                # 라벨명 순서: label_types['classification'] 우선 → 길이 안 맞으면 self.cls_indices 기반 fallback
                 cls_labels_order = list(lt.get('classification', [])) if isinstance(lt.get('classification', []), list) else []
                 if len(cls_labels_order) != C:
                     cls_labels_order = []
@@ -399,9 +407,9 @@ class HSIPredictor:
                     cam_pack = generate_cam_arrays(
                         model=self.model,
                         image_tensor_bchw=image_tensor,
-                        outputs=outputs,
+                        outputs=outputs,              # tensor/dict 모두 지원
                         task='classification',
-                        target_index=ci,             # ★ 각 클래스별 CAM
+                        target_index=ci,              # ★ 각 클래스별 CAM
                         target_layer_name=None,
                         image_cube_hwc=image_cube,
                         wavelengths=wavelengths,
@@ -412,17 +420,15 @@ class HSIPredictor:
                     heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
 
                     target_label = cls_labels_order[ci] if ci < len(cls_labels_order) else None
-                    pred_value = None
-                    if target_label is not None and target_label in pred_by_label:
-                        pred_value = float(pred_by_label[target_label])
+                    pred_value = float(pred_by_label[target_label]) if (target_label and target_label in pred_by_label) else None
 
-                    # 파일 저장
+                    # (선택) 파일 저장: --xai-save-dir 지정 시
                     if xai_save_dir:
-                        base = f"class_{ci}" if target_label is None else f"class_{ci}_{str(target_label)}"
+                        def _safe_name(s): return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
+                        base = f"class_{ci}" if target_label is None else f"class_{ci}_{_safe_name(target_label)}"
                         save_cam_arrays(cam=cam_pack['cam'], save_dir=xai_save_dir,
                                         basename=base, save_heatmap=True,
                                         save_rgb=False, save_overlay=False)
-
 
                     xai_items.append({
                         'task': 'classification',
@@ -435,11 +441,11 @@ class HSIPredictor:
 
                 results['xai'] = {
                     'task': 'classification',
-                    'mode': 'per_target',
+                    'mode': 'per_target',            
                     'items': xai_items
                 }
 
-            # ---------- [B] 멀티라벨 회귀: 기존처럼 모든 타깃에 대해 per-target CAM ----------
+            # ---------- [B] 멀티라벨 회귀 ----------
             elif (isinstance(outputs, dict) and 'regression' in outputs):
                 reg_out = outputs['regression']
                 R = int(reg_out.shape[1]) if reg_out.ndim == 2 else int(reg_out.numel())
@@ -478,7 +484,7 @@ class HSIPredictor:
                         image_tensor_bchw=image_tensor,
                         outputs=outputs,
                         task='regression',
-                        target_index=ri,             # ★ 각 타깃별 CAM
+                        target_index=ri,             
                         target_layer_name=None,
                         image_cube_hwc=image_cube,
                         wavelengths=wavelengths,
@@ -508,7 +514,7 @@ class HSIPredictor:
                     'items': xai_items
                 }
 
-            # ---------- [C] 단일(분류/회귀) 케이스는 기존 single 로직 유지 ----------
+            # ---------- [C] 단일(분류/회귀) 케이스 ----------
             else:
                 cam_pack = generate_cam_arrays(
                     model=self.model,
