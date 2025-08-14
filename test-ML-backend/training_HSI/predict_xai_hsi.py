@@ -81,7 +81,7 @@ class HSIPredictor:
                       (/mnt/data/mlflow_artifacts/experiment_id/run_id/artifacts)
             
         Returns:
-            tuple: (model, config, scaler, column_config)
+            tuple: (model, scaler, column_config)
         """
         if not os.path.exists(model_dir):
             raise FileNotFoundError(f"Model directory not found: {model_dir}")
@@ -89,12 +89,15 @@ class HSIPredictor:
         print(f"Loading artifacts from MLflow directory: {model_dir}")
 
         # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
-        config_path = os.path.join(model_dir, "configs", "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config_nubci.json")
+        abs_path_candidate = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config_nubci.json"
         cfg_path_in_config = self.config.get('data', {}).get('column_config', None)
 
-        # 우선순위: nubci_path -> cfg_path_in_config
+        if cfg_path_in_config and not os.path.isabs(cfg_path_in_config):
+            cfg_path_in_config = os.path.join(model_dir, "configs", cfg_path_in_config)
+
+        # 우선순위: 절대경로 -> config 지정 경로
         column_config_path = None
-        for cand in [config_path, cfg_path_in_config]:
+        for cand in [abs_path_candidate, cfg_path_in_config]:
             if cand and os.path.exists(cand):
                 column_config_path = cand
                 break
@@ -102,7 +105,7 @@ class HSIPredictor:
         if not column_config_path:
             raise FileNotFoundError(
                 "column_config JSON not found.\n"
-                f"  Tried nubci: {config_path}\n"
+                f"  Tried absolute: {abs_path_candidate}\n"
                 f"  Config-specified: {cfg_path_in_config}"
             )
 
@@ -492,7 +495,7 @@ class HSIPredictor:
                         'image_bytes': heatmap_png_bytes
                     }]
                 }
-                
+
         return results
 
 

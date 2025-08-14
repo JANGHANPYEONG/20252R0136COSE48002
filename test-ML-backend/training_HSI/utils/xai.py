@@ -52,17 +52,14 @@ class GradCAM:
                 logits = outputs.get("classification", None)
                 if logits is None:
                     raise RuntimeError("분류 task인데 outputs에서 인덱싱 불가")
-                score = torch.sigmoid(logits)[0, index]
+                score = logits[0, index]
             else: # 회귀 task
                 y = outputs.get("regression", None)
                 if y is None:
                     raise RuntimeError("회귀 task인데 outputs에서 인덱싱 불가")
                 score = y[0, index]
         else: # 단일 출력 텐서
-            if is_cls:
-                score = torch.sigmoid(outputs)[0, index]
-            else:
-                score = outputs[0, index]
+            score = outputs[0, index]
 
         # GradCAM score
         score.backward(retain_graph=False)
@@ -93,12 +90,16 @@ def find_last_conv_layer(model: nn.Module):
     last_conv = None
     for name, m in model.named_modules():
         if isinstance(m, nn.Conv2d):
-            if m.kernel_size != (1, 1):
+            ks = m.kernel_size
+            if isinstance(ks, int):
+                kH = kW = ks
+            else:
+                kH, kW = ks
+            if not (kH == 1 and kW == 1):
                 last_conv = m
     if last_conv is None:
         raise RuntimeError("No conv2d layer for Grad-CAM")
     return last_conv
-
 
 # CAM 배열 생성
 def generate_cam_arrays(
