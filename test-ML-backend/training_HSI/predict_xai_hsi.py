@@ -90,16 +90,28 @@ class HSIPredictor:
         print(f"Loading artifacts from MLflow directory: {model_dir}")
 
         # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
-        column_config_path = self.config['data'].get('column_config',
+        nubci_path = self.config['data'].get('column_config',
                                                 "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config_nubci.json")
-            
-        if not os.path.exists(column_config_path):
-            raise FileNotFoundError(f"Column config file not found: {column_config_path}")
-            
+        cfg_path_in_config = self.config.get('data', {}).get('column_config', None)
+
+        # 우선순위: nubci_path -> cfg_path_in_config
+        column_config_path = None
+        for cand in [nubci_path, cfg_path_in_config]:
+            if cand and os.path.exists(cand):
+                column_config_path = cand
+                break
+
+        if not column_config_path:
+            raise FileNotFoundError(
+                "column_config JSON not found.\n"
+                f"  Tried nubci: {nubci_path}\n"
+                f"  Config-specified: {cfg_path_in_config}"
+            )
+
         with open(column_config_path, 'r') as f:
             column_config = json.load(f)
         print(f"Loaded column_config from: {column_config_path}")
-            
+
         # 2. 모델 로드 (./models/best_model.pt)
         model_path = os.path.join(model_dir, "models", "best_model.pt")
         if not os.path.exists(model_path):
