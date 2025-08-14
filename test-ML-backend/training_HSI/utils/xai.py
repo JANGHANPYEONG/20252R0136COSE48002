@@ -62,7 +62,7 @@ class GradCAM:
             if is_cls:
                 score = torch.sigmoid(outputs)[0, index]
             else:
-                scrore = outputs[0, index]
+                score = outputs[0, index]
 
         # GradCAM score
         score.backward(retain_graph=False)
@@ -194,7 +194,7 @@ def save_cam_arrays(
     save_heatmap: bool = True,
     save_rgb: bool = False, # 원본 저장
     save_overlay: bool = False, # overlay 저장 
-) -> Dict[str, Optional[str]]:
+):
     """
     CAM / 원본 / Overlay를 파일로 저장합니다.
     CAM은 COLORMAP_JET 적용된 히트맵으로 저장합니다.
@@ -224,3 +224,14 @@ def save_cam_arrays(
         paths["overlay"] = p
 
     return paths
+
+def cam_to_png_bytes(cam: np.ndarray) -> bytes:
+    """
+    CAM 배열(float32 [0,1])을 PNG 바이트로 변환
+    """
+    cam_u8 = (np.clip(cam, 0, 1) * 255).astype(np.uint8)
+    cam_color = cv2.applyColorMap(cam_u8, cv2.COLORMAP_JET)  # BGR
+    success, buf = cv2.imencode(".png", cam_color)
+    if not success:
+        raise RuntimeError("PNG 인코딩 실패")
+    return buf.tobytes()
