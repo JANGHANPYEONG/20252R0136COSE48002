@@ -4,7 +4,8 @@ import {
   Box, Paper, Typography, Chip, Divider, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Stack
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 const navy = '#0F3659';
 
@@ -20,7 +21,9 @@ export default function MeatDetailPage() {
 
 
   const item = location.state?.item
-
+  //msi,rgb | day 전환용 상태값
+  const [mode, setMode] = useState('MSI'); // 'MSI" | "RGB"
+  const [day, setDay] = useState('0'); // 0 | 7
   if (!item) {
     return (
       <Box sx={{ p: 3 }}>
@@ -40,8 +43,9 @@ export default function MeatDetailPage() {
     ['이력번호', item.id],
     ['샘플번호', item.sampleNo],
     ['부위', item.part],
-    ['딥에이징 여부', item.deepAging ? 'Y' : 'N'],
+    ['딥에이징 여부', item.deepAging],
     ['도축일자', item.slDate],
+    ['가공일자', item.ProcessDate],
     ['업로드 일시', item.timestamp],
   ];
 
@@ -56,22 +60,98 @@ export default function MeatDetailPage() {
         <span style={{ color: navy, fontSize: 30, fontWeight: 600 }}>육류 상세 조회</span>
         <Chip label={item.status || '대기'} color={statusColor} />
       </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ToggleButtonGroup
+          size="small"
+          value={mode}
+          exclusive
+          onChange={(_, v) => v && setMode(v)}
+        >
+          <ToggleButton value="MSI">MSI</ToggleButton>
+          <ToggleButton value="RGB">RGB</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
       <Box sx={{ display:'grid', gridTemplateColumns:'1.2fr 1fr', gap: 2, mt: 3 }}>
-        {/* 좌: 이미지/QR */}
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>육류 이미지</Typography>
-          <Box sx={{ border:'1px solid #eee', borderRadius: 2, p: 1, height: 320, display:'flex', alignItems:'center', justifyContent:'center', bgcolor:'#fafafa' }}>
-            <Typography variant="body2" color="text.secondary">
-              (사진이 들어갈 예정입니다)
-            </Typography>
-          </Box>
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>QR 코드</Typography>
-          <Box sx={{ p: 2, border:'1px dashed #ddd', display:'inline-block', borderRadius: 2 }}>
-            <Typography variant="caption" color="text.secondary">QR 자리 (#{item.id})</Typography>
-          </Box>
-        </Paper>
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
+          육류 이미지 {`(${mode} · 0/7일차 동시 표시)`}
+        </Typography>
+
+        {(() => {
+          // 이미지 소스 탐색 (여러 형태 폴백)
+          const getImg = (d) =>
+            item?.images?.[mode]?.[d] ||
+            item?.image?.[mode]?.[d] ||
+            item?.[`image_${mode}_${d}`] ||
+            item?.[`${mode.toLowerCase()}Image_${d}`] ||
+            item?.[`${mode.toLowerCase()}_image_${d}`];
+
+          const renderDayBox = (dLabel) => {
+            const src = getImg(dLabel);
+            return (
+              <Box
+                key={dLabel}
+                sx={{
+                  position: 'relative',
+                  border: '1px solid #eee',
+                  borderRadius: 2,
+                  p: 1,
+                  height: 320,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: '#fafafa',
+                }}
+              >
+                {/* 좌상단 배지 */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    px: 1,
+                    py: 0.25,
+                    fontSize: 12,
+                    borderRadius: 1,
+                    bgcolor: '#e7f1ff',
+                    color: navy,
+                    border: '1px solid #cfe3ff',
+                  }}
+                >
+                  {dLabel}일차
+                </Box>
+
+                {src ? (
+                  <img
+                    src={src}
+                    alt={`${item.id} ${mode} ${dLabel}일차`}
+                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 8 }}
+                  />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    ({mode} · {dLabel}일차 이미지가 없습니다)
+                  </Typography>
+                )}
+              </Box>
+            );
+          };
+
+          return (
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+              {renderDayBox('0')}
+              {renderDayBox('7')}
+            </Box>
+          );
+        })()}
+
+        {/* 이하 QR 영역은 그대로 */}
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>QR 코드</Typography>
+        <Box sx={{ p: 2, border: '1px dashed #ddd', display: 'inline-block', borderRadius: 2 }}>
+          <Typography variant="caption" color="text.secondary">QR 자리 (#{item.id})</Typography>
+        </Box>
+      </Paper>
 
         {/* 우: 상세정보 표 */}
         <Paper sx={{ p: 2 }}>
@@ -99,34 +179,105 @@ export default function MeatDetailPage() {
       {/* 하단 비교표 */}
       <Paper sx={{ p: 2, mt: 3 }}>
         <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
-          관능평가 vs 예측 결과 비교
+          1일차 · 7일차 비교 (관능 vs { (typeof mode !== 'undefined' && mode) ? mode : 'MSI' })
         </Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>항목</TableCell>
-              <TableCell>관능(Sensory)</TableCell>
-              <TableCell>예측(Prediction)</TableCell>
-              <TableCell>차이(예측-관능)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {labels.map((label) => {
-              const s = item.sensory?.[label];
-              const p = item.prediction?.[label];
-              const diff = (p ?? null) !== null && (s ?? null) !== null ? (p - s).toFixed(2) : '-';
-              return (
-                <TableRow key={label}>
-                  <TableCell>{label}</TableCell>
-                  <TableCell>{s ?? '-'}</TableCell>
-                  <TableCell>{p ?? '-'}</TableCell>
-                  <TableCell>{diff}</TableCell>
+
+        {(() => {
+          // ===== helpers =====
+          const MODE = (typeof mode !== 'undefined' && mode) ? mode : 'MSI'; // 토글 없으면 MSI 고정
+          const getSensoryByKey = (k) =>
+            item?.[`sensory${k}`] ||
+            item?.sensory?.[k] ||
+            item?.sensory?.[`day${k}`] ||
+            (k === '1' ? (item?.sensory1 || item?.sensory0 || item?.sensory) : undefined) ||
+            (k === '7' ? (item?.sensory7 || item?.sensory?.['7'] || item?.sensory?.day7) : undefined);
+
+          const getPredictionByKey = (k) => {
+            const pred = item?.prediction || item?.predictions;
+            if (!pred) return undefined;
+
+            // 지원: prediction['1'|'7']?.[MODE], prediction.day1?.MSI, prediction.MSI_1 등
+            const dayObj =
+              pred?.[k] ||
+              pred?.[`day${k}`] ||
+              pred?.[`D${k}`];
+
+            const byNested =
+              dayObj?.[MODE] ||
+              dayObj?.[MODE.toLowerCase()];
+
+            const byFlat =
+              pred?.[`${MODE}_${k}`] ||
+              pred?.[`${MODE.toLowerCase()}_${k}`];
+
+            return byNested || byFlat;
+          };
+
+          // 1일차: 없으면 0일차로 폴백
+          const s1 = getSensoryByKey('1') || getSensoryByKey('0');
+          const p1 = getPredictionByKey('1') || getPredictionByKey('0');
+
+          // 7일차
+          const s7 = getSensoryByKey('7');
+          const p7 = getPredictionByKey('7');
+
+          const getVal = (obj, key) => (obj ? obj[key] : undefined);
+          const fmt = (v) => (v === null || v === undefined || Number.isNaN(v) ? '-' : v);
+          const diffNum = (a, b) =>
+            (typeof a === 'number' && typeof b === 'number') ? (a - b).toFixed(2) : '-';
+
+          return (
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell rowSpan={2}>항목</TableCell>
+                  <TableCell align="center" colSpan={2}>{item?.deepAging === 'Y' ? '숙성' : '냉장'} 1일차</TableCell>
+                  <TableCell align="center" colSpan={2}>{item?.deepAging === 'Y' ? '숙성' : '냉장'} 7일차</TableCell>
+                  <TableCell align="center" colSpan={1}>예측값 비교</TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                <TableRow>
+                  <TableCell>관능</TableCell>
+                  <TableCell>{MODE} 예측</TableCell>
+
+                  <TableCell>관능</TableCell>
+                  <TableCell>{MODE} 예측</TableCell>
+
+                  <TableCell>예측 차이(7일−1일)</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {labels.map((label) => {
+                  const s1v = getVal(s1, label);
+                  const p1v = getVal(p1, label);
+
+                  const s7v = getVal(s7, label);
+                  const p7v = getVal(p7, label);
+
+                  const predGap = diffNum(p7v, p1v);
+
+                  return (
+                    <TableRow key={label}>
+                      <TableCell>{label}</TableCell>
+
+                      {/* 1일차 */}
+                      <TableCell>{fmt(s1v)}</TableCell>
+                      <TableCell>{fmt(p1v)}</TableCell>
+
+                      {/* 7일차 */}
+                      <TableCell>{fmt(s7v)}</TableCell>
+                      <TableCell>{fmt(p7v)}</TableCell>
+
+                      {/* 비교 */}
+                      <TableCell>{predGap}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          );
+        })()}
       </Paper>
+
     </div>
   );
 }
