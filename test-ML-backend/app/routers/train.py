@@ -3,12 +3,14 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Literal
 import json
 import tempfile
+import re
 from datetime import datetime
 from celery import Celery
 from celery.result import AsyncResult
 
 from training_HSI.train_HSI_2d import main as train_hsi_2d
 from training_HSI.train_vector import main as train_vector
+from training_HSI.train_RGB import main as train_rgb
 
 # Celery 및 APIRouter 설정
 celery_app = Celery(
@@ -32,7 +34,7 @@ router = APIRouter()
 # Pydantic 모델 정의
 class TrainRequest(BaseModel):
     config: Optional[Dict] = None
-    input_type: Literal["image", "vector"]
+    input_type: Literal["hsi_image", "vector", "rgb_image"]
 
 class TrainResponse(BaseModel):
     message: str
@@ -62,8 +64,8 @@ def run_train_task(self, config: Dict):
         
         # input_type 검증
         input_type = config.get("input_type")
-        if input_type not in ["image", "vector"]:
-            raise ValueError(f"Invalid input_type: {input_type}. Must be 'image' or 'vector'")
+        if input_type not in ["hsi_image", "vector", "rgb_image"]:
+            raise ValueError(f"Invalid input_type: {input_type}. Must be 'hsi_image', 'vector', or 'rgb_image'")
         
         # 임시 config 파일 생성
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -72,11 +74,13 @@ def run_train_task(self, config: Dict):
         
         # subprocess로 학습 프로세스 실행
         training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
-        
-        if config.get("input_type") == "image":
+
+        if config.get("input_type") == "hsi_image":
             script_name = "train_HSI_2d.py"
-        else:
+        elif config.get("input_type") == "vector":
             script_name = "train_vector.py"
+        else:
+            script_name = "train_RGB.py"
         
         # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
         process = subprocess.Popen(
@@ -106,20 +110,24 @@ def run_train_task(self, config: Dict):
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-            # stdout에서 MLflow run ID 추출
+            # stdout에서 MLflow experiment ID, run ID 추출
+            mlflow_experiment_id = None
             mlflow_run_id = None
+
             if stdout:
                 import re
                 lines = stdout.strip().split('\n')
                 for line in lines:
                     line = line.strip()
-                    # 32자리 16진수 문자열 패턴으로 MLflow run ID 추출
-                    match = re.search(r'[a-f0-9]{32}', line)
-                    if match:
-                        mlflow_run_id = match.group()
-                        break
+                    # 32자리 16진수 문자열 패턴으로 MLflow experiment ID, run ID 추출
+                    if "Experiment ID" in line:
+                        pattern = r"Experiment ID:\s*(\d+),\s*Run ID:\s*([a-f0-9]+)"
+                        match = re.search(pattern, line)
+                        if match:
+                            mlflow_experiment_id, mlflow_run_id = match.groups()
+                            break
             
-            print(f"Training completed with run ID: {mlflow_run_id}")
+            print(f"Training completed with experiment ID: {mlflow_experiment_id}, run ID: {mlflow_run_id}")
             
             # 완료 시간 계산
             end_time = time.time()
@@ -127,12 +135,13 @@ def run_train_task(self, config: Dict):
             
             # 학습 완료 - SUCCESS 상태로 업데이트
             self.update_state(state='SUCCESS', meta={
+                'mlflow_experiment_id': mlflow_experiment_id,
                 'mlflow_run_id': mlflow_run_id,
                 'elapsed_time': elapsed_time
             })
             
             # 최종 결과 반환
-            return {'mlflow_run_id': mlflow_run_id}
+            return {'mlflow_experiment_id': mlflow_experiment_id, 'mlflow_run_id': mlflow_run_id}
 
         finally:
             # 임시 config 파일 삭제
