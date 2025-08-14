@@ -165,6 +165,12 @@ def generate_cam_arrays(
     finally:
         engine.remove()
 
+    # 입력 샘플 크기로 업샘플링
+    _, _, H, W = image_tensor_bchw.shape
+    if cam_b1hw.shape[-2:] != (H, W):
+        cam_b1hw = F.interpolate(cam_b1hw, size=(H, W), mode="bilinear", align_corners=False)
+
+
     # 정규화 + 업샘플
     cam = cam_b1hw[0, 0]                       # (h, w), torch
     cam = cam - cam.min()
