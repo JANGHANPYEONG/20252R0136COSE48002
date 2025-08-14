@@ -91,7 +91,7 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
                 cmd.extend(["--model_dir", model_uri])
             
             # 데이터 경로들 추가 (input_type에 따라 파라미터명 다름)
-            if input_type == "image":
+            if input_type == "hsi_image":
                 cmd.extend(["--image_paths"] + data_paths)
             elif input_type == "vector":
                 cmd.extend(["--data_paths"] + data_paths)
@@ -187,10 +187,10 @@ async def predict(request: PredictRequest):
         start_time = time.time()
         
         # 입력 검증
-        if request.input_type not in ["image", "vector"]:
+        if request.input_type not in ["hsi_image", "vector", "rgb_image"]:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Invalid input_type: {request.input_type}. Must be 'image' or 'vector'"
+                detail=f"Invalid input_type: {request.input_type}. Must be 'hsi_image', 'vector', or 'rgb_image'"
             )
         
         if not request.model_uri.strip():
