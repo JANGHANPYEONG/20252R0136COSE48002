@@ -7,10 +7,10 @@ RGB 예측 모듈 (학습 파이프라인과 완전 호환)
 
 사용법:
     # 방법 1: 로컬 모델 디렉토리 사용
-    python predict_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
+    python predict_rgb.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
     
     # 방법 2: MLflow run ID 사용
-    python predict_hsi.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
+    python predict_rgb.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
 """
 
 import os
@@ -173,132 +173,6 @@ class RGBPredictor:
         print(f"Input channels (wavelengths): {len(wavelengths)}")
         print(f"Wavelengths: {wavelengths}")
         
-    def _load_image_cube(self, image_path):
-        """
-        RGB 이미지 경로 리스트를 받아서 3D cube로 로드합니다.
-        
-        Args:
-            image_path: RBG 이미지 한 장의 경로
-            
-        Returns:
-            numpy.ndarray: (height, width, channels) 형태의 이미지 cube
-        """
-        if not image_path:
-            raise ValueError("Image paths list is empty")
-
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Image file not found: {image_path}")
-
-        img = Image.open(image_path).convert("RGB")
-
-        """
-        # 학습 해상도와 맞추기
-        if self.target_hw and img.size[::-1] != self.target_hw:  # PIL: (W,H)
-            img = img.resize(self.target_hw[::-1], resample=Image.BILINEAR)
-
-        arr = np.asarray(img, dtype=np.float32)
-        """
-
-        return img
-        
-    def _preprocess_image(self, image_cube, image_size=(224, 224)):
-        """
-        RGB 이미지 또는 HSI 이미지를 전처리.
-        """
-        # 1. numpy(H,W,C) → PIL.Image 변환 (RGB는 그대로, HSI는 변환 로직 추가 가능)
-        if isinstance(image_cube, np.ndarray):
-            image_pil = Image.fromarray(image_cube.astype(np.uint8))
-        else:
-            raise TypeError("image_cube should be a numpy array in HWC format.")
-    
-        # 2. 테스트용 변환 적용
-        transform = get_test_transforms(image_size=image_size)
-        x = transform(image_pil)  # (C,H,W)
-    
-        # 3. 배치 차원 추가
-        x = x.unsqueeze(0)  # (1,C,H,W)
-    
-        return x.to(self.device)
-        
-    def predict(self, image_path, image_size=None):
-        """
-        이미지 경로 리스트를 받아서 예측을 수행합니다.
-        
-        Args:
-            image_path: RGB 이미지 경로
-            image_size: 학습에서와 동일한 이미지 크기 사용
-            
-        Returns:
-            dict: 예측 결과 (JSON 직렬화 가능)
-        """
-        if image_size is None:
-            image_size = self.image_size
-
-        # 이미지 cube 로드
-        image_cube = self._load_image_cube(image_path)
-        print(f"Predicting on cube {image_cube.shape}, image_size={image_size}, device={self.device}")
-        
-        # 전처리
-        image_tensor = self._preprocess_image(image_cube, image_size)
-        print(f"Preprocessed tensor shape: {image_tensor.shape}")
-        
-        # 예측 수행
-        with torch.no_grad():
-            outputs = self.model(image_tensor)
-            
-        # 결과 처리 (torch.from_numpy 왕복 제거)
-        results = {}
-        
-        if isinstance(outputs, dict):
-            # 멀티태스크 출력인 경우
-            if 'classification' in outputs and self.cls_indices:
-                cls_output = outputs['classification']
-                cls_probs = torch.sigmoid(cls_output).squeeze().cpu().numpy()
-                # 분류 인덱스에 해당하는 값만 추출
-                cls_results = [float(cls_probs[i]) for i in self.cls_indices]
-                results['classification'] = cls_results
-                
-            if 'regression' in outputs and self.reg_indices:
-                reg_output = outputs['regression']
-                reg_values = reg_output.squeeze().cpu().numpy()
-                # 회귀 인덱스에 해당하는 값만 추출
-                reg_results = [float(reg_values[i]) for i in self.reg_indices]
-                results['regression'] = reg_results
-                
-        else:
-            # 단일 출력인 경우
-            output_values = outputs.squeeze().cpu().numpy()
-            
-            if self.cls_indices and not self.reg_indices:
-                # 분류만 있는 경우 - outputs 바로 sigmoid
-                cls_probs = torch.sigmoid(outputs).squeeze().cpu().numpy()
-                cls_results = [float(cls_probs[i]) for i in self.cls_indices]
-                results['classification'] = cls_results
-                
-            elif self.reg_indices and not self.cls_indices:
-                # 회귀만 있는 경우
-                reg_results = [float(output_values[i]) for i in self.reg_indices]
-                results['regression'] = reg_results
-                
-            else:
-                # 둘 다 있는 경우 (출력이 분류+회귀 순서로 되어 있다고 가정)
-                if len(output_values) >= len(self.cls_indices) + len(self.reg_indices):
-                    # 분류 부분 - outputs 바로 sigmoid
-                    if self.cls_indices:
-                        cls_output = outputs.squeeze()[:len(self.cls_indices)]
-                        cls_probs = torch.sigmoid(cls_output).cpu().numpy()
-                        cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
-                        results['classification'] = cls_results
-                        
-                    # 회귀 부분
-                    if self.reg_indices:
-                        reg_start = len(self.cls_indices)
-                        reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
-                        reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
-                        results['regression'] = reg_results
-                        
-        return results
-        
     def predict_batch(self, image_paths_list, image_size=None, batch_size=32):
         """
         여러 이미지 경로 리스트를 받아서 배치 예측을 수행합니다.
@@ -317,14 +191,79 @@ class RGBPredictor:
         batch_size = min(len(image_paths_list), batch_size)
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-        all_preds = []
+        all_preds = {}
+        idx = 0
         
         with torch.no_grad():
             for batch in loader:
                 batch = batch.to(self.device)
                 outputs = self.model(batch)
-                preds = outputs.cpu().numpy()
-                all_preds.extend(preds)
+
+                for output in outputs:
+                    sample_results = {}
+                    if isinstance(output, dict):
+                        # 멀티태스크 출력인 경우
+                        if 'classification' in output and self.cls_indices:
+                            cls_output = output['classification']
+                            cls_probs = torch.sigmoid(cls_output).cpu().numpy()
+                            # 분류 인덱스에 해당하는 값만 추출
+                            cls_results = [float(cls_probs[i]) for i in self.cls_indices]
+                            sample_results['classification'] = cls_results
+                        if 'regression' in output and self.reg_indices:
+                            reg_output = output['regression']
+                            reg_values = reg_output.squeeze().cpu().numpy()
+                            # 회귀 인덱스에 해당하는 값만 추출
+                            reg_results = [float(reg_values[i]) for i in self.reg_indices]
+                            sample_results['regression'] = reg_results
+                    
+                    else:
+                        # 단일 출력인 경우
+                        output_values = output.squeeze().cpu().numpy()
+
+                        if self.cls_indices and not self.reg_indices:
+                            # 분류만 있는 경우 - output에 바로 sigmoid 적용
+                            cls_probs = torch.sigmoid(output).squeeze().cpu().numpy()
+                            cls_results = [float(cls_probs[i]) for i in self.cls_indices]
+                            sample_results['classification'] = cls_results
+
+                        elif not self.cls_indices and self.reg_indices:
+                            # 회귀만 있는 경우
+                            reg_results = [float(output_values[i]) for i in self.reg_indices]
+                            sample_results['regression'] = reg_results
+                        
+                        else:
+                            # 둘 다 있는 경우
+                            if self.cls_indices[0] <= self.reg_indices[0]:
+                                # 분류 -> 회귀 순서로 되어 있는 경우
+                                if self.cls_indices:
+                                    cls_outputs = output.squeeze()[:len(self.cls_indices)]
+                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                    cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
+                                    sample_results['classification'] = cls_results
+                            
+                                if self.reg_indices:
+                                    reg_start = len(self.cls_indices)
+                                    reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
+                                    reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
+                                    sample_results['regression'] = reg_results
+
+                            else:
+                                # 회귀 -> 분류 순서로 되어 있는 경우
+                                if self.reg_indices:
+                                    reg_values = output_values[:len(self.reg_indices)]
+                                    reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
+                                    sample_results['regression'] = reg_results
+                                
+                                if self.cls_indices:
+                                    cls_start = len(self.reg_indices)
+                                    cls_outputs = output.squeeze()[cls_start:cls_start + len(self.cls_indices)]
+                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                    cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
+                                    sample_results['classification'] = cls_results
+
+                    sample_name = os.path.basename(image_paths_list[idx])
+                    all_preds[sample_name] = sample_results
+                    idx += 1
 
         return all_preds
 
@@ -415,24 +354,23 @@ def main():
     try:
         predictor = RGBPredictor(model_dir=model_dir)
         
-        # 예측 수행
+        # # 예측 수행
         results = predictor.predict_batch(args.image_paths,
                                           tuple(args.image_size) if args.image_size else None)
-        
-        print(results)
 
         # 결과 출력
-        print("\n=== Prediction Results ===")
-        if 'classification' in results:
-            print("Classification probabilities:")
-            for i, prob in enumerate(results['classification']):
-                print(f"  Class {i}: {prob:.4f}")
-                
-        if 'regression' in results:
-            print("Regression values:")
-            for i, value in enumerate(results['regression']):
-                print(f"  Target {i}: {value:.4f}")
-                
+        for key, result in results.items():
+            print(f"\n=== Results for {key} ===")
+            if 'classification' in result:
+                print(f"  Classification probabilities for {key}:")
+                for i, prob in enumerate(result['classification']):
+                    print(f"    Class {i}: {prob:.4f}")
+
+            if 'regression' in result:
+                print(f"  Regression values for {key}:")
+                for i, value in enumerate(result['regression']):
+                    print(f"    Target {i}: {value:.4f}")
+
         # 파일로 저장
         if args.output:
             with open(args.output, 'w') as f:
