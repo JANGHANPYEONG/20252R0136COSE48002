@@ -139,6 +139,7 @@ class RGBPredictor:
 
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
+        self.label_columns = self.column_config.get('label_columns', [])
         self.label_types = self.column_config.get('label_types', {})
         self.cls_indices = []
         self.reg_indices = []
@@ -147,16 +148,16 @@ class RGBPredictor:
         if 'classification' in self.label_types:
             cls_labels = self.label_types['classification']
             for label in cls_labels:
-                if label in self.column_config['label_columns']:
-                    idx = self.column_config['label_columns'].index(label)
+                if label in self.label_columns:
+                    idx = self.label_columns.index(label)
                     self.cls_indices.append(idx)
                     
         # 회귀 인덱스 설정
         if 'regression' in self.label_types:
             reg_labels = self.label_types['regression']
             for label in reg_labels:
-                if label in self.column_config['label_columns']:
-                    idx = self.column_config['label_columns'].index(label)
+                if label in self.label_columns:
+                    idx = self.label_columns.index(label)
                     self.reg_indices.append(idx)
                     
         print(f"Classification indices: {self.cls_indices}")
@@ -192,7 +193,7 @@ class RGBPredictor:
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         all_preds = {}
-        idx = 0
+        sample_idx = 0
         
         with torch.no_grad():
             for batch in loader:
@@ -207,13 +208,17 @@ class RGBPredictor:
                             cls_output = output['classification']
                             cls_probs = torch.sigmoid(cls_output).cpu().numpy()
                             # 분류 인덱스에 해당하는 값만 추출
-                            cls_results = [float(cls_probs[i]) for i in self.cls_indices]
+                            cls_results = {}
+                            for idx, cls_idx in enumerate(self.cls_indices):
+                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
                             sample_results['classification'] = cls_results
                         if 'regression' in output and self.reg_indices:
                             reg_output = output['regression']
                             reg_values = reg_output.squeeze().cpu().numpy()
                             # 회귀 인덱스에 해당하는 값만 추출
-                            reg_results = [float(reg_values[i]) for i in self.reg_indices]
+                            reg_results = {}
+                            for idx, reg_idx in enumerate(self.reg_indices):
+                                    reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
                             sample_results['regression'] = reg_results
                     
                     else:
@@ -223,12 +228,16 @@ class RGBPredictor:
                         if self.cls_indices and not self.reg_indices:
                             # 분류만 있는 경우 - output에 바로 sigmoid 적용
                             cls_probs = torch.sigmoid(output).squeeze().cpu().numpy()
-                            cls_results = [float(cls_probs[i]) for i in self.cls_indices]
+                            cls_results = {}
+                            for idx, cls_idx in enumerate(self.cls_indices):
+                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
                             sample_results['classification'] = cls_results
 
                         elif not self.cls_indices and self.reg_indices:
                             # 회귀만 있는 경우
-                            reg_results = [float(output_values[i]) for i in self.reg_indices]
+                            reg_results = {}
+                            for idx, reg_idx in enumerate(self.reg_indices):
+                                reg_results[self.label_columns[reg_idx]] = float(output_values[idx])
                             sample_results['regression'] = reg_results
                         
                         else:
@@ -238,32 +247,40 @@ class RGBPredictor:
                                 if self.cls_indices:
                                     cls_outputs = output.squeeze()[:len(self.cls_indices)]
                                     cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
-                                    cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
+                                    cls_results = {}
+                                    for idx, cls_idx in enumerate(self.cls_indices):
+                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
                                     sample_results['classification'] = cls_results
                             
                                 if self.reg_indices:
                                     reg_start = len(self.cls_indices)
                                     reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
-                                    reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
+                                    reg_results = {}
+                                    for idx, reg_idx in enumerate(self.reg_indices):
+                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
                                     sample_results['regression'] = reg_results
 
                             else:
                                 # 회귀 -> 분류 순서로 되어 있는 경우
                                 if self.reg_indices:
                                     reg_values = output_values[:len(self.reg_indices)]
-                                    reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
+                                    reg_results = {}
+                                    for idx, reg_idx in enumerate(self.reg_indices):
+                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
                                     sample_results['regression'] = reg_results
                                 
                                 if self.cls_indices:
                                     cls_start = len(self.reg_indices)
                                     cls_outputs = output.squeeze()[cls_start:cls_start + len(self.cls_indices)]
                                     cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
-                                    cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
+                                    cls_results = {}
+                                    for idx, cls_idx in enumerate(self.cls_indices):
+                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
                                     sample_results['classification'] = cls_results
 
-                    sample_name = os.path.basename(image_paths_list[idx])
+                    sample_name = os.path.basename(image_paths_list[sample_idx])
                     all_preds[sample_name] = sample_results
-                    idx += 1
+                    sample_idx += 1
 
         return all_preds
 
@@ -363,13 +380,13 @@ def main():
             print(f"\n=== Results for {key} ===")
             if 'classification' in result:
                 print(f"  Classification probabilities for {key}:")
-                for i, prob in enumerate(result['classification']):
-                    print(f"    Class {i}: {prob:.4f}")
+                for label, prob in result['classification'].items():
+                    print(f"    {label}: {prob:.4f}")
 
             if 'regression' in result:
                 print(f"  Regression values for {key}:")
-                for i, value in enumerate(result['regression']):
-                    print(f"    Target {i}: {value:.4f}")
+                for label, value in result['regression'].items():
+                    print(f"    {label}: {value:.4f}")
 
         # 파일로 저장
         if args.output:

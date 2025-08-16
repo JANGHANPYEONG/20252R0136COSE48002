@@ -24,6 +24,7 @@ import pickle
 import mlflow
 import tempfile
 import warnings
+from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
 
 # 현재 디렉토리를 Python 경로에 추가
@@ -31,6 +32,29 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
+
+
+class InferenceDataset(Dataset):
+    def __init__(self, samples, parent):
+        """
+        samples: List[str], 반드시 (샘플 개수) * (band 수) 만큼의 경로가 있어야 함
+        parent: HSIPredictor 인스턴스
+        """
+        self.samples = samples
+        self.parent = parent
+        self.image_size = self.parent.crop_size
+        self.hsi_channels = self.parent.config.get("model", {}).get("in_channels", 9)
+
+        assert len(self.samples) % self.hsi_channels == 0, "샘플 개수는 band 수의 배수여야 합니다."
+
+    def __len__(self):
+        return int(len(self.samples) / self.hsi_channels)
+    
+    def __getitem__(self, idx):
+        image_paths = self.samples[idx * self.hsi_channels:(idx + 1) * self.hsi_channels]
+        cube = self.parent._load_image_cube(image_paths)
+        image_tensor = self.parent._preprocess_image(cube, self.image_size)
+        return image_tensor.squeeze(0)
 
 
 class HSIPredictor:
@@ -137,6 +161,7 @@ class HSIPredictor:
         
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
+        self.label_columns = self.column_config.get('label_columns', [])
         self.label_types = self.column_config.get('label_types', {})
         self.cls_indices = []
         self.reg_indices = []
@@ -145,16 +170,16 @@ class HSIPredictor:
         if 'classification' in self.label_types:
             cls_labels = self.label_types['classification']
             for label in cls_labels:
-                if label in self.column_config['label_columns']:
-                    idx = self.column_config['label_columns'].index(label)
+                if label in self.label_columns:
+                    idx = self.label_columns.index(label)
                     self.cls_indices.append(idx)
                     
         # 회귀 인덱스 설정
         if 'regression' in self.label_types:
             reg_labels = self.label_types['regression']
             for label in reg_labels:
-                if label in self.column_config['label_columns']:
-                    idx = self.column_config['label_columns'].index(label)
+                if label in self.label_columns:
+                    idx = self.label_columns.index(label)
                     self.reg_indices.append(idx)
                     
         print(f"Classification indices: {self.cls_indices}")
@@ -250,86 +275,7 @@ class HSIPredictor:
         
         return image_tensor.to(self.device)
         
-    def predict(self, image_paths, crop_size=None):
-        """
-        이미지 경로 리스트를 받아서 예측을 수행합니다.
-        
-        Args:
-            image_paths: 각 band의 이미지 경로 리스트
-            crop_size: 크롭할 크기 (height, width), None이면 config에서 가져옴
-            
-        Returns:
-            dict: 예측 결과 (JSON 직렬화 가능)
-        """
-        if crop_size is None:
-            crop_size = self.crop_size
-
-        # 이미지 cube 로드
-        image_cube = self._load_image_cube(image_paths)
-        print(f"Predicting on cube {image_cube.shape}, crop_size={crop_size}, device={self.device}")
-        
-        # 전처리
-        image_tensor = self._preprocess_image(image_cube, crop_size)
-        print(f"Preprocessed tensor shape: {image_tensor.shape}")
-        
-        # 예측 수행
-        with torch.no_grad():
-            outputs = self.model(image_tensor)
-            
-        # 결과 처리 (torch.from_numpy 왕복 제거)
-        results = {}
-        
-        if isinstance(outputs, dict):
-            # 멀티태스크 출력인 경우
-            if 'classification' in outputs and self.cls_indices:
-                cls_output = outputs['classification']
-                cls_probs = torch.sigmoid(cls_output).squeeze().cpu().numpy()
-                # 분류 인덱스에 해당하는 값만 추출
-                cls_results = [float(cls_probs[i]) for i in self.cls_indices]
-                results['classification'] = cls_results
-                
-            if 'regression' in outputs and self.reg_indices:
-                reg_output = outputs['regression']
-                reg_values = reg_output.squeeze().cpu().numpy()
-                # 회귀 인덱스에 해당하는 값만 추출
-                reg_results = [float(reg_values[i]) for i in self.reg_indices]
-                results['regression'] = reg_results
-                
-        else:
-            # 단일 출력인 경우
-            output_values = outputs.squeeze().cpu().numpy()
-            
-            if self.cls_indices and not self.reg_indices:
-                # 분류만 있는 경우 - outputs 바로 sigmoid
-                cls_probs = torch.sigmoid(outputs).squeeze().cpu().numpy()
-                cls_results = [float(cls_probs[i]) for i in self.cls_indices]
-                results['classification'] = cls_results
-                
-            elif self.reg_indices and not self.cls_indices:
-                # 회귀만 있는 경우
-                reg_results = [float(output_values[i]) for i in self.reg_indices]
-                results['regression'] = reg_results
-                
-            else:
-                # 둘 다 있는 경우 (출력이 분류+회귀 순서로 되어 있다고 가정)
-                if len(output_values) >= len(self.cls_indices) + len(self.reg_indices):
-                    # 분류 부분 - outputs 바로 sigmoid
-                    if self.cls_indices:
-                        cls_output = outputs.squeeze()[:len(self.cls_indices)]
-                        cls_probs = torch.sigmoid(cls_output).cpu().numpy()
-                        cls_results = [float(cls_probs[i]) for i in range(len(self.cls_indices))]
-                        results['classification'] = cls_results
-                        
-                    # 회귀 부분
-                    if self.reg_indices:
-                        reg_start = len(self.cls_indices)
-                        reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
-                        reg_results = [float(reg_values[i]) for i in range(len(self.reg_indices))]
-                        results['regression'] = reg_results
-                        
-        return results
-        
-    def predict_batch(self, image_paths_list, crop_size=None):
+    def predict_batch(self, image_paths_list, batch_size=16, crop_size=None):
         """
         여러 이미지 경로 리스트를 받아서 배치 예측을 수행합니다.
         
@@ -342,19 +288,103 @@ class HSIPredictor:
         """
         if crop_size is None:
             crop_size = self.crop_size
-            
-        results = []
+
+        dataset = InferenceDataset(samples=image_paths_list, parent=self)
+        batch_size = min(batch_size, len(dataset))
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        all_preds = {}
+        sample_idx = 0
         
-        for i, image_paths in enumerate(image_paths_list):
-            print(f"Predicting batch {i+1}/{len(image_paths_list)}")
-            try:
-                result = self.predict(image_paths, crop_size)
-                results.append(result)
-            except Exception as e:
-                print(f"Error predicting batch {i+1}: {e}")
-                results.append(None)
-                
-        return results
+        with torch.no_grad():
+            for batch in loader:
+                batch = batch.to(self.device)
+                outputs = self.model(batch)
+
+                for output in outputs:
+                    sample_results = {}
+                    if isinstance(output, dict):
+                        # 멀티태스크 출력인 경우
+                        if 'classification' in output and self.cls_indices:
+                            cls_output = output['classification']
+                            cls_probs = torch.sigmoid(cls_output).cpu().numpy()
+                            # 분류 인덱스에 해당하는 값만 추출
+                            cls_results = {}
+                            for idx, cls_idx in enumerate(self.cls_indices):
+                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                            sample_results['classification'] = cls_results
+                        if 'regression' in output and self.reg_indices:
+                            reg_output = output['regression']
+                            reg_values = reg_output.squeeze().cpu().numpy()
+                            # 회귀 인덱스에 해당하는 값만 추출
+                            reg_results = {}
+                            for idx, reg_idx in enumerate(self.reg_indices):
+                                    reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                            sample_results['regression'] = reg_results
+                    
+                    else:
+                        # 단일 출력인 경우
+                        output_values = output.squeeze().cpu().numpy()
+
+                        if self.cls_indices and not self.reg_indices:
+                            # 분류만 있는 경우 - output에 바로 sigmoid 적용
+                            cls_probs = torch.sigmoid(output).squeeze().cpu().numpy()
+                            cls_results = {}
+                            for idx, cls_idx in enumerate(self.cls_indices):
+                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                            sample_results['classification'] = cls_results
+
+                        elif not self.cls_indices and self.reg_indices:
+                            # 회귀만 있는 경우
+                            reg_results = {}
+                            for idx, reg_idx in enumerate(self.reg_indices):
+                                reg_results[self.label_columns[reg_idx]] = float(output_values[idx])
+                            sample_results['regression'] = reg_results
+                        
+                        else:
+                            # 둘 다 있는 경우
+                            if self.cls_indices[0] <= self.reg_indices[0]:
+                                # 분류 -> 회귀 순서로 되어 있는 경우
+                                if self.cls_indices:
+                                    cls_outputs = output.squeeze()[:len(self.cls_indices)]
+                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                    cls_results = {}
+                                    for idx, cls_idx in enumerate(self.cls_indices):
+                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                                    sample_results['classification'] = cls_results
+                            
+                                if self.reg_indices:
+                                    reg_start = len(self.cls_indices)
+                                    reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
+                                    reg_results = {}
+                                    for idx, reg_idx in enumerate(self.reg_indices):
+                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                                    sample_results['regression'] = reg_results
+
+                            else:
+                                # 회귀 -> 분류 순서로 되어 있는 경우
+                                if self.reg_indices:
+                                    reg_values = output_values[:len(self.reg_indices)]
+                                    reg_results = {}
+                                    for idx, reg_idx in enumerate(self.reg_indices):
+                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                                    sample_results['regression'] = reg_results
+                                
+                                if self.cls_indices:
+                                    cls_start = len(self.reg_indices)
+                                    cls_outputs = output.squeeze()[cls_start:cls_start + len(self.cls_indices)]
+                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                    cls_results = {}
+                                    for idx, cls_idx in enumerate(self.cls_indices):
+                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                                    sample_results['classification'] = cls_results
+
+                    # sample_name = os.path.basename(image_paths_list[sample_idx])
+                    # all_preds[sample_name] = sample_results
+                    all_preds[f"sample idx {sample_idx}"] = sample_results
+                    sample_idx += 1
+
+        return all_preds
 
 
 def main():
@@ -444,20 +474,21 @@ def main():
         predictor = HSIPredictor(model_dir=model_dir)
         
         # 예측 수행
-        results = predictor.predict(args.image_paths,
-                                    tuple(args.crop_size) if args.crop_size else None)
-        
+        results = predictor.predict_batch(args.image_paths, batch_size=16,
+                                          crop_size=tuple(args.crop_size) if args.crop_size else None)
+
         # 결과 출력
-        print("\n=== Prediction Results ===")
-        if 'classification' in results:
-            print("Classification probabilities:")
-            for i, prob in enumerate(results['classification']):
-                print(f"  Class {i}: {prob:.4f}")
-                
-        if 'regression' in results:
-            print("Regression values:")
-            for i, value in enumerate(results['regression']):
-                print(f"  Target {i}: {value:.4f}")
+        for key, result in results.items():
+            print(f"\n=== Results for {key} ===")
+            if 'classification' in result:
+                print(f"  Classification probabilities for {key}:")
+                for label, prob in result['classification'].items():
+                    print(f"    {label}: {prob:.4f}")
+
+            if 'regression' in result:
+                print(f"  Regression values for {key}:")
+                for label, value in result['regression'].items():
+                    print(f"    {label}: {value:.4f}")
                 
         # 파일로 저장
         if args.output:
