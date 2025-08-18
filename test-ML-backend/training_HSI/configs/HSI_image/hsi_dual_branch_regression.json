@@ -2,12 +2,12 @@
   "experiment": "hsi_dual_branch_regression",
   "model": {
     "file": "hsi_dual_branch_regression",
-    "num_classes": 13,
-    "in_channels": 5
+    "num_classes": 5,
+    "in_channels": 2
   },
   "data": {
-    "csv": "/mnt/data/datasets_HSI/label/label.csv",
-    "column_config": "configs/column_config.json",
+    "csv": "/mnt/data/datasets_HSI/label/meat_label.csv",
+    "column_config": "configs/column_config_tmp.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 16,

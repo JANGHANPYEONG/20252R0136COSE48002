@@ -100,6 +100,8 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str],
             elif input_type == "rgb_image":
                 cmd.extend(["--image_paths"] + data_paths)
 
+            cmd.extend(["--xai"])
+
             # 결과 파일 경로 추가
             cmd.extend(["--output", temp_result_path])
             
