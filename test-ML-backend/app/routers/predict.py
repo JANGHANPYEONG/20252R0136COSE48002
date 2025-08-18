@@ -66,6 +66,8 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
             script_path = os.path.join(training_hsi_dir, "predict_hsi.py")
         elif input_type == "vector":
             script_path = os.path.join(training_hsi_dir, "predict_vector.py")
+        elif input_type == "rgb_image":
+            script_path = os.path.join(training_hsi_dir, "predict_rgb.py")
         else:
             raise ValueError(f"Unsupported input_type: {input_type}")
         
@@ -95,7 +97,9 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
                 cmd.extend(["--image_paths"] + data_paths)
             elif input_type == "vector":
                 cmd.extend(["--data_paths"] + data_paths)
-            
+            elif input_type == "rgb_image":
+                cmd.extend(["--image_paths"] + data_paths)
+
             # 결과 파일 경로 추가
             cmd.extend(["--output", temp_result_path])
             
