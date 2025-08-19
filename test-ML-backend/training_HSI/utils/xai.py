@@ -242,30 +242,48 @@ def cam_to_png_bytes(cam: np.ndarray) -> bytes:
 # attention class
 class _AttnCollector:
     def __init__(self):
-        self.attns: List[torch.Tensor] = [] # (B, H, N, N), softmax된 확률
-        self.grad_attns: List[Optional[torch.Tensor]] = [] # backward 훅에서 받은 grad
+        self.attns = []       # list of (B, H, N, N) 또는 (B, N, N)도 허용 → 표준화
+        self.grad_attns = []  # list of same-shape grads or None
+
+    def _standardize(self, t):
+        if t is None:
+            return None
+        # 허용 형태: (B, H, N, N) 또는 (B, N, N)
+        if t.dim() == 3:                  # (B, N, N) → (B, 1, N, N)
+            t = t.unsqueeze(1)
+        elif t.dim() == 4:
+            pass
+        else:
+            raise RuntimeError(f"Unexpected attention shape: {tuple(t.shape)}")
+
+        # 비정사각형이면 min 축으로 크롭하여 정사각형으로 맞춤
+        Nq, Nk = t.shape[-2], t.shape[-1]
+        if Nq != Nk:
+            m = min(Nq, Nk)
+            t = t[..., :m, :m]
+        return t
 
     def fwd(self, module, inp, out):
-        # block.attn.forward에서 softmax 후 확률을 module.attn에 저장했다 가정
         attn = getattr(module, "attn", None)
         if attn is None:
-            # out이 (x, attn) 튜플이면 두번째 쓰도록
             if isinstance(out, (tuple, list)) and len(out) >= 2 and out[-1] is not None:
                 attn = out[-1]
             elif isinstance(out, dict) and "attn" in out:
                 attn = out["attn"]
         if attn is None:
-            # 모듈 내부에 softmax 전/후 중간 텐서가 없으면 포기
             raise RuntimeError(f"Cannot find attention probs in module: {module.__class__.__name__}")
+        if attn.dim() >= 2:
+            attn = attn.softmax(dim=-1)
+        attn = self._standardize(attn)
         self.attns.append(attn)
-    
+
     def bwd(self, module, grad_input, grad_output):
         g = None
         if len(grad_output) >= 2 and grad_output[-1] is not None:
             g = grad_output[-1]
         elif len(grad_output) >= 1:
             g = grad_output[0]
-        self.grad_attns.append(g)    
+        self.grad_attns.append(self._standardize(g))
     
 def _find_vit_attention_modules(model: nn.Module):
     mods = []
@@ -281,26 +299,54 @@ def _find_vit_attention_modules(model: nn.Module):
 
 def _rollout_grad_attn(attns, grads, add_residual=True, eps=1e-6):
     assert len(attns) == len(grads) and len(attns) > 0
+
+    def match_shape(A, G):
+        if G is None:
+            return None
+        # A, G 모두 (B, H, N, N) 보장되어야 함. 아닐 경우 보정.
+        if G.dim() == 3:            # (B, N, N) -> (B,1,N,N)
+            G = G.unsqueeze(1)
+        if A.dim() == 3:
+            A = A.unsqueeze(1)
+
+        # 마지막 두 축이 다르면 교집합으로 크롭
+        N_A = A.shape[-1]
+        N_G = G.shape[-1]
+        if (A.shape[-2] != A.shape[-1]) or (G.shape[-2] != G.shape[-1]):
+            mA = min(A.shape[-2], A.shape[-1])
+            A = A[..., :mA, :mA]
+        if (G.shape[-2] != G.shape[-1]):
+            mG = min(G.shape[-2], G.shape[-1])
+            G = G[..., :mG, :mG]
+
+        # 다시 한 번 A, G의 N 맞추기
+        N = min(A.shape[-1], G.shape[-1])
+        if (A.shape[-2] != N) or (A.shape[-1] != N):
+            A = A[..., :N, :N]
+        if (G.shape[-2] != N) or (G.shape[-1] != N):
+            G = G[..., :N, :N]
+        return A, G
+
     mats = []
     for A, G in zip(attns, grads):
-        # A: (B, H, N, N) 이여야 함
+        if A is None:
+            continue
+        # 표준화 재확인
+        if A.dim() == 3: A = A.unsqueeze(1)  # (B,1,N,N)
+        if (A.shape[-2] != A.shape[-1]):     # 정사각형 강제
+            m = min(A.shape[-2], A.shape[-1])
+            A = A[..., :m, :m]
+
         if G is None:
-            # grad가 없으면 해당 레이어는 순수 A로 사용
             GwA = F.relu(A)
         else:
-            # 브로드캐스트 맞는지 확인
-            if G.shape != A.shape:
-                # 일부 구현에서 grad_output shape가 다를 수 있음 → 헤드 평균 후 브로드캐스트 등 보정
-                Gm = G
-                if Gm.dim() == 3:  # (B, N, N)
-                    Gm = Gm.unsqueeze(1).expand_as(A)
-                GwA = F.relu(A * F.relu(Gm))
-            else:
-                GwA = F.relu(A * F.relu(G))
-        M = GwA.mean(dim=1)  # (B, N, N)
+            A, G = match_shape(A, G)
+            GwA = F.relu(A * F.relu(G))
+
+        M = GwA.mean(dim=1)  # (B, N, N)  헤드 평균
         M = M / (M.sum(dim=-1, keepdim=True) + eps)
         if add_residual:
-            I = torch.eye(M.size(-1), device=M.device).unsqueeze(0)
+            I = torch.eye(M.size(-1), device=M.device, dtype=M.dtype).unsqueeze(0)
             M = M + I
             M = M / (M.sum(dim=-1, keepdim=True) + eps)
         mats.append(M)
@@ -368,6 +414,10 @@ def generate_attention_arrays_from_lastyear(
         else:
             img_tokens = relev_tokens
         N_img = img_tokens.numel()
+        if N_img == 0:  # 🔧 엣지 케이스 방지
+            cam = torch.ones((1,1,H,W), device=device)[0,0].detach().cpu().numpy().astype(np.float32)
+            return {"cam": cam, "target_index": int(target_index),
+                    "layer": "attn-rollout(lastyear)", "task": task}
         side = int(round(np.sqrt(float(N_img))))
         Hp, Wp = side, int(np.ceil(N_img / max(side, 1)))
         img_tokens = img_tokens[:Hp*Wp]
