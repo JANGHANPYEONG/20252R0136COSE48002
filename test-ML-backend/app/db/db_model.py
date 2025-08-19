@@ -330,7 +330,7 @@ class SensoryEval(Base):
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint(
-            ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
+            ["id", "seqno", "isRefrigerated"], ["deepAging_info.id", "deepAging_info.seqno", "sensory_eval.isRefrigerated"],
             ondelete="CASCADE",
             onupdate="CASCADE"
         ),
@@ -634,8 +634,8 @@ class HSISensoryEval(Base):
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint([
-            "id", "seqno"
-        ], ["deepAging_info.id", "deepAging_info.seqno"], ondelete="CASCADE", onupdate="CASCADE"),
+            "id", "seqno", "isRefrigerated"
+        ], ["deepAging_info.id", "deepAging_info.seqno", "sensory_eval.isRefrigerated"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
 
