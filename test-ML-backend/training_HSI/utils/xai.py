@@ -358,7 +358,7 @@ def _rollout_grad_attn(attns, grads, add_residual=True, eps=1e-6):
     return R[:, 0]  # (B, N)
 
 @torch.enable_grad()
-def generate_attention_arrays_from_lastyear(
+def generate_attention_arrays(
     model: nn.Module,
     image_tensor_bchw: torch.Tensor,   # (1,C,H,W)
     outputs,                           # fresh forward 할 것이므로 형식 무관
@@ -418,7 +418,7 @@ def generate_attention_arrays_from_lastyear(
         if N_img == 0:  # 엣지 케이스 방지
             cam = torch.ones((1,1,H,W), device=device)[0,0].detach().cpu().numpy().astype(np.float32)
             return {"cam": cam, "target_index": int(target_index),
-                    "layer": "attn-rollout(lastyear)", "task": task}
+                    "layer": "attn-rollout", "task": task}
         side = int(round(np.sqrt(float(N_img))))
         Hp, Wp = side, int(np.ceil(N_img / max(side, 1)))
         img_tokens = img_tokens[:Hp*Wp]
@@ -433,7 +433,7 @@ def generate_attention_arrays_from_lastyear(
         cam = cam.detach().cpu().numpy().astype(np.float32)
 
         return {"cam": cam, "target_index": int(target_index),
-                "layer": "attn-rollout(lastyear)", "task": task}
+                "layer": "attn-rollout", "task": task}
     finally:
         for h in hooks:
             h.remove()
