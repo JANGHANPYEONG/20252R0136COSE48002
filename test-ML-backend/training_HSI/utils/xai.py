@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Any, List, Dict, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
@@ -236,3 +236,152 @@ def cam_to_png_bytes(cam: np.ndarray) -> bytes:
     if not success:
         raise RuntimeError("PNG 인코딩 실패")
     return buf.tobytes()
+
+
+# ------------------- attention 기반 XAI -----------------
+# attention class
+class _AttnCollector:
+    def __init__(self):
+        self.attns: List[torch.Tensor] = [] # (B, H, N, N), softmax된 확률
+        self.grad_attns: List[Optional[torch.Tensor]] = [] # backward 훅에서 받은 grad
+
+    def fwd(self, module, inp, out):
+        # block.attn.forward에서 softmax 후 확률을 module.attn에 저장했다 가정
+        attn = getattr(module, "attn", None)
+        if attn is None:
+            # out이 (x, attn) 튜플이면 두번째 쓰도록
+            if isinstance(out, (tuple, list)) and len(out) >= 2 and out[-1] is not None:
+                attn = out[-1]
+            elif isinstance(out, dict) and "attn" in out:
+                attn = out["attn"]
+        if attn is None:
+            # 모듈 내부에 softmax 전/후 중간 텐서가 없으면 포기
+            raise RuntimeError(f"Cannot find attention probs in module: {module.__class__.__name__}")
+        self.attns.append(attn)
+    
+    def bwd(self, module, grad_input, grad_output):
+        g = None
+        if len(grad_output) >= 2 and grad_output[-1] is not None:
+            g = grad_output[-1]
+        elif len(grad_output) >= 1:
+            g = grad_output[0]
+        self.grad_attns.append(g)    
+    
+def _find_vit_attention_modules(model: nn.Module):
+    mods = []
+    for name, m in model.named_modules():
+        # MultiheadAttention 유사 구조 탐색
+        if hasattr(m, "num_heads") and (
+            hasattr(m, "attn_drop") or hasattr(m, "dropout")
+        ):
+            mods.append(m)
+        elif name.endswith(".attn") and hasattr(m, "attn_drop"):
+            mods.append(m)
+    return mods
+
+def _rollout_grad_attn(attns, grads, add_residual=True, eps=1e-6):
+    assert len(attns) == len(grads) and len(attns) > 0
+    mats = []
+    for A, G in zip(attns, grads):
+        # A: (B, H, N, N) 이여야 함
+        if G is None:
+            # grad가 없으면 해당 레이어는 순수 A로 사용
+            GwA = F.relu(A)
+        else:
+            # 브로드캐스트 맞는지 확인
+            if G.shape != A.shape:
+                # 일부 구현에서 grad_output shape가 다를 수 있음 → 헤드 평균 후 브로드캐스트 등 보정
+                Gm = G
+                if Gm.dim() == 3:  # (B, N, N)
+                    Gm = Gm.unsqueeze(1).expand_as(A)
+                GwA = F.relu(A * F.relu(Gm))
+            else:
+                GwA = F.relu(A * F.relu(G))
+        M = GwA.mean(dim=1)  # (B, N, N)
+        M = M / (M.sum(dim=-1, keepdim=True) + eps)
+        if add_residual:
+            I = torch.eye(M.size(-1), device=M.device).unsqueeze(0)
+            M = M + I
+            M = M / (M.sum(dim=-1, keepdim=True) + eps)
+        mats.append(M)
+
+    R = mats[0]
+    for L in mats[1:]:
+        R = torch.bmm(R, L)
+    return R[:, 0]  # (B, N)
+
+@torch.enable_grad()
+def generate_attention_arrays_from_lastyear(
+    model: nn.Module,
+    image_tensor_bchw: torch.Tensor,   # (1,C,H,W)
+    outputs,                           # fresh forward 할 것이므로 형식 무관
+    *,
+    task: str,                         # 'classification' | 'regression'
+    target_index: Optional[int],
+    assume_cls_token: bool = True,
+) -> Dict[str, Any]:
+    device = image_tensor_bchw.device
+    B, C, H, W = image_tensor_bchw.shape
+    assert B == 1, "batch=1만 지원"
+
+    attn_mods = _find_vit_attention_modules(model)
+    if not attn_mods:
+        raise RuntimeError("ViT attention 모듈(block.attn)을 찾지 못했습니다.")
+
+    collector = _AttnCollector()
+    hooks = []
+    for m in attn_mods:
+        hooks.append(m.register_forward_hook(collector.fwd))
+        hooks.append(m.register_full_backward_hook(collector.bwd))
+
+    try:
+        x = image_tensor_bchw.requires_grad_(True)
+        fresh_out = model(x)
+        is_cls = (task == "classification")
+
+        # target 자동 결정
+        if target_index is None:
+            t = fresh_out["classification"] if (isinstance(fresh_out, dict) and is_cls) \
+                else fresh_out["regression"] if isinstance(fresh_out, dict) else fresh_out
+            if is_cls:
+                with torch.no_grad():
+                    target_index = int(torch.argmax(torch.sigmoid(t)[0]).item())
+            else:
+                target_index = 0
+
+        score_t = fresh_out["classification"][0, target_index] if (isinstance(fresh_out, dict) and is_cls) \
+            else fresh_out["regression"][0, target_index] if isinstance(fresh_out, dict) \
+            else fresh_out[0, target_index]
+
+        model.zero_grad(set_to_none=True)
+        score_t.backward(retain_graph=False)
+
+        if not collector.attns:
+            raise RuntimeError("attention 텐서 수집 실패")
+
+        relev_tokens = _rollout_grad_attn(collector.attns, collector.grad_attns)  # (B,N)
+        relev_tokens = relev_tokens[0]  # (N,)
+
+        # N = 1 + Hp*Wp (CLS 포함 가정)
+        if assume_cls_token:
+            img_tokens = relev_tokens[1:]
+        else:
+            img_tokens = relev_tokens
+        N_img = img_tokens.numel()
+        side = int(round(np.sqrt(float(N_img))))
+        Hp, Wp = side, int(np.ceil(N_img / max(side, 1)))
+        img_tokens = img_tokens[:Hp*Wp]
+
+        grid = img_tokens.reshape(Hp, Wp)
+        grid = grid - grid.min()
+        if grid.max().item() > 0:
+            grid = grid / grid.max()
+        cam = F.interpolate(grid.unsqueeze(0).unsqueeze(0), size=(H, W),
+                            mode="bilinear", align_corners=False)[0, 0]
+        cam = cam.detach().cpu().numpy().astype(np.float32)
+
+        return {"cam": cam, "target_index": int(target_index),
+                "layer": "attn-rollout(lastyear)", "task": task}
+    finally:
+        for h in hooks:
+            h.remove()
