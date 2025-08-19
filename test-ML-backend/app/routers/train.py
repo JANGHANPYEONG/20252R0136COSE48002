@@ -110,7 +110,6 @@ def run_train_task(self, config: Dict):
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-<<<<<<< HEAD
             # stdout에서 MLflow experiment ID, run ID 추출
             mlflow_experiment_id = None
             mlflow_run_id = None
