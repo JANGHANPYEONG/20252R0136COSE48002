@@ -106,20 +106,35 @@ def run_train_task(self, config: Dict):
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-            # stdout에서 MLflow run ID 추출
+            # stdout에서 MLflow run ID 추출 (개선된 로직)
             mlflow_run_id = None
             if stdout:
                 import re
                 lines = stdout.strip().split('\n')
+                
+                # 여러 패턴으로 MLflow run ID 추출 시도
+                patterns = [
+                    r'[a-f0-9]{32}',  # 32자리 16진수
+                    r'MLflow run ID: ([a-f0-9]{32})',  # 명시적 표시
+                    r'run_id=([a-f0-9]{32})',  # 파라미터 형태
+                ]
+                
                 for line in lines:
                     line = line.strip()
-                    # 32자리 16진수 문자열 패턴으로 MLflow run ID 추출
-                    match = re.search(r'[a-f0-9]{32}', line)
-                    if match:
-                        mlflow_run_id = match.group()
+                    for pattern in patterns:
+                        match = re.search(pattern, line)
+                        if match:
+                            mlflow_run_id = match.group(1) if len(match.groups()) > 0 else match.group()
+                            break
+                    if mlflow_run_id:
                         break
-            
-            print(f"Training completed with run ID: {mlflow_run_id}")
+                
+                # MLflow run ID를 찾지 못한 경우 로그 출력
+                if not mlflow_run_id:
+                    print("Warning: MLflow run ID not found in stdout")
+                    print("Stdout content:", stdout[:500])  # 처음 500자만 출력
+                else:
+                    print(f"Training completed with run ID: {mlflow_run_id}")
             
             # 완료 시간 계산
             end_time = time.time()

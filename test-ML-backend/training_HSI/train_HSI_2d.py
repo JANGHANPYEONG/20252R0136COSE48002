@@ -241,6 +241,9 @@ def main():
             )
 
             run_id = logger.run_id  # MLflow run ID 저장
+            
+            # MLflow run ID를 명시적으로 출력 (스트리밍 시스템에서 추출용)
+            print(f"MLflow run ID: {run_id}")
         
         print("Training completed successfully!")
         
