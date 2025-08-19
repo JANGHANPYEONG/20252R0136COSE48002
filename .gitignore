@@ -60,7 +60,5 @@ test-ML-backend/.env
 # MLflow experiment tracking
 mlruns/
 mlartifacts/
-<<<<<<< HEAD
 "test-ML-backend/serviceAccountKey.json" 
-=======
->>>>>>> 2fa349b8f7f4421fc5b5f4b32ab89f685b16f29e
+label.csv
