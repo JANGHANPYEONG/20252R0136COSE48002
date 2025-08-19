@@ -169,7 +169,7 @@ class MLflowLogger:
 def create_logger(config: Dict[str, Any]) -> MLflowLogger:
     """설정에서 로거를 생성합니다."""
     mlflow_config = config.get('mlflow', {})
-    tracking_uri = mlflow_config.get('tracking_uri', 'http://127.0.0.1:5000')
+    tracking_uri = mlflow_config.get('tracking_uri', 'http://3.38.117.43:5000')
     experiment_name = mlflow_config.get('experiment_name', 'HSI_2D_CNN')
     
     return MLflowLogger(tracking_uri, experiment_name)

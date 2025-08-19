@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data_api, xai
+from app.routers import train, predict, meat, user, statistic_api, data_api, xai, training_stream
 from app.core.config import settings
 
 # 미들웨어 임포트
@@ -59,6 +59,7 @@ app.include_router(user.router, prefix="/user", tags=["user"])  # 사용자 관�
 app.include_router(statistic_api.router, prefix="/statistic", tags=["statistic"])  # 통계 데이터 관리
 app.include_router(data_api.router, prefix="/data", tags=["data"])  # 데이터 관련 API
 app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI 관련 API
+app.include_router(training_stream.router, prefix="/train-stream", tags=["training-stream"])  # 스트리밍 학습 API 추가
 
 @app.get("/")
 async def root():

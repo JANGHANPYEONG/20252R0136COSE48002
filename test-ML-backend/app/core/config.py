@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     
     # ML 모델 설정
     MODEL_SAVE_PATH: str = "/models"
-    MLFLOW_TRACKING_URI: str = "http://localhost:5000"
+    MLFLOW_TRACKING_URI: str = "http://3.38.117.43:5000"
     
     # 데이터베이스 설정
     DB_URI: str
