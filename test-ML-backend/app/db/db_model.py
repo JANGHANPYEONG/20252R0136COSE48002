@@ -347,10 +347,10 @@ class SensoryEval(Base):
 
 class AI_SensoryEval(Base):
     __tablename__ = "ai_sensory_eval"
-    # 1. 복합키 설정 (primary_key=True 제거)
-    id = Column(String(255), nullable=False)
-    seqno = Column(Integer, nullable=False)
-    isRefrigerated = Column(Boolean, nullable=False, server_default='0')  # 추가
+    # 1. 복합키 설정
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)  # 추가
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
