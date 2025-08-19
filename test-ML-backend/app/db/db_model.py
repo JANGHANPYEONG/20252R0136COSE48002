@@ -353,6 +353,7 @@ class AI_SensoryEval(Base):
     # 1. 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)  # 추가
 
     # 2. AI 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)
