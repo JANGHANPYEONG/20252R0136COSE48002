@@ -641,19 +641,26 @@ class HSISensoryEval(Base):
 
 class HSIImagesBands(Base):
     __tablename__ = "hsi_images_bands"
+    # 복합키 설정
     id = Column(String(255), primary_key=True)
     seqno = Column(Integer, primary_key=True)
     isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
     spectral_index = Column(Integer, nullable=False, primary_key=True)
+    
+    tl = Column(Float)
+    tr = Column(Float)
+    br = Column(Float)
+    bl = Column(Float)
+
     filename = Column(String(255))
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated", "spectral_index"),
         ForeignKeyConstraint([
-            "id", "seqno", "isRefrigerated"
+            "id", "seqno", "isRefrigerated", 
         ], ["hsi_sensory_eval.id", "hsi_sensory_eval.seqno", "hsi_sensory_eval.isRefrigerated"], ondelete="CASCADE", onupdate="CASCADE"),
         ForeignKeyConstraint([
             "spectral_index"
-        ], ["spectral_info.spectral_index"], onupdate="CASCADE"),
+        ], ["spectral_info.spectral_index"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
 
