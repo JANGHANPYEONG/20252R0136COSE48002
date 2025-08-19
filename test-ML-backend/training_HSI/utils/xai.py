@@ -414,7 +414,7 @@ def generate_attention_arrays_from_lastyear(
         else:
             img_tokens = relev_tokens
         N_img = img_tokens.numel()
-        if N_img == 0:  # 🔧 엣지 케이스 방지
+        if N_img == 0:  # 엣지 케이스 방지
             cam = torch.ones((1,1,H,W), device=device)[0,0].detach().cpu().numpy().astype(np.float32)
             return {"cam": cam, "target_index": int(target_index),
                     "layer": "attn-rollout(lastyear)", "task": task}
