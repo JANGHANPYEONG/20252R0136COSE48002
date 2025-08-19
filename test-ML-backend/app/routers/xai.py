@@ -19,6 +19,7 @@ class XaiRequest(BaseModel):
     data_path: str  # 예측할 데이터 경로
     input_type: Literal["hsi_image", "vector", "rgb_image"]
     image_return_type: Literal['base64', 'url']
+    xai_mode: Literal['gradcam', 'attn'] = 'gradcam' # gradcam 혹은 attention 선택
 
 class XaiResponse(BaseModel):
     message: str
@@ -29,7 +30,7 @@ class XaiResponse(BaseModel):
 
 # 비동기 예측 함수
 async def run_prediction(model_uri: str, experiment_id: Optional[str],
-                         data_path: str, input_type: str, image_return_type: str) -> Dict:
+                         data_path: str, input_type: str, image_return_type: str, xai_mode: str) -> Dict:
     """
     비동기로 예측을 실행하는 함수 (스크립트 실행 방식)
     """
@@ -101,6 +102,10 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str],
                 cmd.extend(["--image_paths"] + data_paths)
 
             cmd.extend(["--xai"])
+
+            # 반환 타입과 모드 전달
+            cmd.extend(["--xai-return", image_return_type])
+            cmd.extend(["--xai-mode", xai_mode])
 
             # 결과 파일 경로 추가
             cmd.extend(["--output", temp_result_path])
@@ -228,7 +233,8 @@ async def predict(request: XaiRequest):
             experiment_id=request.experiment_id,
             data_path=request.data_path, 
             input_type=request.input_type,
-            image_return_type=request.image_return_type
+            image_return_type=request.image_return_type,
+            xai_mode=request.xai_mode,
         )
         
         end_time = time.time()
