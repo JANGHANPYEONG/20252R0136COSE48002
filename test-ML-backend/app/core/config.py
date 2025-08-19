@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     # 데이터베이스 설정
     DB_URI: str
     
+    # 로컬 데이터베이스 설정 (마이그레이션용)
+    LOCAL_DB_USER: str = "postgres"
+    LOCAL_DB_PASSWORD: str = "password"
+    LOCAL_DB_HOST: str = "127.0.0.1"
+    LOCAL_DB_PORT: str = "5432"
+    LOCAL_DB_NAME: str = "ml_database"
+    
     # AWS S3 설정
     S3_BUCKET_NAME: str
     S3_REGION_NAME: str
