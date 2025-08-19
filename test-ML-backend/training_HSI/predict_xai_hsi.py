@@ -3,14 +3,25 @@
 HSI 예측 모듈 (학습 파이프라인과 완전 호환)
 
 이 스크립트는 HSI best model을 로드하고 각 band의 image path 리스트를 입력받아 예측을 수행합니다.
-학습 파이프라인과 완전히 호환되도록 설계되었습니다.
+학습 파이프라인과 완전히 호환되도록 설계되었으며, 고해상도 XAI (CAM/Attention) 생성 기능을 포함합니다.
 
 사용법:
-    # 방법 1: 로컬 모델 디렉토리 사용
-    python predict_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
+    # 기본 예측
+    python predict_xai_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
     
-    # 방법 2: MLflow run ID 사용
-    python predict_hsi.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
+    # 고해상도 XAI (GradCAM) 생성
+    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-save-dir xai_outputs --xai-upscale-factor 3.0
+    
+    # Attention 맵 생성 (ViT 모델용)
+    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-mode attn --xai-upscale-factor 2.5
+    
+    # 고품질 설정으로 XAI 생성
+    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-upscale-factor 4.0 --xai-use-bicubic
+    
+XAI 해상도 개선 옵션:
+    --xai-upscale-factor: CAM 업스케일 배율 (기본: 2.0)
+    --xai-use-bicubic: 고품질 bicubic 보간 사용 (기본: True)
+    --xai-disable-contrast-enhancement: 대비 개선 비활성화
 """
 
 import os
@@ -25,6 +36,7 @@ import mlflow
 import tempfile
 import warnings
 import base64
+import cv2
 from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
 
@@ -156,6 +168,11 @@ class HSIPredictor:
         self.xai_mode = 'gradcam'   
         self.xai_return = 'base64'
         self._has_attn = len(_find_vit_attention_modules(self.model)) > 0
+        
+        # XAI 해상도 개선을 위한 설정
+        self.xai_upscale_factor = 2.0  # CAM을 원본보다 2배 크게 업스케일
+        self.xai_use_bicubic = True    # 더 선명한 보간을 위해 bicubic 사용
+        self.xai_disable_contrast_enhancement = False  # 대비 개선 기본 활성화
 
     def _build_artifacts(self, model_dir):
         """
@@ -258,7 +275,7 @@ class HSIPredictor:
         if self.xai_mode == 'attn':
             if not self._has_attn:
                 raise RuntimeError("model에서 attention 모듈 찾을 수 없음")
-            return generate_attention_arrays_from_lastyear(
+            cam_pack = generate_attention_arrays_from_lastyear(
                 model=self.model,
                 image_tensor_bchw=img_tensor.to(self.device),
                 outputs=output,
@@ -266,19 +283,88 @@ class HSIPredictor:
                 target_index=target_index,
                 assume_cls_token=True,
             )
-        # default: gradcam
-        return generate_cam_arrays(
-            model=self.model,
-            image_tensor_bchw=img_tensor.to(self.device),
-            outputs=output,
-            task=task,
-            target_index=target_index,
-            target_layer_name=None,
-            image_cube_hwc=cube_hwc,
-            wavelengths=self.wavelengths,
-            rgb_strategy='auto',
-            alpha=0.35
-        )
+        else:
+            # default: gradcam
+            cam_pack = generate_cam_arrays(
+                model=self.model,
+                image_tensor_bchw=img_tensor.to(self.device),
+                outputs=output,
+                task=task,
+                target_index=target_index,
+                target_layer_name=None,
+                image_cube_hwc=cube_hwc,
+                wavelengths=self.wavelengths,
+                rgb_strategy='auto',
+                alpha=0.35
+            )
+        
+        # 해상도 개선 적용
+        cam_pack = self._enhance_cam_resolution(cam_pack, cube_hwc)
+        return cam_pack
+    
+    def _enhance_cam_resolution(self, cam_pack, cube_hwc):
+        """CAM 해상도를 개선합니다."""
+        
+        cam = cam_pack['cam']  # (H, W) numpy array [0,1]
+        original_shape = cube_hwc.shape[:2]  # (H, W)
+        
+        # 1. 원본 이미지 크기로 업스케일 (더 정확한 매핑을 위해)
+        if cam.shape != original_shape:
+            if self.xai_use_bicubic:
+                # bicubic 보간으로 더 선명하게
+                cam_upscaled = cv2.resize(cam, (original_shape[1], original_shape[0]), 
+                                        interpolation=cv2.INTER_CUBIC)
+            else:
+                cam_upscaled = cv2.resize(cam, (original_shape[1], original_shape[0]), 
+                                        interpolation=cv2.INTER_LINEAR)
+        else:
+            cam_upscaled = cam.copy()
+        
+        # 2. 추가 업스케일링 (선택적)
+        if self.xai_upscale_factor > 1.0:
+            target_h = int(original_shape[0] * self.xai_upscale_factor)
+            target_w = int(original_shape[1] * self.xai_upscale_factor)
+            
+            # INTER_LANCZOS4는 가장 고품질 보간법 중 하나
+            cam_upscaled = cv2.resize(cam_upscaled, (target_w, target_h), 
+                                    interpolation=cv2.INTER_LANCZOS4)
+        
+        # 3. 가우시안 블러를 약간 적용하여 노이즈 제거 (선택적)
+        cam_upscaled = cv2.GaussianBlur(cam_upscaled, (3, 3), 0.5)
+        
+        # 4. 값 범위 재정규화
+        cam_min, cam_max = cam_upscaled.min(), cam_upscaled.max()
+        if cam_max > cam_min:
+            cam_upscaled = (cam_upscaled - cam_min) / (cam_max - cam_min)
+        
+        # 5. 히스토그램 평활화로 대비 개선 (선택적)
+        if not getattr(self, 'xai_disable_contrast_enhancement', False):
+            cam_enhanced = self._enhance_contrast(cam_upscaled)
+        else:
+            cam_enhanced = cam_upscaled
+        
+        # 결과 업데이트
+        enhanced_pack = cam_pack.copy()
+        enhanced_pack['cam'] = cam_enhanced
+        enhanced_pack['original_resolution'] = original_shape
+        enhanced_pack['enhanced_resolution'] = cam_enhanced.shape
+        
+        return enhanced_pack
+    
+    def _enhance_contrast(self, cam):
+        """CAM의 대비를 개선합니다."""
+        
+        # 히스토그램 평활화를 위해 uint8로 변환
+        cam_uint8 = (cam * 255).astype(np.uint8)
+        
+        # CLAHE (Contrast Limited Adaptive Histogram Equalization) 적용
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        cam_enhanced = clahe.apply(cam_uint8)
+        
+        # 다시 [0,1] 범위로 정규화
+        cam_enhanced = cam_enhanced.astype(np.float32) / 255.0
+        
+        return cam_enhanced
 
     def _print_model_info(self):
         """모델 정보를 출력합니다."""
@@ -539,6 +625,12 @@ def main():
                     help='Return CAM as base64 or file path (url)')
     parser.add_argument('--xai-save-dir', type=str, default=None,
                     help='If set, save per-label CAM heatmaps to this directory')
+    parser.add_argument('--xai-upscale-factor', type=float, default=2.0,
+                    help='Upscale factor for CAM resolution enhancement (default: 2.0)')
+    parser.add_argument('--xai-use-bicubic', action='store_true', default=True,
+                    help='Use bicubic interpolation for better quality (default: True)')
+    parser.add_argument('--xai-disable-contrast-enhancement', action='store_true',
+                    help='Disable contrast enhancement for CAM')
 
     
     args = parser.parse_args()
@@ -582,6 +674,16 @@ def main():
         predictor = HSIPredictor(model_dir=model_dir)
         predictor.xai_mode = args.xai_mode
         predictor.xai_return = args.xai_return
+        
+        # XAI 해상도 설정 적용
+        predictor.xai_upscale_factor = args.xai_upscale_factor
+        predictor.xai_use_bicubic = args.xai_use_bicubic
+        predictor.xai_disable_contrast_enhancement = args.xai_disable_contrast_enhancement
+        
+        print(f"XAI Resolution Enhancement Settings:")
+        print(f"  - Upscale factor: {predictor.xai_upscale_factor}x")
+        print(f"  - Use bicubic interpolation: {predictor.xai_use_bicubic}")
+        print(f"  - Contrast enhancement: {not predictor.xai_disable_contrast_enhancement}")
         
         # 예측 수행
         results = predictor.predict_batch(

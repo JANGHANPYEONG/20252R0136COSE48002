@@ -166,10 +166,11 @@ def generate_cam_arrays(
     finally:
         engine.remove()
 
-    # 입력 샘플 크기로 업샘플링
+    # 입력 샘플 크기로 업샘플링 (고품질 보간 사용)
     _, _, H, W = image_tensor_bchw.shape
     if cam_b1hw.shape[-2:] != (H, W):
-        cam_b1hw = F.interpolate(cam_b1hw, size=(H, W), mode="bilinear", align_corners=False)
+        # bicubic 보간으로 더 선명한 업샘플링
+        cam_b1hw = F.interpolate(cam_b1hw, size=(H, W), mode="bicubic", align_corners=False)
 
 
     # 정규화 + 업샘플
@@ -426,8 +427,9 @@ def generate_attention_arrays_from_lastyear(
         grid = grid - grid.min()
         if grid.max().item() > 0:
             grid = grid / grid.max()
+        # bicubic 보간으로 더 선명한 업샘플링
         cam = F.interpolate(grid.unsqueeze(0).unsqueeze(0), size=(H, W),
-                            mode="bilinear", align_corners=False)[0, 0]
+                            mode="bicubic", align_corners=False)[0, 0]
         cam = cam.detach().cpu().numpy().astype(np.float32)
 
         return {"cam": cam, "target_index": int(target_index),
