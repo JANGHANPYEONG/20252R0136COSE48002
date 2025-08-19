@@ -13,13 +13,14 @@ router = APIRouter()
 
 
 # Pydantic 모델 정의
-class PredictRequest(BaseModel):
+class XaiRequest(BaseModel):
     model_uri: str  # MLflow run_id 또는 모델 디렉토리 경로
     experiment_id: Optional[str] = None # MLflow experiment_id (선택 사항)
     data_path: str  # 예측할 데이터 경로
     input_type: Literal["hsi_image", "vector", "rgb_image"]
+    image_return_type: Literal['base64', 'url']
 
-class PredictResponse(BaseModel):
+class XaiResponse(BaseModel):
     message: str
     prediction_result: Dict
     elapsed_time: float
@@ -27,12 +28,13 @@ class PredictResponse(BaseModel):
 
 
 # 비동기 예측 함수
-async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path: str, input_type: str) -> Dict:
+async def run_prediction(model_uri: str, experiment_id: Optional[str],
+                         data_path: str, input_type: str, image_return_type: str) -> Dict:
     """
     비동기로 예측을 실행하는 함수 (스크립트 실행 방식)
     """
     try:
-        print(f"Starting prediction with model: {model_uri}, data: {data_path}, type: {input_type}")
+        print(f"Starting prediction with model: {model_uri}, data: {data_path}, type: {input_type}, return: {image_return_type}")
         
         # MLflow run ID 형태 검증 및 정보 출력
         if len(model_uri) == 32:
@@ -63,14 +65,12 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
         training_hsi_dir = os.path.join(project_root, "training_HSI")
 
         if input_type == "hsi_image":
-            script_path = os.path.join(training_hsi_dir, "predict_hsi.py")
+            script_path = os.path.join(training_hsi_dir, "predict_xai_hsi.py")
         elif input_type == "vector":
-            script_path = os.path.join(training_hsi_dir, "predict_vector.py")
-        elif input_type == "rgb_image":
-            script_path = os.path.join(training_hsi_dir, "predict_rgb.py")
+            script_path = os.path.join(training_hsi_dir, "predict_xai_vector.py")
         else:
-            raise ValueError(f"Unsupported input_type: {input_type}")
-        
+            script_path = os.path.join(training_hsi_dir, "predict_xai_rgb.py")
+
         if not os.path.exists(script_path):
             raise FileNotFoundError(f"Prediction script not found: {script_path}")
         
@@ -99,6 +99,8 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
                 cmd.extend(["--data_paths"] + data_paths)
             elif input_type == "rgb_image":
                 cmd.extend(["--image_paths"] + data_paths)
+
+            cmd.extend(["--xai"])
 
             # 결과 파일 경로 추가
             cmd.extend(["--output", temp_result_path])
@@ -182,27 +184,36 @@ async def run_prediction(model_uri: str, experiment_id: Optional[str], data_path
         raise e
 
 
-@router.post("/", response_model=PredictResponse)
-async def predict(request: PredictRequest):
+@router.post("/", response_model=XaiResponse)
+async def predict(request: XaiRequest):
     """
     ML 모델 예측을 실행하는 엔드포인트
     """
     try:
         start_time = time.time()
         
-        # 입력 검증
+        # 데이터 입력 타입 검증
         if request.input_type not in ["hsi_image", "vector", "rgb_image"]:
             raise HTTPException(
                 status_code=400, 
                 detail=f"Invalid input_type: {request.input_type}. Must be 'hsi_image', 'vector', or 'rgb_image'"
             )
         
+        # 이미지 반환 타입 검증
+        if request.image_return_type not in ['base64', 'url']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid image_return_type: {request.image_return_type}. Must be 'base64' or 'url'"
+            )
+        
+        # model_uri 검증
         if not request.model_uri.strip():
             raise HTTPException(
                 status_code=400,
                 detail="model_uri cannot be empty"
             )
         
+        # data_path 검증
         if not request.data_path.strip():
             raise HTTPException(
                 status_code=400,
@@ -216,7 +227,8 @@ async def predict(request: PredictRequest):
             model_uri=request.model_uri, 
             experiment_id=request.experiment_id,
             data_path=request.data_path, 
-            input_type=request.input_type
+            input_type=request.input_type,
+            image_return_type=request.image_return_type
         )
         
         end_time = time.time()
@@ -224,7 +236,7 @@ async def predict(request: PredictRequest):
         
         print(f"Prediction completed in {elapsed_time:.2f} seconds")
         
-        return PredictResponse(
+        return XaiResponse(
             message=f"Prediction completed successfully for {request.input_type} model",
             prediction_result=prediction_result,
             elapsed_time=elapsed_time,
