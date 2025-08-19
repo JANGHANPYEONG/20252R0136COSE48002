@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps 스트리밍 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.running {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-entry.info { color: #007bff; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.error { color: #dc3545; }
+        .log-entry.warning { color: #ffc107; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            width: 300px;
+        }
+        .connection-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>MLOps 실시간 학습 스트리밍 테스트</h1>
+    
+    <div class="container">
+        <h2>1. 학습 시작</h2>
+        <p>먼저 기존 학습 API로 학습을 시작하세요:</p>
+        <code>POST /train/</code>
+        <p>응답에서 받은 <code>train_id</code>를 아래에 입력하세요.</p>
+        
+        <div>
+            <input type="text" id="trainId" placeholder="train_id를 입력하세요" />
+            <button onclick="startStreaming()">스트리밍 시작</button>
+            <button onclick="stopStreaming()">스트리밍 중지</button>
+        </div>
+        
+        <div class="connection-info" id="connectionInfo" style="display: none;">
+            <strong>연결 정보:</strong>
+            <div id="connectionDetails"></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>2. 실시간 상태</h2>
+        <div id="status" class="status"></div>
+        
+        <div class="metrics-container" id="metricsContainer">
+            <div class="metric-card">
+                <div class="metric-value" id="epoch">-</div>
+                <div class="metric-label">Epoch</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="trainLoss">-</div>
+                <div class="metric-label">Train Loss</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="valLoss">-</div>
+                <div class="metric-label">Val Loss</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="f1Score">-</div>
+                <div class="metric-label">F1 Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="r2Score">-</div>
+                <div class="metric-label">R² Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="combinedScore">-</div>
+                <div class="metric-label">Combined Score</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>3. 실시간 로그</h2>
+        <div class="log-container" id="logContainer"></div>
+        <button onclick="clearLog()">로그 지우기</button>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let isConnected = false;
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus(status, message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${status}`;
+            statusDiv.textContent = message;
+        }
+        
+        function updateMetric(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = typeof value === 'number' ? value.toFixed(4) : value;
+            }
+        }
+        
+        function startStreaming() {
+            const trainId = document.getElementById('trainId').value.trim();
+            if (!trainId) {
+                alert('train_id를 입력해주세요.');
+                return;
+            }
+            
+            if (isConnected) {
+                log('이미 연결되어 있습니다.', 'warning');
+                return;
+            }
+            
+            log(`스트리밍 시작: ${trainId}`, 'info');
+            
+            // SSE 연결
+            const url = `http://localhost:8000/train-stream/stream/${trainId}`;
+            eventSource = new EventSource(url);
+            
+            eventSource.onopen = function(event) {
+                isConnected = true;
+                log('SSE 연결이 열렸습니다.', 'success');
+                updateStatus('running', '스트리밍 연결됨');
+                
+                // 연결 정보 표시
+                document.getElementById('connectionInfo').style.display = 'block';
+                document.getElementById('connectionDetails').innerHTML = `
+                    <div>Train ID: ${trainId}</div>
+                    <div>연결 상태: 활성</div>
+                    <div>연결 시간: ${new Date().toLocaleString()}</div>
+                `;
+            };
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    log(`메시지 수신: ${JSON.stringify(data)}`, 'info');
+                    
+                    if (data.type === 'connected') {
+                        log('스트리밍 연결이 설정되었습니다.', 'success');
+                    } else if (data.type === 'metrics') {
+                        // 메트릭 업데이트
+                        updateMetric('epoch', data.epoch || data.step);
+                        updateMetric('trainLoss', data.train_loss);
+                        updateMetric('valLoss', data.val_loss);
+                        updateMetric('f1Score', data.train_cls_f1_score || data.val_cls_f1_score);
+                        updateMetric('r2Score', data.train_reg_r2 || data.val_reg_r2);
+                        updateMetric('combinedScore', data.train_combined_score || data.val_combined_score);
+                        
+                        log(`Epoch ${data.epoch || data.step}: Train Loss=${data.train_loss?.toFixed(4)}, Val Loss=${data.val_loss?.toFixed(4)}`, 'success');
+                    } else if (data.type === 'final') {
+                        log('학습이 완료되었습니다!', 'success');
+                        updateStatus('completed', '학습 완료');
+                        stopStreaming();
+                    } else if (data.type === 'heartbeat') {
+                        // 하트비트는 로그에 표시하지 않음
+                    } else if (data.type === 'status') {
+                        log(`상태 변경: ${data.status}`, 'info');
+                        updateStatus(data.status, `상태: ${data.status}`);
+                    }
+                } catch (error) {
+                    log(`메시지 파싱 오류: ${error}`, 'error');
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                log('SSE 연결 오류가 발생했습니다.', 'error');
+                updateStatus('error', '연결 오류');
+                isConnected = false;
+                
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            };
+        }
+        
+        function stopStreaming() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                isConnected = false;
+                log('스트리밍이 중지되었습니다.', 'info');
+                updateStatus('', '');
+                
+                // 연결 정보 숨기기
+                document.getElementById('connectionInfo').style.display = 'none';
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+        }
+        
+        // 페이지 언로드 시 연결 정리
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+        
+        // 초기 로그
+        log('MLOps 스트리밍 테스트 페이지가 로드되었습니다.', 'info');
+        log('1. POST /train/ API로 학습을 시작하세요', 'info');
+        log('2. 응답에서 train_id를 복사하여 입력하세요', 'info');
+        log('3. "스트리밍 시작" 버튼을 클릭하세요', 'info');
+    </script>
+</body>
+</html>
