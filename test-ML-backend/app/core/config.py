@@ -65,6 +65,5 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     FIREBASE_BUCKET_ADDRESS: str
-    API_URL: str
 
 settings = Settings()

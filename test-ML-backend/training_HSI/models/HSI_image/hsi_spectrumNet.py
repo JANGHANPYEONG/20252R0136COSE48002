@@ -80,9 +80,8 @@ class SpectrumNet(nn.Module):
 
 def create_model(config):
     num_classes = config['model']['num_classes']
-    params = config['model']['parameters']
-    in_channels = params.get('in_channels', 5)
-    dropout = params.get('dropout', 0.0)
+    in_channels = config['model'].get('in_channels', 5)
+    dropout = config['model'].get('dropout', 0.0)
 
     return SpectrumNet(
         in_channels = in_channels,

@@ -319,9 +319,16 @@ class SensoryEval(Base):
     texture = Column(Float)
     surfaceMoisture = Column(Float)
     overall = Column(Float)
+
+    weight_kg = Column(Float)
+    manufactureYmd = Column(DateTime, nullable=False)
+    expireYmd = Column(DateTime) 
+
+    # 3. 이미지 Path
+    imagePath = Column(String(255))
     
     __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
+        PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint(
             ["id", "seqno"], ["deepAging_info.id", "deepAging_info.seqno"],
             ondelete="CASCADE",
@@ -361,9 +368,10 @@ class AI_SensoryEval(Base):
     overall = Column(Float)
     
     __table_args__ = (
-        PrimaryKeyConstraint("id", "seqno"),
+        PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint(
-            ["id", "seqno"], ["sensory_eval.id", "sensory_eval.seqno"],
+            ["id", "seqno", "isRefrigerated"],
+            ["sensory_eval.id", "sensory_eval.seqno", "sensory_eval.isRefrigerated"],
             ondelete="CASCADE",
             onupdate="CASCADE"
         ),
@@ -601,6 +609,78 @@ class OpenCVImagesInfo(Base):
     )
 
 
+# HSI 관련 테이블
+
+class SpectralInfo(Base):
+    __tablename__ = "spectral_info"
+    spectral_index = Column(Integer, primary_key=True)
+    wavelength_nm = Column(Float, unique=True)
+
+
+class HSISensoryEval(Base):
+    __tablename__ = "hsi_sensory_eval"
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
+    createdAt = Column(DateTime)
+    xai_imagePath = Column(String(255))
+    xai_gradeNum = Column(Integer)
+    xai_gradeNum_imagePath = Column(String(255))
+    marbling = Column(Float)
+    color = Column(Float)
+    texture = Column(Float)
+    surfaceMoisture = Column(Float)
+    overall = Column(Float)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
+        ForeignKeyConstraint([
+            "id", "seqno"
+        ], ["deepAging_info.id", "deepAging_info.seqno"], ondelete="CASCADE", onupdate="CASCADE"),
+    )
+
+
+class HSIImagesBands(Base):
+    __tablename__ = "hsi_images_bands"
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
+    spectral_index = Column(Integer, nullable=False, primary_key=True)
+    filename = Column(String(255))
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno", "isRefrigerated", "spectral_index"),
+        ForeignKeyConstraint([
+            "id", "seqno", "isRefrigerated"
+        ], ["hsi_sensory_eval.id", "hsi_sensory_eval.seqno", "hsi_sensory_eval.isRefrigerated"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint([
+            "spectral_index"
+        ], ["spectral_info.spectral_index"], onupdate="CASCADE"),
+    )
+
+
+class AI_HSISensoryEval(Base):
+    __tablename__ = "ai_hsi_sensory_eval"
+    id = Column(String(255), primary_key=True)
+    seqno = Column(Integer, primary_key=True)
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
+    createdAt = Column(DateTime, nullable=False)
+    xai_imagePath = Column(String(255))
+    xai_gradeNum = Column(Integer)
+    xai_gradeNum_imagePath = Column(String(255))
+    marbling = Column(Float)
+    color = Column(Float)
+    texture = Column(Float)
+    surfaceMoisture = Column(Float)
+    overall = Column(Float)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
+        ForeignKeyConstraint([
+            "id", "seqno", "isRefrigerated"
+        ], ["hsi_sensory_eval.id", "hsi_sensory_eval.seqno", "hsi_sensory_eval.isRefrigerated"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint([
+            "xai_gradeNum"
+        ], ["grade_info.id"], onupdate="CASCADE"),
+    )
+
 ## {parent}-{child} 테이블 간 관계 정의
 # categoryInfo - meat
 CategoryInfo.meats = relationship(
@@ -720,6 +800,14 @@ DeepAgingInfo.openCVImagesInfos = relationship(
 )
 OpenCVImagesInfo.deepAgingInfos = relationship("DeepAgingInfo", back_populates="openCVImagesInfos")
 
+# deepAgingInfo - HSISensoryEval
+DeepAgingInfo.hsiSensoryEvals = relationship(
+    "HSISensoryEval",
+    back_populates="deepAgingInfo",
+    cascade="all, delete-orphan"
+)
+HSISensoryEval.deepAgingInfo = relationship("DeepAgingInfo", back_populates="hsiSensoryEvals")
+
 # sensoryEval - aiSensoryEval
 SensoryEval.aiSensoryEvals = relationship(
     "AI_SensoryEval",
@@ -735,3 +823,34 @@ HeatedmeatSensoryEval.aiHeatedmeatSensoryEvals = relationship(
     cascade="all, delete-orphan"
 )
 AI_HeatedmeatSeonsoryEval.heatedmeatSensoryEvals = relationship("HeatedmeatSensoryEval", back_populates="aiHeatedmeatSensoryEvals")
+
+# HSISensoryEval - HSIImagesBands
+HSISensoryEval.hsiImagesBands = relationship(
+    "HSIImagesBands",
+    back_populates="hsiSensoryEval",
+    cascade="all, delete-orphan"
+)
+HSIImagesBands.hsiSensoryEval = relationship("HSISensoryEval", back_populates="hsiImagesBands")
+
+# SpectralInfo - HSIImagesBands
+SpectralInfo.hsiImagesBands = relationship(
+    "HSIImagesBands",
+    back_populates="spectralInfo",
+    cascade="all, delete-orphan"
+)
+HSIImagesBands.spectralInfo = relationship("SpectralInfo", back_populates="hsiImagesBands")
+
+# HSISensoryEval - AI_HSISensoryEval
+HSISensoryEval.aiHSISensoryEvals = relationship(
+    "AI_HSISensoryEval",
+    back_populates="hsiSensoryEval",
+    cascade="all, delete-orphan"
+)
+AI_HSISensoryEval.hsiSensoryEval = relationship("HSISensoryEval", back_populates="aiHSISensoryEvals")
+
+# GradeInfo - AI_HSISensoryEval
+GradeInfo.aiHSISensoryEvals = relationship(
+    "AI_HSISensoryEval",
+    back_populates="gradeInfo"
+)
+AI_HSISensoryEval.gradeInfo = relationship("GradeInfo", back_populates="aiHSISensoryEvals")

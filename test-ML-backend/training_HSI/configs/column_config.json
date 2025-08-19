@@ -2,51 +2,46 @@
   "column_order": {
     "id_column_index": 0,
     "label_start_index": 1,
-    "vector_start_index": 14,
-    "image_path_start_index": 19,
-    "rgb_image_path_start_index": 20,
-    "rgb_mask_path_index": 21
+    "vector_start_index": null,
+    "image_path_start_index": null,
+    "rgb_image_path_start_index": 11,
+    "rgb_mask_path_index": null
   },
   "label_columns": [
-    "disease_1",
-    "disease_2",
-    "disease_3",
-    "disease_4",
-    "disease_5",
-    "disease_6",
-    "disease_7",
-    "disease_8",
-    "disease_9",
-    "disease_10",
-    "disease_11",
-    "disease_12",
-    "disease_13"
+    "Marbling",
+    "Meat Color",
+    "Texture",
+    "Surface Moisture",
+    "Total",
+    "GRADE_3",
+    "GRADE_2",
+    "GRADE_1",
+    "GRADE_1+",
+    "GRADE_1++"
   ],
   "label_types": {
     "classification": [
-      "disease_1",
-      "disease_2",
-      "disease_3",
-      "disease_4",
-      "disease_5",
-      "disease_6",
-      "disease_7",
-      "disease_8",
-      "disease_9",
-      "disease_10",
-      "disease_11",
-      "disease_12",
-      "disease_13"
+      "GRADE_3",
+      "GRADE_2",
+      "GRADE_1",
+      "GRADE_1+",
+      "GRADE_1++"
     ],
-    "regression": []
+    "regression": [
+      "Marbling",
+      "Meat Color",
+      "Texture",
+      "Surface Moisture",
+      "Total"
+    ]
   },
-  "wavelengths": [10, 60, 70, 100, 110],
+  "wavelengths": [430, 540],
   "image_size": [256, 256],
   "rgb_image_size": [224, 224],
   "base_dirs": {
-    "hsi_image_dir": "datasets_HSI/image",
-    "rgb_image_dir": "data/rgb/images",
-    "rgb_mask_dir": "data/rgb/masks"
+    "hsi_image_dir": "/mnt/data/datasets_HSI/meat_image",
+    "rgb_image_dir": "/mnt/data/datasets_RGB/rgb_meat_image",
+    "rgb_mask_dir": "/mnt/data/datasets_RGB/masks"
   },
   "mask_template": "{stem}_mask.png"
 }

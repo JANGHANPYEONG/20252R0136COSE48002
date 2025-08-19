@@ -24,14 +24,18 @@ import pickle
 import mlflow
 import tempfile
 import warnings
+import base64
 from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
+
+from typing import List, Optional, Dict, Any
 
 # 현재 디렉토리를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
+from utils.xai import generate_cam_arrays, _infer_task_from_outputs, cam_to_png_bytes, save_cam_arrays
 
 
 class InferenceDataset(Dataset):
@@ -50,11 +54,64 @@ class InferenceDataset(Dataset):
     def __len__(self):
         return int(len(self.samples) / self.hsi_channels)
     
+    def _load_one_sample_cube(self, image_paths):
+        # HSI 단일 샘플 로딩: (H, W, C)
+        band_arrays = []
+        
+        if len(image_paths) != self.hsi_channels:
+            raise ValueError(f"Number of image paths ({len(image_paths)}) must match number of wavelengths ({self.hsi_channels})")
+
+        for path in image_paths:
+            if not os.path.exists(path):
+                raise FileNotFoundError(f"Image file not found: {path}")
+            img = Image.open(path).convert("L")
+
+            # 학습 해상도와 맞추기
+            if self.parent.target_hw and img.size[::-1] != self.parent.target_hw:
+                img = img.resize(self.parent.target_hw[::-1], resample=Image.NEAREST)
+
+            band_arrays.append(np.asarray(img, dtype=np.float32))
+
+        image_cube = np.stack(band_arrays, axis=-1)  # (H, W, C)
+
+        # 학습 시 사용한 /255 정규화 반영
+        if self.parent.scaler_mode == "normalized":
+            image_cube /= 255.0
+
+        return image_cube
+    
+    def _to_chw_tensor_with_scaler_and_transform(self, cube_hwc):
+        # (H, W, C) → (C, H, W)
+        image_tensor = torch.from_numpy(cube_hwc).permute(2, 0, 1).float()
+
+        # StandardScaler - 학습 파이프라인과 동일한 순서
+        if self.parent.scaler is not None:
+            # scaler의 mean_와 scale_를 사용하여 정규화
+            mean = torch.as_tensor(self.parent.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
+            scale = torch.as_tensor(self.parent.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
+
+            # 0으로 나누기 방지
+            eps = 1e-6
+            image_tensor = (image_tensor - mean) / torch.clamp(scale, min=eps)
+        
+        # 중앙 크롭 적용 - 학습 파이프라인과 동일한 순서
+        transform = get_test_transforms(image_size=self.parent.crop_size)
+        image_tensor = transform(image_tensor)
+
+        return image_tensor
+
     def __getitem__(self, idx):
         image_paths = self.samples[idx * self.hsi_channels:(idx + 1) * self.hsi_channels]
-        cube = self.parent._load_image_cube(image_paths)
-        image_tensor = self.parent._preprocess_image(cube, self.image_size)
-        return image_tensor.squeeze(0)
+        cube_hwc = self._load_one_sample_cube(image_paths)
+        tensor_chw = self._to_chw_tensor_with_scaler_and_transform(cube_hwc)
+        meta = {"paths": image_paths}
+        return tensor_chw, cube_hwc, meta
+
+
+def hsi_batch_collate(batch):
+    tensors, cubes, metas = zip(*batch)
+    batch_bchw = torch.stack(tensors, dim=0)
+    return batch_bchw, list(cubes), list(metas)
 
 
 class HSIPredictor:
@@ -93,7 +150,8 @@ class HSIPredictor:
         # === 학습 파이프라인과 동일한 전처리를 위한 설정 ===
         self.target_hw   = tuple(self.column_config.get("image_size", [])) or None  # (H, W)
         self.crop_size   = tuple(self.config.get("data", {}).get("crop_size", [224, 224]))
-        
+        self.wavelengths = self.column_config.get("wavelengths", [])
+
     def _build_artifacts(self, model_dir):
         """
         MLflow artifacts 디렉토리에서 아티팩트들을 로드합니다.
@@ -202,187 +260,188 @@ class HSIPredictor:
         print(f"Input channels (wavelengths): {len(wavelengths)}")
         print(f"Wavelengths: {wavelengths}")
         
-    def _load_image_cube(self, image_paths):
-        """
-        각 band의 이미지 경로 리스트를 받아서 3D cube로 로드합니다.
-        
-        Args:
-            image_paths: 각 band의 이미지 경로 리스트
-            
-        Returns:
-            numpy.ndarray: (height, width, channels) 형태의 이미지 cube
-        """
-        if not image_paths:
-            raise ValueError("Image paths list is empty")
-
-        # wavelengths 수와 image_paths 길이 일치 확인
-        wavelengths = self.column_config.get('wavelengths', [])
-        if len(image_paths) != len(wavelengths):
-            raise ValueError(f"Number of image paths ({len(image_paths)}) must match number of wavelengths ({len(wavelengths)})")
-
-        band_arrays = []
-        for path in image_paths:
-            if not os.path.exists(path):
-                raise FileNotFoundError(f"Image file not found: {path}")
-            img = Image.open(path).convert("L")
-
-            # 학습 해상도와 맞추기
-            if self.target_hw and img.size[::-1] != self.target_hw:  # PIL: (W,H)
-                img = img.resize(self.target_hw[::-1], resample=Image.NEAREST)
-
-            band_arrays.append(np.asarray(img, dtype=np.float32))
-
-        image_cube = np.stack(band_arrays, axis=-1)  # (H, W, C)
-
-        # 학습 시 사용한 /255 정규화 반영
-        if self.scaler_mode == "normalized":
-            image_cube /= 255.0
-
-        return image_cube
-        
-    def _preprocess_image(self, image_cube, crop_size=(224, 224)):
-        """
-        이미지 cube를 전처리합니다.
-        
-        Args:
-            image_cube: (height, width, channels) 형태의 이미지 cube
-            crop_size: 크롭할 크기 (height, width)
-            
-        Returns:
-            torch.Tensor: (1, channels, height, width) 형태의 텐서
-        """
-        # 1. cube (H,W,C) → tensor (C,H,W) 변환
-        image_tensor = torch.from_numpy(image_cube).permute(2, 0, 1).float()
-        
-        # 2. StandardScaler 정규화 (있는 경우) - 학습 파이프라인과 동일한 순서
-        if self.scaler is not None:
-            # scaler의 mean_와 scale_를 사용하여 정규화
-            mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-            scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
-            
-            # 0으로 나누기 방지
-            eps = 1e-6
-            scale_tensor = torch.clamp(scale_tensor, min=eps)
-            
-            image_tensor = (image_tensor - mean_tensor) / scale_tensor
-        
-        # 3. 중앙 크롭 적용 - 학습 파이프라인과 동일한 순서
-        transform = get_test_transforms(image_size=crop_size)
-        image_tensor = transform(image_tensor)
-        
-        # 4. 배치 차원 추가 (1, C, H, W)
-        image_tensor = image_tensor.unsqueeze(0)
-        
-        return image_tensor.to(self.device)
-        
-    def predict_batch(self, image_paths_list, batch_size=16, crop_size=None):
+    def predict_batch(self, image_paths_list: List[str], batch_size=16, crop_size=None, *, xai: bool = False,
+                      xai_layer: Optional[str] = None, xai_index: Optional[int] = None, xai_save_dir: Optional[str] = None):
         """
         여러 이미지 경로 리스트를 받아서 배치 예측을 수행합니다.
-        
+
         Args:
             image_paths_list: 이미지 경로 리스트들의 리스트
             crop_size: 크롭할 크기 (height, width), None이면 config에서 가져옴
-            
+            xai, xai_layer, xai_index: predict()와 동일
+
         Returns:
             list: 예측 결과 리스트 (JSON 직렬화 가능)
         """
         if crop_size is None:
             crop_size = self.crop_size
 
-        dataset = InferenceDataset(samples=image_paths_list, parent=self)
-        batch_size = min(batch_size, len(dataset))
-        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-
         all_preds = {}
         sample_idx = 0
-        
-        with torch.no_grad():
-            for batch in loader:
-                batch = batch.to(self.device)
-                outputs = self.model(batch)
 
-                for output in outputs:
-                    sample_results = {}
-                    if isinstance(output, dict):
-                        # 멀티태스크 출력인 경우
-                        if 'classification' in output and self.cls_indices:
-                            cls_output = output['classification']
-                            cls_probs = torch.sigmoid(cls_output).cpu().numpy()
-                            # 분류 인덱스에 해당하는 값만 추출
-                            cls_results = {}
-                            for idx, cls_idx in enumerate(self.cls_indices):
-                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
-                            sample_results['classification'] = cls_results
-                        if 'regression' in output and self.reg_indices:
-                            reg_output = output['regression']
-                            reg_values = reg_output.squeeze().cpu().numpy()
-                            # 회귀 인덱스에 해당하는 값만 추출
-                            reg_results = {}
-                            for idx, reg_idx in enumerate(self.reg_indices):
-                                    reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
-                            sample_results['regression'] = reg_results
+        dataset = InferenceDataset(samples=image_paths_list, parent=self)
+        batch_size = min(batch_size, len(dataset))
+        dataloader = DataLoader(dataset, batch_size=batch_size,
+                                shuffle=False, collate_fn=hsi_batch_collate)
+        
+        for batch_idx, (batch_bchw, cubes_hwc, metas) in enumerate(dataloader):
+            with torch.no_grad():
+                bagch_bchw = batch_bchw.to(self.device)
+                outputs = self.model(bagch_bchw)
+                
+            for output in outputs:
+                sample_results = {}
+                if isinstance(output, dict):
+                    # 멀티태스크 출력인 경우
+                    if 'classification' in output and self.cls_indices:
+                        cls_output = output['classification']
+                        cls_probs = torch.sigmoid(cls_output).cpu().numpy()
+                        # 분류 인덱스에 해당하는 값만 추출
+                        cls_results = {}
+                        for idx, cls_idx in enumerate(self.cls_indices):
+                                cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                        sample_results['classification'] = cls_results
+                    if 'regression' in output and self.reg_indices:
+                        reg_output = output['regression']
+                        reg_values = reg_output.squeeze().cpu().numpy()
+                        # 회귀 인덱스에 해당하는 값만 추출
+                        reg_results = {}
+                        for idx, reg_idx in enumerate(self.reg_indices):
+                                reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                        sample_results['regression'] = reg_results
+                
+                else:
+                    # 단일 출력인 경우
+                    output_values = output.squeeze().cpu().numpy()
+                    if self.cls_indices and not self.reg_indices:
+                        # 분류만 있는 경우 - output에 바로 sigmoid 적용
+                        cls_probs = torch.sigmoid(output).squeeze().cpu().numpy()
+                        cls_results = {}
+                        for idx, cls_idx in enumerate(self.cls_indices):
+                                cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                        sample_results['classification'] = cls_results
+                    elif not self.cls_indices and self.reg_indices:
+                        # 회귀만 있는 경우
+                        reg_results = {}
+                        for idx, reg_idx in enumerate(self.reg_indices):
+                            reg_results[self.label_columns[reg_idx]] = float(output_values[idx])
+                        sample_results['regression'] = reg_results
                     
                     else:
-                        # 단일 출력인 경우
-                        output_values = output.squeeze().cpu().numpy()
-
-                        if self.cls_indices and not self.reg_indices:
-                            # 분류만 있는 경우 - output에 바로 sigmoid 적용
-                            cls_probs = torch.sigmoid(output).squeeze().cpu().numpy()
-                            cls_results = {}
-                            for idx, cls_idx in enumerate(self.cls_indices):
+                        # 둘 다 있는 경우
+                        if self.cls_indices[0] <= self.reg_indices[0]:
+                            # 분류 -> 회귀 순서로 되어 있는 경우
+                            if self.cls_indices:
+                                cls_outputs = output.squeeze()[:len(self.cls_indices)]
+                                cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                cls_results = {}
+                                for idx, cls_idx in enumerate(self.cls_indices):
                                     cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
-                            sample_results['classification'] = cls_results
-
-                        elif not self.cls_indices and self.reg_indices:
-                            # 회귀만 있는 경우
-                            reg_results = {}
-                            for idx, reg_idx in enumerate(self.reg_indices):
-                                reg_results[self.label_columns[reg_idx]] = float(output_values[idx])
-                            sample_results['regression'] = reg_results
+                                sample_results['classification'] = cls_results
                         
+                            if self.reg_indices:
+                                reg_start = len(self.cls_indices)
+                                reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
+                                reg_results = {}
+                                for idx, reg_idx in enumerate(self.reg_indices):
+                                    reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                                sample_results['regression'] = reg_results
                         else:
-                            # 둘 다 있는 경우
-                            if self.cls_indices[0] <= self.reg_indices[0]:
-                                # 분류 -> 회귀 순서로 되어 있는 경우
-                                if self.cls_indices:
-                                    cls_outputs = output.squeeze()[:len(self.cls_indices)]
-                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
-                                    cls_results = {}
-                                    for idx, cls_idx in enumerate(self.cls_indices):
-                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
-                                    sample_results['classification'] = cls_results
+                            # 회귀 -> 분류 순서로 되어 있는 경우
+                            if self.reg_indices:
+                                reg_values = output_values[:len(self.reg_indices)]
+                                reg_results = {}
+                                for idx, reg_idx in enumerate(self.reg_indices):
+                                    reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
+                                sample_results['regression'] = reg_results
                             
-                                if self.reg_indices:
-                                    reg_start = len(self.cls_indices)
-                                    reg_values = output_values[reg_start:reg_start + len(self.reg_indices)]
-                                    reg_results = {}
-                                    for idx, reg_idx in enumerate(self.reg_indices):
-                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
-                                    sample_results['regression'] = reg_results
+                            if self.cls_indices:
+                                cls_start = len(self.reg_indices)
+                                cls_outputs = output.squeeze()[cls_start:cls_start + len(self.cls_indices)]
+                                cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
+                                cls_results = {}
+                                for idx, cls_idx in enumerate(self.cls_indices):
+                                    cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
+                                sample_results['classification'] = cls_results
+                
+                # xai 옵션이 켜져있는 경우
+                if xai:
+                    img_tensor = batch_bchw[batch_idx:batch_idx+1]
+                    cube_hwc = cubes_hwc[batch_idx]
+                    if "classification" in sample_results.keys():
+                        xai_items = {}
+                        for ci in self.cls_indices:
+                            cam_pack = generate_cam_arrays(
+                                model=self.model,
+                                image_tensor_bchw=img_tensor.to(self.device),
+                                outputs=output,
+                                task='classification',
+                                target_index=ci,
+                                target_layer_name=None,
+                                image_cube_hwc=cube_hwc,
+                                wavelengths=self.wavelengths,
+                                rgb_strategy='auto',
+                                alpha=0.35
+                            )
+                            heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
+                            heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
 
-                            else:
-                                # 회귀 -> 분류 순서로 되어 있는 경우
-                                if self.reg_indices:
-                                    reg_values = output_values[:len(self.reg_indices)]
-                                    reg_results = {}
-                                    for idx, reg_idx in enumerate(self.reg_indices):
-                                        reg_results[self.label_columns[reg_idx]] = float(reg_values[idx])
-                                    sample_results['regression'] = reg_results
+                            target_label = self.label_columns[ci]
+
+                            # (선택) 파일 저장: --xai-save-dir 지정 시
+                            if xai_save_dir:
+                                def _safe_name(s): return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
+                                base = f"class_{ci}" if target_label is None else f"sample_idx_{sample_idx}_{_safe_name(target_label)}"
+                                save_cam_arrays(cam=cam_pack['cam'], save_dir=xai_save_dir,
+                                                basename=base, save_heatmap=True,
+                                                save_rgb=False, save_overlay=False)
                                 
-                                if self.cls_indices:
-                                    cls_start = len(self.reg_indices)
-                                    cls_outputs = output.squeeze()[cls_start:cls_start + len(self.cls_indices)]
-                                    cls_probs = torch.sigmoid(cls_outputs).cpu().numpy()
-                                    cls_results = {}
-                                    for idx, cls_idx in enumerate(self.cls_indices):
-                                        cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
-                                    sample_results['classification'] = cls_results
+                            xai_items[target_label] = {
+                                'layer': cam_pack['layer'],
+                                'image_base64': heatmap_b64
+                            }
 
-                    # sample_name = os.path.basename(image_paths_list[sample_idx])
-                    # all_preds[sample_name] = sample_results
-                    all_preds[f"sample idx {sample_idx}"] = sample_results
-                    sample_idx += 1
+                        sample_results['xai_classification'] = xai_items
+
+                    if "regression" in sample_results.keys():
+                        xai_items = {}
+                        for ri in self.reg_indices:
+                            cam_pack = generate_cam_arrays(
+                                model=self.model,
+                                image_tensor_bchw=img_tensor.to(self.device),
+                                outputs=output,
+                                task='regression',
+                                target_index=ri,
+                                target_layer_name=None,
+                                image_cube_hwc=cube_hwc,
+                                wavelengths=self.wavelengths,
+                                rgb_strategy='auto',
+                                alpha=0.35
+                            )
+                            heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
+                            heatmap_b64 = base64.b64encode(heatmap_png_bytes).decode("utf-8")
+
+                            target_label = self.label_columns[ri]
+
+                            # (선택) 파일 저장: --xai-save-dir 지정 시
+                            if xai_save_dir:
+                                def _safe_name(s): return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
+                                base = f"class_{ri}" if target_label is None else f"sample_idx_{sample_idx}_{_safe_name(target_label)}"
+                                save_cam_arrays(cam=cam_pack['cam'], save_dir=xai_save_dir,
+                                                basename=base, save_heatmap=True,
+                                                save_rgb=False, save_overlay=False)
+                                
+                            xai_items[target_label] = {
+                                'layer': cam_pack['layer'],
+                                'image_base64': heatmap_b64
+                            }
+
+                        sample_results['xai_regression'] = {'mode': 'per_target', 'items': xai_items}
+
+                # sample_name = os.path.basename(image_paths_list[sample_idx])
+                # all_preds[sample_name] = sample_results
+                all_preds[f"sample idx {sample_idx}"] = sample_results
+                sample_idx += 1
 
         return all_preds
 
@@ -407,40 +466,19 @@ def main():
                        help='Crop size (height width), default from config')
     parser.add_argument('--output', type=str,
                        help='Output file path for results')
+    parser.add_argument('--xai', action='store_true', help='Enable Grad-CAM')
+    parser.add_argument('--xai-save-dir', type=str, default=None,
+                    help='If set, save per-label CAM heatmaps to this directory')
+
     
     args = parser.parse_args()
     
     # 모델 디렉토리 설정
     model_dir = args.model_dir
     temp_dir = None
-
-    if args.run_id and args.experiment_id:
-        # MLflow run_id와 experiment_id를 통해 아티팩트 직접 접근
-        print(f"Loading artifacts from MLflow run: {args.run_id} (Experiment ID: {args.experiment_id})")
-
-        # /mnt/data/mlflow_artifacts에서 run_id 찾기
-        mlflow_artifacts_base = "/mnt/data/mlflow_artifacts"
-        model_dir = None
-
-        if os.path.exists(mlflow_artifacts_base):
-            if os.path.exists(mlflow_artifacts_base):
-                print(f"Searching for experiment_id and run_id in: {mlflow_artifacts_base}")
-                experiment_path = os.path.join(mlflow_artifacts_base, args.experiment_id)
-                if os.path.exists(experiment_path):
-                    run_path = os.path.join(experiment_path, args.run_id)
-                    if os.path.exists(run_path):
-                        artifacts_path = os.path.join(run_path, "artifacts")
-                        if os.path.exists(artifacts_path):
-                            model_dir = artifacts_path
-                            print(f"Found artifacts at: {artifacts_path}")
-
-            if model_dir is None:
-                raise FileNotFoundError(f"Run ID {args.run_id} not found in {mlflow_artifacts_base}")
-        else:
-            raise FileNotFoundError(f"MLflow artifacts directory not found: {mlflow_artifacts_base}")
-
-    elif args.run_id:
-        # MLflow run_id를 통해 아티팩트 직접 접근
+    
+    if args.run_id:
+        # MLflow run_id에서 아티팩트 직접 접근
         print(f"Loading artifacts from MLflow run: {args.run_id}")
         
         # /mnt/data/mlflow_artifacts에서 run_id 찾기
@@ -474,11 +512,17 @@ def main():
         predictor = HSIPredictor(model_dir=model_dir)
         
         # 예측 수행
-        results = predictor.predict_batch(args.image_paths, batch_size=16,
-                                          crop_size=tuple(args.crop_size) if args.crop_size else None)
+        results = predictor.predict_batch(
+            image_paths_list=args.image_paths,
+            crop_size=tuple(args.crop_size) if args.crop_size else None,
+            xai=args.xai,
+            xai_save_dir=args.xai_save_dir,
+        )
 
         # 결과 출력
         for key, result in results.items():
+            if key in ['xai_classification', 'xai_regression']:
+                continue
             print(f"\n=== Results for {key} ===")
             if 'classification' in result:
                 print(f"  Classification probabilities for {key}:")

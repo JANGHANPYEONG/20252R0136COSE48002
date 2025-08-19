@@ -143,7 +143,7 @@ def load_initial_data(db_session):
             db_session.add(temp)
     db_session.commit()
 
-    # 7. StatusType
+    # 7. StatusTypedefault_user_id
     for id, Type in statusType.items():
         if not StatusInfo.query.get(id):
             temp = StatusInfo(id=id, value=Type)

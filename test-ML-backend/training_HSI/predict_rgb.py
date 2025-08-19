@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-HSI 예측 모듈 (학습 파이프라인과 완전 호환)
+RGB 예측 모듈 (학습 파이프라인과 완전 호환)
 
-이 스크립트는 HSI best model을 로드하고 각 band의 image path 리스트를 입력받아 예측을 수행합니다.
+이 스크립트는 RGB best model을 로드하고 각 band의 image path 리스트를 입력받아 예측을 수행합니다.
 학습 파이프라인과 완전히 호환되도록 설계되었습니다.
 
 사용법:
     # 방법 1: 로컬 모델 디렉토리 사용
-    python predict_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
+    python predict_rgb.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
     
     # 방법 2: MLflow run ID 사용
-    python predict_hsi.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
+    python predict_rgb.py --run_id <mlflow_run_id> --experiment_id <experiment_id> --image_paths /path/to/band1.png /path/to/band2.png ...
 """
 
 import os
@@ -20,46 +20,39 @@ import argparse
 import torch
 import numpy as np
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 import pickle
 import mlflow
 import tempfile
 import warnings
-from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
 
 # 현재 디렉토리를 Python 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.model_loader import load_model
-from utils.transforms_hsi import get_test_transforms
+from utils.transforms_rgb import get_test_transforms
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, samples, parent):
-        """
-        samples: List[str], 반드시 (샘플 개수) * (band 수) 만큼의 경로가 있어야 함
-        parent: HSIPredictor 인스턴스
-        """
-        self.samples = samples
-        self.parent = parent
-        self.image_size = self.parent.crop_size
-        self.hsi_channels = self.parent.config.get("model", {}).get("in_channels", 9)
-
-        assert len(self.samples) % self.hsi_channels == 0, "샘플 개수는 band 수의 배수여야 합니다."
+    def __init__(self, image_paths, image_size):
+        self.image_paths = image_paths
+        self.transform = get_test_transforms(image_size=image_size)
 
     def __len__(self):
-        return int(len(self.samples) / self.hsi_channels)
-    
+        return len(self.image_paths)
+
     def __getitem__(self, idx):
-        image_paths = self.samples[idx * self.hsi_channels:(idx + 1) * self.hsi_channels]
-        cube = self.parent._load_image_cube(image_paths)
-        image_tensor = self.parent._preprocess_image(cube, self.image_size)
-        return image_tensor.squeeze(0)
+        path = self.image_paths[idx]
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Image not found: {path}")
+        img = Image.open(path).convert("RGB")
+        return self.transform(img)  # (C,H,W)
 
 
-class HSIPredictor:
-    """HSI 예측을 위한 클래스 (학습 파이프라인과 완전 호환)"""
-    
+class RGBPredictor:
+    """RGB 예측을 위한 클래스 (학습 파이프라인과 완전 호환)"""
+
     def __init__(self, model_dir, device=None):
         """
         Args:
@@ -69,19 +62,8 @@ class HSIPredictor:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         print(f"Using device: {self.device}")
 
-        # config 먼저 열어 scaler_mode 확보 (scaler.pkl 존재 여부 판단용)
-        config_path = os.path.join(model_dir, "configs", "temp_config.json")
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Config file not found: {config_path}")
-            
-        with open(config_path, 'r') as f:
-            self.config = json.load(f)
-        print(f"Loaded config from: {config_path}")
-
-        self.scaler_mode = self.config.get("data", {}).get("scaler_mode", "normalized")
-
         # 아티팩트 로드
-        self.model, self.scaler, self.column_config = self._build_artifacts(model_dir)
+        self.config, self.column_config, self.model = self._build_artifacts(model_dir)
         self.model.eval()
         
         # 라벨 타입 정보 설정
@@ -92,7 +74,7 @@ class HSIPredictor:
         
         # === 학습 파이프라인과 동일한 전처리를 위한 설정 ===
         self.target_hw   = tuple(self.column_config.get("image_size", [])) or None  # (H, W)
-        self.crop_size   = tuple(self.config.get("data", {}).get("crop_size", [224, 224]))
+        self.image_size   = tuple(self.config.get("data", {}).get("image_size", [224, 224]))
         
     def _build_artifacts(self, model_dir):
         """
@@ -103,31 +85,40 @@ class HSIPredictor:
                       (/mnt/data/mlflow_artifacts/experiment_id/run_id/artifacts)
             
         Returns:
-            tuple: (model, config, scaler, column_config)
+            tuple: (config, column_config, model)
+            RGB에서는 HSI에서와 달리 scaler가 없음.
         """
         if not os.path.exists(model_dir):
-            raise FileNotFoundError(f"Model directory not found: {model_dir}")
-            
+            raise FileNotFoundError(f"Model directory를 찾을 수 없습니다: {model_dir}")
         print(f"Loading artifacts from MLflow directory: {model_dir}")
+        
+        # 1. config 파일 로드
+        config_path = os.path.join(model_dir, "configs", "temp_rgb_config.json")
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Config file을 찾을 수 없습니다: {config_path}")
+            
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        print(f"Loaded config from: {config_path}")
 
-        # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
+        # 2. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
         column_config_path = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json"
-        column_config_path = self.config['data'].get('column_config', column_config_path)
+        column_config_path = config['data'].get('column_config', column_config_path)
 
         if not os.path.exists(column_config_path):
-            raise FileNotFoundError(f"Column config file not found: {column_config_path}")
+            raise FileNotFoundError(f"Column config file을 찾을 수 없습니다: {column_config_path}")
             
         with open(column_config_path, 'r') as f:
             column_config = json.load(f)
         print(f"Loaded column_config from: {column_config_path}")
             
-        # 2. 모델 로드 (./models/best_model.pt)
+        # 3. 모델 로드 (./models/best_model.pt)
         model_path = os.path.join(model_dir, "models", "best_model.pt")
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found: {model_path}")
             
         print("Creating model architecture from config...")
-        model = load_model(self.config)
+        model = load_model(config)
         
         print(f"Loading state dict from: {model_path}")
         state_dict = torch.load(model_path, map_location=self.device)
@@ -143,22 +134,9 @@ class HSIPredictor:
             
         model.load_state_dict(state_dict)
         model = model.to(self.device)
-        
-        # 3. scaler 로드 (./scaler/temp_scaler.pkl)
-        scaler = None
-        scaler_path = os.path.join(model_dir, "scaler", "temp_scaler.pkl")
-        if self.scaler_mode != "off":
-            if os.path.exists(scaler_path):
-                print(f"Loading scaler from: {scaler_path}")
-                with open(scaler_path, 'rb') as f:
-                    scaler = pickle.load(f)
-            else:
-                raise ValueError(f"scaler_mode is '{self.scaler_mode}' but scaler not found at {scaler_path}")
-        else:
-            print("scaler_mode is 'off', skipping normalization")
-            
-        return model, scaler, column_config
-        
+
+        return config, column_config, model
+
     def _setup_label_info(self):
         """라벨 타입 정보를 설정합니다."""
         self.label_columns = self.column_config.get('label_columns', [])
@@ -184,13 +162,7 @@ class HSIPredictor:
                     
         print(f"Classification indices: {self.cls_indices}")
         print(f"Regression indices: {self.reg_indices}")
-        
-        # scaler.mean_ shape와 wavelengths 수 일치 확인
-        if self.scaler is not None and hasattr(self.scaler, 'mean_'):
-            wavelengths = self.column_config.get('wavelengths', [])
-            if len(self.scaler.mean_) != len(wavelengths):
-                print(f"Warning: scaler.mean_ shape ({len(self.scaler.mean_)}) doesn't match wavelengths count ({len(wavelengths)})")
-        
+
     def _print_model_info(self):
         """모델 정보를 출력합니다."""
         total_params = sum(p.numel() for p in self.model.parameters())
@@ -202,95 +174,22 @@ class HSIPredictor:
         print(f"Input channels (wavelengths): {len(wavelengths)}")
         print(f"Wavelengths: {wavelengths}")
         
-    def _load_image_cube(self, image_paths):
-        """
-        각 band의 이미지 경로 리스트를 받아서 3D cube로 로드합니다.
-        
-        Args:
-            image_paths: 각 band의 이미지 경로 리스트
-            
-        Returns:
-            numpy.ndarray: (height, width, channels) 형태의 이미지 cube
-        """
-        if not image_paths:
-            raise ValueError("Image paths list is empty")
-
-        # wavelengths 수와 image_paths 길이 일치 확인
-        wavelengths = self.column_config.get('wavelengths', [])
-        if len(image_paths) != len(wavelengths):
-            raise ValueError(f"Number of image paths ({len(image_paths)}) must match number of wavelengths ({len(wavelengths)})")
-
-        band_arrays = []
-        for path in image_paths:
-            if not os.path.exists(path):
-                raise FileNotFoundError(f"Image file not found: {path}")
-            img = Image.open(path).convert("L")
-
-            # 학습 해상도와 맞추기
-            if self.target_hw and img.size[::-1] != self.target_hw:  # PIL: (W,H)
-                img = img.resize(self.target_hw[::-1], resample=Image.NEAREST)
-
-            band_arrays.append(np.asarray(img, dtype=np.float32))
-
-        image_cube = np.stack(band_arrays, axis=-1)  # (H, W, C)
-
-        # 학습 시 사용한 /255 정규화 반영
-        if self.scaler_mode == "normalized":
-            image_cube /= 255.0
-
-        return image_cube
-        
-    def _preprocess_image(self, image_cube, crop_size=(224, 224)):
-        """
-        이미지 cube를 전처리합니다.
-        
-        Args:
-            image_cube: (height, width, channels) 형태의 이미지 cube
-            crop_size: 크롭할 크기 (height, width)
-            
-        Returns:
-            torch.Tensor: (1, channels, height, width) 형태의 텐서
-        """
-        # 1. cube (H,W,C) → tensor (C,H,W) 변환
-        image_tensor = torch.from_numpy(image_cube).permute(2, 0, 1).float()
-        
-        # 2. StandardScaler 정규화 (있는 경우) - 학습 파이프라인과 동일한 순서
-        if self.scaler is not None:
-            # scaler의 mean_와 scale_를 사용하여 정규화
-            mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-            scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
-            
-            # 0으로 나누기 방지
-            eps = 1e-6
-            scale_tensor = torch.clamp(scale_tensor, min=eps)
-            
-            image_tensor = (image_tensor - mean_tensor) / scale_tensor
-        
-        # 3. 중앙 크롭 적용 - 학습 파이프라인과 동일한 순서
-        transform = get_test_transforms(image_size=crop_size)
-        image_tensor = transform(image_tensor)
-        
-        # 4. 배치 차원 추가 (1, C, H, W)
-        image_tensor = image_tensor.unsqueeze(0)
-        
-        return image_tensor.to(self.device)
-        
-    def predict_batch(self, image_paths_list, batch_size=16, crop_size=None):
+    def predict_batch(self, image_paths_list, image_size=None, batch_size=32):
         """
         여러 이미지 경로 리스트를 받아서 배치 예측을 수행합니다.
         
         Args:
             image_paths_list: 이미지 경로 리스트들의 리스트
-            crop_size: 크롭할 크기 (height, width), None이면 config에서 가져옴
+            image_size: 학습에서와 동일한 이미지 크기 사용
             
         Returns:
             list: 예측 결과 리스트 (JSON 직렬화 가능)
         """
-        if crop_size is None:
-            crop_size = self.crop_size
+        if image_size == None:
+            image_size = self.image_size
 
-        dataset = InferenceDataset(samples=image_paths_list, parent=self)
-        batch_size = min(batch_size, len(dataset))
+        dataset = InferenceDataset(image_paths_list, image_size=image_size)
+        batch_size = min(len(image_paths_list), batch_size)
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         all_preds = {}
@@ -379,9 +278,8 @@ class HSIPredictor:
                                         cls_results[self.label_columns[cls_idx]] = float(cls_probs[idx])
                                     sample_results['classification'] = cls_results
 
-                    # sample_name = os.path.basename(image_paths_list[sample_idx])
-                    # all_preds[sample_name] = sample_results
-                    all_preds[f"sample idx {sample_idx}"] = sample_results
+                    sample_name = os.path.basename(image_paths_list[sample_idx])
+                    all_preds[sample_name] = sample_results
                     sample_idx += 1
 
         return all_preds
@@ -403,7 +301,7 @@ def main():
     
     parser.add_argument('--image_paths', nargs='+', required=True,
                        help='Paths to band images')
-    parser.add_argument('--crop_size', nargs=2, type=int, default=None,
+    parser.add_argument('--image_size', nargs=2, type=int, default=None,
                        help='Crop size (height width), default from config')
     parser.add_argument('--output', type=str,
                        help='Output file path for results')
@@ -471,11 +369,11 @@ def main():
     
     # 예측기 생성
     try:
-        predictor = HSIPredictor(model_dir=model_dir)
+        predictor = RGBPredictor(model_dir=model_dir)
         
-        # 예측 수행
-        results = predictor.predict_batch(args.image_paths, batch_size=16,
-                                          crop_size=tuple(args.crop_size) if args.crop_size else None)
+        # # 예측 수행
+        results = predictor.predict_batch(args.image_paths,
+                                          tuple(args.image_size) if args.image_size else None)
 
         # 결과 출력
         for key, result in results.items():
@@ -489,7 +387,7 @@ def main():
                 print(f"  Regression values for {key}:")
                 for label, value in result['regression'].items():
                     print(f"    {label}: {value:.4f}")
-                
+
         # 파일로 저장
         if args.output:
             with open(args.output, 'w') as f:

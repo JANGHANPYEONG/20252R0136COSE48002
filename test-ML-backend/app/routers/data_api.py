@@ -17,7 +17,7 @@ from app.utils import logger, safe_str, safe_int, convert_to_datetime, DEFAULT_U
 router = APIRouter()
 
 # 이미지 파일 확장자 정의
-IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
+IMAGE_EXTS = {'.png'}
 
 # 기본 info api
 @router.get("/")

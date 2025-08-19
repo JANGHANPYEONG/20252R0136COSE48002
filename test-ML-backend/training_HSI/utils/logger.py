@@ -40,8 +40,9 @@ class MLflowLogger:
         
         mlflow.start_run(run_name=run_name)
         self.run_id = mlflow.active_run().info.run_id
-        print(f"MLflow run started: {run_name} (ID: {self.run_id})")
-    
+        self.experiment_id = self.get_experiment_id()
+        print(f"MLflow run started: {run_name} (Experiment ID: {self.experiment_id}, Run ID: {self.run_id})")
+
     def end_run(self):
         """MLflow run을 종료합니다."""
         if mlflow.active_run():
