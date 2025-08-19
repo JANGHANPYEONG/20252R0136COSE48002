@@ -7,6 +7,38 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from ..core.config import settings
 
+def create_database_if_not_exists():
+    """
+    데이터베이스가 없으면 생성합니다.
+    """
+    try:
+        # 기본 연결 (postgres 데이터베이스에 연결)
+        db_uri = settings.DB_URI
+        if 'postgresql://' in db_uri:
+            # 데이터베이스 이름을 추출
+            db_name = db_uri.split('/')[-1]
+            # postgres 데이터베이스에 연결하는 URI 생성
+            base_uri = db_uri.rsplit('/', 1)[0] + '/postgres'
+            
+            # autocommit 모드로 엔진 생성
+            engine = create_engine(base_uri, isolation_level="AUTOCOMMIT")
+            with engine.connect() as conn:
+                # 데이터베이스 존재 여부 확인
+                result = conn.execute(text(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'"))
+                if not result.fetchone():
+                    # 데이터베이스가 없으면 생성
+                    conn.execute(text(f"CREATE DATABASE {db_name}"))
+                    print(f"Database '{db_name}' created successfully")
+                else:
+                    print(f"Database '{db_name}' already exists")
+            return True
+        else:
+            print("Not a PostgreSQL database, skipping database creation")
+            return True
+    except Exception as e:
+        print(f"Error creating database: {e}")
+        return False
+
 def check_database_connection():
     """
     데이터베이스 연결 상태를 확인합니다.
@@ -52,17 +84,22 @@ def run_migration():
     """
     print("Starting database migration...")
     
-    # 1. 데이터베이스 연결 확인
+    # 1. 데이터베이스 생성 (없으면)
+    if not create_database_if_not_exists():
+        print("Migration failed: Cannot create database")
+        return False
+    
+    # 2. 데이터베이스 연결 확인
     if not check_database_connection():
         print("Migration failed: Cannot connect to database")
         return False
     
-    # 2. 기존 데이터 백업
+    # 3. 기존 데이터 백업
     if not backup_existing_data():
         print("Migration failed: Data backup failed")
         return False
     
-    # 3. 테이블 생성
+    # 4. 테이블 생성
     if not create_tables():
         print("Migration failed: Table creation failed")
         return False
