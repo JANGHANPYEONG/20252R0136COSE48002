@@ -284,8 +284,6 @@ class HSIPredictor:
                 assume_cls_token=True,
             )
 
-            return cam_pack
-        
         else:
             # default: gradcam
             cam_pack = generate_cam_arrays(
