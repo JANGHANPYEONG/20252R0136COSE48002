@@ -468,21 +468,51 @@ const DataRegister = () => {
         // 최소 3단계 경로 필요: 관리번호폴더/부위폴더/파일명
         if (pathParts.length < 3) continue;
         
-        const managementNumber = pathParts[pathParts.length - 3]; // 관리번호 (예: 149119100857)
-        const partFolder = pathParts[pathParts.length - 2];       // 부위 폴더 (예: S1)
-        const fileName = pathParts[pathParts.length - 1];         // 파일명
+        const rawFolderName = pathParts[pathParts.length - 3]; // 원본 폴더명 (예: 140119100857_day7)
+        const partFolder = pathParts[pathParts.length - 2];    // 부위 폴더 (예: S1, s1)
+        const fileName = pathParts[pathParts.length - 1];      // 파일명
         
-        // 부위 폴더에서 샘플 번호 추출 (S1 -> 1)
-        const sampleMatch = partFolder.match(/^S(\d+)$/i);
-        if (!sampleMatch) continue;
+        // 관리번호 추출: _ 앞의 숫자 부분만 가져오기
+        let managementNumber = rawFolderName;
+        const underscoreIndex = rawFolderName.indexOf('_');
+        if (underscoreIndex > 0) {
+          const beforeUnderscore = rawFolderName.substring(0, underscoreIndex);
+          // _ 앞 부분이 숫자인지 확인
+          if (/^\d+$/.test(beforeUnderscore)) {
+            managementNumber = beforeUnderscore;
+            console.log(`폴더명 파싱: "${rawFolderName}" -> 관리번호 "${managementNumber}"`);
+          }
+        }
+        
+        // 부위 폴더에서 샘플 번호 추출 (S1, s1 모두 지원)
+        const sampleMatch = partFolder.match(/^[sS](\d+)$/);
+        if (!sampleMatch) {
+          console.log(`❌ 부위 폴더 패턴 불일치: ${partFolder}`);
+          continue;
+        }
         
         const sampleNumber = sampleMatch[1];
         
-        // 파일명에서 파장 정보 추출 (예: 140119100857_s1_430nm.png)
-        const wavelengthMatch = fileName.match(/(\d+nm)/i);
-        if (!wavelengthMatch) continue;
+        // 파일명에서 파장 정보 추출 (예: 140119100857_s1_430nm.png 또는 140119100857_s1_rgb_day7.png)
+        let wavelength = null;
         
-        const wavelength = wavelengthMatch[1];
+        // 1. nm 단위 파장 추출 시도 (HSI)
+        const wavelengthMatch = fileName.match(/(\d+nm)/i);
+        if (wavelengthMatch) {
+          wavelength = wavelengthMatch[1];
+        } else {
+          // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
+          const rgbMatch = fileName.match(/_rgb_/i);
+          if (rgbMatch) {
+            wavelength = 'rgb';
+            console.log(`RGB 이미지 인식: ${fileName}`);
+          }
+        }
+        
+        if (!wavelength) {
+          console.log(`❌ 파장/RGB 정보 없음: ${fileName}`);
+          continue;
+        }
         
         // 이미지 맵 구성
         if (!imageMap[managementNumber]) {
@@ -505,7 +535,7 @@ const DataRegister = () => {
           file: file
         };
         
-        console.log(`이미지 매핑: ${managementNumber} / S${sampleNumber} / ${wavelength} -> ${fileName}`);
+        console.log(`✅ 폴더 이미지 매핑: ${managementNumber} / S${sampleNumber} / ${wavelength} -> ${fileName}`);
       }
       
       // 기존 데이터와 매칭
@@ -553,36 +583,80 @@ const DataRegister = () => {
         
         // 방법 1: 폴더 구조 분석 (관리번호/S1/파일명.png)
         if (pathParts.length >= 3) {
-          const folder1 = pathParts[pathParts.length - 3]; // 관리번호 폴더
-          const folder2 = pathParts[pathParts.length - 2]; // 부위 폴더 (S1, S2, ...)
+          const rawFolderName = pathParts[pathParts.length - 3]; // 원본 폴더명 (예: 140119100857_day7)
+          const folder2 = pathParts[pathParts.length - 2]; // 부위 폴더 (S1, s1, S2, s2, ...)
           const imageName = pathParts[pathParts.length - 1]; // 파일명
           
-          // 관리번호는 숫자여야 함
-          if (/^\d+$/.test(folder1)) {
-            // 부위 폴더는 S1, S2 형태여야 함
-            const sampleMatch = folder2.match(/^S(\d+)$/i);
+          // 관리번호 추출: _ 앞의 숫자 부분만 가져오기
+          let extractedNumber = rawFolderName;
+          const underscoreIndex = rawFolderName.indexOf('_');
+          if (underscoreIndex > 0) {
+            const beforeUnderscore = rawFolderName.substring(0, underscoreIndex);
+            // _ 앞 부분이 숫자인지 확인
+            if (/^\d+$/.test(beforeUnderscore)) {
+              extractedNumber = beforeUnderscore;
+              console.log(`ZIP 폴더명 파싱: "${rawFolderName}" -> 관리번호 "${extractedNumber}"`);
+            }
+          } else if (!/^\d+$/.test(rawFolderName)) {
+            // _ 없고 숫자가 아닌 경우 건너뛰기
+            console.log(`❌ ZIP 폴더명이 숫자가 아님: ${rawFolderName}`);
+          }
+          
+          // 관리번호가 숫자인지 확인 (원본이 숫자이거나 _ 앞 부분이 숫자인 경우)
+          if (/^\d+$/.test(extractedNumber)) {
+            // 부위 폴더는 S1, s1, S2, s2 형태 모두 지원
+            const sampleMatch = folder2.match(/^[sS](\d+)$/);
             if (sampleMatch) {
-              // 파일명에서 파장 추출
+              // 파일명에서 파장 정보 추출 (HSI 또는 RGB)
+              let extractedWavelength = null;
+              
+              // 1. nm 단위 파장 추출 시도 (HSI)
               const wavelengthMatch = imageName.match(/(\d+nm)/i);
               if (wavelengthMatch) {
-                managementNumber = folder1;
-                sampleNumber = sampleMatch[1];
-                wavelength = wavelengthMatch[1];
-                console.log(`✅ 폴더 구조 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+                extractedWavelength = wavelengthMatch[1];
+              } else {
+                // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
+                const rgbMatch = imageName.match(/_rgb_/i);
+                if (rgbMatch) {
+                  extractedWavelength = 'rgb';
+                  console.log(`ZIP RGB 이미지 인식: ${imageName}`);
+                }
               }
+              
+              if (extractedWavelength) {
+                managementNumber = extractedNumber;
+                sampleNumber = sampleMatch[1];
+                wavelength = extractedWavelength;
+                console.log(`✅ ZIP 폴더 구조 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+              } else {
+                console.log(`❌ ZIP 파장/RGB 정보 없음: ${imageName}`);
+              }
+            } else {
+              console.log(`❌ ZIP 부위 폴더 패턴 불일치: ${folder2}`);
             }
           }
         }
         
-        // 방법 2: 파일명 패턴 분석 (숫자_s숫자_파장nm.확장자)
+        // 방법 2: 파일명 패턴 분석 (숫자_s숫자_파장nm.확장자 또는 숫자_s숫자_rgb_추가정보.확장자)
         if (!managementNumber) {
           const imageName = pathParts[pathParts.length - 1];
-          const patternMatch = imageName.match(/^(\d+)_s(\d+)_(\d+nm)\./i);
-          if (patternMatch) {
-            managementNumber = patternMatch[1];
-            sampleNumber = patternMatch[2];
-            wavelength = patternMatch[3];
-            console.log(`✅ 파일명 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+          
+          // 2-1. HSI 패턴: 140119100857_s1_430nm.png
+          const hsiPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_(\d+nm)\./i);
+          if (hsiPatternMatch) {
+            managementNumber = hsiPatternMatch[1];
+            sampleNumber = hsiPatternMatch[2];
+            wavelength = hsiPatternMatch[3];
+            console.log(`✅ ZIP 파일명 HSI 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+          } else {
+            // 2-2. RGB 패턴: 140119100857_s1_rgb_day7.png
+            const rgbPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_rgb_/i);
+            if (rgbPatternMatch) {
+              managementNumber = rgbPatternMatch[1];
+              sampleNumber = rgbPatternMatch[2];
+              wavelength = 'rgb';
+              console.log(`✅ ZIP 파일명 RGB 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+            }
           }
         }
         
@@ -615,7 +689,7 @@ const DataRegister = () => {
           sampleNumber: sampleNumber
         };
         
-        console.log(`✅ 이미지 저장 완료: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+        console.log(`✅ ZIP 이미지 저장 완료: ${managementNumber}/S${sampleNumber}/${wavelength}`);
       }
       
       console.log('=== 최종 이미지 맵 ===');
@@ -700,7 +774,7 @@ const DataRegister = () => {
     updatedData.forEach((row, index) => {
       const managementNumber = String(row[managementNumberColumn] || '').trim();
       const originalSampleId = String(row[sampleIdColumn] || '').trim();
-      const sampleId = originalSampleId.replace(/^S/i, ''); // S1 -> 1
+      const sampleId = originalSampleId.replace(/^[sS]/i, ''); // S1, s1 모두 -> 1
       
       console.log(`[행 ${index}] 매칭 시도: 관리번호="${managementNumber}", 원본샘플="${originalSampleId}", 변환샘플="${sampleId}"`);
       
@@ -716,9 +790,19 @@ const DataRegister = () => {
         row['파장 정보'] = wavelengths.join(', ');
         
         matchedCount++;
-        console.log(`✅ 매칭 성공: ${managementNumber}/S${sampleId} - ${fileNames.length}개 이미지`);
+        console.log(`✅ 매칭 성공: ${managementNumber}/S${sampleId} - ${fileNames.length}개 이미지 (${wavelengths.join(', ')})`);
       } else {
-        console.log(`❌ 매칭 실패: ${managementNumber}/S${sampleId} (이미지 없음)`);
+        // 매칭 실패 시 상세한 디버깅 정보 제공
+        const hasManagementNumber = imageMap[managementNumber];
+        const availableManagementNumbers = Object.keys(imageMap);
+        const availableSamples = hasManagementNumber ? Object.keys(imageMap[managementNumber]) : [];
+        
+        console.log(`❌ 매칭 실패: ${managementNumber}/S${sampleId}`);
+        console.log(`  - 관리번호 존재: ${hasManagementNumber ? 'O' : 'X'}`);
+        console.log(`  - 사용 가능한 관리번호: [${availableManagementNumbers.join(', ')}]`);
+        if (hasManagementNumber) {
+          console.log(`  - 관리번호 ${managementNumber}의 사용 가능한 샘플: [${availableSamples.join(', ')}]`);
+        }
       }
     });
     
