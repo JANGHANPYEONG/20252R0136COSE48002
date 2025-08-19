@@ -308,7 +308,7 @@ class SensoryEval(Base):
     period = Column(Integer, nullable=False)  # 도축일로부터 경과된 시간
     filmedAt = Column(DateTime) # 이미지 등록 시간
     imagePath = Column(String(255))  # 관능검사 이미지 경로
-    isRefrigerated = Column(Boolean, nullable=False, server_default='0')  # 추가
+    isRefrigerated = Column(Boolean, nullable=False, server_default='0')  
 
     # 3. 관능검사 측정 데이터
     marbling = Column(Float)
@@ -632,8 +632,9 @@ class HSISensoryEval(Base):
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint([
-            "id", "seqno", "isRefrigerated"
-        ], ["deepAging_info.id", "deepAging_info.seqno", "sensory_eval.isRefrigerated"], ondelete="CASCADE", onupdate="CASCADE"),
+            "id", "seqno"
+        ], ["deepAging_info.id", "deepAging_info.seqno"], ondelete="CASCADE", onupdate="CASCADE"),
+
     )
 
 
