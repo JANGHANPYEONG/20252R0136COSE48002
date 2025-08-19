@@ -8,6 +8,11 @@ from app.middleware.logging import LoggingMiddleware, DetailedLoggingMiddleware
 from app.middleware.error_handler import GlobalExceptionMiddleware, ValidationErrorMiddleware
 from app.middleware.performance import PerformanceMonitoringMiddleware, ResourceLimitMiddleware
 
+# Firebase 초기화 및 토큰 검증 의존성, /auth 라우터(로그인)
+from app.core.firebase import init_firebase                
+from app.core.security import verify_firebase_token        
+from app.api.routers.auth import router as auth_router         
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -51,6 +56,11 @@ app.add_middleware(
     allow_headers=settings.ALLOWED_HEADERS,
 )
 
+# ✅ Firebase Admin 초기화 (앱 기동 시 1회)
+@app.on_event("startup")
+def _startup():
+    init_firebase()
+
 # 라우터 등록
 app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
 app.include_router(predict.router, prefix="/predict", tags=["prediction"])
@@ -60,6 +70,12 @@ app.include_router(statistic_api.router, prefix="/statistic", tags=["statistic"]
 app.include_router(data.router, prefix="/data", tags=["data"])  # 데이터 관련 API
 app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI 관련 API
 # app.include_router(training_stream.router, prefix="/train-stream", tags=["training-stream"])  # 스트리밍 학습 API 추가
+
+#  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장
+app.include_router(user.router, prefix="/user", tags=["user"])
+
+# ✅ 프론트 표준 인증 엔드포인트: /auth/me (로그인 이후 내 프로필/권한 조회)
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 @app.get("/")
 async def root():

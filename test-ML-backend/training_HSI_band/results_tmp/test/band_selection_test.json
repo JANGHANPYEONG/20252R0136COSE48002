@@ -1,0 +1,13 @@
+{
+  "data_split": "test",
+  "samples": 342,
+  "label_results": {},
+  "spectral_data_shape": [
+    342,
+    5
+  ],
+  "spectral_data_scaled_shape": [
+    342,
+    5
+  ]
+}
