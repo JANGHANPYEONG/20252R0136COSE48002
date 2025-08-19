@@ -403,164 +403,164 @@ async def upload_zip_csv_to_s3(
 
 # 데이터 조회
 # 필터링 기능 (부위, 파일 등록 날짜, 지역)
-def _parse_date_yyyy_mm_dd(s: str) -> datetime:
-    return datetime.strptime(s, "%Y-%m-%d")
+# def _parse_date_yyyy_mm_dd(s: str) -> datetime:
+#     return datetime.strptime(s, "%Y-%m-%d")
 
-@router.get("/list")
-def list_data(
-    part: Optional[str] = Query(None),
-    date: Optional[str] = Query(None),
-    location: Optional[str] = Query(None),
-    limit: int = Query(50, ge=1, le=500),
-    offset: int = Query(0, ge=0),
-    db: Session = Depends(get_db)
-):
+# @router.get("/list")
+# def list_data(
+#     part: Optional[str] = Query(None),
+#     date: Optional[str] = Query(None),
+#     location: Optional[str] = Query(None),
+#     limit: int = Query(50, ge=1, le=500),
+#     offset: int = Query(0, ge=0),
+#     db: Session = Depends(get_db)
+# ):
     
-    # DB 연결 실패 시 Mock 데이터 반환
-    try:
-        # DB 연결 테스트
-        db.execute("SELECT 1").fetchone()
-    except Exception:
-        logger.warning("DB 연결 실패, mockup 데이터를 반환합니다.")
+#     # DB 연결 실패 시 Mock 데이터 반환
+#     try:
+#         # DB 연결 테스트
+#         db.execute("SELECT 1").fetchone()
+#     except Exception:
+#         logger.warning("DB 연결 실패, mockup 데이터를 반환합니다.")
         
-        # Mock 데이터 생성
-        mock_items = [
-            {
-                "meat_id": "M001-2025-0813-001",
-                "trace_num": "TR20250813001",
-                "part": "등심",
-                "subpart": "윗등심",
-                "farm_addr": "경기도 용인시 처인구 농장로 123",
-                "farmer_name": "김농부",
-                "butchery_date": "2025-08-10T09:00:00",
-                "created_at": "2025-08-13T10:00:00",
-                "status": 0,  # 대기중
-                "image_path": "/images/meat/M001_rgb.jpg"
-            },
-            {
-                "meat_id": "M002-2025-0813-002", 
-                "trace_num": "TR20250813002",
-                "part": "안심",
-                "subpart": "안심살",
-                "farm_addr": "전라남도 나주시 목장길 456",
-                "farmer_name": "이목장",
-                "butchery_date": "2025-08-11T14:30:00",
-                "created_at": "2025-08-13T11:15:00",
-                "status": 2,  # 승인
-                "image_path": "/images/meat/M002_hsi.jpg"
-            },
-            {
-                "meat_id": "M003-2025-0813-003",
-                "trace_num": "TR20250813003", 
-                "part": "갈비",
-                "subpart": "본갈비",
-                "farm_addr": "충청북도 청주시 상당구 한우로 789",
-                "farmer_name": "박한우",
-                "butchery_date": "2025-08-12T08:45:00",
-                "created_at": "2025-08-13T12:30:00",
-                "status": 1,  # 반려
-                "image_path": "/images/meat/M003_rgb.jpg"
-            },
-            {
-                "meat_id": "M004-2025-0813-004",
-                "trace_num": "TR20250813004",
-                "part": "채끝",
-                "subpart": "채끝살", 
-                "farm_addr": "강원도 횡성군 축산로 321",
-                "farmer_name": "정축산",
-                "butchery_date": "2025-08-09T16:20:00",
-                "created_at": "2025-08-13T13:45:00",
-                "status": 0,  # 대기중
-                "image_path": "/images/meat/M004_hsi.jpg"
-            },
-            {
-                "meat_id": "M005-2025-0813-005",
-                "trace_num": "TR20250813005",
-                "part": "삼겹살",
-                "subpart": "삼겹살",
-                "farm_addr": "제주특별자치도 제주시 흑돼지로 654",
-                "farmer_name": "오제주",
-                "butchery_date": "2025-08-08T11:10:00", 
-                "created_at": "2025-08-13T14:20:00",
-                "status": 2,  # 승인
-                "image_path": "/images/meat/M005_rgb.jpg"
-            }
-        ]
+#         # Mock 데이터 생성
+#         mock_items = [
+#             {
+#                 "meat_id": "M001-2025-0813-001",
+#                 "trace_num": "TR20250813001",
+#                 "part": "등심",
+#                 "subpart": "윗등심",
+#                 "farm_addr": "경기도 용인시 처인구 농장로 123",
+#                 "farmer_name": "김농부",
+#                 "butchery_date": "2025-08-10T09:00:00",
+#                 "created_at": "2025-08-13T10:00:00",
+#                 "status": 0,  # 대기중
+#                 "image_path": "/images/meat/M001_rgb.jpg"
+#             },
+#             {
+#                 "meat_id": "M002-2025-0813-002", 
+#                 "trace_num": "TR20250813002",
+#                 "part": "안심",
+#                 "subpart": "안심살",
+#                 "farm_addr": "전라남도 나주시 목장길 456",
+#                 "farmer_name": "이목장",
+#                 "butchery_date": "2025-08-11T14:30:00",
+#                 "created_at": "2025-08-13T11:15:00",
+#                 "status": 2,  # 승인
+#                 "image_path": "/images/meat/M002_hsi.jpg"
+#             },
+#             {
+#                 "meat_id": "M003-2025-0813-003",
+#                 "trace_num": "TR20250813003", 
+#                 "part": "갈비",
+#                 "subpart": "본갈비",
+#                 "farm_addr": "충청북도 청주시 상당구 한우로 789",
+#                 "farmer_name": "박한우",
+#                 "butchery_date": "2025-08-12T08:45:00",
+#                 "created_at": "2025-08-13T12:30:00",
+#                 "status": 1,  # 반려
+#                 "image_path": "/images/meat/M003_rgb.jpg"
+#             },
+#             {
+#                 "meat_id": "M004-2025-0813-004",
+#                 "trace_num": "TR20250813004",
+#                 "part": "채끝",
+#                 "subpart": "채끝살", 
+#                 "farm_addr": "강원도 횡성군 축산로 321",
+#                 "farmer_name": "정축산",
+#                 "butchery_date": "2025-08-09T16:20:00",
+#                 "created_at": "2025-08-13T13:45:00",
+#                 "status": 0,  # 대기중
+#                 "image_path": "/images/meat/M004_hsi.jpg"
+#             },
+#             {
+#                 "meat_id": "M005-2025-0813-005",
+#                 "trace_num": "TR20250813005",
+#                 "part": "삼겹살",
+#                 "subpart": "삼겹살",
+#                 "farm_addr": "제주특별자치도 제주시 흑돼지로 654",
+#                 "farmer_name": "오제주",
+#                 "butchery_date": "2025-08-08T11:10:00", 
+#                 "created_at": "2025-08-13T14:20:00",
+#                 "status": 2,  # 승인
+#                 "image_path": "/images/meat/M005_rgb.jpg"
+#             }
+#         ]
         
-        # 필터링 적용 (Mock 데이터에서)
-        filtered_items = []
-        for item in mock_items:
-            # 부위 필터링
-            if part and item["part"] != part:
-                continue
-            # 지역 필터링  
-            if location and location not in item["farm_addr"]:
-                continue
-            # 날짜 필터링
-            if date:
-                try:
-                    item_date = datetime.fromisoformat(item["created_at"]).date()
-                    filter_date = _parse_date_yyyy_mm_dd(date).date()
-                    if item_date != filter_date:
-                        continue
-                except:
-                    continue
-            filtered_items.append(item)
+#         # 필터링 적용 (Mock 데이터에서)
+#         filtered_items = []
+#         for item in mock_items:
+#             # 부위 필터링
+#             if part and item["part"] != part:
+#                 continue
+#             # 지역 필터링  
+#             if location and location not in item["farm_addr"]:
+#                 continue
+#             # 날짜 필터링
+#             if date:
+#                 try:
+#                     item_date = datetime.fromisoformat(item["created_at"]).date()
+#                     filter_date = _parse_date_yyyy_mm_dd(date).date()
+#                     if item_date != filter_date:
+#                         continue
+#                 except:
+#                     continue
+#             filtered_items.append(item)
         
-        # 페이징 적용
-        total = len(filtered_items)
-        start_idx = offset
-        end_idx = min(offset + limit, total)
-        paginated_items = filtered_items[start_idx:end_idx]
+#         # 페이징 적용
+#         total = len(filtered_items)
+#         start_idx = offset
+#         end_idx = min(offset + limit, total)
+#         paginated_items = filtered_items[start_idx:end_idx]
         
-        return {
-            "total": total,
-            "items": paginated_items,
-            "mock_data": True,  # Mock 데이터임을 표시
-            "message": "DB 연결 실패로 인한 Mock 데이터"
-        }
+#         return {
+#             "total": total,
+#             "items": paginated_items,
+#             "mock_data": True,  # Mock 데이터임을 표시
+#             "message": "DB 연결 실패로 인한 Mock 데이터"
+#         }
 
-    try:
-        # DB에서 데이터 조회
-        query = db.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
+#     try:
+#         # DB에서 데이터 조회
+#         query = db.query(Meat).join(CategoryInfo, Meat.categoryId == CategoryInfo.id)
 
-        # 필터링 조건 적용
-        if part:
-            query = query.filter(CategoryInfo.primalValue == part)
-        if location:
-            query = query.filter(Meat.farmAddr.contains(location))
-        if date:
-            d0 = _parse_date_yyyy_mm_dd(date)
-            d1 = d0 + timedelta(days=1)
-            query = query.filter(and_(Meat.createdAt >= d0, Meat.createdAt < d1))
+#         # 필터링 조건 적용
+#         if part:
+#             query = query.filter(CategoryInfo.primalValue == part)
+#         if location:
+#             query = query.filter(Meat.farmAddr.contains(location))
+#         if date:
+#             d0 = _parse_date_yyyy_mm_dd(date)
+#             d1 = d0 + timedelta(days=1)
+#             query = query.filter(and_(Meat.createdAt >= d0, Meat.createdAt < d1))
         
-        # 전체 개수 조회
-        total = query.count()
+#         # 전체 개수 조회
+#         total = query.count()
         
-        # 페이징 적용하여 데이터 조회
-        results = query.order_by(Meat.createdAt.desc()).offset(offset).limit(limit).all()
+#         # 페이징 적용하여 데이터 조회
+#         results = query.order_by(Meat.createdAt.desc()).offset(offset).limit(limit).all()
         
-        # 결과 포맷팅
-        items = []
-        for meat in results:
-            category = db.query(CategoryInfo).filter(CategoryInfo.id == meat.categoryId).first()
-            items.append({
-                "meat_id": meat.id,
-                "trace_num": meat.traceNum,
-                "part": category.primalValue if category else "N/A",
-                "subpart": category.secondaryValue if category else "N/A",
-                "farm_addr": meat.farmAddr,
-                "farmer_name": meat.farmerName,
-                "butchery_date": meat.butcheryYmd.isoformat() if meat.butcheryYmd else None,
-                "created_at": meat.createdAt.isoformat() if meat.createdAt else None,
-                "status": meat.statusType,
-                "image_path": meat.imagePath
-            })
+#         # 결과 포맷팅
+#         items = []
+#         for meat in results:
+#             category = db.query(CategoryInfo).filter(CategoryInfo.id == meat.categoryId).first()
+#             items.append({
+#                 "meat_id": meat.id,
+#                 "trace_num": meat.traceNum,
+#                 "part": category.primalValue if category else "N/A",
+#                 "subpart": category.secondaryValue if category else "N/A",
+#                 "farm_addr": meat.farmAddr,
+#                 "farmer_name": meat.farmerName,
+#                 "butchery_date": meat.butcheryYmd.isoformat() if meat.butcheryYmd else None,
+#                 "created_at": meat.createdAt.isoformat() if meat.createdAt else None,
+#                 "status": meat.statusType,
+#                 "image_path": meat.imagePath
+#             })
         
-        return {"total": total, "items": items, "mock_data": False}
+#         return {"total": total, "items": items, "mock_data": False}
 
-    except ValueError:
-        raise HTTPException(status_code=400, detail="date는 YYYY-MM-DD 형식이어야 합니다.")
-    except Exception as e:
-        logger.error(f"Data list error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+#     except ValueError:
+#         raise HTTPException(status_code=400, detail="date는 YYYY-MM-DD 형식이어야 합니다.")
+#     except Exception as e:
+#         logger.error(f"Data list error: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
