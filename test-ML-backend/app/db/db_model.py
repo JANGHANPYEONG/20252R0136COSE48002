@@ -294,12 +294,9 @@ class DeepAgingInfo(Base):
 class SensoryEval(Base):
     __tablename__ = "sensory_eval"
 
-    # 1. 복합키 설정
-    id = Column(
-        String(255),
-        primary_key=True,
-    )  # 육류 관리번호
-    seqno = Column(Integer, primary_key=True)  # 가공 횟수
+    # 1. 복합키 설정 (primary_key=True 제거)
+    id = Column(String(255), nullable=False)  # 육류 관리번호
+    seqno = Column(Integer, nullable=False)  # 가공 횟수
 
     # 2. 관능검사 메타 데이터
     createdAt = Column(DateTime, nullable=False)  # 관능검사 생성 시간

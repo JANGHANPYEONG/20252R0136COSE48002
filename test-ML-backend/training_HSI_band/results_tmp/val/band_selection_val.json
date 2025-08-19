@@ -1,0 +1,13 @@
+{
+  "data_split": "validation",
+  "samples": 341,
+  "label_results": {},
+  "spectral_data_shape": [
+    341,
+    5
+  ],
+  "spectral_data_scaled_shape": [
+    341,
+    5
+  ]
+}
