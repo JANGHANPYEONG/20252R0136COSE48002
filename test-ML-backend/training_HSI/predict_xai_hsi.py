@@ -49,7 +49,7 @@ from utils.model_loader import load_model
 from utils.transforms_hsi import get_test_transforms
 from utils.xai import (
     generate_cam_arrays, _infer_task_from_outputs, cam_to_png_bytes, save_cam_arrays,
-    generate_attention_arrays_from_lastyear, _find_vit_attention_modules
+    generate_attention_arrays, _find_vit_attention_modules
 )
 
 class InferenceDataset(Dataset):
@@ -275,7 +275,7 @@ class HSIPredictor:
         if self.xai_mode == 'attn':
             if not self._has_attn:
                 raise RuntimeError("model에서 attention 모듈 찾을 수 없음")
-            cam_pack = generate_attention_arrays_from_lastyear(
+            cam_pack = generate_attention_arrays(
                 model=self.model,
                 image_tensor_bchw=img_tensor.to(self.device),
                 outputs=output,
@@ -283,6 +283,9 @@ class HSIPredictor:
                 target_index=target_index,
                 assume_cls_token=True,
             )
+
+            return cam_pack
+        
         else:
             # default: gradcam
             cam_pack = generate_cam_arrays(
