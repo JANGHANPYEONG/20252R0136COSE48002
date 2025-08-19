@@ -327,7 +327,7 @@ class SensoryEval(Base):
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint(
-            ["id", "seqno", "isRefrigerated"], ["deepAging_info.id", "deepAging_info.seqno", "sensory_eval.isRefrigerated"],
+            ["id", "seqno",], ["deepAging_info.id", "deepAging_info.seqno",],
             ondelete="CASCADE",
             onupdate="CASCADE"
         ),
@@ -645,10 +645,10 @@ class HSIImagesBands(Base):
     isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
     spectral_index = Column(Integer, nullable=False, primary_key=True)
     
-    tl = Column(Float)
-    tr = Column(Float)
-    br = Column(Float)
-    bl = Column(Float)
+    topLeft = Column(Integer)
+    topRight = Column(Integer)
+    bottomRight = Column(Integer)
+    bottomLeft = Column(Integer)
 
     filename = Column(String(255))
     __table_args__ = (
