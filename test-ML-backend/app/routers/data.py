@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.db_model import Meat, SensoryEval, HSIImagesBands, MeatImage
 from app.utils import safe_int, safe_float, safe_str, convert_to_datetime
+from app.core.config import settings
 
 # utils 업로더 불러오기
 from app.utils.s3_uploader import upload_local_to_s3_prefix
@@ -93,14 +94,13 @@ async def ingest_row_upload(
     images: Optional[List[UploadFile]] = File(
         None, description="이 행에 해당하는 이미지들(RGB 1 + HSI 여러 장)"
     ),
-    s3: str = Form(..., description="업로드 대상 S3 경로(prefix). 예: s3://bucket/prefix"),
     overwrite: bool = Form(False, description="동일 키 존재 시 덮어쓰기 여부"),
     db: Session = Depends(get_db),
 ):
     """
     한 행(JSON) + 여러 이미지 파일을 받아서,
     파일명을 {hash}_{wavelength}.jpg / {hash}_rgb.jpg 로 표준화한 뒤
-    S3 업로드 완료 후 DB(Meat / SensoryEval / MeatImage / HSIImagesBands)에 기록합니다.
+    S3의 /train_dataset/HSI/ 경로에 업로드 완료 후 DB(Meat / SensoryEval / MeatImage / HSIImagesBands)에 기록합니다.
     """
     # -------------------------------
     # 1) JSON 파싱 + 최소 검증
@@ -179,9 +179,12 @@ async def ingest_row_upload(
         # -------------------------------
         # 5) S3 업로드 (디렉토리 전체 업로드 → 키는 파일명 기준)
         # -------------------------------
+        # 고정된 S3 경로 사용: /train_dataset/HSI/
+        s3_path = f"s3://{settings.S3_BUCKET_NAME}/train_dataset/HSI/"
+        
         summary = upload_local_to_s3_prefix(
             local_path=tmpdir,
-            s3_path=s3,
+            s3_path=s3_path,
             overwrite=overwrite,
             workers=8,
         )
@@ -355,7 +358,7 @@ async def ingest_row_upload(
             "traceNum": trace_num,
             "sampleNum": sample_num,
             "saved": [name for _, name in saved_files],
-            "s3": s3,
+            "s3": s3_path,  # 고정된 S3 경로
             "imagePath": representative_uri,  # ✅ 대표 이미지 경로
             "uploadSummary": summary,
         }
