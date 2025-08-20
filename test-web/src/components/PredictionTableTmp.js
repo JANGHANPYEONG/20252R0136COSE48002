@@ -68,6 +68,7 @@ const PredictionTableTmp = ({ data, onSelectionChange }) => {
                 <TableCell>부위</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
+                <TableCell>가공일자</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -90,8 +91,9 @@ const PredictionTableTmp = ({ data, onSelectionChange }) => {
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.sampleNo}</TableCell>
                   <TableCell>{row.part}</TableCell>
-                  <TableCell>{row.deepAging}</TableCell>
-                  <TableCell>{row.slDate}</TableCell>
+                  <TableCell>{row.isDeepAged}</TableCell>
+                  <TableCell>{row.butcheryDate}</TableCell>
+                  <TableCell>{row.processDate}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
