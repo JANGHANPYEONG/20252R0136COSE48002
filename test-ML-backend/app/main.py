@@ -74,9 +74,6 @@ app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI �
 #  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장
 app.include_router(user.router, prefix="/user", tags=["user"])
 
-# ✅ 프론트 표준 인증 엔드포인트: /auth/me (로그인 이후 내 프로필/권한 조회)
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-
 @app.get("/")
 async def root():
     return {"message": "ML Training API is running"}
