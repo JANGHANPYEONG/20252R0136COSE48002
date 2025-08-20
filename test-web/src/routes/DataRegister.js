@@ -16,6 +16,7 @@ const DataRegister = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(''); // 성공 메시지 상태
   const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 또는 폴더 상태 추가
+  const [uploadedExcelFile, setUploadedExcelFile] = useState(null); // 엑셀 파일 상태 추가
   const [dataFormat, setDataFormat] = useState('HSI'); // 데이터 형식 상태 (기본값: HSI)
 
   const fileInputRef = useRef(null);
@@ -96,34 +97,40 @@ const DataRegister = () => {
         return;
       }
 
-      // 2. 이미지 파일 존재 여부 확인
-      if (!uploadedZipFile) {
-        alert('이미지 파일이 업로드되지 않았습니다. 먼저 ZIP 파일 또는 폴더를 업로드해주세요.');
-        return;
+      // 2. 이미지 파일 존재 여부 확인 (로컬 모드가 아닐 때만)
+      const localMode = true; // 서버 연결 안됨 - 임시로 로컬 저장
+      
+      if (!localMode) {
+        if (!uploadedZipFile) {
+          alert('이미지 파일이 업로드되지 않았습니다. 먼저 ZIP 파일 또는 폴더를 업로드해주세요.');
+          return;
+        }
+
+        // ZIP 파일 형태인지 확인
+        if (!(uploadedZipFile instanceof File)) {
+          alert('업로드된 이미지가 올바른 형식이 아닙니다. 다시 업로드해주세요.');
+          return;
+        }
       }
 
-      // ZIP 파일 형태인지 확인
-      if (!(uploadedZipFile instanceof File)) {
-        alert('업로드된 이미지가 올바른 형식이 아닙니다. 다시 업로드해주세요.');
-        return;
-      }
+      // 3. 매핑 상태 확인 (로컬 모드가 아닐 때만)
+      if (!localMode) {
+        const unmappedData = data.filter(row => 
+          row['매핑 상태'] === '매핑안됨' || 
+          !row['매핑 상태'] || 
+          row['매핑 상태'] === ''
+        );
 
-      // 3. 매핑 상태 확인
-      const unmappedData = data.filter(row => 
-        row['매핑 상태'] === '매핑안됨' || 
-        !row['매핑 상태'] || 
-        row['매핑 상태'] === ''
-      );
-
-      if (unmappedData.length > 0) {
-        alert(`매핑되지 않은 데이터가 ${unmappedData.length}개 있습니다.\n모든 데이터를 매핑한 후 다시 시도해주세요.`);
-        return;
+        if (unmappedData.length > 0) {
+          alert(`매핑되지 않은 데이터가 ${unmappedData.length}개 있습니다.\n모든 데이터를 매핑한 후 다시 시도해주세요.`);
+          return;
+        }
       }
 
       setLoading(true);
       
-      // 4. 설정에 따른 파일 업로드 (서버/S3 자동 선택) + 데이터 형식 포함
-      const result = await uploadFiles(data, columns, uploadedZipFile, dataFormat);
+      // 4. 설정에 따른 파일 업로드 (임시로 로컬 모드 사용)
+      const result = await uploadFiles(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile, localMode);
       
       if (result.success) {
         // 성공 시 상세 정보와 함께 알림
@@ -137,6 +144,7 @@ const DataRegister = () => {
         // 등록 성공 시 모든 데이터 초기화
         clearData();
         setUploadedZipFile(null);
+        setUploadedExcelFile(null);
       } else {
         alert(`데이터 등록에 실패했습니다.\n오류: ${result.message}`);
       }
@@ -154,6 +162,7 @@ const DataRegister = () => {
     setColumns([]);
     setData([]);
     setUploadedZipFile(null); // ZIP 파일 상태도 초기화
+    setUploadedExcelFile(null); // 엑셀 파일 상태도 초기화
     localStorage.removeItem('dataRegister_data');
     localStorage.removeItem('dataRegister_columns');
     console.log('모든 데이터가 초기화되었습니다.');
@@ -183,6 +192,12 @@ const DataRegister = () => {
     if (!file.name.toLowerCase().endsWith('.csv') && !file.name.toLowerCase().endsWith('.xlsx')) {
       alert('CSV 또는 Excel 파일만 업로드 가능합니다.');
       return;
+    }
+    
+    // 엑셀 파일인 경우 파일 객체 저장
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      setUploadedExcelFile(file);
+      console.log('엑셀 파일 저장됨:', file.name);
     }
     
     setCsvLoading(true);
@@ -1060,18 +1075,13 @@ const DataRegister = () => {
               loading || 
               csvLoading || 
               imageLoading || 
-              data.length === 0 || 
-              !uploadedZipFile ||
-              data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태'])
+              data.length === 0
+              // 로컬 모드에서는 ZIP 파일과 매핑 상태 체크 안함
             }
             sx={{
-              backgroundColor: data.length > 0 && uploadedZipFile && 
-                              !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
-                              ? '#28a745' : '#ccc',
+              backgroundColor: data.length > 0 ? '#28a745' : '#ccc', // 로컬 모드: 데이터만 있으면 활성화
               '&:hover': { 
-                backgroundColor: data.length > 0 && uploadedZipFile && 
-                               !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
-                               ? '#218838' : '#bbb' 
+                backgroundColor: data.length > 0 ? '#218838' : '#bbb' 
               },
               '&:disabled': { backgroundColor: '#ccc' },
             }}

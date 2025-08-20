@@ -179,8 +179,14 @@ export const uploadToS3Presigned = async (data, columns, zipFile) => {
 /**
  * 설정에 따라 적절한 업로드 방식을 선택하는 통합 함수
  */
-export const uploadFiles = async (data, columns, zipFile, dataFormat = 'HSI') => {
+export const uploadFiles = async (data, columns, zipFile, dataFormat = 'HSI', excelFile = null, localMode = false) => {
   const method = STORAGE_CONFIG.uploadMethod;
+  
+  // 로컬 모드인 경우 무조건 로컬 저장
+  if (localMode) {
+    const { uploadDataToServer } = await import('./uploadDataToServer');
+    return await uploadDataToServer(data, columns, zipFile, dataFormat, excelFile, true);
+  }
   
   switch (method) {
     case 's3-direct':
@@ -191,9 +197,9 @@ export const uploadFiles = async (data, columns, zipFile, dataFormat = 'HSI') =>
     
     case 'server':
     default:
-      // 기존 서버 업로드 방식 사용
+      // 기존 서버 업로드 방식 사용 (엑셀 파일 포함)
       const { uploadDataToServer } = await import('./uploadDataToServer');
-      return await uploadDataToServer(data, columns, zipFile, dataFormat);
+      return await uploadDataToServer(data, columns, zipFile, dataFormat, excelFile);
   }
 };
 

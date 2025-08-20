@@ -1,16 +1,25 @@
 import { apiIP, STORAGE_CONFIG } from '../../config';
+import { convertExcelToJson, groupSamplesByTrace } from './excelToJsonConverter';
+import { saveJsonToResult } from './saveJsonToResult';
 
 /**
- * 서버에 CSV와 ZIP 파일을 업로드하는 API
+ * 서버에 JSON과 ZIP 파일을 업로드하는 API
  * Ubuntu 서버의 /home/ubuntu/2025-Deeplant-Dev/database/image 및 label 경로에 저장
  * @param {Array} data - 테이블 데이터 배열
  * @param {Array} columns - 컬럼 이름 배열  
  * @param {File} zipFile - ZIP 이미지 파일
  * @param {string} dataFormat - 데이터 형식 ('HSI' 또는 'RGB')
+ * @param {File} excelFile - 엑셀 파일 (선택사항, 있으면 JSON 변환 사용)
  * @returns {Promise} - 업로드 결과
  */
-export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'HSI') => {
+export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'HSI', excelFile = null, localMode = false) => {
   try {
+    // 로컬 모드인 경우 JSON만 다운로드
+    if (localMode) {
+      console.log('로컬 모드: JSON 파일만 저장합니다.');
+      return await saveJsonToResult(data, columns, zipFile, dataFormat, excelFile);
+    }
+    
     // 1. 데이터 유효성 검사
     if (!data || data.length === 0) {
       throw new Error('업로드할 데이터가 없습니다.');
@@ -37,28 +46,53 @@ export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'H
     // 4. 이력번호 추출 (첫 번째 데이터에서)
     const managementNumber = data.length > 0 ? data[0]['이력번호'] : 'unknown';
     
-    // 5. "매핑 상태" 컬럼 제외하고 CSV 생성
-    const filteredColumns = columns.filter(col => col !== '매핑 상태');
-    const csvHeader = filteredColumns.join(',') + '\n';
-    const csvRows = data.map(row => 
-      filteredColumns.map(col => {
-        const value = row[col] ?? '';
-        // CSV에서 콤마, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸기
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      }).join(',')
-    );
-    const csvContent = csvHeader + csvRows.join('\n');
+    // 5. 데이터 형식에 따라 JSON 또는 CSV 생성
+    let labelBlob, labelFileName;
+    
+    if (excelFile) {
+      // 엑셀 파일이 있으면 JSON 변환 사용
+      console.log('엑셀 파일에서 JSON 생성 중...');
+      const jsonArray = await convertExcelToJson(excelFile, dataFormat);
+      const groupedJson = groupSamplesByTrace(jsonArray);
+      
+      // 하나의 JSON 파일로 저장 (첫 번째 그룹 사용)
+      const jsonData = groupedJson.length > 0 ? groupedJson[0] : jsonArray[0];
+      const jsonContent = JSON.stringify(jsonData, null, 2);
+      
+      labelBlob = new Blob([jsonContent], { type: 'application/json;charset=utf-8' });
+      labelFileName = `${managementNumber}.json`;
+      
+      console.log('JSON 변환 완료:', {
+        fileName: labelFileName,
+        sampleCount: jsonData.meat.sampleNum ? jsonData.meat.sampleNum.split(',').length : 1,
+        edgePointCount: Object.keys(jsonData.meat.edgePoint).length
+      });
+    } else {
+      // 기존 CSV 방식 유지
+      console.log('기존 CSV 방식 사용 중...');
+      const filteredColumns = columns.filter(col => col !== '매핑 상태');
+      const csvHeader = filteredColumns.join(',') + '\n';
+      const csvRows = data.map(row => 
+        filteredColumns.map(col => {
+          const value = row[col] ?? '';
+          // CSV에서 콤마, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸기
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        }).join(',')
+      );
+      const csvContent = csvHeader + csvRows.join('\n');
+      
+      labelBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      labelFileName = `${managementNumber}.csv`;
+    }
 
     // 6. FormData 생성
     const formData = new FormData();
     
-    // CSV 파일을 Blob으로 생성하여 label 경로에 저장 (이력번호 파일명 사용)
-    const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const csvFileName = `${managementNumber}.csv`;
-    formData.append('label', csvBlob, csvFileName);
+    // 라벨 파일을 label 경로에 저장 (이력번호 파일명 사용)
+    formData.append('label', labelBlob, labelFileName);
     
     // ZIP 파일을 image 경로에 저장 (원본 파일명 유지)
     formData.append('image', zipFile, zipFile.name);
@@ -75,11 +109,12 @@ export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'H
       serverIP: apiIP,
       endpoint: serverConfig.endpoint,
       basePath: serverConfig.basePath,
-      csvFile: csvFileName,
+      labelFile: labelFileName,
       zipFile: zipFile.name,
       managementNumber: managementNumber,
       dataCount: data.length,
       dataFormat: dataFormat,
+      useJson: !!excelFile,
       excludedColumns: ['매핑 상태']
     });
 
@@ -119,13 +154,13 @@ export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'H
             success: true,
             data: {
               ...retryResult,
-              csvPath: `${serverConfig.basePath}/${serverConfig.csvPath}/${csvFileName}`,
+              labelPath: `${serverConfig.basePath}/${serverConfig.csvPath}/${labelFileName}`,
               imagePath: `${serverConfig.basePath}/${serverConfig.imagePath}/${zipFile.name}`,
               uploadedAt: new Date().toISOString(),
               dataCount: data.length,
               overwritten: true
             },
-            message: `기존 파일을 덮어써서 업로드했습니다.\n- CSV: ${serverConfig.csvPath}/${csvFileName}\n- 이미지: ${serverConfig.imagePath}/${zipFile.name}`
+            message: `기존 파일을 덮어써서 업로드했습니다.\n- 라벨: ${serverConfig.csvPath}/${labelFileName}\n- 이미지: ${serverConfig.imagePath}/${zipFile.name}`
           };
         } else {
           // 사용자가 취소한 경우
@@ -144,12 +179,12 @@ export const uploadDataToServer = async (data, columns, zipFile, dataFormat = 'H
       success: true,
       data: {
         ...result,
-        csvPath: `${serverConfig.basePath}/${serverConfig.csvPath}/${csvFileName}`,
+        labelPath: `${serverConfig.basePath}/${serverConfig.csvPath}/${labelFileName}`,
         imagePath: `${serverConfig.basePath}/${serverConfig.imagePath}/${zipFile.name}`,
         uploadedAt: new Date().toISOString(),
         dataCount: data.length
       },
-      message: `데이터가 성공적으로 업로드되었습니다.\n- CSV: ${serverConfig.csvPath}/${csvFileName}\n- 이미지: ${serverConfig.imagePath}/${zipFile.name}`
+      message: `데이터가 성공적으로 업로드되었습니다.\n- 라벨: ${serverConfig.csvPath}/${labelFileName}\n- 이미지: ${serverConfig.imagePath}/${zipFile.name}`
     };
 
   } catch (error) {
