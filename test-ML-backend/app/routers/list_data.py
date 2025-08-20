@@ -76,7 +76,7 @@ class DashboardItem(BaseModel):
     )
 
     # 냉장 여부 1일 혹은 7일 (1일차 false, 7일차 true)
-    refrigerated: Optional[bool] = Field(None, alias="refrigerated", description="냉장 여부")
+    refrigerated: Optional[bool] = Field(False, alias="refrigerated", description="냉장 여부")
 
 class DashboardResponse(BaseModel):
     """대시보드 응답"""
@@ -102,6 +102,7 @@ def get_dashboard_data(
     period: Optional[str] = Query("전체", description="조회기간: 1주, 1개월, 1분기, 1년, 전체"),
     
     # 직접 날짜 입력 (데이터 생성일 기준)
+    # 날짜 입력 양식: YYYY-MM-DD
     start_date: Optional[date] = Query(None, alias="startDate", description="시작날짜 (생성일 기준)"),
     end_date: Optional[date] = Query(None, alias="endDate", description="종료날짜 (생성일 기준)"),
     
