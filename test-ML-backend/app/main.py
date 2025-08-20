@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data, xai, hsi_predict
+from app.routers import train, predict, meat, user, statistic_api, data, xai, hsi_predict, hsi_train
 from app.core.config import settings
 
 # 미들웨어 임포트
@@ -65,6 +65,7 @@ def _startup():
 
 # 라우터 등록
 app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
+app.include_router(hsi_train.router, prefix="/hsi-train", tags=["HSI training"])  # HSI 학습 API
 app.include_router(predict.router, prefix="/predict", tags=["prediction"])
 app.include_router(meat.router, prefix="/meat", tags=["meat"])  # 육류 데이터 관리
 app.include_router(user.router, prefix="/user", tags=["user"])  # 사용자 관리
