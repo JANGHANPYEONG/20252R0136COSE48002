@@ -62,6 +62,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 @app.on_event("startup")
 def _startup():
     init_firebase()
+    app.state.db_session = SessionLocal()
 
 # 라우터 등록
 app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
@@ -76,11 +77,6 @@ app.include_router(hsi_predict.router, prefix="/hsipredict", tags=["HSI predicti
 
 #  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장
 app.include_router(user.router, prefix="/user", tags=["user"])
-
-# 로그인용 DB세션 바인딩 확인
-@app.on_event("startup")
-def startup_event():
-    app.state.db_session = SessionLocal()
 
 @app.get("/")
 async def root():
