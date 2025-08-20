@@ -3,12 +3,15 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import IntEnum
 from typing import List, Annotated
+from fastapi import APIRouter
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator, ConfigDict
-from pydantic import UrlConstraints
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict, AnyUrl
+
+router = APIRouter()  # 라우터 인스턴스 생성
 
 # ---- URL 타입 (s3://... 과 https://... 허용) ----
-S3Url = Annotated[str, UrlConstraints(allowed_schemes=['s3', 'https'])]
+# Pydantic v2에서는 AnyUrl을 사용하거나 커스텀 validator를 사용
+S3Url = str  # 임시로 str로 변경, 필요시 커스텀 validator 추가
 
 # ---- 고정값이면 Enum으로 문서화/타입안전 ----
 class SexType(IntEnum):
@@ -94,7 +97,7 @@ class MeatItem(BaseModel):
 class MeatBatchRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    user_id: EmailStr = Field(..., alias="userId")
+    user_id: str = Field(..., alias="userId")
     batch_id: str = Field(..., alias="batchId", min_length=1)
     meats: List[MeatItem] = Field(..., min_items=1)
 
@@ -306,3 +309,28 @@ class MeatBatchRequest(BaseModel):
   ]
 }
 """
+
+# ============================================================================
+# API 엔드포인트 추가 - 실제 구현은 다른 사람이 담당
+# ============================================================================
+
+@router.get("/")
+async def data_root():
+    """데이터 관련 API 루트 엔드포인트"""
+    return {
+        "message": "Data API is running",
+        "description": "데이터 업로드 및 조회 API (다른 사람이 관리 중)",
+        "endpoints": {
+            "upload": "POST /data/upload - 데이터 업로드 (구현 예정)",
+            "query": "GET /data/query - 데이터 조회 (구현 예정)"
+        }
+    }
+
+@router.get("/status")
+async def data_status():
+    """데이터 API 상태 확인"""
+    return {
+        "status": "ready",
+        "service": "data-api",
+        "note": "실제 구현은 다른 사람이 담당"
+    }
