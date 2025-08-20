@@ -88,7 +88,7 @@ class DashboardResponse(BaseModel):
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
-async def get_dashboard_data(
+def get_dashboard_data(
     # ID 검색
     search_id: Optional[str] = Query(None, alias="id", description="ID 검색어 (이력번호/관리번호)"),
     
@@ -134,17 +134,6 @@ async def get_dashboard_data(
                     Meat.traceNum.ilike(f"%{search_id}%")
                 )
             )
-        
-        """
-        # 상태 필터
-        if status and status != "전체":
-            if status == "정상":
-                conditions.append(Meat.statusType == 2)
-            elif status == "보류":
-                conditions.append(Meat.statusType == 0)
-            elif status == "반려":
-                conditions.append(Meat.statusType == 1)
-        """
 
         # 조회기간 처리 (데이터 생성일 기준)
         if period and period != "전체":
@@ -188,95 +177,104 @@ async def get_dashboard_data(
         # 응답 데이터 변환
         data_items = []
         for meat in results:
-            """
-            # 상태명 변환
-            status_name = "알 수 없음"
-            if meat.statusType == 2:
-                status_name = "정상"
-            elif meat.statusType == 0:
-                status_name = "보류"
-            elif meat.statusType == 1:
-                status_name = "반려"
-            """
+            # DeepAgingInfo에서 sampleNo(seqno)와 딥에이징 정보 가져오기
+            deep_aging_info = (db.query(DeepAgingInfo)
+                             .filter(DeepAgingInfo.id == meat.id)
+                             .order_by(DeepAgingInfo.seqno.desc())
+                             .first())
+            
+            sample_no = deep_aging_info.seqno if deep_aging_info else 0
+            is_deep_aged = bool(deep_aging_info.isCompleted) if deep_aging_info else False
+            process_date = deep_aging_info.date.strftime("%Y-%m-%d") if (deep_aging_info and deep_aging_info.date) else None
 
-            """
-            # test용 임시 코드
-            # for meat in results: 바로 아래에 추가 (임시)
-            dai = (db.query(DeepAgingInfo)
-                    .filter(DeepAgingInfo.id == meat.id)
-                    .order_by(DeepAgingInfo.seqno.desc())
-                    .first())
-            seqno = dai.seqno if dai else 0
-            is_deep_aged = bool(dai.isCompleted) if dai else False
-            process_date = dai.date.strftime("%Y-%m-%d %H:%M:%S") if dai and dai.date else None
+            # CategoryInfo에서 부위 정보 가져오기
+            category = (db.query(CategoryInfo)
+                       .filter(CategoryInfo.id == meat.categoryId)
+                       .first()) if meat.categoryId else None
+            
+            part_primal = category.primalValue if category else None
+            part_secondary = category.secondaryValue if category else None
 
-            cat = db.query(CategoryInfo).filter(CategoryInfo.id == meat.categoryId).first() if meat.categoryId else None
-            part_primal = cat.primalValue if cat else None
-            part_secondary = cat.secondaryValue if cat else None
+            # SensoryEval에서 사람 관능평가 가져오기
+            sensory_eval = (db.query(SensoryEval)
+                           .filter(SensoryEval.id == meat.id, SensoryEval.seqno == sample_no)
+                           .order_by(SensoryEval.createdAt.desc())
+                           .first())
+            
+            human_overall = sensory_eval.overall if sensory_eval else None
+            rgb_image_url = sensory_eval.imagePath if (sensory_eval and sensory_eval.imagePath) else None
 
-            se = (db.query(SensoryEval)
-                    .filter(SensoryEval.id == meat.id, SensoryEval.seqno == seqno)
-                    .order_by(SensoryEval.createdAt.desc())
-                    .first())
-            human_overall = se.overall if se else None
-            rgb_url = se.imagePath if (se and se.imagePath) else None
+            # AI_SensoryEval에서 AI 예측 관능평가 가져오기
+            ai_sensory = (db.query(AI_SensoryEval)
+                         .filter(AI_SensoryEval.id == meat.id, AI_SensoryEval.seqno == sample_no)
+                         .first())
+            
+            ai_overall = ai_sensory.overall if ai_sensory else None
+            ai_grade_num = ai_sensory.xai_gradeNum if ai_sensory else None
 
-            ai_se = (db.query(AI_SensoryEval)
-                      .filter(AI_SensoryEval.id == meat.id, AI_SensoryEval.seqno == seqno)
-                      .first())
-            ai_overall = ai_se.overall if ai_se else None
-            ai_grade = ai_se.xai_gradeNum if ai_se else None
-
+            # HSIImagesBands에서 MSI 이미지 개수 가져오기
             msi_count = (db.query(HSIImagesBands)
-                          .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == seqno)
-                          .count())
-            hsi_url = None  # 대표 HSI 선택 규칙 정해지면 채우기
+                        .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == sample_no)
+                        .count())
 
+            # HSI 대표 이미지 URL (첫 번째 이미지 사용)
+            hsi_image = (db.query(HSIImagesBands)
+                        .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == sample_no)
+                        .first())
+            hsi_image_url = hsi_image.path if hsi_image else None
+
+            # 파장별 평균 흡수율 데이터 가져오기 (옵션)
+            spectrum_data = []
+            # 스펙트럼 데이터는 성능상 제한적으로만 로드 (샘플이 있고, 리스트가 짧을 때만)
+            if sample_no > 0 and limit <= 10:  # 성능 최적화: 작은 페이지에서만
+                spectrum_records = (db.query(HSISensoryEval)
+                                  .filter(HSISensoryEval.id == meat.id, HSISensoryEval.seqno == sample_no)
+                                  .limit(10)  # 최대 10개 파장만
+                                  .all())
+                
+                for record in spectrum_records:
+                    # SpectralInfo에서 파장 정보 가져오기
+                    spectral_info = (db.query(SpectralInfo)
+                                   .filter(SpectralInfo.idx == record.spectralIdx)
+                                   .first())
+                    
+                    if spectral_info and record.L is not None:
+                        spectrum_data.append(SpectrumPoint(
+                            wavelength_nm=float(spectral_info.wavelength),
+                            mean_absorption=float(record.L)
+                        ))
+
+            # 업로드 일시 (생성일 기준)
             uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
 
-            data_items.append(DashboardItem(
-            id=meat.id,
-            trace_num=meat.traceNum,
-            sample_no=seqno,
-            trace_key=f"{meat.traceNum}-{seqno}",
-            part=Part(primal=part_primal, secondary=part_secondary),
-            is_deep_aged=is_deep_aged,
-            butchery_date=meat.butcheryYmd.strftime("%Y-%m-%d") if meat.butcheryYmd else None,
-            process_date=process_date,
-            uploaded_at=uploaded_at,
-            images=ImageSummary(rgb=rgb_url, hsi=hsi_url, msiCount=msi_count),
-            sensory=SensorySummary(humanOverall=human_overall, aiOverall=ai_overall, aiGradeNum=ai_grade),
-            spectrum=None,  # 리스트에선 생략
-        )) """
+            # trace_key 생성 (이력번호-샘플번호)
+            trace_num_safe = meat.traceNum or meat.id or "UNKNOWN"
+            trace_key = f"{trace_num_safe}-{sample_no:02d}"
+
             data_items.append(DashboardItem(
                 id=meat.id,
-                trace_num=meat.traceNum,
-                sample_no=meat.sampleNo,
-                trace_key=meat.traceKey,
+                traceNum=meat.traceNum or "",
+                sampleNo=sample_no,
+                traceKey=trace_key,
                 part=Part(
-                    primal=meat.partPrimal,
-                    secondary=meat.partSecondary
+                    primal=part_primal,
+                    secondary=part_secondary
                 ),
-                is_deep_aged=meat.isDeepAged,
-                butchery_date=meat.butcheryYmd.strftime("%Y-%m-%d") if meat.butcheryYmd else None,
-                process_date=meat.processDate.strftime("%Y-%m-%d") if meat.processDate else None,
-                uploaded_at=meat.uploadedAt.strftime("%Y-%m-%d %H:%M:%S") if meat.uploadedAt else None,
+                isDeepAged=is_deep_aged,
+                butcheryDate=meat.butcheryYmd.strftime("%Y-%m-%d") if meat.butcheryYmd else None,
+                processDate=process_date,
+                uploadedAt=uploaded_at,
                 images=ImageSummary(
-                    rgb=meat.imageRgb,
-                    hsi=meat.imageHsi,
-                    msiCount=meat.imageMsiCount
+                    rgb=rgb_image_url,
+                    hsi=hsi_image_url,
+                    msiCount=msi_count
                 ),
                 sensory=SensorySummary(
-                    humanOverall=meat.sensoryHumanOverall,
-                    aiOverall=meat.sensoryAiOverall,
-                    aiGradeNum=meat.sensoryAiGradeNum
+                    humanOverall=human_overall,
+                    aiOverall=ai_overall,
+                    aiGradeNum=ai_grade_num
                 ),
-                spectrum=[
-                    SpectrumPoint(
-                        wavelength_nm=point.wavelength_nm,
-                        mean_absorption=point.mean_absorption
-                    ) for point in meat.spectrumPoints
-                ]
+                spectrum=spectrum_data if spectrum_data else None  # 스펙트럼 데이터가 있을 때만
             ))
             
         return DashboardResponse(
@@ -293,40 +291,3 @@ async def get_dashboard_data(
             status_code=500,
             detail=f"대시보드 데이터 조회 중 오류가 발생했습니다: {str(e)}"
         )
-
-"""
-@router.get("/dashboard/filters")
-async def get_dashboard_filters(db: Session = Depends(get_db)):
-    # 대시보드 필터 옵션 조회
-    try:
-        # 상태 옵션
-        status_options = [
-            {"value": "전체", "label": "전체"},
-            {"value": "정상", "label": "정상"},
-            {"value": "보류", "label": "보류"},
-            {"value": "반려", "label": "반려"}
-        ]
-        
-        # 기간 옵션
-        period_options = [
-            {"value": "전체", "label": "전체"},
-            {"value": "1주", "label": "1주"},
-            {"value": "1개월", "label": "1개월"},
-            {"value": "1분기", "label": "1분기"},
-            {"value": "1년", "label": "1년"}
-        ]
-        
-        return {
-            "success": True,
-            "data": {
-                "statusOptions": status_options,
-                "periodOptions": period_options
-            }
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"필터 옵션 조회 중 오류가 발생했습니다: {str(e)}"
-        )
-"""
