@@ -12,7 +12,7 @@ from app.middleware.performance import PerformanceMonitoringMiddleware, Resource
 from app.core.firebase import init_firebase                
 from app.core.security import verify_firebase_token        
 from app.api.routers.auth import router as auth_router         
-
+from app.db.database import SessionLocal
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -75,6 +75,11 @@ app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI �
 
 #  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장
 app.include_router(user.router, prefix="/user", tags=["user"])
+
+# 로그인용 DB세션 바인딩 확인
+@app.on_event("startup")
+def startup_event():
+    app.state.db_session = SessionLocal()
 
 @app.get("/")
 async def root():
