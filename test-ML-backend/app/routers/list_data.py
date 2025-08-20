@@ -181,13 +181,12 @@ def get_dashboard_data(
         # 응답 데이터 변환
         data_items = []
         for meat in results:
-            # DeepAgingInfo에서 sampleNo(seqno)와 딥에이징 정보 가져오기
+            # DeepAgingInfo에서 딥에이징 정보 가져오기
             deep_aging_info = (db.query(DeepAgingInfo)
                              .filter(DeepAgingInfo.id == meat.id)
                              .order_by(DeepAgingInfo.seqno.desc())
                              .first())
             
-            sample_no = deep_aging_info.seqno if deep_aging_info else 0
             is_deep_aged = bool(deep_aging_info.isCompleted) if deep_aging_info else False
             process_date = deep_aging_info.date.strftime("%Y-%m-%d") if (deep_aging_info and deep_aging_info.date) else None
 
@@ -253,6 +252,7 @@ def get_dashboard_data(
             refrigerated= ai_sensory.isRefrigerated if ai_sensory else None if sample_no > 0 else None
 
             # trace_key 생성 (이력번호-샘플번호)
+            sample_no = deep_aging_info.seqno if deep_aging_info else 0 # sample 번호를 다른곳에 저장했다가 불러오기 // 수정 필요함.
             # hash 함수로 생성한거를 반영해야함.
             trace_key = f"{meat.traceNum}-{sample_no:02d}" if meat.traceNum else f"{meat.id}-{sample_no:02d}"
 
