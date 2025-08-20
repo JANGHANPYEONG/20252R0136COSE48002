@@ -119,7 +119,7 @@ def _pack_xy(pt):
 @router.post("/ingest/row-upload")
 async def ingest_row_upload(
     request: Request,
-    payload: DataUploadRequest,  # Pydantic 모델 사용
+    payload: DataUploadRequest = None,  # Pydantic 모델 (선택적)
     overwrite: bool = False,  # 기본값 False
     db: Session = Depends(get_db),
 ):
@@ -133,10 +133,23 @@ async def ingest_row_upload(
     print(f"[DEBUG] overwrite: {overwrite}")
     
     # -------------------------------
-    # 1) 데이터 검증 (Pydantic 모델로 받음)
+    # 1) 데이터 검증 (Pydantic 모델 또는 직접 파싱)
     # -------------------------------
-    obj = payload  # Pydantic 모델
-    print(f"[DEBUG] Received payload: {obj}")
+    if payload is None:
+        # Pydantic 모델이 실패한 경우 Request body를 직접 파싱
+        try:
+            body = await request.json()
+            print(f"[DEBUG] Parsed request body manually: {body}")
+            obj = DataUploadRequest(**body)
+            print(f"[DEBUG] Successfully created DataUploadRequest from manual parsing")
+        except Exception as e:
+            print(f"[ERROR] Failed to parse request body manually: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
+    else:
+        obj = payload  # Pydantic 모델 사용
+        print(f"[DEBUG] Using Pydantic model payload")
+    
+    print(f"[DEBUG] Final payload object: {obj}")
 
     try:
         user_id = safe_str(obj.userId)  # 루트
@@ -162,6 +175,9 @@ async def ingest_row_upload(
         is_refrig_meta = _to_bool(hsi_meta.isRefrigerated if hsi_meta else None)
         edge_points = (meat.edgePoint or {})
         
+        # meat_Color 필드 처리 (프론트엔드와 일치시키기)
+        meat_color = getattr(meat, 'meat_Color', None) or getattr(meat, 'meatColor', None)
+        
         print(f"[DEBUG] Extracted data:")
         print(f"[DEBUG]   user_id: {user_id}")
         print(f"[DEBUG]   row_id: {row_id}")
@@ -170,6 +186,7 @@ async def ingest_row_upload(
         print(f"[DEBUG]   sample_num: {sample_num}")
         print(f"[DEBUG]   hsi_filenames: {hsi_filenames}")
         print(f"[DEBUG]   expected_count: {expected_count}")
+        print(f"[DEBUG]   meat_color: {meat_color}")
         print(f"[DEBUG]   edge_points: {edge_points}")
         
     except KeyError as e:
@@ -273,7 +290,7 @@ async def ingest_row_upload(
             imagePath=None,  # HSI 이미지이므로 None
             weight_kg=None,
             marbling=safe_float(meat.marbling),
-            color=safe_float(meat.meatColor),
+            color=safe_float(meat_color),  # meat_Color 또는 meatColor 사용
             texture=safe_float(meat.texture),
             surfaceMoisture=safe_float(meat.surfaceMoisture),
             overall=safe_float(meat.total),
@@ -327,7 +344,7 @@ async def ingest_row_upload(
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
             marbling=safe_float(meat.marbling),           # 소문자 컬럼명 사용
-            color=safe_float(meat.meatColor),             # 소문자 컬럼명 사용
+            color=safe_float(meat_color),                 # meat_Color 또는 meatColor 사용
             texture=safe_float(meat.texture),             # 소문자 컬럼명 사용
             surfaceMoisture=safe_float(meat.surfaceMoisture), # 소문자 컬럼명 사용
             overall=safe_float(meat.total),               # 소문자 컬럼명 사용
