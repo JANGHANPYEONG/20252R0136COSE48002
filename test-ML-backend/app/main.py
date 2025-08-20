@@ -56,6 +56,8 @@ app.add_middleware(
     allow_headers=settings.ALLOWED_HEADERS,
 )
 
+# 로그인용 라우터 등록
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 # ✅ Firebase Admin 초기화 (앱 기동 시 1회)
 @app.on_event("startup")
 def _startup():
