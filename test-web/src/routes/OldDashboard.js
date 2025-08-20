@@ -37,7 +37,7 @@ import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 
 const navy = '#0F3659';
 
-const NewDashboard = () => {
+const OldDashboard = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
   const [searchedData, setSearchedData] = useState(null);
@@ -428,4 +428,4 @@ const NewDashboard = () => {
   );
 };
 
-export default NewDashboard;
+export default OldDashboard;

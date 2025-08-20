@@ -17,7 +17,7 @@ import Predict from './routes/Predict';
 import LearningRGB from './routes/LearningRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
-import NewDashboard from './routes/NewDashboard';
+import NewDashboard from './routes/OldDashboard';
 import MeatDetailPage from './routes/MeatDetailPage';
 
 import { UserProvider } from './Utils/UserContext';
@@ -65,8 +65,8 @@ function App() {
   const routes = [
     {
       path: '/',
-      title: 'LogIn | DeePlant',
-      component: isLoggedin ? <Home /> : <LogIn />,
+      title: 'LogIn',
+      component: <LogIn />,
     },
     {
       path: '/Home',
@@ -154,11 +154,6 @@ function App() {
       component: <UserManagement />,
     },
     {
-      path: '/NewDashboard',
-      title: 'NewDashboard | Deeplant',
-      component: <NewDashboard />,
-    },
-    {
       path: '/meat/:id',
       title: 'Meat Detail | Deeplant',
       component: <MeatDetailPage />,
@@ -180,7 +175,7 @@ function App() {
                   </Helmet>
                   <ThemeProvider theme={defaultTheme}>
                     <CssBaseline />
-                    {!isLoggedin ? (
+                    {!localStorage.getItem('isloggedIn') === 'true' ? (
                       <LogIn />
                     ) : (
                       <Box sx={{ display: 'flex', margin: 0, padding: 0 }}>
