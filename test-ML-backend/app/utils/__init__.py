@@ -35,7 +35,7 @@ from .error_handlers import (
 from .ml_utils import *
 from .opencv_utils import *
 from .segmentation import *
-from .utils import calId
+from .utils import calId, usrType, sexType, gradeNum, statusType, CATTLE, PIG
 
 # 하위 호환성을 위한 별칭
 species = SPECIES
@@ -76,7 +76,9 @@ __all__ = [
     # 하위 호환성
     'species', 'cattleLarge', 'pigLarge', 'cattleSmall', 'pigSmall',
     'default_user_id', 'default_user_type', 'convert2datetime',
-    'calId'
+    'calId',
+    # 하위 호환 상수/맵 (db_model.load_initial_data에서 사용)
+    'usrType', 'sexType', 'gradeNum', 'statusType', 'CATTLE', 'PIG'
 ]
 
 
