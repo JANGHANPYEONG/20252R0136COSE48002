@@ -6,17 +6,21 @@ import tempfile
 import re
 from datetime import datetime
 from celery import Celery
+import os
 from celery.result import AsyncResult
+from app.core.config import settings
 
 from training_HSI.train_HSI_2d import main as train_hsi_2d
 from training_HSI.train_vector import main as train_vector
 from training_HSI.train_RGB import main as train_rgb
 
 # Celery 및 APIRouter 설정
+# 중앙 설정에서 REDIS_URL 사용
+REDIS_URL = settings.REDIS_URL
 celery_app = Celery(
     "tasks",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
+    broker=REDIS_URL,
+    backend=REDIS_URL
 )
 
 # GPU 환경 최적화 설정
@@ -72,8 +76,14 @@ def run_train_task(self, config: Dict):
             json.dump(config, f, indent=2)
             config_path = f.name
         
-        # subprocess로 학습 프로세스 실행
-        training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
+        # subprocess로 학습 프로세스 실행 (OS/배포 환경에 따라 유연하게 경로 계산)
+        # 1) 환경변수 TRAINING_DIR이 있으면 우선 사용
+        # 2) 없으면 현재 파일 기준으로 test-ML-backend/training_HSI 폴더 상대경로 계산
+        # 중앙 설정에서 TRAINING_DIR 사용
+        training_dir = settings.TRAINING_DIR
+        training_dir = os.path.normpath(training_dir)
+        if not os.path.isdir(training_dir):
+            raise NotADirectoryError(f"Training directory does not exist: {training_dir}")
 
         if config.get("input_type") == "hsi_image":
             script_name = "train_HSI_2d.py"
