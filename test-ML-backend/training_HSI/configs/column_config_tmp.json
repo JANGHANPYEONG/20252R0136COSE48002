@@ -9,18 +9,18 @@
   },
   "label_columns": [
     "Marbling",
-    "Meat Color",
+    "Meat_Color",
     "Texture",
-    "Surface Moisture",
+    "Surface_Moisture",
     "Total"
   ],
   "label_types": {
     "classification": [],
     "regression": [
       "Marbling",
-      "Meat Color",
+      "Meat_Color",
       "Texture",
-      "Surface Moisture",
+      "Surface_Moisture",
       "Total"
     ]
   },

@@ -1,308 +1,195 @@
+# app/routers/data_upload.py
 from __future__ import annotations
 
-from datetime import date, datetime
-from enum import IntEnum
-from typing import List, Annotated
+import io
+import json
+import re
+import tempfile
+from typing import List, Optional
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator, ConfigDict
-from pydantic import UrlConstraints
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from PIL import Image
 
-# ---- URL 타입 (s3://... 과 https://... 허용) ----
-S3Url = Annotated[str, UrlConstraints(allowed_schemes=['s3', 'https'])]
+# utils 업로더 불러오기
+from app.utils.s3_uploader import upload_local_to_s3_prefix
 
-# ---- 고정값이면 Enum으로 문서화/타입안전 ----
-class SexType(IntEnum):
-    male = 1
-    female = 2
+router = APIRouter()
 
-class StatusType(IntEnum):
-    normal = 0
-    hold = 1
+# *_430nm.jpg 같은 패턴에서 파장 추출
+WL_PAT = re.compile(r'(?<!\d)(\d{3,4})nm(?!\w)', re.IGNORECASE)
 
-# ---- 하위 오브젝트 ----
-class DeepAging(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+# Base62 유틸 (sha256 → int → base62 → 앞 20자)
+import hashlib, string
+_BASE62 = string.digits + string.ascii_letters
 
-    is_deep_aging: bool = Field(..., alias="isDeepAging")
-    seqno: int = Field(..., ge=0)
+def _base62(n: int) -> str:
+    if n == 0:
+        return _BASE62[0]
+    out = []
+    while n > 0:
+        n, r = divmod(n, 62)
+        out.append(_BASE62[r])
+    return ''.join(reversed(out))
 
-class Sensory(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+def make_hash(trace_num: str, sample_num: str, length: int = 20) -> str:
+    raw = f"{trace_num}-{sample_num}"
+    digest = hashlib.sha256(raw.encode()).digest()
+    num = int.from_bytes(digest, 'big')
+    return _base62(num)[:length]
 
-    marbling: float = Field(..., ge=0)
-    color: float = Field(..., ge=0)
-    texture: float = Field(..., ge=0)
-    surface_moisture: float = Field(..., ge=0, alias="surfaceMoisture")
-    overall: float = Field(..., ge=0)
+def _looks_rgb(name: str) -> bool:
+    n = (name or "").lower()
+    return "rgb" in n
 
-class HsiImage(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+def _ensure_jpg(image_bytes: bytes) -> bytes:
+    """이미지를 열어 JPEG로 변환해서 바이트로 반환"""
+    im = Image.open(io.BytesIO(image_bytes))
+    if im.mode not in ("RGB", "L"):
+        im = im.convert("RGB")
+    elif im.mode == "L":
+        im = im.convert("RGB")
+    out = io.BytesIO()
+    im.save(out, format="JPEG", quality=95)
+    return out.getvalue()
 
-    spectral_index: int = Field(..., ge=0, alias="spectralIndex")
-    s3_path: S3Url = Field(..., alias="s3Path")
 
-class Hsi(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+@router.post("/ingest/row-upload")
+async def ingest_row_upload(
+    payload: str = Form(..., description="한 행의 JSON(문자열)"),
+    images: Optional[List[UploadFile]] = File(
+        None, description="이 행에 해당하는 이미지들(RGB 1 + HSI 여러 장)"
+    ),
+    s3: str = Form(..., description="업로드 대상 S3 경로(prefix). 예: s3://bucket/prefix"),
+    overwrite: bool = Form(False, description="동일 키 존재 시 덮어쓰기 여부"),
+):
+    """
+    한 행(JSON) + 여러 이미지 파일을 받아서,
+    규칙에 맞춰 파일명을 {hash}_{wavelength}.jpg / {hash}_rgb.jpg 로 바꾼 뒤
+    app.utils.s3_uploader.upload_local_to_s3_prefix 로 S3에 업로드합니다.
+    """
 
-    is_refrigerated: bool = Field(..., alias="isRefrigerated")
-    filmed_at: datetime = Field(..., alias="filmedAt")
-    images: List[HsiImage]
+    # 1) JSON 파싱(최소 검증)
+    try:
+        obj = json.loads(payload)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"payload JSON parse error: {e}")
 
-    @field_validator("images")
-    @classmethod
-    def images_not_empty(cls, v: List[HsiImage]):
-        if not v:
-            raise ValueError("images must not be empty")
-        return v
+    # 필수 값 확인
+    try:
+        meat = obj["meat"]
+        trace_num = str(meat["traceNum"]).strip()
+        sample_num = str(meat["sampleNum"]).strip()
+        rgb_names = set([n.lower() for n in (meat.get("rgbImageName") or [])])
+        hsi_names = set([n.lower() for n in (meat.get("hsiImageName") or [])])
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=f"missing field: {e}")
 
-    @field_validator("images")
-    @classmethod
-    def spectral_index_unique(cls, v: List[HsiImage]):
-        idxs = [img.spectral_index for img in v]
-        if len(idxs) != len(set(idxs)):
-            raise ValueError("images.spectralIndex must be unique within a meat item")
-        return v
+    if not images or len(images) == 0:
+        raise HTTPException(status_code=400, detail="no images uploaded")
 
-# ---- 상위(한 건) ----
-class MeatItem(BaseModel):
-    model_config = ConfigDict(
-        populate_by_name=True,   # alias로 들어오는 camelCase를 수용
-        use_enum_values=True,    # Enum을 숫자 값으로 직렬화
-        from_attributes=True,    # orm_mode 대체
-    )
+    # 2) 해시 생성
+    h = make_hash(trace_num, sample_num, length=20)
 
-    trace_num: str = Field(..., alias="traceNum", min_length=1)
-    species_id: int = Field(..., alias="speciesId", gt=0)
-    category_id: int = Field(..., alias="categoryId", gt=0)
-    sex_type: SexType = Field(..., alias="sexType")
-    grade_num: int = Field(..., alias="gradeNum", ge=0)
-    status_type: StatusType = Field(..., alias="statusType")
-    butchery_ymd: date = Field(..., alias="butcheryYmd")
-    birth_ymd: date = Field(..., alias="birthYmd")
-    weight_kg: float = Field(..., alias="weightKg", gt=0)
-    deep_aging: DeepAging = Field(..., alias="deepAging")
-    sensory: Sensory
-    hsi: Hsi
+    # 3) 임시 디렉토리 준비
+    tmpdir = tempfile.mkdtemp(prefix="rowu_")
 
-    @model_validator(mode="after")
-    def validate_dates(self):
-        if self.birth_ymd and self.butchery_ymd and self.birth_ymd > self.butchery_ymd:
-            raise ValueError("birthYmd must be on/before butcheryYmd")
-        return self
+    # 4) 업로드할 파일 만들기 (리네임/변환)
+    saved_files = []  # (local_path, new_filename)
+    try:
+        for uf in images:
+            orig_name = (uf.filename or "").strip()
+            if not orig_name:
+                raise HTTPException(status_code=400, detail="an image has empty filename")
 
-# ---- 배치(여러 건) ----
-class MeatBatchRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+            raw = await uf.read()
+            # JPEG로 변환(확장자와 무관하게 규격화)
+            jpg_bytes = _ensure_jpg(raw)
 
-    user_id: EmailStr = Field(..., alias="userId")
-    batch_id: str = Field(..., alias="batchId", min_length=1)
-    meats: List[MeatItem] = Field(..., min_items=1)
+            # RGB 판정: 파일명이 rgb 포함 or payload의 rgbImageName에 명시된 경우
+            is_rgb = _looks_rgb(orig_name) or (orig_name.lower() in rgb_names)
 
-    @field_validator("meats")
-    @classmethod
-    def meats_not_empty(cls, v: List[MeatItem]):
-        if not v:
-            raise ValueError("meats must not be empty")
-        return v
+            new_fname = None
+            if is_rgb:
+                new_fname = f"{h}_rgb.jpg"
+            else:
+                # 파장 추출: 파일명 또는 hsiImageName 매핑
+                wl = None
+                m = WL_PAT.search(orig_name)
+                if m:
+                    wl = f"{m.group(1)}nm"
+                else:
+                    # payload의 hsiImageName 리스트에 있는지 확인(파일명 그대로 매칭)
+                    if orig_name.lower() in hsi_names:
+                        # 파일명에 파장이 없으면 규칙상 반드시 있어야 하므로 에러로 처리
+                        raise HTTPException(status_code=400, detail=f"no wavelength in filename: {orig_name}")
+                if not wl:
+                    raise HTTPException(status_code=400, detail=f"cannot detect wavelength from filename: {orig_name}")
+                new_fname = f"{h}_{wl}.jpg"
 
-    @model_validator(mode="after")
-    def validate_trace_unique(self):
-        traces = [m.trace_num for m in self.meats]
-        if len(traces) != len(set(traces)):
-            raise ValueError("traceNum must be unique within the batch")
-        return self
+            # 로컬 저장
+            out_path = f"{tmpdir}/{new_fname}"
+            with open(out_path, "wb") as f:
+                f.write(jpg_bytes)
+            saved_files.append((out_path, new_fname))
+
+        # 5) S3 업로드 (디렉토리 전체 업로드 → 키는 파일명 기준)
+        summary = upload_local_to_s3_prefix(
+            local_path=tmpdir,
+            s3_path=s3,
+            overwrite=overwrite,
+            workers=8,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"processing error: {e}")
+
+    return {
+        "ok": True,
+        "hash": h,
+        "traceNum": trace_num,
+        "sampleNum": sample_num,
+        "saved": [name for _, name in saved_files],
+        "s3": s3,
+        "uploadSummary": summary,
+    }
     
-
 """
 {
   "userId": "deeplant@example.com",
-  "batchId": "2025-08-19-001",
-  "meats": [
-    {
-      "traceNum": "L01709271277001",
-      "speciesId": 1,
-      "categoryId": 2,
-      "sexType": 1,
-      "gradeNum": 2,
-      "statusType": 0,
-      "butcheryYmd": "2025-08-01",
-      "birthYmd": "2023-02-10",
-      "weightKg": 12.4,
-      "deepAging": {
-        "isDeepAging": false,
-        "seqno": 0
-      },
-      "sensory": {
-        "marbling": 3.5,
-        "color": 4.0,
-        "texture": 2.8,
-        "surfaceMoisture": 1.2,
-        "overall": 3.9
-      },
-      "hsi": {
-        "isRefrigerated": false,
-        "filmedAt": "2025-08-19T10:00:00Z",
-        "images": [
-          { "spectralIndex": 0, "s3Path": "s3://bucket/hsi/trace001/430.png" },
-          { "spectralIndex": 1, "s3Path": "s3://bucket/hsi/trace001/450.png" },
-          { "spectralIndex": 2, "s3Path": "s3://bucket/hsi/trace001/470.png" },
-          { "spectralIndex": 3, "s3Path": "s3://bucket/hsi/trace001/490.png" },
-          { "spectralIndex": 4, "s3Path": "s3://bucket/hsi/trace001/510.png" },
-          { "spectralIndex": 5, "s3Path": "s3://bucket/hsi/trace001/530.png" },
-          { "spectralIndex": 6, "s3Path": "s3://bucket/hsi/trace001/550.png" },
-          { "spectralIndex": 7, "s3Path": "s3://bucket/hsi/trace001/570.png" },
-          { "spectralIndex": 8, "s3Path": "s3://bucket/hsi/trace001/590.png" }
-        ]
-      }
+  "rowId": "sheet1-42",            // 선택: 행 식별자(시트명-행번호 등). 중복 방지/추적용
+  "meat": {
+    "traceNum": "140119100857",  // 이력번호
+    "sampleNum": "S1",  // 샘플번호
+    "gradeNum": "X", // 등급
+    "isDeepAging": "No",  // 딥에이징
+    "butcheryDate": "2025-08-01",
+    "manufactureDate": "2025-07-01",  // 제조(가공)일자
+    "picturedDate": "2025-08-19",  // 촬영일자
+    "period": "Day7", // 기간
+    "expirationDate": "2025-08-26",  // 소비기한
+    "marbling": 7,
+    "meatColor": 6,
+    "texture": 5,
+    "surfaceMoisture": 4,
+    "total": 6,
+    "edgePoint": {
+      "TL (430nm)": (1992, 941),
+      "TR (430nm)": (2644, 941),
+      "BL (430nm)": (2644, 1798),
+      "BR (430nm)": (1992, 1798),
+      "TL (450nm)": (1992, 941),
+      "TR (450nm)": (2644, 941),
+      "BL (450nm)": (2644, 1798),
+      "BR (450nm)": (1992, 1798),
     },
-    {
-      "traceNum": "L01709271277002",
-      "speciesId": 1,
-      "categoryId": 5,
-      "sexType": 2,
-      "gradeNum": 3,
-      "statusType": 1,
-      "butcheryYmd": "2025-08-05",
-      "birthYmd": "2023-01-20",
-      "weightKg": 14.8,
-      "deepAging": {
-        "isDeepAging": true,
-        "seqno": 1
-      },
-      "sensory": {
-        "marbling": 2.9,
-        "color": 3.7,
-        "texture": 3.2,
-        "surfaceMoisture": 1.5,
-        "overall": 3.5
-      },
-      "hsi": {
-        "isRefrigerated": true,
-        "filmedAt": "2025-08-19T11:00:00Z",
-        "images": [
-          { "spectralIndex": 0, "s3Path": "s3://bucket/hsi/trace002/430.png" },
-          { "spectralIndex": 1, "s3Path": "s3://bucket/hsi/trace002/450.png" },
-          { "spectralIndex": 2, "s3Path": "s3://bucket/hsi/trace002/470.png" },
-          { "spectralIndex": 3, "s3Path": "s3://bucket/hsi/trace002/490.png" },
-          { "spectralIndex": 4, "s3Path": "s3://bucket/hsi/trace002/510.png" },
-          { "spectralIndex": 5, "s3Path": "s3://bucket/hsi/trace002/530.png" },
-          { "spectralIndex": 6, "s3Path": "s3://bucket/hsi/trace002/550.png" },
-          { "spectralIndex": 7, "s3Path": "s3://bucket/hsi/trace002/570.png" },
-          { "spectralIndex": 8, "s3Path": "s3://bucket/hsi/trace002/590.png" }
-        ]
-      }
+    "hsi": {
+      "wavelengthFromFilename": true,            // 예: *_430nm.jpg, *_450nm.png 등
+      "expectedCount": 9  // 기대 파장 수 (= 이미지 수)
     },
-    {
-      "traceNum": "L01709271277003",
-      "speciesId": 2,
-      "categoryId": 1,
-      "sexType": 1,
-      "gradeNum": 1,
-      "statusType": 0,
-      "butcheryYmd": "2025-08-03",
-      "birthYmd": "2022-12-25",
-      "weightKg": 11.6,
-      "deepAging": {
-        "isDeepAging": false,
-        "seqno": 0
-      },
-      "sensory": {
-        "marbling": 4.1,
-        "color": 3.8,
-        "texture": 3.0,
-        "surfaceMoisture": 1.0,
-        "overall": 4.2
-      },
-      "hsi": {
-        "isRefrigerated": false,
-        "filmedAt": "2025-08-19T12:00:00Z",
-        "images": [
-          { "spectralIndex": 0, "s3Path": "s3://bucket/hsi/trace003/430.png" },
-          { "spectralIndex": 1, "s3Path": "s3://bucket/hsi/trace003/450.png" },
-          { "spectralIndex": 2, "s3Path": "s3://bucket/hsi/trace003/470.png" },
-          { "spectralIndex": 3, "s3Path": "s3://bucket/hsi/trace003/490.png" },
-          { "spectralIndex": 4, "s3Path": "s3://bucket/hsi/trace003/510.png" },
-          { "spectralIndex": 5, "s3Path": "s3://bucket/hsi/trace003/530.png" },
-          { "spectralIndex": 6, "s3Path": "s3://bucket/hsi/trace003/550.png" },
-          { "spectralIndex": 7, "s3Path": "s3://bucket/hsi/trace003/570.png" },
-          { "spectralIndex": 8, "s3Path": "s3://bucket/hsi/trace003/590.png" }
-        ]
-      }
-    },
-    {
-      "traceNum": "L01709271277004",
-      "speciesId": 2,
-      "categoryId": 4,
-      "sexType": 2,
-      "gradeNum": 2,
-      "statusType": 0,
-      "butcheryYmd": "2025-08-02",
-      "birthYmd": "2023-03-14",
-      "weightKg": 13.3,
-      "deepAging": {
-        "isDeepAging": true,
-        "seqno": 1
-      },
-      "sensory": {
-        "marbling": 3.2,
-        "color": 4.2,
-        "texture": 2.9,
-        "surfaceMoisture": 1.3,
-        "overall": 3.8
-      },
-      "hsi": {
-        "isRefrigerated": true,
-        "filmedAt": "2025-08-19T13:00:00Z",
-        "images": [
-          { "spectralIndex": 0, "s3Path": "s3://bucket/hsi/trace004/430.png" },
-          { "spectralIndex": 1, "s3Path": "s3://bucket/hsi/trace004/450.png" },
-          { "spectralIndex": 2, "s3Path": "s3://bucket/hsi/trace004/470.png" },
-          { "spectralIndex": 3, "s3Path": "s3://bucket/hsi/trace004/490.png" },
-          { "spectralIndex": 4, "s3Path": "s3://bucket/hsi/trace004/510.png" },
-          { "spectralIndex": 5, "s3Path": "s3://bucket/hsi/trace004/530.png" },
-          { "spectralIndex": 6, "s3Path": "s3://bucket/hsi/trace004/550.png" },
-          { "spectralIndex": 7, "s3Path": "s3://bucket/hsi/trace004/570.png" },
-          { "spectralIndex": 8, "s3Path": "s3://bucket/hsi/trace004/590.png" }
-        ]
-      }
-    },
-    {
-      "traceNum": "L01709271277005",
-      "speciesId": 1,
-      "categoryId": 6,
-      "sexType": 1,
-      "gradeNum": 3,
-      "statusType": 0,
-      "butcheryYmd": "2025-08-06",
-      "birthYmd": "2022-11-11",
-      "weightKg": 15.1,
-      "deepAging": {
-        "isDeepAging": false,
-        "seqno": 0
-      },
-      "sensory": {
-        "marbling": 3.7,
-        "color": 3.9,
-        "texture": 3.1,
-        "surfaceMoisture": 1.4,
-        "overall": 4.0
-      },
-      "hsi": {
-        "isRefrigerated": false,
-        "filmedAt": "2025-08-19T14:00:00Z",
-        "images": [
-          { "spectralIndex": 0, "s3Path": "s3://bucket/hsi/trace005/430.png" },
-          { "spectralIndex": 1, "s3Path": "s3://bucket/hsi/trace005/450.png" },
-          { "spectralIndex": 2, "s3Path": "s3://bucket/hsi/trace005/470.png" },
-          { "spectralIndex": 3, "s3Path": "s3://bucket/hsi/trace005/490.png" },
-          { "spectralIndex": 4, "s3Path": "s3://bucket/hsi/trace005/510.png" },
-          { "spectralIndex": 5, "s3Path": "s3://bucket/hsi/trace005/530.png" },
-          { "spectralIndex": 6, "s3Path": "s3://bucket/hsi/trace005/550.png" },
-          { "spectralIndex": 7, "s3Path": "s3://bucket/hsi/trace005/570.png" },
-          { "spectralIndex": 8, "s3Path": "s3://bucket/hsi/trace005/590.png" }
-        ]
-      }
-    }
-  ]
+    "rgbImageName": ["trace001_rgb.jpg"],
+    "hsiImageName": ["trace001_430nm.jpg", "trace001_450nm.jpg"]
+  }
 }
 """

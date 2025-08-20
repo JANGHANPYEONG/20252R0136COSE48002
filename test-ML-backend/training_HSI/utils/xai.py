@@ -6,6 +6,69 @@ import torch.nn.functional as F
 import cv2
 import os 
 
+# RGB 변환 함수들 (주석 처리됨 - RGB 데이터가 없을 때 대비)
+def hsi_to_rgb_simple(image_cube_hwc: np.ndarray, wavelengths: Optional[List[float]] = None) -> np.ndarray:
+    """
+    분광 데이터를 RGB로 변환하는 간단한 방법
+    현재는 첫 3개 채널을 사용하여 RGB를 근사
+    향후 적절한 스펙트럴 응답 함수나 컬러 매칭 함수를 사용할 수 있음
+    
+    Args:
+        image_cube_hwc: (H, W, C) 분광 이미지 큐브
+        wavelengths: 파장 정보 (현재 미사용)
+    
+    Returns:
+        rgb_image: (H, W, 3) RGB 이미지 [0, 255] uint8
+    """
+    H, W, C = image_cube_hwc.shape
+    
+    if C >= 3:
+        # 첫 3개 채널을 RGB로 사용
+        rgb_channels = image_cube_hwc[:, :, :3]
+    else:
+        # 채널이 3개 미만이면 반복하여 채움
+        rgb_channels = np.zeros((H, W, 3), dtype=image_cube_hwc.dtype)
+        for i in range(3):
+            rgb_channels[:, :, i] = image_cube_hwc[:, :, i % C]
+    
+    # 정규화 및 uint8 변환
+    rgb_norm = (rgb_channels - rgb_channels.min()) / (rgb_channels.max() - rgb_channels.min() + 1e-8)
+    rgb_uint8 = (rgb_norm * 255).astype(np.uint8)
+    
+    return rgb_uint8
+
+def create_overlay_image(base_image: np.ndarray, cam: np.ndarray, alpha: float = 0.35) -> np.ndarray:
+    """
+    기본 이미지와 CAM을 오버레이하여 최종 이미지 생성
+    
+    Args:
+        base_image: (H, W, 3) RGB 기본 이미지 [0, 255] uint8
+        cam: (H, W) CAM 배열 [0, 1] float32
+        alpha: 오버레이 투명도 (0: CAM 없음, 1: CAM만)
+    
+    Returns:
+        overlay_image: (H, W, 3) 오버레이된 RGB 이미지 [0, 255] uint8
+    """
+    H, W = cam.shape
+    
+    # 기본 이미지를 CAM 크기에 맞춤
+    if base_image.shape[:2] != (H, W):
+        base_resized = cv2.resize(base_image, (W, H))
+    else:
+        base_resized = base_image.copy()
+    
+    # CAM을 컬러맵으로 변환 (COLORMAP_JET 사용)
+    cam_u8 = (np.clip(cam, 0, 1) * 255).astype(np.uint8)
+    cam_color = cv2.applyColorMap(cam_u8, cv2.COLORMAP_JET)  # BGR
+    cam_color_rgb = cv2.cvtColor(cam_color, cv2.COLOR_BGR2RGB)  # RGB로 변환
+    
+    # 오버레이 생성
+    overlay = ((1 - alpha) * base_resized.astype(np.float32) + 
+               alpha * cam_color_rgb.astype(np.float32))
+    overlay = np.clip(overlay, 0, 255).astype(np.uint8)
+    
+    return overlay 
+
 # GradCAM class 
 class GradCAM:
     def __init__(self, model: nn.Module, target_layer: nn.Module):
@@ -179,12 +242,59 @@ def generate_cam_arrays(
     if cam.max().item() > 0:
         cam = cam / cam.max()
     cam = cam.detach().cpu().numpy().astype(np.float32)  # [0,1]
+    
+    # 첫 번째 채널을 기본 이미지로 사용 (그레이스케일)
+    first_band = image_cube_hwc[:, :, 0]  # (H, W)
+    
+    # 그레이스케일을 RGB로 변환
+    first_band_norm = (first_band - first_band.min()) / (first_band.max() - first_band.min() + 1e-8)
+    first_band_rgb = np.stack([first_band_norm] * 3, axis=-1)  # (H, W, 3)
+    first_band_rgb = (first_band_rgb * 255).astype(np.uint8)
+    
+    # RGB 변환 시도 (주석 처리됨 - RGB 데이터가 없을 때 대비)
+    # try:
+    #     if rgb_strategy == "spectral" and wavelengths:
+    #         rgb_image = hsi_to_rgb_spectral_matching(image_cube_hwc, wavelengths)
+    #     else:
+    #         rgb_image = hsi_to_rgb_simple(image_cube_hwc, wavelengths)
+    # except Exception as e:
+    #     print(f"RGB 변환 실패, 첫 번째 채널 사용: {e}")
+    #     rgb_image = first_band_rgb
+    
+    # 현재는 첫 번째 채널만 사용 (RGB 데이터 없음)
+    rgb_image = first_band_rgb
+    
+    # CAM과 기본 이미지의 크기를 맞춤
+    if cam.shape != rgb_image.shape[:2]:
+        cam_resized = cv2.resize(cam, (rgb_image.shape[1], rgb_image.shape[0]))
+    else:
+        cam_resized = cam
+    
+    # 오버레이 이미지 생성
+    overlay_image = create_overlay_image(rgb_image, cam_resized, alpha)
+    
     return {
-        "cam": cam,                     # (H, W) float32 [0,1]
+        "cam": cam_resized,                     # (H, W) float32 [0,1]
+        "first_band_rgb": rgb_image,            # (H, W, 3) uint8, 첫 번째 채널 RGB
+        "overlay": overlay_image,               # (H, W, 3) uint8, 오버레이된 이미지
         "target_index": used_index,
         "layer": used_layer,
         "task": task
     }
+
+def _make_rgb_from_cube(cube_hwc):
+    C = cube_hwc.shape[-1]
+    if C >= 3:
+        rgb = cube_hwc[..., :3]
+    else:
+        # 1밴드 → gray 3채널, 2밴드 → 마지막 채널 복제
+        if C == 1:
+            rgb = np.repeat(cube_hwc, 3, axis=-1)
+        else:  # C==2
+            rgb = np.concatenate([cube_hwc, cube_hwc[..., -1:]], axis=-1)
+    # 정규화
+    rgb = (rgb - rgb.min()) / (rgb.max() - rgb.min() + 1e-6)
+    return (rgb * 255).astype(np.uint8)
 
 def save_cam_arrays(
     cam: np.ndarray,                   # (H, W) float32 [0,1]
@@ -193,9 +303,9 @@ def save_cam_arrays(
     *,
     save_dir: str = "xai_outputs",
     basename: str = "gradcam",
-    save_heatmap: bool = True,
-    save_rgb: bool = False, # 원본 저장
-    save_overlay: bool = False, # overlay 저장 
+    save_heatmap: bool = False,
+    save_rgb: bool = False, # 첫 번째 채널 저장
+    save_overlay: bool = True, # overlay 저장 
 ):
     """
     CAM / 원본 / Overlay를 파일로 저장합니다.
@@ -221,6 +331,42 @@ def save_cam_arrays(
 
     # Overlay 저장 (옵션)
     if save_overlay and overlay is not None:
+        p = os.path.join(save_dir, f"{basename}_overlay.png")
+        cv2.imwrite(p, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+        paths["overlay"] = p
+
+    return paths
+
+    # CAM 히트맵 저장
+    # Heatmap 저장
+    if save_heatmap:
+        p = os.path.join(save_dir, f"{basename}_heatmap.png")
+        hm = (cam * 255).astype(np.uint8)
+
+        hm_color = cv2.applyColorMap(hm, cv2.COLORMAP_JET)
+
+        if cube_hwc is not None:
+            rgb = _make_rgb_from_cube(cube_hwc)
+            hm_color = cv2.resize(hm_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite(p, hm_color)
+        paths["heatmap"] = p
+
+    # RGB 저장 (옵션)
+    if save_rgb and cube_hwc is not None:
+        rgb = _make_rgb_from_cube(cube_hwc)
+        p = os.path.join(save_dir, f"{basename}_rgb.png")
+        cv2.imwrite(p, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+        paths["rgb"] = p
+
+    # Overlay 저장 (옵션)
+    if save_overlay and cube_hwc is not None:
+        rgb = _make_rgb_from_cube(cube_hwc)
+        heatmap_color = cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        
+        if heatmap_color.shape[:2] != rgb.shape[:2]:
+            heatmap_color = cv2.resize(heatmap_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+        overlay = cv2.addWeighted(rgb, 0.6, heatmap_color, 0.4, 0)
         p = os.path.join(save_dir, f"{basename}_overlay.png")
         cv2.imwrite(p, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
         paths["overlay"] = p
@@ -366,6 +512,9 @@ def generate_attention_arrays(
     task: str,                         # 'classification' | 'regression'
     target_index: Optional[int],
     assume_cls_token: bool = True,
+    image_cube_hwc: Optional[np.ndarray] = None,  # 추가: 원본 이미지 큐브
+    wavelengths: Optional[List[float]] = None,     # 추가: 파장 정보
+    alpha: float = 0.35,                          # 추가: 오버레이 투명도
 ) -> Dict[str, Any]:
     device = image_tensor_bchw.device
     B, C, H, W = image_tensor_bchw.shape
@@ -417,8 +566,18 @@ def generate_attention_arrays(
         N_img = img_tokens.numel()
         if N_img == 0:  # 엣지 케이스 방지
             cam = torch.ones((1,1,H,W), device=device)[0,0].detach().cpu().numpy().astype(np.float32)
-            return {"cam": cam, "target_index": int(target_index),
+            result = {"cam": cam, "target_index": int(target_index),
                     "layer": "attn-rollout", "task": task}
+            # 기본 이미지 정보도 포함
+            if image_cube_hwc is not None:
+                first_band = image_cube_hwc[:, :, 0]
+                first_band_norm = (first_band - first_band.min()) / (first_band.max() - first_band.min() + 1e-8)
+                first_band_rgb = np.stack([first_band_norm] * 3, axis=-1)
+                first_band_rgb = (first_band_rgb * 255).astype(np.uint8)
+                overlay_image = create_overlay_image(first_band_rgb, cam, alpha)
+                result["first_band_rgb"] = first_band_rgb
+                result["overlay"] = overlay_image
+            return result
         side = int(round(np.sqrt(float(N_img))))
         Hp, Wp = side, int(np.ceil(N_img / max(side, 1)))
         img_tokens = img_tokens[:Hp*Wp]
@@ -432,8 +591,46 @@ def generate_attention_arrays(
                             mode="bicubic", align_corners=False)[0, 0]
         cam = cam.detach().cpu().numpy().astype(np.float32)
 
-        return {"cam": cam, "target_index": int(target_index),
+        result = {"cam": cam, "target_index": int(target_index),
                 "layer": "attn-rollout", "task": task}
+        
+        # 원본 이미지 큐브가 있으면 첫 번째 채널과 오버레이 생성
+        if image_cube_hwc is not None:
+            # 첫 번째 채널을 기본 이미지로 사용
+            first_band = image_cube_hwc[:, :, 0]  # (H, W)
+            
+            # 그레이스케일을 RGB로 변환
+            first_band_norm = (first_band - first_band.min()) / (first_band.max() - first_band.min() + 1e-8)
+            first_band_rgb = np.stack([first_band_norm] * 3, axis=-1)  # (H, W, 3)
+            first_band_rgb = (first_band_rgb * 255).astype(np.uint8)
+            
+            # RGB 변환 시도 (주석 처리됨)
+            # try:
+            #     if wavelengths:
+            #         rgb_image = hsi_to_rgb_spectral_matching(image_cube_hwc, wavelengths)
+            #     else:
+            #         rgb_image = hsi_to_rgb_simple(image_cube_hwc, wavelengths)
+            # except Exception as e:
+            #     print(f"RGB 변환 실패, 첫 번째 채널 사용: {e}")
+            #     rgb_image = first_band_rgb
+            
+            # 현재는 첫 번째 채널만 사용
+            rgb_image = first_band_rgb
+            
+            # CAM과 기본 이미지의 크기를 맞춤
+            if cam.shape != rgb_image.shape[:2]:
+                cam_resized = cv2.resize(cam, (rgb_image.shape[1], rgb_image.shape[0]))
+            else:
+                cam_resized = cam
+            
+            # 오버레이 이미지 생성
+            overlay_image = create_overlay_image(rgb_image, cam_resized, alpha)
+            
+            result["first_band_rgb"] = rgb_image
+            result["overlay"] = overlay_image
+            result["cam"] = cam_resized  # 크기 조정된 CAM 사용
+
+        return result
     finally:
         for h in hooks:
             h.remove()

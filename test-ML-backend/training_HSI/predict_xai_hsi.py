@@ -8,20 +8,6 @@ HSI 예측 모듈 (학습 파이프라인과 완전 호환)
 사용법:
     # 기본 예측
     python predict_xai_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
-    
-    # 고해상도 XAI (GradCAM) 생성
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-save-dir xai_outputs --xai-upscale-factor 3.0
-    
-    # Attention 맵 생성 (ViT 모델용)
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-mode attn --xai-upscale-factor 2.5
-    
-    # 고품질 설정으로 XAI 생성
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-upscale-factor 4.0 --xai-use-bicubic
-    
-XAI 해상도 개선 옵션:
-    --xai-upscale-factor: CAM 업스케일 배율 (기본: 2.0)
-    --xai-use-bicubic: 고품질 bicubic 보간 사용 (기본: True)
-    --xai-disable-contrast-enhancement: 대비 개선 비활성화
 """
 
 import os
@@ -35,7 +21,6 @@ import pickle
 import mlflow
 import tempfile
 import warnings
-import base64
 import cv2
 from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
@@ -166,7 +151,7 @@ class HSIPredictor:
         self.crop_size   = tuple(self.config.get("data", {}).get("crop_size", [224, 224]))
         self.wavelengths = self.column_config.get("wavelengths", [])
         self.xai_mode = 'gradcam'   
-        self.xai_return = 'base64'
+        self.xai_return = 'url'  # S3 저장을 위해 url로 변경
         self._has_attn = len(_find_vit_attention_modules(self.model)) > 0
         
         # XAI 해상도 개선을 위한 설정
@@ -275,13 +260,16 @@ class HSIPredictor:
         if self.xai_mode == 'attn':
             if not self._has_attn:
                 raise RuntimeError("model에서 attention 모듈 찾을 수 없음")
-            cam_pack = generate_attention_arrays(
+            return generate_attention_arrays(
                 model=self.model,
                 image_tensor_bchw=img_tensor.to(self.device),
                 outputs=output,
                 task=task,
                 target_index=target_index,
                 assume_cls_token=True,
+                image_cube_hwc=cube_hwc,  # 추가: 원본 이미지 큐브
+                wavelengths=self.wavelengths,  # 추가: 파장 정보
+                alpha=0.35,  # 추가: 오버레이 투명도
             )
 
         else:
@@ -349,6 +337,19 @@ class HSIPredictor:
         enhanced_pack['cam'] = cam_enhanced
         enhanced_pack['original_resolution'] = original_shape
         enhanced_pack['enhanced_resolution'] = cam_enhanced.shape
+        
+        # RGB 및 오버레이 이미지도 해당 해상도로 맞추기 (만약 존재한다면)
+        if 'first_band_rgb' in enhanced_pack and enhanced_pack['first_band_rgb'] is not None:
+            rgb_img = enhanced_pack['first_band_rgb']
+            if rgb_img.shape[:2] != cam_enhanced.shape:
+                rgb_resized = cv2.resize(rgb_img, (cam_enhanced.shape[1], cam_enhanced.shape[0]))
+                enhanced_pack['first_band_rgb'] = rgb_resized
+        
+        if 'overlay' in enhanced_pack and enhanced_pack['overlay'] is not None:
+            overlay_img = enhanced_pack['overlay']
+            if overlay_img.shape[:2] != cam_enhanced.shape:
+                overlay_resized = cv2.resize(overlay_img, (cam_enhanced.shape[1], cam_enhanced.shape[0]))
+                enhanced_pack['overlay'] = overlay_resized
         
         return enhanced_pack
     
@@ -500,40 +501,32 @@ class HSIPredictor:
                             )
                             target_label = self.label_columns[col_idx]
 
-                            saved = None
-                            if xai_save_dir:
-                                def _safe_name(s): 
-                                    return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
-                                base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
-                                saved = save_cam_arrays(
-                                    cam=cam_pack['cam'],
-                                    save_dir=xai_save_dir,
-                                    basename=base,
-                                    save_heatmap=True,
-                                    save_rgb=False,
-                                    save_overlay=False
-                                )["heatmap"]
-
-                            if self.xai_return == 'base64':
-                                heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
-                                payload = {
-                                    'layer': cam_pack['layer'],
-                                    'image_base64': base64.b64encode(heatmap_png_bytes).decode("utf-8")
-                                }
-                                if saved: payload['image_path'] = saved
-                            else:
-                                if not saved:
-                                    os.makedirs(xai_save_dir or "xai_outputs", exist_ok=True)
-                                    def _safe_name(s): 
-                                        return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
-                                    base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
-                                    saved = save_cam_arrays(
-                                        cam=cam_pack['cam'],
-                                        save_dir=(xai_save_dir or "xai_outputs"),
-                                        basename=base,
-                                        save_heatmap=True
-                                    )["heatmap"]
-                                payload = {'layer': cam_pack['layer'], 'image_path': saved}
+                            # 항상 이미지 파일로 저장 (S3 업로드용)
+                            if not xai_save_dir:
+                                xai_save_dir = "xai_outputs"
+                            
+                            os.makedirs(xai_save_dir, exist_ok=True)
+                            def _safe_name(s): 
+                                return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
+                            base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
+                            
+                            saved_paths = save_cam_arrays(
+                                cam=cam_pack['cam'],
+                                rgb=cam_pack.get('first_band_rgb'),  # 첫 번째 채널 RGB 전달
+                                overlay=cam_pack.get('overlay'),     # 오버레이 이미지 전달
+                                save_dir=xai_save_dir,
+                                basename=base,
+                                save_heatmap=False,
+                                save_rgb=False,      # 첫 번째 채널 저장
+                                save_overlay=True,  # 오버레이 저장
+                            )
+                            
+                            payload = {
+                                'layer': cam_pack['layer'],
+                                'image_path': saved_paths.get("heatmap"),
+                                'rgb_path': saved_paths.get("rgb"),
+                                'overlay_path': saved_paths.get("overlay")
+                            }
 
                             xai_items[target_label] = payload
 
@@ -552,41 +545,32 @@ class HSIPredictor:
                             )
                             target_label = self.label_columns[col_idx]
 
-                            saved = None
-                            if xai_save_dir:
-                                def _safe_name(s): 
-                                    return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
-                                base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
-                                saved = save_cam_arrays(
-                                    cam=cam_pack['cam'],
-                                    save_dir=xai_save_dir,
-                                    basename=base,
-                                    save_heatmap=True,
-                                    save_rgb=False,
-                                    save_overlay=False
-                                )["heatmap"]
-
-                            if self.xai_return == 'base64':
-                                heatmap_png_bytes = cam_to_png_bytes(cam_pack['cam'])
-                                payload = {
-                                    'layer': cam_pack['layer'],
-                                    'image_base64': base64.b64encode(heatmap_png_bytes).decode("utf-8")
-                                }
-                                if saved:
-                                    payload['image_path'] = saved
-                            else:
-                                if not saved:
-                                    os.makedirs(xai_save_dir or "xai_outputs", exist_ok=True)
-                                    def _safe_name(s): 
-                                        return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
-                                    base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
-                                    saved = save_cam_arrays(
-                                        cam=cam_pack['cam'],
-                                        save_dir=(xai_save_dir or "xai_outputs"),
-                                        basename=base,
-                                        save_heatmap=True
-                                    )["heatmap"]
-                                payload = {'layer': cam_pack['layer'], 'image_path': saved}
+                            # 항상 이미지 파일로 저장 (S3 업로드용)
+                            if not xai_save_dir:
+                                xai_save_dir = "xai_outputs"
+                            
+                            os.makedirs(xai_save_dir, exist_ok=True)
+                            def _safe_name(s): 
+                                return "".join(c if c.isalnum() or c in ("-","_") else "_" for c in str(s))
+                            base = f"sample_idx_{sample_idx}_{_safe_name(target_label)}_{self.xai_mode}"
+                            
+                            saved_paths = save_cam_arrays(
+                                cam=cam_pack['cam'],
+                                rgb=cam_pack.get('first_band_rgb'),  # 첫 번째 채널 RGB 전달
+                                overlay=cam_pack.get('overlay'),     # 오버레이 이미지 전달
+                                save_dir=xai_save_dir,
+                                basename=base,
+                                save_heatmap=False,
+                                save_rgb=False,      # 첫 번째 채널 저장
+                                save_overlay=True,  # 오버레이 저장
+                            )
+                            
+                            payload = {
+                                'layer': cam_pack['layer'],
+                                'image_path': saved_paths.get("heatmap"),
+                                'rgb_path': saved_paths.get("rgb"),
+                                'overlay_path': saved_paths.get("overlay")
+                            }
 
                             xai_items[target_label] = payload
 
@@ -622,17 +606,10 @@ def main():
     parser.add_argument('--xai', action='store_true', help='Enable XAI')
     parser.add_argument('--xai-mode', choices=['gradcam', 'attn'], default='gradcam',
                     help='XAI backend: gradcam or attention')
-    parser.add_argument('--xai-return', choices=['base64', 'url'], default='base64',
-                    help='Return CAM as base64 or file path (url)')
+    parser.add_argument('--xai-return', choices=['base64', 'url'], default='url',
+                    help='Return CAM as base64 or file path (url) - default url for S3 storage')
     parser.add_argument('--xai-save-dir', type=str, default=None,
                     help='If set, save per-label CAM heatmaps to this directory')
-    parser.add_argument('--xai-upscale-factor', type=float, default=2.0,
-                    help='Upscale factor for CAM resolution enhancement (default: 2.0)')
-    parser.add_argument('--xai-use-bicubic', action='store_true', default=True,
-                    help='Use bicubic interpolation for better quality (default: True)')
-    parser.add_argument('--xai-disable-contrast-enhancement', action='store_true',
-                    help='Disable contrast enhancement for CAM')
-
     
     args = parser.parse_args()
     
@@ -675,16 +652,6 @@ def main():
         predictor = HSIPredictor(model_dir=model_dir)
         predictor.xai_mode = args.xai_mode
         predictor.xai_return = args.xai_return
-        
-        # XAI 해상도 설정 적용
-        predictor.xai_upscale_factor = args.xai_upscale_factor
-        predictor.xai_use_bicubic = args.xai_use_bicubic
-        predictor.xai_disable_contrast_enhancement = args.xai_disable_contrast_enhancement
-        
-        print(f"XAI Resolution Enhancement Settings:")
-        print(f"  - Upscale factor: {predictor.xai_upscale_factor}x")
-        print(f"  - Use bicubic interpolation: {predictor.xai_use_bicubic}")
-        print(f"  - Contrast enhancement: {not predictor.xai_disable_contrast_enhancement}")
         
         # 예측 수행
         results = predictor.predict_batch(

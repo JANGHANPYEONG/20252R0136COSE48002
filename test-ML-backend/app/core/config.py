@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     # 성능 제한 설정
     MAX_MEMORY_MB: int = 1000
     MAX_REQUESTS_PER_MINUTE: int = 1000
+
+    # DB에 로그인 토큰 저장
+    ALLOW_AUTO_PROVISION: bool = False
+    ADMIN_WHITELIST: str = ""
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -65,5 +69,8 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     FIREBASE_BUCKET_ADDRESS: str
+    
+    # Firebase 설정
+    FIREBASE_CREDENTIALS: str
 
 settings = Settings()
