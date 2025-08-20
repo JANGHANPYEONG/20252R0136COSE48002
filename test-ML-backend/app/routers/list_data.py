@@ -75,6 +75,9 @@ class DashboardItem(BaseModel):
         description="파장별 평균 흡수율(리스트에서는 Option)"
     )
 
+    # 냉장 여부 1일 혹은 7일 (1일차 false, 7일차 true)
+    refrigerated: Optional[bool] = Field(None, alias="refrigerated", description="냉장 여부")
+
 class DashboardResponse(BaseModel):
     """대시보드 응답"""
     model_config = ConfigDict(populate_by_name=True)
@@ -245,7 +248,11 @@ def get_dashboard_data(
             # 업로드 일시 (생성일 기준)
             uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
 
+            # 냉장 여부 가져오기 // 냉장 안한경우 false, 한 경우 true
+            refrigerated= ai_sensory.isRefrigerated if ai_sensory else None if sample_no > 0 else None
+
             # trace_key 생성 (이력번호-샘플번호)
+            # hash 함수로 생성한거를 반영해야함.
             trace_key = f"{meat.traceNum}-{sample_no:02d}" if meat.traceNum else f"{meat.id}-{sample_no:02d}"
 
             data_items.append(DashboardItem(
@@ -253,6 +260,7 @@ def get_dashboard_data(
                 traceNum=meat.traceNum,
                 sampleNo=sample_no,
                 traceKey=trace_key,
+                refrigerated=refrigerated,
                 part=Part(
                     primal=part_primal,
                     secondary=part_secondary
