@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings
 from typing import List
 import os
 
@@ -33,6 +34,10 @@ class Settings(BaseSettings):
     # 성능 제한 설정
     MAX_MEMORY_MB: int = 1000
     MAX_REQUESTS_PER_MINUTE: int = 1000
+
+    # DB에 로그인 토큰 저장
+    ALLOW_AUTO_PROVISION: bool = False
+    ADMIN_WHITELIST: str = ""
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
