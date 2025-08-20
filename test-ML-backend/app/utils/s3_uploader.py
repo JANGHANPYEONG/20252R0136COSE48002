@@ -6,7 +6,7 @@
 
 - 명령어 형식 :
 python (s3_uploader.py 파일 위치) --src (올릴 사진 디렉 or 파일이름) --s3 (s3 위치)
-ex) python app\utils\s3_uploader.py --src .\s32 --s3 s3://test-deeplant-bucket/train_dataset/HSI/s32 --workers 16
+ex) python app/utils/s3_uploader.py --src ./s32 --s3 s3://test-deeplant-bucket/train_dataset/HSI/s32 --workers 16
 """
 
 from __future__ import annotations
