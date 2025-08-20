@@ -17,7 +17,7 @@ import Predict from './routes/Predict';
 import LearningRGB from './routes/LearningRGB';
 import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
-import NewDashboard from './routes/NewDashboard';
+import NewDashboard from './routes/OldDashboard';
 import MeatDetailPage from './routes/MeatDetailPage';
 
 import { UserProvider } from './Utils/UserContext';
@@ -152,11 +152,6 @@ function App() {
       path: '/UserManagement',
       title: 'UserManage | Deeplant',
       component: <UserManagement />,
-    },
-    {
-      path: '/NewDashboard',
-      title: 'NewDashboard | Deeplant',
-      component: <NewDashboard />,
     },
     {
       path: '/meat/:id',
