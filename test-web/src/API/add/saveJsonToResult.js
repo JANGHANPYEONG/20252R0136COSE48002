@@ -1,7 +1,7 @@
-import { convertExcelToJson, groupSamplesByTrace } from './excelToJsonConverter';
+import { convertExcelToJson, createIndividualSampleJsons } from './excelToJsonConverter';
 
 /**
- * result 폴더에 JSON 파일을 저장하는 함수 (개발/테스트용)
+ * 샘플별 개별 JSON 파일을 result 폴더에 저장하는 함수
  * @param {Array} data - 테이블 데이터 배열
  * @param {Array} columns - 컬럼 이름 배열  
  * @param {File} zipFile - ZIP 이미지 파일
@@ -19,93 +19,100 @@ export const saveJsonToResult = async (data, columns, zipFile, dataFormat = 'HSI
     // 2. 이력번호 추출 (첫 번째 데이터에서)
     const managementNumber = data.length > 0 ? data[0]['이력번호'] : 'unknown';
     
-    let jsonData;
-    let fileName;
-    
-    if (excelFile) {
-      // 엑셀 파일이 있으면 JSON 변환 사용
-      console.log('엑셀 파일에서 JSON 생성 중...');
-      const jsonArray = await convertExcelToJson(excelFile, dataFormat);
-      const groupedJson = groupSamplesByTrace(jsonArray);
-      
-      // 하나의 JSON 파일로 저장 (첫 번째 그룹 사용)
-      jsonData = groupedJson.length > 0 ? groupedJson[0] : jsonArray[0];
-      fileName = `${managementNumber}.json`;
-      
-      console.log('JSON 변환 완료:', {
-        fileName: fileName,
-        sampleCount: jsonData.meat ? jsonData.meat.length : 1,
-        totalEdgePoints: jsonData.meat ? jsonData.meat.reduce((sum, sample) => sum + Object.keys(sample.edgePoint).length, 0) : 0
-      });
-    } else {
-      // 기존 데이터를 기본 JSON 형식으로 변환
-      console.log('기존 데이터를 JSON 형식으로 변환 중...');
-      
-      // 첫 번째 데이터를 기준으로 JSON 생성
-      const firstRow = data[0];
-      
-      jsonData = {
-        userId: "deeplant@example.com",
-        rowId: `sheet1-${managementNumber}`,
-        meat: {
-          traceNum: managementNumber,
-          sampleNum: firstRow['샘플번호'] || 'S1',
-          gradeNum: firstRow['등급'] || 'X',
-          isDeepAging: firstRow['딥에이징'] === 'YES' ? 'Yes' : 'No',
-          butcheryDate: firstRow['도축일자'] || '',
-          manufactureDate: firstRow['제조(가공)일자'] || '',
-          picturedDate: firstRow['촬영일자'] || '',
-          period: 'Day7',
-          expirationDate: firstRow['소비기한'] || '',
-          marbling: parseFloat(firstRow['Marbling']) || 0,
-          meatColor: parseFloat(firstRow['Meat Color']) || 0,
-          texture: parseFloat(firstRow['Texture']) || 0,
-          surfaceMoisture: parseFloat(firstRow['Surface Moisture']) || 0,
-          total: parseFloat(firstRow['Total']) || 0,
-          edgePoint: {},
-          hsi: {
-            isRefrigerated: false,
-            wavelengthFromFilename: true,
-            expectedCount: 0
-          }
-        }
-      };
-      
-      fileName = `${managementNumber}_basic.json`;
+    if (!excelFile) {
+      throw new Error('엑셀 파일이 필요합니다. 샘플별 JSON 생성을 위해서는 엑셀 파일을 업로드해주세요.');
     }
 
-    // 3. JSON 문자열로 변환
-    const jsonContent = JSON.stringify(jsonData, null, 2);
+    // 3. 엑셀 파일에서 샘플별 JSON 생성
+    console.log('엑셀 파일에서 샘플별 JSON 생성 중...');
+    const jsonArray = await convertExcelToJson(excelFile, dataFormat);
+    const individualJsons = createIndividualSampleJsons(jsonArray);
     
-    // 4. 브라우저 다운로드로 JSON 저장 (로컬 모드)
-    console.log('로컬 모드: 브라우저 다운로드로 JSON 저장');
+    console.log('JSON 변환 완료:', {
+      totalSamples: individualJsons.length,
+      files: individualJsons.map(item => item.fileName)
+    });
     
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
+    // 4. 서버에 여러 JSON 파일 저장 요청
+    console.log('result 폴더에 샘플별 JSON 파일들 저장 중...');
     
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.style.display = 'none';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    URL.revokeObjectURL(url);
-    
-    return {
-      success: true,
-      data: {
-        fileName: fileName,
-        managementNumber: managementNumber,
-        dataCount: data.length,
-        savedAt: new Date().toISOString(),
-        localPath: `Downloads/${fileName}`,
-        fileSize: blob.size
-      },
-      message: `JSON 파일이 다운로드 폴더에 저장되었습니다.\\n파일명: ${fileName}`
-    };
+    const filesData = individualJsons.map(item => ({
+      fileName: item.fileName,
+      content: JSON.stringify(item.data, null, 2)
+    }));
+
+    try {
+      const response = await fetch('http://localhost:3001/api/save-multiple-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: filesData })
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 응답 오류: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      console.log('result 폴더 저장 완료:', result);
+
+      return {
+        success: true,
+        data: {
+          fileCount: individualJsons.length,
+          fileNames: individualJsons.map(item => item.fileName),
+          managementNumber: managementNumber,
+          dataCount: data.length,
+          savedAt: new Date().toISOString(),
+          localPath: result.targetPath,
+          totalSize: filesData.reduce((sum, file) => sum + file.content.length, 0),
+          serverResponse: result
+        },
+        message: `${individualJsons.length}개의 JSON 파일이 result 폴더에 저장되었습니다.\\n저장 경로: ${result.targetPath}\\n파일명: ${individualJsons.map(item => item.fileName).join(', ')}`
+      };
+
+    } catch (serverError) {
+      // 서버가 연결되지 않은 경우 브라우저 다운로드로 fallback
+      console.warn('서버 연결 실패, 브라우저 다운로드로 대체:', serverError);
+      
+      for (const jsonItem of individualJsons) {
+        const jsonContent = JSON.stringify(jsonItem.data, null, 2);
+        
+        const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = jsonItem.fileName;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        
+        // 파일 간격을 두어 브라우저가 처리할 시간을 줌
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      return {
+        success: true,
+        data: {
+          fileCount: individualJsons.length,
+          fileNames: individualJsons.map(item => item.fileName),
+          managementNumber: managementNumber,
+          dataCount: data.length,
+          savedAt: new Date().toISOString(),
+          localPath: `Downloads/`,
+          totalSize: filesData.reduce((sum, file) => sum + file.content.length, 0),
+          fallback: true
+        },
+        message: `서버 연결 실패. ${individualJsons.length}개의 JSON 파일이 다운로드 폴더에 저장되었습니다.\\n서버를 시작하려면: npm run json-server\\n파일명: ${individualJsons.map(item => item.fileName).join(', ')}`
+      };
+    }
 
   } catch (error) {
     console.error('JSON 저장 오류:', error);

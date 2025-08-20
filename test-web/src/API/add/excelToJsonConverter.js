@@ -298,4 +298,53 @@ export const groupSamplesByTrace = (jsonArray) => {
   return Object.values(grouped);
 };
 
-export default { convertExcelToJson, groupSamplesByTrace };
+/**
+ * 샘플별로 개별 JSON 파일 생성을 위한 함수
+ * @param {Array} jsonArray - 개별 샘플 JSON 배열
+ * @returns {Array} - 샘플별 개별 JSON 객체 배열
+ */
+export const createIndividualSampleJsons = (jsonArray) => {
+  const individualJsons = [];
+  
+  jsonArray.forEach(item => {
+    const traceNum = item.meat.traceNum;
+    const sampleNum = item.meat.sampleNum;
+    
+    // 각 샘플별로 완전한 JSON 구조 생성
+    const individualJson = {
+      userId: item.userId,
+      rowId: `sheet1-${traceNum}-${sampleNum}`,
+      traceNum: traceNum,
+      butcheryDate: item.meat.butcheryDate,
+      manufactureDate: item.meat.manufactureDate,
+      picturedDate: item.meat.picturedDate,
+      period: item.meat.period,
+      expirationDate: item.meat.expirationDate,
+      hsi: {
+        ...item.meat.hsi,
+        expectedCount: Object.keys(item.meat.edgePoint).length
+      },
+      meat: {
+        sampleNum: item.meat.sampleNum,
+        part: item.meat.part,
+        gradeNum: item.meat.gradeNum,
+        isDeepAging: item.meat.isDeepAging,
+        marbling: item.meat.marbling,
+        meatColor: item.meat.meatColor,
+        texture: item.meat.texture,
+        surfaceMoisture: item.meat.surfaceMoisture,
+        total: item.meat.total,
+        edgePoint: item.meat.edgePoint
+      }
+    };
+    
+    individualJsons.push({
+      fileName: `${traceNum}_${sampleNum}.json`,
+      data: individualJson
+    });
+  });
+  
+  return individualJsons;
+};
+
+export default { convertExcelToJson, groupSamplesByTrace, createIndividualSampleJsons };

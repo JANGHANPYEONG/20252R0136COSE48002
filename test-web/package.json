@@ -34,6 +34,7 @@
     "js-cookie": "^3.0.5",
     "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
+    "node-fetch": "^3.3.2",
     "numeral": "^2.0.6",
     "papaparse": "^5.4.1",
     "prop-types": "^15.8.1",
@@ -64,7 +65,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "react-scripts build && firebase deploy"
+    "deploy": "react-scripts build && firebase deploy",
+    "json-server": "node local-json-server.js"
   },
   "eslintConfig": {
     "extends": [
