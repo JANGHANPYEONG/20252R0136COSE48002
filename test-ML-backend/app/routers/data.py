@@ -408,3 +408,28 @@ async def ingest_row_upload(
   }
 }
 """
+
+# ============================================================================
+# API 엔드포인트 추가 - 실제 구현은 다른 사람이 담당
+# ============================================================================
+
+@router.get("/")
+async def data_root():
+    """데이터 관련 API 루트 엔드포인트"""
+    return {
+        "message": "Data API is running",
+        "description": "데이터 업로드 및 조회 API (다른 사람이 관리 중)",
+        "endpoints": {
+            "upload": "POST /data/upload - 데이터 업로드 (구현 예정)",
+            "query": "GET /data/query - 데이터 조회 (구현 예정)"
+        }
+    }
+
+@router.get("/status")
+async def data_status():
+    """데이터 API 상태 확인"""
+    return {
+        "status": "ready",
+        "service": "data-api",
+        "note": "실제 구현은 다른 사람이 담당"
+    }
