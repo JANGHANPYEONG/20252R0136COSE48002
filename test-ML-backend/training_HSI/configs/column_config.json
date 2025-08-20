@@ -9,9 +9,9 @@
   },
   "label_columns": [
     "Marbling",
-    "Meat Color",
+    "Meat_Color",
     "Texture",
-    "Surface Moisture",
+    "Surface_Moisture",
     "Total",
     "GRADE_3",
     "GRADE_2",
@@ -29,9 +29,9 @@
     ],
     "regression": [
       "Marbling",
-      "Meat Color",
+      "Meat_Color",
       "Texture",
-      "Surface Moisture",
+      "Surface_Moisture",
       "Total"
     ]
   },
