@@ -12,7 +12,7 @@ from app.middleware.performance import PerformanceMonitoringMiddleware, Resource
 from app.core.firebase import init_firebase                
 from app.core.security import verify_firebase_token        
 from app.api.routers.auth import router as auth_router         
-
+from app.db.database import SessionLocal
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -62,6 +62,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 @app.on_event("startup")
 def _startup():
     init_firebase()
+    app.state.db_session = SessionLocal()
 
 # 라우터 등록
 app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
