@@ -1,3 +1,12 @@
+# [0821] TODO 리스트
+"""
+# [0821] TODO 리스트
+# 냉장 1일차만 있으면 이거만 뜬다. 1일차 7일차 둘 다 있는 경우 id로 달라는 요청을 보내면, 1일차 7일차 둘 다 FE에 보내야한다.
+# DATA를 두개를 보내던지 구현이 편한대로 해서 보내야한다. 
+
+DB 관련해서 500 에러 나는거 해결
+"""
+
 from datetime import date, datetime
 from typing import List, Optional
 
