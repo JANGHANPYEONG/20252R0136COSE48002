@@ -16,6 +16,8 @@ const HeatMapChart = ({
   endDate,
   animalType,
   grade,
+  modality,
+  meatValue,
 }) => {
   const [chartData, setChartData] = useState({});
   const [prop, setProp] = useState([]);
@@ -23,41 +25,47 @@ const HeatMapChart = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const meatParam = meatValue && meatValue !== '전체' ? meatValue : undefined;
         let response;
         if (meatState === '원육' && dataType === 'sensory') {
           response = await statisticSensoryFresh(
             startDate,
             endDate,
             animalType,
-            grade
+            grade,
+            meatParam
           );
         } else if (meatState === '처리육' && dataType === 'sensory') {
           response = await statisticSensoryProcessed(
             startDate,
             endDate,
             animalType,
-            grade
+            grade,
+            meatParam
           );
         } else if (meatState === '가열육' && dataType === 'sensory') {
           response = await statisticSensoryHeated(
             startDate,
             endDate,
             animalType,
-            grade
+            grade,
+            meatParam
           );
         } else if (meatState === '원육' && dataType === 'taste') {
           response = await statisticProbexptFresh(
             startDate,
             endDate,
             animalType,
-            grade
+            grade,
+            meatParam
           );
         } else if (meatState === '처리육' && dataType === 'taste') {
           response = await statisticProbexptProcessed(
             startDate,
             endDate,
             animalType,
-            grade
+            grade,
+            meatParam
           );
         } else {
           throw new Error('Invalid meat state or data type');
@@ -71,11 +79,19 @@ const HeatMapChart = ({
         setChartData(data);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Dummy data fallback for future API integration (MSI/RGB aware)
+        const labels = axisLabels[dataType][meatState] || {};
+        const dummy = Object.keys(labels).reduce((acc, key) => {
+          acc[key] = { values: Array.from({ length: 150 }, () => Number((Math.random() * 9 + 1).toFixed(2))) };
+          return acc;
+        }, {});
+        setProp(Object.keys(dummy));
+        setChartData(dummy);
       }
     };
 
     fetchData();
-  }, [startDate, endDate, animalType, grade, meatState, dataType]);
+  }, [startDate, endDate, animalType, grade, meatState, dataType, modality, meatValue]);
 
   const currentYAxis = axisLabels[dataType][meatState] || {};
 
@@ -88,7 +104,7 @@ const HeatMapChart = ({
   const ChartOption = {
     ...getHeatMapChartOption(ChartSeries, currentYAxis),
     title: {
-      text: `${meatState} ${dataType === 'sensory' ? '관능' : '맛'}데이터 범위별 분포(빈도수)`,
+      text: `[${modality}] ${meatState} ${dataType === 'sensory' ? '관능' : '예측'} 데이터 범위별 분포(빈도수)`,
     },
   };
 
