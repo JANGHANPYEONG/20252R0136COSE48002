@@ -8,7 +8,7 @@ import tempfile
 import shutil
 from typing import List, Optional
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from PIL import Image
 from sqlalchemy.orm import Session
 
