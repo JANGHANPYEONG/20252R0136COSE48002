@@ -1,7 +1,7 @@
 # model_runner.py
 from __future__ import annotations
 import os
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Union
 from settings import AWS_REGION
 from repo import MeatRecord
 
@@ -12,7 +12,7 @@ import boto3
 # 예: from my_pipeline import run_inference
 # run_inference(image_path="/path/..") -> Dict[str, Any]
 # run_inference(image_bytes=b"...")    -> Dict[str, Any]
-def run_inference(*, image_path: str | None = None, image_bytes: bytes | None = None) -> Dict[str, Any]:
+def run_inference(*, image_path: Union[str, None] = None, image_bytes: Union[bytes, None] = None) -> Dict[str, Any]:
     """
     여기를 '이미 존재하는 파이프라인 함수'로 연결하세요.
     이미지 경로 또는 바이트 중 하나만 주면 됩니다.
@@ -26,13 +26,13 @@ class ModelRunner:
     def __init__(self):
         self._s3 = boto3.client("s3", region_name=AWS_REGION)
 
-    def _load_from_eBS(self, path: str) -> Tuple[str, bytes | None]:
+    def _load_from_eBS(self, path: str) -> Tuple[str, Union[bytes, None]]:
         if not os.path.exists(path):
             raise FileNotFoundError(f"이미지 파일 없음: {path}")
         # 파이프라인이 파일 경로를 받는다면 bytes 불필요
         return path, None
 
-    def _load_from_s3(self, bucket: str, key: str) -> Tuple[str | None, bytes]:
+    def _load_from_s3(self, bucket: str, key: str) -> Tuple[Union[str, None], bytes]:
         obj = self._s3.get_object(Bucket=bucket, Key=key)
         return None, obj["Body"].read()
 

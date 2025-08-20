@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
+from typing import List, Union
 import os
 
 class Settings(BaseSettings):
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://127.0.0.1:6379/0"
 
     # 학습 스크립트 디렉토리
-    TRAINING_DIR: str | None = None
+    TRAINING_DIR: Union[str, None] = None
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
