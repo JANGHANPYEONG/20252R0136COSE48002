@@ -334,11 +334,11 @@ async def ingest_row_upload(
             xai_imagePath=None,
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
-            marbling=safe_float(meat.get("marbling")),           # 소문자로 변경
-            meat_color=safe_float(meat.get("meatColor")),        # 소문자로 변경
-            texture=safe_float(meat.get("texture")),             # 소문자로 변경
-            surface_moisture=safe_float(meat.get("surfaceMoisture")), # 소문자로 변경
-            total=safe_float(meat.get("total")),                 # 소문자로 변경
+            Marbling=safe_float(meat.get("marbling")),           # 실제 테이블 컬럼명 사용
+            Meat_Color=safe_float(meat.get("meatColor")),        # 실제 테이블 컬럼명 사용
+            Texture=safe_float(meat.get("texture")),             # 실제 테이블 컬럼명 사용
+            Surface_Moisture=safe_float(meat.get("surfaceMoisture")), # 실제 테이블 컬럼명 사용
+            Total=safe_float(meat.get("total")),                 # 실제 테이블 컬럼명 사용
         )
         db.add(hsi_sensory)
         print(f"[DEBUG] Added HSISensoryEval record: {uid}")
@@ -352,11 +352,11 @@ async def ingest_row_upload(
             xai_imagePath=None,
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
-            marbling=None,  # AI 예측 결과이므로 현재는 None (소문자로 변경)
-            meat_color=None,    # 소문자로 변경
-            texture=None,       # 소문자로 변경
-            surface_moisture=None, # 소문자로 변경
-            total=None,         # 소문자로 변경
+            Marbling=None,  # AI 예측 결과이므로 현재는 None (실제 테이블 컬럼명 사용)
+            Meat_Color=None,    # 실제 테이블 컬럼명 사용
+            Texture=None,       # 실제 테이블 컬럼명 사용
+            Surface_Moisture=None, # 실제 테이블 컬럼명 사용
+            Total=None,         # 실제 테이블 컬럼명 사용
         )
         db.add(ai_hsi_sensory)
         print(f"[DEBUG] Added AI_HSISensoryEval record: {uid}")
