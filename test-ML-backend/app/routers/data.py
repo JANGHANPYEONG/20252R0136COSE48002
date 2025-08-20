@@ -209,16 +209,17 @@ async def ingest_row_upload(
     representative_uri = to_uri(representative_name) if representative_name else None
     print(f"[DEBUG] Representative image: {representative_name} -> {representative_uri}")
 
-    # 파장 수집(이번 요청 범위에서) → spectral_index 매기기
+    # 파장 수집(이번 요청 범위에서) → 순서대로 spectral_index 할당
     wavelengths = []
     for filename in hsi_filenames:
-        m = re.search(r'_(\d{3,4})nm\.jpg$', filename, re.I)
+        m = re.search(r'_(\d{3,4})nm\.png$', filename, re.I)
         if m:
             wavelengths.append(int(m.group(1)))
     wavelengths = sorted(set(wavelengths))
     print(f"[DEBUG] Wavelengths found: {wavelengths}")
 
     def spectral_index_for_nm(nm: int) -> Optional[int]:
+        # 파장을 순서대로 spectral_index 할당 (0부터 시작)
         try:
             return wavelengths.index(nm)
         except ValueError:
@@ -297,7 +298,7 @@ async def ingest_row_upload(
         #   각 파장별 좌표와 s3 uri 저장
         bands_rows: List[HSIImagesBands] = []
         for filename in hsi_filenames:
-            m2 = re.search(r'_(\d{3,4})nm\.jpg$', filename, re.I)
+            m2 = re.search(r'_(\d{3,4})nm\.png$', filename, re.I)
             if not m2:
                 continue
             nm = int(m2.group(1))
