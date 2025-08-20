@@ -303,8 +303,8 @@ def save_cam_arrays(
     *,
     save_dir: str = "xai_outputs",
     basename: str = "gradcam",
-    save_heatmap: bool = True,
-    save_rgb: bool = True, # 첫 번째 채널 저장
+    save_heatmap: bool = False,
+    save_rgb: bool = False, # 첫 번째 채널 저장
     save_overlay: bool = True, # overlay 저장 
 ):
     """
