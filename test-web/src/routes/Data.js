@@ -31,12 +31,6 @@ const cards = [
         image: data_ANA,
         link: '/Stats',
     },
-    {
-        title: 'XAI',
-        subtitle: 'Explainable AI',
-        image: home_ML,
-        link: '/XAI',
-    },
 ];
 
 const Data = () => {

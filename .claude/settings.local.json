@@ -3,7 +3,10 @@
     "allow": [
       "Bash(copy:*)",
       "Bash(mkdir:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)"
     ],
     "defaultMode": "acceptEdits"
   }
