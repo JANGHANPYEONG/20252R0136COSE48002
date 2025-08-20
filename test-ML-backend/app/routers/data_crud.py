@@ -420,6 +420,24 @@ def delete_sensory_eval(
 # 테스트용 엔드포인트 (개발 완료 후 제거 가능. 실제 운영 데이터와 혼동될 수 있음.)
 # ============================================================================
 
+@router.get("/test/init-reference-data")
+def initialize_reference_data(db: Session = Depends(get_db)):
+    """참조 데이터 초기화 (sex_info, category_info, grade_info, status_info 등)"""
+    try:
+        # 기존 초기 데이터 로더를 재사용하여 중복 로직 방지
+        from app.db.db_model import load_initial_data
+        load_initial_data(db)
+        return {
+            "success": True,
+            "message": "Reference data initialized successfully"
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to initialize reference data: {str(e)}"
+        )
+
 @router.get("/test/create-sample")
 def create_sample_data(db: Session = Depends(get_db)):
     """테스트용 샘플 데이터 생성"""
