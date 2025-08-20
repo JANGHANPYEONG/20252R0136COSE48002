@@ -13,7 +13,7 @@ from PIL import Image
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.db_model import Meat, SensoryEval, HSIImagesBands, MeatImage
+from app.db.db_model import Meat, SensoryEval, HSIImagesBands
 from app.utils import safe_int, safe_float, safe_str, convert_to_datetime
 from app.core.config import settings
 
@@ -102,12 +102,23 @@ async def ingest_row_upload(
     파일명을 {hash}_{wavelength}.jpg / {hash}_rgb.jpg 로 표준화한 뒤
     S3의 /train_dataset/HSI/ 경로에 업로드 완료 후 DB(Meat / SensoryEval / MeatImage / HSIImagesBands)에 기록합니다.
     """
+    # 로깅 추가
+    print(f"[DEBUG] Received request:")
+    print(f"[DEBUG] payload: {payload}")
+    print(f"[DEBUG] images count: {len(images) if images else 0}")
+    print(f"[DEBUG] overwrite: {overwrite}")
+    if images:
+        for i, img in enumerate(images):
+            print(f"[DEBUG] image[{i}]: filename={img.filename}, content_type={img.content_type}, size={img.size if hasattr(img, 'size') else 'unknown'}")
+    
     # -------------------------------
     # 1) JSON 파싱 + 최소 검증
     # -------------------------------
     try:
         obj = json.loads(payload)
+        print(f"[DEBUG] Parsed JSON: {obj}")
     except json.JSONDecodeError as e:
+        print(f"[ERROR] JSON parse error: {e}")
         raise HTTPException(status_code=400, detail=f"payload JSON parse error: {e}")
 
     try:
@@ -122,16 +133,30 @@ async def ingest_row_upload(
         expected_count = safe_int(hsi_meta.get("expectedCount"))
         is_refrig_meta = _to_bool(hsi_meta.get("isRefrigerated"))
         edge_points = (meat.get("edgePoint") or {})
+        
+        print(f"[DEBUG] Extracted data:")
+        print(f"[DEBUG]   user_id: {user_id}")
+        print(f"[DEBUG]   row_id: {row_id}")
+        print(f"[DEBUG]   trace_num: {trace_num}")
+        print(f"[DEBUG]   sample_num: {sample_num}")
+        print(f"[DEBUG]   rgb_names: {rgb_names}")
+        print(f"[DEBUG]   hsi_names: {hsi_names}")
+        print(f"[DEBUG]   expected_count: {expected_count}")
+        print(f"[DEBUG]   edge_points: {edge_points}")
+        
     except KeyError as e:
+        print(f"[ERROR] Missing field: {e}")
         raise HTTPException(status_code=400, detail=f"missing field: {e}")
 
     if not images:
+        print(f"[ERROR] No images uploaded")
         raise HTTPException(status_code=400, detail="no images uploaded")
 
     # 선택: 기대 개수 검증 (정책에 맞게 강제/완화)
     if expected_count is not None and expected_count > 0:
         # RGB 1장(+), HSI expectedCount 장
         expected_total = expected_count + (1 if rgb_names else 0)
+        print(f"[DEBUG] Expected total images: {expected_total}, actual: {len(images)}")
         # 강제하고 싶으면 if len(images) != expected_total: raise ...
         # 지금은 경고만
         pass
@@ -140,12 +165,14 @@ async def ingest_row_upload(
     # 2) 해시 생성
     # -------------------------------
     uid = make_hash(trace_num, sample_num, length=20)
+    print(f"[DEBUG] Generated hash: {uid}")
 
     # -------------------------------
     # 3) 임시 디렉토리 준비
     # -------------------------------
     tmpdir = tempfile.mkdtemp(prefix="rowu_")
     saved_files: List[tuple[str, str]] = []  # (local_path, new_filename)
+    print(f"[DEBUG] Created temp dir: {tmpdir}")
 
     try:
         # -------------------------------
@@ -154,33 +181,41 @@ async def ingest_row_upload(
         for uf in images:
             orig_name = (uf.filename or "").strip()
             if not orig_name:
+                print(f"[ERROR] Empty filename for image")
                 raise HTTPException(status_code=400, detail="an image has empty filename")
 
+            print(f"[DEBUG] Processing image: {orig_name}")
             raw = await uf.read()
             jpg_bytes = _ensure_jpg(raw)
+            print(f"[DEBUG] Converted to JPEG, size: {len(jpg_bytes)} bytes")
 
             # RGB 판정: 파일명이 rgb 포함 or payload의 rgbImageName에 명시된 경우
             is_rgb = _looks_rgb(orig_name) or (orig_name.lower() in rgb_names)
             if is_rgb:
                 new_fname = f"{uid}_rgb.jpg"
+                print(f"[DEBUG] Detected as RGB image: {new_fname}")
             else:
                 # 파장 추출
                 m = WL_PAT.search(orig_name)
                 if not m:
+                    print(f"[ERROR] Cannot detect wavelength from filename: {orig_name}")
                     raise HTTPException(status_code=400, detail=f"cannot detect wavelength from filename: {orig_name}")
                 wl = f"{m.group(1)}nm".lower()
                 new_fname = f"{uid}_{wl}.jpg"
+                print(f"[DEBUG] Detected as HSI image: {new_fname}")
 
             out_path = f"{tmpdir}/{new_fname}"
             with open(out_path, "wb") as f:
                 f.write(jpg_bytes)
             saved_files.append((out_path, new_fname))
+            print(f"[DEBUG] Saved to: {out_path}")
 
         # -------------------------------
         # 5) S3 업로드 (디렉토리 전체 업로드 → 키는 파일명 기준)
         # -------------------------------
         # 고정된 S3 경로 사용: /train_dataset/HSI/
         s3_path = f"s3://{settings.S3_BUCKET_NAME}/train_dataset/HSI/"
+        print(f"[DEBUG] S3 upload path: {s3_path}")
         
         summary = upload_local_to_s3_prefix(
             local_path=tmpdir,
@@ -188,15 +223,18 @@ async def ingest_row_upload(
             overwrite=overwrite,
             workers=8,
         )
+        print(f"[DEBUG] S3 upload summary: {summary}")
 
         uploaded = summary.get("uploaded", 0)
         failed = summary.get("failed", 0)
         if failed > 0 or uploaded != len(saved_files):
+            print(f"[ERROR] S3 upload failed: uploaded={uploaded}, failed={failed}, expected={len(saved_files)}")
             raise HTTPException(status_code=502, detail={"msg": "s3 upload not complete", "summary": summary})
 
         # S3 info
         bucket = summary["bucket"]
         prefix = summary.get("prefix", "").rstrip("/")
+        print(f"[DEBUG] S3 bucket: {bucket}, prefix: {prefix}")
 
         # 파일별 S3 key/uri 만들기
         def to_key(name: str) -> str:
@@ -210,6 +248,7 @@ async def ingest_row_upload(
         first_hsi_name = next((n for _, n in saved_files if not n.endswith("_rgb.jpg")), None)
         representative_name = rgb_name or first_hsi_name
         representative_uri = to_uri(representative_name) if representative_name else None
+        print(f"[DEBUG] Representative image: {representative_name} -> {representative_uri}")
 
         # 파장 수집(이번 요청 범위에서) → spectral_index 매기기
         wavelengths = []
@@ -220,6 +259,7 @@ async def ingest_row_upload(
             if m:
                 wavelengths.append(int(m.group(1)))
         wavelengths = sorted(set(wavelengths))
+        print(f"[DEBUG] Wavelengths found: {wavelengths}")
 
         def spectral_index_for_nm(nm: int) -> Optional[int]:
             try:
@@ -236,11 +276,14 @@ async def ingest_row_upload(
             except Exception:
                 period = None
         is_refrig = is_refrig_meta if is_refrig_meta is not None else (True if (period and period > 1) else False)
+        print(f"[DEBUG] Period: {period}, is_refrig: {is_refrig}")
 
         # -------------------------------
         # 6) DB upsert/insert (트랜잭션)
         # -------------------------------
         try:
+            print(f"[DEBUG] Starting database operations...")
+            
             # ── Meat upsert ───────────────────────────────────────────
             meat_row = db.query(Meat).filter(Meat.id == uid).one_or_none()
             if meat_row is None:
@@ -260,11 +303,13 @@ async def ingest_row_upload(
                     imagePath=None,
                 )
                 db.add(meat_row)
+                print(f"[DEBUG] Created new Meat record: {uid}")
             else:
                 meat_row.gradeNum = safe_str(meat.get("gradeNum"))
                 meat_row.updatedAt = convert_to_datetime(None, 1)
                 if representative_uri:
                     meat_row.imagePath = representative_uri   # ✅ 갱신
+                print(f"[DEBUG] Updated existing Meat record: {uid}")
 
             # ── SensoryEval insert ───────────────────────────────────
             meat_sensory = SensoryEval(
@@ -286,6 +331,7 @@ async def ingest_row_upload(
                 expireYmd=convert_to_datetime(meat.get("expirationDate"), 2),
             )
             db.add(meat_sensory)
+            print(f"[DEBUG] Added SensoryEval record: {uid}")
 
             # ── MeatImage rows ───────────────────────────────────────
             image_rows: List[MeatImage] = []
@@ -306,6 +352,7 @@ async def ingest_row_upload(
                         filename=fname,                 # 원파일명(리네임된)
                     )
                 )
+            print(f"[DEBUG] Created {len(image_rows)} MeatImage records")
 
             # ── HSIImagesBands rows ─────────────────────────────────
             #   RGB는 제외, 각 파장별 좌표와 s3 uri 저장
@@ -339,18 +386,21 @@ async def ingest_row_upload(
                         bottomRight=br,
                     )
                 )
+            print(f"[DEBUG] Created {len(bands_rows)} HSIImagesBands records")
 
             db.add_all(image_rows + bands_rows)
             db.commit()
+            print(f"[DEBUG] Database commit successful")
 
         except Exception as e:
+            print(f"[ERROR] Database error: {e}")
             db.rollback()
             raise HTTPException(status_code=500, detail=f"db error: {e}")
 
         # -------------------------------
         # 7) 정상 응답
         # -------------------------------
-        return {
+        result = {
             "ok": True,
             "hash": uid,
             "userId": user_id,
@@ -362,50 +412,15 @@ async def ingest_row_upload(
             "imagePath": representative_uri,  # ✅ 대표 이미지 경로
             "uploadSummary": summary,
         }
+        print(f"[DEBUG] Returning success response: {result}")
+        return result
 
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[ERROR] Processing error: {e}")
         raise HTTPException(status_code=500, detail=f"processing error: {e}")
     finally:
         # 임시 디렉토리 정리
-        shutil.rmtree(tmpdir, ignore_errors=True) 
-"""
-{
-  "userId": "deeplant@example.com",
-  "rowId": "sheet1-42",            // 선택: 행 식별자(시트명-행번호 등). 중복 방지/추적용
-  "meat": {
-    "traceNum": "140119100857",  // 이력번호
-    "sampleNum": "S1",  // 샘플번호
-    "gradeNum": "X", // 등급
-    "isDeepAging": "No",  // 딥에이징
-    "butcheryDate": "2025-08-01",
-    "manufactureDate": "2025-07-01",  // 제조(가공)일자
-    "picturedDate": "2025-08-19",  // 촬영일자
-    "period": "Day7", // 기간
-    "expirationDate": "2025-08-26",  // 소비기한
-    "marbling": 7,
-    "meatColor": 6,
-    "texture": 5,
-    "surfaceMoisture": 4,
-    "total": 6,
-    "edgePoint": {
-      "TL (430nm)": (1992, 941),
-      "TR (430nm)": (2644, 941),
-      "BL (430nm)": (2644, 1798),
-      "BR (430nm)": (1992, 1798),
-      "TL (450nm)": (1992, 941),
-      "TR (450nm)": (2644, 941),
-      "BL (450nm)": (2644, 1798),
-      "BR (450nm)": (1992, 1798),
-    },
-    "hsi": {
-      "wavelengthFromFilename": true,            // 예: *_430nm.jpg, *_450nm.png 등
-      "expectedCount": 9  // 기대 파장 수 (= 이미지 수)
-    },
-    "rgbImageName": ["trace001_rgb.jpg"],
-    "hsiImageName": ["trace001_430nm.jpg", "trace001_450nm.jpg"]
-  }
-}
-"""
-
+        shutil.rmtree(tmpdir, ignore_errors=True)
+        print(f"[DEBUG] Cleaned up temp dir: {tmpdir}")
