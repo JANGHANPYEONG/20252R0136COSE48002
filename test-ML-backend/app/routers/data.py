@@ -1,17 +1,17 @@
 # app/routers/data_upload.py
 from __future__ import annotations
 
-import json
 import re
 from typing import List, Optional
 
-from fastapi import APIRouter, Form, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
 import boto3
 from botocore.config import Config
 
 from app.db.database import get_db
 from app.db.db_model import Meat, SensoryEval, HSIImagesBands, HSISensoryEval, AI_HSISensoryEval, AI_SensoryEval
+from app.schemas.meat import DataUploadRequest
 from app.utils import safe_int, safe_float, safe_str, convert_to_datetime
 from app.core.config import settings
 
@@ -119,7 +119,7 @@ def _pack_xy(pt):
 @router.post("/ingest/row-upload")
 async def ingest_row_upload(
     request: Request,
-    payload: dict,  # JSON으로 직접 받기
+    payload: DataUploadRequest,  # Pydantic 모델 사용
     overwrite: bool = False,  # 기본값 False
     db: Session = Depends(get_db),
 ):
@@ -132,39 +132,35 @@ async def ingest_row_upload(
     print(f"[DEBUG] payload: {payload}")
     print(f"[DEBUG] overwrite: {overwrite}")
     
-    # Request body 전체 로깅
-    print(f"[DEBUG] Request content type: {request.headers.get('content-type')}")
-    print(f"[DEBUG] Request headers: {dict(request.headers)}")
-    
     # -------------------------------
-    # 1) 데이터 검증 (이미 dict로 받음)
+    # 1) 데이터 검증 (Pydantic 모델로 받음)
     # -------------------------------
-    obj = payload  # 이미 dict로 받았으므로 파싱 불필요
+    obj = payload  # Pydantic 모델
     print(f"[DEBUG] Received payload: {obj}")
 
     try:
-        user_id = safe_str(obj.get("userId"))  # 루트
-        row_id = safe_str(obj.get("rowId"))    # 선택
-        meat = obj["meat"]
+        user_id = safe_str(obj.userId)  # 루트
+        row_id = safe_str(obj.rowId)    # 선택
+        meat = obj.meat
         
         # 프론트엔드에서 생성한 ID를 받음
-        uid = safe_str(obj.get("id"))  # 프론트엔드에서 생성한 해시 ID
+        uid = safe_str(obj.id)  # 프론트엔드에서 생성한 해시 ID
         if not uid:
             raise HTTPException(status_code=400, detail="missing field: id")
         
-        trace_num = safe_str(meat["traceNum"])
-        sample_num = safe_str(meat["sampleNum"])
-        seqno = safe_int(meat.get("seqno", 1))  # 가공 횟수, 기본값 1
+        trace_num = safe_str(meat.traceNum)
+        sample_num = safe_str(meat.sampleNum)
+        seqno = safe_int(meat.seqno)  # 가공 횟수, 기본값 1
         
         # 프론트엔드에서 S3 업로드 완료한 filename들을 받음
-        hsi_filenames = obj.get("hsiFilenames", [])  # S3에 업로드된 HSI 파일명들
+        hsi_filenames = obj.hsiFilenames  # S3에 업로드된 HSI 파일명들
         if not hsi_filenames:
             raise HTTPException(status_code=400, detail="missing field: hsiFilenames")
         
-        hsi_meta = meat.get("hsi") or {}
-        expected_count = safe_int(hsi_meta.get("expectedCount"))
-        is_refrig_meta = _to_bool(hsi_meta.get("isRefrigerated"))
-        edge_points = (meat.get("edgePoint") or {})
+        hsi_meta = meat.hsi
+        expected_count = safe_int(hsi_meta.expectedCount if hsi_meta else None)
+        is_refrig_meta = _to_bool(hsi_meta.isRefrigerated if hsi_meta else None)
+        edge_points = (meat.edgePoint or {})
         
         print(f"[DEBUG] Extracted data:")
         print(f"[DEBUG]   user_id: {user_id}")
@@ -223,10 +219,10 @@ async def ingest_row_upload(
 
     # 냉장여부: 메타 우선, 없으면 period 기반 추정(예시)
     period = None
-    if meat.get("period"):
+    if meat.period:
         try:
             # "Day7" → 7
-            period = safe_int(str(meat.get("period")).strip().lower().replace("day", ""))
+            period = safe_int(str(meat.period).strip().lower().replace("day", ""))
         except Exception:
             period = None
     is_refrig = is_refrig_meta if is_refrig_meta is not None else (True if (period and period > 1) else False)
@@ -245,21 +241,21 @@ async def ingest_row_upload(
                 id=uid,
                 userId=user_id,
                 categoryId=None,
-                gradeNum=safe_str(meat.get("gradeNum")),
+                gradeNum=safe_str(meat.gradeNum),
                 statusType=None,
                 createdAt=convert_to_datetime(None, 1),   # util에 맞게 현재시간
                 updatedAt=convert_to_datetime(None, 1),
                 traceNum=trace_num,
                 farmAddr=None,
                 farmerName=None,
-                butcheryYmd=convert_to_datetime(meat.get("butcheryDate"), 2),
+                butcheryYmd=convert_to_datetime(meat.butcheryDate, 2),
                 birthYmd=None,
                 imagePath=None,
             )
             db.add(meat_row)
             print(f"[DEBUG] Created new Meat record: {uid}")
         else:
-            meat_row.gradeNum = safe_str(meat.get("gradeNum"))
+            meat_row.gradeNum = safe_str(meat.gradeNum)
             meat_row.updatedAt = convert_to_datetime(None, 1)
             if representative_uri:
                 meat_row.imagePath = representative_uri   # ✅ 갱신
@@ -273,16 +269,16 @@ async def ingest_row_upload(
             createdAt=convert_to_datetime(None, 1),
             userId=user_id,
             period=period,
-            filmedAt=convert_to_datetime(meat.get("picturedDate"), 2),
+            filmedAt=convert_to_datetime(meat.picturedDate, 2),
             imagePath=None,  # HSI 이미지이므로 None
             weight_kg=None,
-            marbling=safe_float(meat.get("marbling")),
-            color=safe_float(meat.get("meatColor")),
-            texture=safe_float(meat.get("texture")),
-            surfaceMoisture=safe_float(meat.get("surfaceMoisture")),
-            overall=safe_float(meat.get("total")),
-            manufactureYmd=convert_to_datetime(meat.get("manufactureDate"), 2),
-            expireYmd=convert_to_datetime(meat.get("expirationDate"), 2),
+            marbling=safe_float(meat.marbling),
+            color=safe_float(meat.meatColor),
+            texture=safe_float(meat.texture),
+            surfaceMoisture=safe_float(meat.surfaceMoisture),
+            overall=safe_float(meat.total),
+            manufactureYmd=convert_to_datetime(meat.manufactureDate, 2),
+            expireYmd=convert_to_datetime(meat.expirationDate, 2),
         )
         db.add(meat_sensory)
         print(f"[DEBUG] Added SensoryEval record: {uid}")
@@ -330,11 +326,11 @@ async def ingest_row_upload(
             xai_imagePath=None,
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
-            marbling=safe_float(meat.get("marbling")),           # 소문자 컬럼명 사용
-            color=safe_float(meat.get("meatColor")),             # 소문자 컬럼명 사용
-            texture=safe_float(meat.get("texture")),             # 소문자 컬럼명 사용
-            surfaceMoisture=safe_float(meat.get("surfaceMoisture")), # 소문자 컬럼명 사용
-            overall=safe_float(meat.get("total")),               # 소문자 컬럼명 사용
+            marbling=safe_float(meat.marbling),           # 소문자 컬럼명 사용
+            color=safe_float(meat.meatColor),             # 소문자 컬럼명 사용
+            texture=safe_float(meat.texture),             # 소문자 컬럼명 사용
+            surfaceMoisture=safe_float(meat.surfaceMoisture), # 소문자 컬럼명 사용
+            overall=safe_float(meat.total),               # 소문자 컬럼명 사용
         )
         db.add(hsi_sensory)
         print(f"[DEBUG] Added HSISensoryEval record: {uid}")

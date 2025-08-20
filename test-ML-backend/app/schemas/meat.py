@@ -102,3 +102,35 @@ class MeatQuery(BaseModel):
     createdAt: Optional[str] = None
     statusType: Optional[str] = None
     company: Optional[str] = None
+
+class HSIMeta(BaseModel):
+    """HSI 메타데이터 스키마"""
+    expectedCount: Optional[int] = None
+    isRefrigerated: Optional[bool] = None
+
+class MeatDataUpload(BaseModel):
+    """육류 데이터 업로드 스키마"""
+    traceNum: str
+    sampleNum: str
+    seqno: Optional[int] = 1
+    gradeNum: Optional[str] = None
+    butcheryDate: Optional[str] = None
+    picturedDate: Optional[str] = None
+    manufactureDate: Optional[str] = None
+    expirationDate: Optional[str] = None
+    period: Optional[str] = None
+    marbling: Optional[float] = None
+    meatColor: Optional[float] = None
+    texture: Optional[float] = None
+    surfaceMoisture: Optional[float] = None
+    total: Optional[float] = None
+    hsi: Optional[HSIMeta] = None
+    edgePoint: Optional[Dict[str, Any]] = None
+
+class DataUploadRequest(BaseModel):
+    """데이터 업로드 요청 스키마"""
+    userId: str
+    rowId: str
+    id: str
+    meat: MeatDataUpload
+    hsiFilenames: list[str]
