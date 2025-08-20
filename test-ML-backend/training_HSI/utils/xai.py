@@ -186,6 +186,20 @@ def generate_cam_arrays(
         "task": task
     }
 
+def _make_rgb_from_cube(cube_hwc):
+    C = cube_hwc.shape[-1]
+    if C >= 3:
+        rgb = cube_hwc[..., :3]
+    else:
+        # 1밴드 → gray 3채널, 2밴드 → 마지막 채널 복제
+        if C == 1:
+            rgb = np.repeat(cube_hwc, 3, axis=-1)
+        else:  # C==2
+            rgb = np.concatenate([cube_hwc, cube_hwc[..., -1:]], axis=-1)
+    # 정규화
+    rgb = (rgb - rgb.min()) / (rgb.max() - rgb.min() + 1e-6)
+    return (rgb * 255).astype(np.uint8)
+
 def save_cam_arrays(
     cam: np.ndarray,                   # (H, W) float32 [0,1]
     rgb: Optional[np.ndarray] = None,  # (H, W, 3) uint8, RGB
@@ -195,7 +209,8 @@ def save_cam_arrays(
     basename: str = "gradcam",
     save_heatmap: bool = True,
     save_rgb: bool = False, # 원본 저장
-    save_overlay: bool = False, # overlay 저장 
+    save_overlay: bool = True, # overlay 저장 
+    cube_hwc=None 
 ):
     """
     CAM / 원본 / Overlay를 파일로 저장합니다.
@@ -206,21 +221,35 @@ def save_cam_arrays(
     paths = {"heatmap": None, "rgb": None, "overlay": None}
 
     # CAM 히트맵 저장
+    # Heatmap 저장
     if save_heatmap:
-        cam_u8 = (np.clip(cam, 0, 1) * 255).astype(np.uint8)
-        cam_color = cv2.applyColorMap(cam_u8, cv2.COLORMAP_JET)  # BGR
         p = os.path.join(save_dir, f"{basename}_heatmap.png")
-        cv2.imwrite(p, cam_color)
+        hm = (cam * 255).astype(np.uint8)
+
+        hm_color = cv2.applyColorMap(hm, cv2.COLORMAP_JET)
+
+        if cube_hwc is not None:
+            rgb = _make_rgb_from_cube(cube_hwc)
+            hm_color = cv2.resize(hm_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite(p, hm_color)
         paths["heatmap"] = p
 
     # RGB 저장 (옵션)
-    if save_rgb and rgb is not None:
+    if save_rgb and cube_hwc is not None:
+        rgb = _make_rgb_from_cube(cube_hwc)
         p = os.path.join(save_dir, f"{basename}_rgb.png")
         cv2.imwrite(p, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
         paths["rgb"] = p
 
     # Overlay 저장 (옵션)
-    if save_overlay and overlay is not None:
+    if save_overlay and cube_hwc is not None:
+        rgb = _make_rgb_from_cube(cube_hwc)
+        heatmap_color = cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        
+        if heatmap_color.shape[:2] != rgb.shape[:2]:
+            heatmap_color = cv2.resize(heatmap_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+        overlay = cv2.addWeighted(rgb, 0.6, heatmap_color, 0.4, 0)
         p = os.path.join(save_dir, f"{basename}_overlay.png")
         cv2.imwrite(p, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
         paths["overlay"] = p
@@ -358,7 +387,7 @@ def _rollout_grad_attn(attns, grads, add_residual=True, eps=1e-6):
     return R[:, 0]  # (B, N)
 
 @torch.enable_grad()
-def generate_attention_arrays_from_lastyear(
+def generate_attention_arrays(
     model: nn.Module,
     image_tensor_bchw: torch.Tensor,   # (1,C,H,W)
     outputs,                           # fresh forward 할 것이므로 형식 무관
@@ -418,7 +447,7 @@ def generate_attention_arrays_from_lastyear(
         if N_img == 0:  # 엣지 케이스 방지
             cam = torch.ones((1,1,H,W), device=device)[0,0].detach().cpu().numpy().astype(np.float32)
             return {"cam": cam, "target_index": int(target_index),
-                    "layer": "attn-rollout(lastyear)", "task": task}
+                    "layer": "attn-rollout", "task": task}
         side = int(round(np.sqrt(float(N_img))))
         Hp, Wp = side, int(np.ceil(N_img / max(side, 1)))
         img_tokens = img_tokens[:Hp*Wp]
@@ -433,7 +462,7 @@ def generate_attention_arrays_from_lastyear(
         cam = cam.detach().cpu().numpy().astype(np.float32)
 
         return {"cam": cam, "target_index": int(target_index),
-                "layer": "attn-rollout(lastyear)", "task": task}
+                "layer": "attn-rollout", "task": task}
     finally:
         for h in hooks:
             h.remove()
