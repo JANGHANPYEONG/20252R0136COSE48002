@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import APIRouter, HTTPException, Depends
@@ -447,11 +447,16 @@ def create_sample_data(db: Session = Depends(get_db)):
         meat = db.query(Meat).filter(Meat.id == meat_id).first()
         
         if not meat:
+            # category_info에 존재하는 유효한 카테고리 ID를 선택 (가장 작은 ID 사용)
+            from app.db.db_model import CategoryInfo
+            category = db.query(CategoryInfo).order_by(CategoryInfo.id.asc()).first()
+            category_id = category.id if category else 0
+            
             meat = Meat(
                 id=meat_id,
                 userId="deeplant@example.com",
                 sexType=1,
-                categoryId=1,
+                categoryId=category_id,
                 gradeNum=2,
                 statusType=0,
                 createdAt=datetime.now(timezone.utc),
@@ -504,7 +509,9 @@ def create_sample_data(db: Session = Depends(get_db)):
                 color=4.0,
                 texture=3.2,
                 surfaceMoisture=1.5,
-                overall=3.8
+                overall=3.8,
+                manufactureYmd=datetime.now(timezone.utc),
+                expireYmd=datetime.now(timezone.utc) + timedelta(days=7)
             )
             db.add(sensory_eval)
             db.commit()

@@ -209,16 +209,17 @@ async def ingest_row_upload(
     representative_uri = to_uri(representative_name) if representative_name else None
     print(f"[DEBUG] Representative image: {representative_name} -> {representative_uri}")
 
-    # 파장 수집(이번 요청 범위에서) → spectral_index 매기기
+    # 파장 수집(이번 요청 범위에서) → 순서대로 spectral_index 할당
     wavelengths = []
     for filename in hsi_filenames:
-        m = re.search(r'_(\d{3,4})nm\.jpg$', filename, re.I)
+        m = re.search(r'_(\d{3,4})nm\.png$', filename, re.I)
         if m:
             wavelengths.append(int(m.group(1)))
     wavelengths = sorted(set(wavelengths))
     print(f"[DEBUG] Wavelengths found: {wavelengths}")
 
     def spectral_index_for_nm(nm: int) -> Optional[int]:
+        # 파장을 순서대로 spectral_index 할당 (0부터 시작)
         try:
             return wavelengths.index(nm)
         except ValueError:
@@ -297,7 +298,7 @@ async def ingest_row_upload(
         #   각 파장별 좌표와 s3 uri 저장
         bands_rows: List[HSIImagesBands] = []
         for filename in hsi_filenames:
-            m2 = re.search(r'_(\d{3,4})nm\.jpg$', filename, re.I)
+            m2 = re.search(r'_(\d{3,4})nm\.png$', filename, re.I)
             if not m2:
                 continue
             nm = int(m2.group(1))
@@ -333,11 +334,11 @@ async def ingest_row_upload(
             xai_imagePath=None,
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
-            Marbling=safe_float(meat.get("marbling")),
-            Meat_Color=safe_float(meat.get("meatColor")),
-            Texture=safe_float(meat.get("texture")),
-            Surface_Moisture=safe_float(meat.get("surfaceMoisture")),
-            Total=safe_float(meat.get("total")),
+            marbling=safe_float(meat.get("marbling")),           # 소문자 컬럼명 사용
+            color=safe_float(meat.get("meatColor")),             # 소문자 컬럼명 사용
+            texture=safe_float(meat.get("texture")),             # 소문자 컬럼명 사용
+            surfaceMoisture=safe_float(meat.get("surfaceMoisture")), # 소문자 컬럼명 사용
+            overall=safe_float(meat.get("total")),               # 소문자 컬럼명 사용
         )
         db.add(hsi_sensory)
         print(f"[DEBUG] Added HSISensoryEval record: {uid}")
@@ -351,11 +352,11 @@ async def ingest_row_upload(
             xai_imagePath=None,
             xai_gradeNum=None,
             xai_gradeNum_imagePath=None,
-            Marbling=None,  # AI 예측 결과이므로 현재는 None
-            Meat_Color=None,
-            Texture=None,
-            Surface_Moisture=None,
-            Total=None,
+            marbling=None,  # AI 예측 결과이므로 현재는 None (소문자 컬럼명 사용)
+            color=None,         # 소문자 컬럼명 사용
+            texture=None,       # 소문자 컬럼명 사용
+            surfaceMoisture=None, # 소문자 컬럼명 사용
+            overall=None,       # 소문자 컬럼명 사용
         )
         db.add(ai_hsi_sensory)
         print(f"[DEBUG] Added AI_HSISensoryEval record: {uid}")
