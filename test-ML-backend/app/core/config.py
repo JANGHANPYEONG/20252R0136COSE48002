@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseSettings
 from typing import List
 import os
 
@@ -82,5 +81,8 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     FIREBASE_BUCKET_ADDRESS: str
+    
+    # Firebase 설정
+    FIREBASE_CREDENTIALS: str
 
 settings = Settings()

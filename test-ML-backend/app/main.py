@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data, data_crud, xai
+from app.routers import train, predict, meat, user, statistic_api, data, data_crud, xai, hsi_predict, hsi_train
 from app.core.config import settings
 
 # 미들웨어 임포트
@@ -12,7 +12,7 @@ from app.middleware.performance import PerformanceMonitoringMiddleware, Resource
 from app.core.firebase import init_firebase                
 from app.core.security import verify_firebase_token        
 from app.api.routers.auth import router as auth_router         
-
+from app.db.database import SessionLocal
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
@@ -56,13 +56,17 @@ app.add_middleware(
     allow_headers=settings.ALLOWED_HEADERS,
 )
 
+# 로그인용 라우터 등록
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 # ✅ Firebase Admin 초기화 (앱 기동 시 1회)
 @app.on_event("startup")
 def _startup():
     init_firebase()
+    app.state.db_session = SessionLocal()
 
 # 라우터 등록
 app.include_router(train.router, prefix="/train", tags=["training"])  # Celery 구성 필요
+app.include_router(hsi_train.router, prefix="/hsi-train", tags=["HSI training"])  # HSI 학습 API
 app.include_router(predict.router, prefix="/predict", tags=["prediction"])
 app.include_router(meat.router, prefix="/meat", tags=["meat"])  # 육류 데이터 관리
 app.include_router(user.router, prefix="/user", tags=["user"])  # 사용자 관리
@@ -70,6 +74,7 @@ app.include_router(statistic_api.router, prefix="/statistic", tags=["statistic"]
 app.include_router(data.router, prefix="/data", tags=["data"])  # 데이터 관련 API
 app.include_router(data_crud.router, prefix="/data", tags=["data-crud"])  # 데이터 수정/삭제 API
 app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI 관련 API
+app.include_router(hsi_predict.router, prefix="/hsipredict", tags=["HSI prediction"])  # HSI 예측 API
 # app.include_router(training_stream.router, prefix="/train-stream", tags=["training-stream"])  # 스트리밍 학습 API 추가
 
 #  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장

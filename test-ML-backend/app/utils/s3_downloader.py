@@ -6,7 +6,7 @@
 
 - 명령어 형식 :
 python s3_downloader.py --s3 (s3 위치) --to (다운로드 받을 경로)
-ex) python app\utils\s3_downloader.py --s3 s3://test-deeplant-bucket/train_dataset/HSI/s32 --to C:\temp\verify_hsi
+ex) python app/utils/s3_downloader.py --s3 s3://test-deeplant-bucket/train_dataset/HSI/s32 --to C:/temp/verify_hsi
 """
 
 from __future__ import annotations

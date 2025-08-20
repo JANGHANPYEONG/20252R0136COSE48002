@@ -624,11 +624,11 @@ class HSISensoryEval(Base):
     xai_imagePath = Column(String(255))
     xai_gradeNum = Column(Integer)
     xai_gradeNum_imagePath = Column(String(255))
-    marbling = Column(Float)
-    color = Column(Float)
-    texture = Column(Float)
-    surfaceMoisture = Column(Float)
-    overall = Column(Float)
+    Marbling = Column(Float)
+    Meat_Color = Column(Float)
+    Texture = Column(Float)
+    Surface_Moisture = Column(Float)
+    Total = Column(Float)
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint([
@@ -672,11 +672,11 @@ class AI_HSISensoryEval(Base):
     xai_imagePath = Column(String(255))
     xai_gradeNum = Column(Integer)
     xai_gradeNum_imagePath = Column(String(255))
-    marbling = Column(Float)
-    color = Column(Float)
-    texture = Column(Float)
-    surfaceMoisture = Column(Float)
-    overall = Column(Float)
+    Marbling = Column(Float)
+    Meat_Color = Column(Float)
+    Texture = Column(Float)
+    Surface_Moisture = Column(Float)
+    Total = Column(Float)
     __table_args__ = (
         PrimaryKeyConstraint("id", "seqno", "isRefrigerated"),
         ForeignKeyConstraint([
