@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import APIRouter, HTTPException, Depends
@@ -509,7 +509,9 @@ def create_sample_data(db: Session = Depends(get_db)):
                 color=4.0,
                 texture=3.2,
                 surfaceMoisture=1.5,
-                overall=3.8
+                overall=3.8,
+                manufactureYmd=datetime.now(timezone.utc),
+                expireYmd=datetime.now(timezone.utc) + timedelta(days=7)
             )
             db.add(sensory_eval)
             db.commit()
