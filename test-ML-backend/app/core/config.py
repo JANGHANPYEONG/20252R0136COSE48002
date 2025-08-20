@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     ALLOW_AUTO_PROVISION: bool = False
     ADMIN_WHITELIST: str = ""
     
+    # Celery / Redis 설정
+    REDIS_URL: str = "redis://127.0.0.1:6379/0"
+
+    # 학습 스크립트 디렉토리
+    TRAINING_DIR: str | None = None
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # 환경별 CORS 설정 자동 구성
@@ -55,6 +61,12 @@ class Settings(BaseSettings):
         else:
             # 테스트 환경 등
             self.ALLOWED_ORIGINS = ["http://localhost:3000"]
+        
+        # TRAINING_DIR 기본값 설정 (프로젝트 루트의 training_HSI 폴더)
+        if not self.TRAINING_DIR:
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+            default_training_dir = os.path.join(base_dir, "training_HSI")
+            self.TRAINING_DIR = os.path.normpath(default_training_dir)
     
     # ML 모델 설정
     MODEL_SAVE_PATH: str = "/models"
