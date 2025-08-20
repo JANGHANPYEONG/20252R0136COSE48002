@@ -35,6 +35,7 @@ from .error_handlers import (
 from .ml_utils import *
 from .opencv_utils import *
 from .segmentation import *
+from .utils import calId
 
 # 하위 호환성을 위한 별칭
 species = SPECIES
@@ -74,7 +75,8 @@ __all__ = [
     
     # 하위 호환성
     'species', 'cattleLarge', 'pigLarge', 'cattleSmall', 'pigSmall',
-    'default_user_id', 'default_user_type', 'convert2datetime'
+    'default_user_id', 'default_user_type', 'convert2datetime',
+    'calId'
 ]
 
 
