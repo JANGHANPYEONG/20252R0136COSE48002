@@ -4,7 +4,10 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
+import ImageUploadProgress from '../components/ImageUploadProgress';
 import uploadFiles from '../API/add/uploadToS3'; // 통합 업로드 API import
+import { saveJsonToResult } from '../API/add/saveJsonToResult'; // JSON 저장 API import
+import { uploadIndividualImages } from '../API/add/uploadIndividualImages'; // 개별 이미지 업로드 API import
 
 const navy = '#0F3659';
 
@@ -18,6 +21,15 @@ const DataRegister = () => {
   const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 또는 폴더 상태 추가
   const [uploadedExcelFile, setUploadedExcelFile] = useState(null); // 엑셀 파일 상태 추가
   const [dataFormat, setDataFormat] = useState('HSI'); // 데이터 형식 상태 (기본값: HSI)
+  
+  // 이미지 업로드 진행 상황 상태
+  const [uploadProgress, setUploadProgress] = useState({
+    show: false,
+    current: 0,
+    total: 0,
+    fileName: '',
+    stage: 'processing'
+  });
 
   const fileInputRef = useRef(null);
 
@@ -93,60 +105,105 @@ const DataRegister = () => {
     try {
       // 1. 데이터 존재 여부 확인
       if (!data || data.length === 0) {
-        alert('업로드할 데이터가 없습니다. 먼저 CSV 파일을 업로드해주세요.');
+        alert('업로드할 데이터가 없습니다. 먼저 XLSX 파일을 업로드해주세요.');
         return;
       }
 
-      // 2. 이미지 파일 존재 여부 확인 (로컬 모드가 아닐 때만)
-      const localMode = true; // 서버 연결 안됨 - 임시로 로컬 저장
-      
-      if (!localMode) {
-        if (!uploadedZipFile) {
-          alert('이미지 파일이 업로드되지 않았습니다. 먼저 ZIP 파일 또는 폴더를 업로드해주세요.');
-          return;
-        }
-
-        // ZIP 파일 형태인지 확인
-        if (!(uploadedZipFile instanceof File)) {
-          alert('업로드된 이미지가 올바른 형식이 아닙니다. 다시 업로드해주세요.');
-          return;
-        }
-      }
-
-      // 3. 매핑 상태 확인 (로컬 모드가 아닐 때만)
-      if (!localMode) {
-        const unmappedData = data.filter(row => 
-          row['매핑 상태'] === '매핑안됨' || 
-          !row['매핑 상태'] || 
-          row['매핑 상태'] === ''
-        );
-
-        if (unmappedData.length > 0) {
-          alert(`매핑되지 않은 데이터가 ${unmappedData.length}개 있습니다.\n모든 데이터를 매핑한 후 다시 시도해주세요.`);
-          return;
-        }
+      // 2. 엑셀 파일 존재 여부 확인
+      if (!uploadedExcelFile) {
+        alert('엑셀 파일이 업로드되지 않았습니다. 먼저 XLSX 파일을 업로드해주세요.');
+        return;
       }
 
       setLoading(true);
       
-      // 4. 설정에 따른 파일 업로드 (임시로 로컬 모드 사용)
-      const result = await uploadFiles(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile, localMode);
-      
-      if (result.success) {
-        // 성공 시 상세 정보와 함께 알림
-        const successDetails = result.data 
-          ? `\n- 데이터 ${result.data.dataCount || 0}건 등록\n- CSV: ${result.data.csvPath || 'N/A'}\n- 이미지: ${result.data.imagePath || 'N/A'}`
-          : '';
+      try {
+        // 3. JSON 파일들 생성 및 저장 (로컬 모드)
+        console.log('JSON 파일 생성 및 저장 시작...');
+        const jsonResult = await saveJsonToResult(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile);
         
-        alert(`데이터 등록이 성공적으로 완료되었습니다!${successDetails}`);
+        if (!jsonResult.success) {
+          throw new Error(`JSON 저장 실패: ${jsonResult.message}`);
+        }
+        
+        console.log('JSON 저장 완료:', jsonResult);
+
+        // 4. 개별 이미지 업로드 (ZIP 파일이 있는 경우에만)
+        let imageResult = null;
+        if (uploadedZipFile) {
+          console.log('개별 이미지 업로드 시작...');
+          
+          // 이력번호 추출 (첫 번째 데이터에서)
+          const traceNum = data.length > 0 ? String(data[0]['이력번호'] || '').trim() : 'unknown';
+          
+          // 진행 상황 콜백 함수
+          const progressCallback = (progress) => {
+            console.log(`이미지 업로드 진행: ${progress.current}/${progress.total} - ${progress.fileName || ''}`);
+            setUploadProgress({
+              show: true,
+              current: progress.current,
+              total: progress.total,
+              fileName: progress.fileName || '',
+              stage: progress.stage || 'processing'
+            });
+          };
+          
+          // 진행 상황 표시 시작
+          setUploadProgress({
+            show: true,
+            current: 0,
+            total: 1,
+            fileName: '이미지 업로드 준비 중...',
+            stage: 'processing'
+          });
+          
+          try {
+            imageResult = await uploadIndividualImages(uploadedZipFile, traceNum, progressCallback);
+            console.log('이미지 업로드 완료:', imageResult);
+            
+            // 업로드 완료 상태 표시
+            setUploadProgress(prev => ({
+              ...prev,
+              stage: 'completed',
+              fileName: `${imageResult.data.successCount}개 파일 업로드 완료`
+            }));
+            
+            // 2초 후 진행 바 숨기기
+            setTimeout(() => {
+              setUploadProgress(prev => ({ ...prev, show: false }));
+            }, 2000);
+            
+          } catch (imageError) {
+            console.warn('이미지 업로드 실패:', imageError);
+            
+            // 진행 바 숨기기
+            setUploadProgress(prev => ({ ...prev, show: false }));
+            
+            // 이미지 업로드 실패해도 JSON은 저장되었으므로 경고만 표시
+            alert(`JSON 파일은 저장되었지만 이미지 업로드에 실패했습니다.\n오류: ${imageError.message}\n\nJSON 파일 저장 위치: ${jsonResult.data.localPath}`);
+          }
+        } else {
+          console.log('ZIP 파일이 없으므로 이미지 업로드를 건너뜁니다.');
+        }
+
+        // 5. 성공 메시지 표시
+        const successDetails = [
+          `JSON 파일: ${jsonResult.data.fileCount}개 저장됨`,
+          `저장 경로: ${jsonResult.data.localPath}`,
+          imageResult ? `이미지: ${imageResult.data.successCount}개 업로드됨` : '이미지: 업로드 안됨'
+        ].join('\n');
+        
+        alert(`데이터 등록이 완료되었습니다!\n\n${successDetails}`);
         showSuccessMessage('데이터 등록 완료!');
         
         // 등록 성공 시 모든 데이터 초기화
         clearData();
         setUploadedZipFile(null);
         setUploadedExcelFile(null);
-      } else {
-        alert(`데이터 등록에 실패했습니다.\n오류: ${result.message}`);
+
+      } catch (uploadError) {
+        console.error('업로드 처리 오류:', uploadError);
+        alert(`데이터 등록에 실패했습니다.\n오류: ${uploadError.message}`);
       }
       
     } catch (err) {
@@ -1075,13 +1132,13 @@ const DataRegister = () => {
               loading || 
               csvLoading || 
               imageLoading || 
-              data.length === 0
-              // 로컬 모드에서는 ZIP 파일과 매핑 상태 체크 안함
+              data.length === 0 ||
+              !uploadedExcelFile // 엑셀 파일이 필수
             }
             sx={{
-              backgroundColor: data.length > 0 ? '#28a745' : '#ccc', // 로컬 모드: 데이터만 있으면 활성화
+              backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#28a745' : '#ccc',
               '&:hover': { 
-                backgroundColor: data.length > 0 ? '#218838' : '#bbb' 
+                backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#218838' : '#bbb' 
               },
               '&:disabled': { backgroundColor: '#ccc' },
             }}
@@ -1099,6 +1156,15 @@ const DataRegister = () => {
       </Box>
 
       <DataListWithURL title="미리보기" columns={columns} data={data} />
+      
+      {/* 이미지 업로드 진행 상황 표시 */}
+      <ImageUploadProgress
+        show={uploadProgress.show}
+        current={uploadProgress.current}
+        total={uploadProgress.total}
+        fileName={uploadProgress.fileName}
+        stage={uploadProgress.stage}
+      />
     </div>
   );
 };
