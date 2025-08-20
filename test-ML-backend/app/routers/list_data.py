@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, EmailStr, field_validator, model_validato
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from ..db.database import get_db
-from ..db.db_model import (
+from app.db.database import get_db
+from app.db.db_model import (
     Meat, CategoryInfo, DeepAgingInfo,
     SensoryEval, AI_SensoryEval,
     HeatedmeatSensoryEval, AI_HeatedmeatSeonsoryEval,
