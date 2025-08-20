@@ -1,7 +1,8 @@
 {
   "cache_dirs": {
     "predict_image_cache": "/tmp/hsi_predict_image_cache",
-    "xai_cache": "/tmp/hsi_xai_cache"
+    "xai_cache": "/tmp/hsi_xai_cache",
+    "train_image_cache": "/tmp/hsi_train_image_cache"
   },
   "cache_settings": {
     "max_cache_size_mb": 1024,
