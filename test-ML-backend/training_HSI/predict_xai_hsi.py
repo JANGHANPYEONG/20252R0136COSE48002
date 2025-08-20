@@ -516,8 +516,8 @@ class HSIPredictor:
                                 overlay=cam_pack.get('overlay'),     # 오버레이 이미지 전달
                                 save_dir=xai_save_dir,
                                 basename=base,
-                                save_heatmap=True,
-                                save_rgb=True,      # 첫 번째 채널 저장
+                                save_heatmap=False,
+                                save_rgb=False,      # 첫 번째 채널 저장
                                 save_overlay=True,  # 오버레이 저장
                             )
                             
@@ -560,8 +560,8 @@ class HSIPredictor:
                                 overlay=cam_pack.get('overlay'),     # 오버레이 이미지 전달
                                 save_dir=xai_save_dir,
                                 basename=base,
-                                save_heatmap=True,
-                                save_rgb=True,      # 첫 번째 채널 저장
+                                save_heatmap=False,
+                                save_rgb=False,      # 첫 번째 채널 저장
                                 save_overlay=True,  # 오버레이 저장
                             )
                             
