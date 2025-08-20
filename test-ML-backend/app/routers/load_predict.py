@@ -40,7 +40,7 @@ class HSIPredictResponse(BaseModel):
     createdAt: Optional[datetime] = None
 
 
-@router.post("/hsi-prediction", response_model=List[HSIPredictResponse])
+@router.post("/load_hsi-prediction", response_model=List[HSIPredictResponse])
 async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
     """
     AI HSI 예측 결과를 조회하는 엔드포인트
