@@ -225,7 +225,13 @@ def save_cam_arrays(
     if save_heatmap:
         p = os.path.join(save_dir, f"{basename}_heatmap.png")
         hm = (cam * 255).astype(np.uint8)
-        cv2.imwrite(p, hm)
+
+        hm_color = cv2.applyColorMap(hm, cv2.COLORMAP_JET)
+
+        if cube_hwc is not None:
+            rgb = _make_rgb_from_cube(cube_hwc)
+            hm_color = cv2.resize(hm_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite(p, hm_color)
         paths["heatmap"] = p
 
     # RGB 저장 (옵션)
@@ -239,6 +245,10 @@ def save_cam_arrays(
     if save_overlay and cube_hwc is not None:
         rgb = _make_rgb_from_cube(cube_hwc)
         heatmap_color = cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        
+        if heatmap_color.shape[:2] != rgb.shape[:2]:
+            heatmap_color = cv2.resize(heatmap_color, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_CUBIC)
+
         overlay = cv2.addWeighted(rgb, 0.6, heatmap_color, 0.4, 0)
         p = os.path.join(save_dir, f"{basename}_overlay.png")
         cv2.imwrite(p, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
