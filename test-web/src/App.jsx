@@ -65,8 +65,8 @@ function App() {
   const routes = [
     {
       path: '/',
-      title: 'LogIn | DeePlant',
-      component: isLoggedin ? <Home /> : <LogIn />,
+      title: 'LogIn',
+      component: <LogIn />,
     },
     {
       path: '/Home',
@@ -180,7 +180,7 @@ function App() {
                   </Helmet>
                   <ThemeProvider theme={defaultTheme}>
                     <CssBaseline />
-                    {!isLoggedin ? (
+                    {!localStorage.getItem('isloggedIn') === 'true' ? (
                       <LogIn />
                     ) : (
                       <Box sx={{ display: 'flex', margin: 0, padding: 0 }}>
