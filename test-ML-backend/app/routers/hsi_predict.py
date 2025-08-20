@@ -13,7 +13,7 @@ import asyncio
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.db_model import HSIImagesBands, SpectralInfo, HSISensoryEval
+from app.db.db_model import HSIImagesBands, SpectralInfo, AI_HSISensoryEval
 from app.connection.s3_connect import get_s3_client
 from app.utils.s3_downloader import download_s3_prefix_to_local
 from app.utils.s3_uploader import upload_local_to_s3_prefix
@@ -302,11 +302,11 @@ class HSIPredictor:
                           predictions: List[float], xai_image_path: str):
         """예측 결과를 DB에 저장합니다."""
         try:
-            # 기존 레코드 확인
-            existing_record = db.query(HSISensoryEval).filter(
-                HSISensoryEval.id == id,
-                HSISensoryEval.seqno == seqno,
-                HSISensoryEval.isRefrigerated == isRefrigerated
+            # 기존 레코드 확인 (AI_HSISensoryEval 테이블 사용)
+            existing_record = db.query(AI_HSISensoryEval).filter(
+                AI_HSISensoryEval.id == id,
+                AI_HSISensoryEval.seqno == seqno,
+                AI_HSISensoryEval.isRefrigerated == isRefrigerated
             ).first()
             
             if existing_record:
@@ -320,7 +320,7 @@ class HSIPredictor:
                 existing_record.createdAt = datetime.now()
             else:
                 # 새 레코드 생성
-                new_record = HSISensoryEval(
+                new_record = AI_HSISensoryEval(
                     id=id,
                     seqno=seqno,
                     isRefrigerated=isRefrigerated,
@@ -335,11 +335,11 @@ class HSIPredictor:
                 db.add(new_record)
             
             db.commit()
-            print(f"Results saved to DB for id={id}, seqno={seqno}, isRefrigerated={isRefrigerated}")
+            print(f"AI prediction results saved to DB for id={id}, seqno={seqno}, isRefrigerated={isRefrigerated}")
             
         except Exception as e:
             db.rollback()
-            print(f"Error saving results to DB: {e}")
+            print(f"Error saving AI results to DB: {e}")
             raise
 
 
