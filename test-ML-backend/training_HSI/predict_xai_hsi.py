@@ -8,20 +8,6 @@ HSI 예측 모듈 (학습 파이프라인과 완전 호환)
 사용법:
     # 기본 예측
     python predict_xai_hsi.py --model_dir /path/to/model_dir --image_paths /path/to/band1.png /path/to/band2.png ...
-    
-    # 고해상도 XAI (GradCAM) 생성
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-save-dir xai_outputs --xai-upscale-factor 3.0
-    
-    # Attention 맵 생성 (ViT 모델용)
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-mode attn --xai-upscale-factor 2.5
-    
-    # 고품질 설정으로 XAI 생성
-    python predict_xai_hsi.py --run_id <mlflow_run_id> --image_paths ... --xai --xai-upscale-factor 4.0 --xai-use-bicubic
-    
-XAI 해상도 개선 옵션:
-    --xai-upscale-factor: CAM 업스케일 배율 (기본: 2.0)
-    --xai-use-bicubic: 고품질 bicubic 보간 사용 (기본: True)
-    --xai-disable-contrast-enhancement: 대비 개선 비활성화
 """
 
 import os
@@ -626,13 +612,6 @@ def main():
                     help='Return CAM as base64 or file path (url)')
     parser.add_argument('--xai-save-dir', type=str, default=None,
                     help='If set, save per-label CAM heatmaps to this directory')
-    parser.add_argument('--xai-upscale-factor', type=float, default=2.0,
-                    help='Upscale factor for CAM resolution enhancement (default: 2.0)')
-    parser.add_argument('--xai-use-bicubic', action='store_true', default=True,
-                    help='Use bicubic interpolation for better quality (default: True)')
-    parser.add_argument('--xai-disable-contrast-enhancement', action='store_true',
-                    help='Disable contrast enhancement for CAM')
-
     
     args = parser.parse_args()
     
@@ -675,16 +654,6 @@ def main():
         predictor = HSIPredictor(model_dir=model_dir)
         predictor.xai_mode = args.xai_mode
         predictor.xai_return = args.xai_return
-        
-        # XAI 해상도 설정 적용
-        predictor.xai_upscale_factor = args.xai_upscale_factor
-        predictor.xai_use_bicubic = args.xai_use_bicubic
-        predictor.xai_disable_contrast_enhancement = args.xai_disable_contrast_enhancement
-        
-        print(f"XAI Resolution Enhancement Settings:")
-        print(f"  - Upscale factor: {predictor.xai_upscale_factor}x")
-        print(f"  - Use bicubic interpolation: {predictor.xai_use_bicubic}")
-        print(f"  - Contrast enhancement: {not predictor.xai_disable_contrast_enhancement}")
         
         # 예측 수행
         results = predictor.predict_batch(
