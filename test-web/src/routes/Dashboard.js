@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 // mui
-import { Box, Button, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Button, Select, MenuItem, CircularProgress, Typography } from '@mui/material';
 // style
 import style from './style/dashboardstyle';
 // icon, timezone
@@ -24,6 +24,17 @@ import SearchedDataListComp from '../components/DataListView/SearchedDataListCom
 // 구간 계산 함수
 import updateDates from '../Utils/updateDates';
 
+// temp for mocking
+import PredictionTableTmp from '../components/PredictionTableTmp';
+import FilterModal from '../components/FilterModal';
+import PredictionTable from '../components/PredictionTable';
+import PredictionDetailPanel from '../components/PredictionDetailPanel';
+import { fetchFilteredData } from '../API/fetchFileteredData';
+import { Snackbar, Alert } from '@mui/material';
+import { fetchPrediction } from '../API/predictData';
+import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
+//////////////////////////////////////////////////
+
 const navy = '#0F3659';
 
 const Dashboard = () => {
@@ -35,6 +46,22 @@ const Dashboard = () => {
   const [pageOffset, setPageOffset] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
+
+  // temp for mocking
+  const [groupedData, setGroupedData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'info', message: '완료' });
+
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
+  const [filters, setFilters] = useState([
+    { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+  ]);
+  const [data, setData] = useState([]);
+  const navigate = useNavigate();
+  //////////////////////////////////////////////////
   // 쿼리스트링 추출
   const location = useLocation();
   const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
@@ -113,13 +140,133 @@ const Dashboard = () => {
       </Box>
     );
   }
+// temp for mocking
+  // 예측 페이지로 이동
+  const goLearningPage = () => {
+    const selectedSet = new Set(
+      selectedRows.map((s) => (typeof s === 'string' ? s : s.id))
+    );
+    const payload =
+      selectedRows.length > 0
+        ? data.filter((row) => selectedSet.has(row.id))
+        : data;
+    // 새로고침 대비 백업(옵션)
+    try {
+      sessionStorage.setItem('predict_data', JSON.stringify(payload));
+    } catch {}
+
+    navigate('/Learning', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
+  };
+  const goPredictPage = () => {
+    const selectedSet = new Set(
+      selectedRows.map((s) => (typeof s === 'string' ? s : s.id))
+    );
+    const payload =
+      selectedRows.length > 0
+        ? data.filter((row) => selectedSet.has(row.id))
+        : data;
+    // 새로고침 대비 백업(옵션)
+    try {
+      sessionStorage.setItem('predict_data', JSON.stringify(payload));
+    } catch {}
+
+    navigate('/predict', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
+  };
+  // 데이터 불러오기 함수
+  const handleLoadData = async () => {
+    setLoading(true);
+    // 실제 API 호출 로직이 여기에 들어갈 예정
+    // 필터 옵현 추가해야함
+    try {
+      const result = await fetchFilteredData(filters, value);
+      setData(result);
+      // upload_batch_id 기준으로 그룹핑
+      const groupMap = {};
+      result.forEach((item) => {
+        const batchId = item.upload_batch_id || 'unknown_batch';
+        if (!groupMap[batchId]) groupMap[batchId] = [];
+        groupMap[batchId].push(item);
+      });
+      const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
+        batchId,
+        timestamp: rows[0]?.timestamp || '',
+        rows,
+      }));
+
+      setGroupedData(grouped);
+      // 성공 여부 알림
+      setSnackbar({
+        open : true,
+        severity: 'success',
+        message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
+      });
+    } catch (err) {
+      console.error('데이터 불러오기 실패:', err);
+      setSnackbar({
+        open : true,
+        severity: 'error',
+        message: '데이터 불러오기 실패! 서버를 확인해주세요.',
+      });
+    }
+    setLoading(false)
+  };
+
+  // 선택 변경 핸들러
+  const handleSelectionChange = (newSelection) => {
+    setSelectedRows(newSelection);
+  };
+
+  // Rowclick 여부 다루기
+  const handleRowClick = (row) => {
+    if (!row.prediction) return;
+    setDetailData({ id: row.id, prediction: row.prediction, sensory: row.sensory});
+    setOpenPanel(true);
+  };
+
+  // 선택된 데이터 predict하기
+  const handlePredict = async () => {
+    // if (selectedRows.length ===0) {
+    //   setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
+    //   return;
+    // }
+    setLoading(true);
+    try {
+      const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
+      const newData = data.map(row => (
+        result[row.id] ? { ...row, prediction: result[row.id] } : row
+      ));
+      setData(newData);
+      setSnackbar({  open: true, severity: 'success', message: '예측 성공!'});
+    } catch (err) {
+      setSnackbar({ open: true, severity: 'error', message: '예측 실패! 서버 상태를 확인해주세요.' });
+    }
+    setLoading(false);
+  }
+  // 필터 함수
+  const handleFilter = () => {
+    setFilterModalOpen(true);
+  };
+
+  const initializeData = () => {
+    setData([]);
+  }
+  // 필터 적용 함수
+  const handleApplyFilters = (appliedFilters) => {
+    setFilters(appliedFilters);
+    console.log('적용된 필터:', appliedFilters);
+    // 여기서 필터링된 데이터를 API로 요청
+    handleLoadData(); // 필터 적용 후 데이터 다시 로드
+  };
+////////////////////////////////////////////////////////
+
+
 
   return (
     <div
       style={{
         overflow: 'auto',
         width: '100%',
-        marginTop: '20px', // Reduced top margin to align with the sidebar
+        marginTop: '100px',
         height: '100%',
         paddingLeft: '30px',
         paddingRight: '20px',
@@ -132,7 +279,6 @@ const Dashboard = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           minWidth: '634px', // minimum width
-          marginBottom: '20px', // Added spacing below the header
         }}
       >
         {value === 'reject' ? (
@@ -202,67 +348,6 @@ const Dashboard = () => {
           )}
         </div>
       </Box>
-
-      {/**검색필터, 엑셀  */}
-      <Box sx={style.fixed}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
-        >
-          <SearchFilterBar />
-          <SearchById
-            onDataFetch={handleSearchedDataFetch}
-            onValueChange={handleValueChange}
-            startDate={startDate}
-            endDate={endDate}
-            specieValue={specieValue}
-          />
-          <Select
-            labelId="species"
-            id="species"
-            value={specieValue}
-            onChange={handleSpeciesChange}
-            label="종류"
-          >
-            <MenuItem value="전체">전체</MenuItem>
-            <MenuItem value="소">소</MenuItem>
-            <MenuItem value="돼지">돼지</MenuItem>
-          </Select>
-        </Box>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingRight: '85px',
-          }}
-        >
-          {(value === 'list' || value === 'searched') && (
-            <ExcelController
-              startDate={startDate}
-              endDate={endDate}
-              specieValue={specieValue}
-            />
-          )}
-          {/* {value === 'stat' && <StatsExport />} */}
-        </div>
-      </Box>
-
-      {value === 'searched' && (
-        <SearchedDataListComp
-          startDate={startDate}
-          endDate={endDate}
-          searchedData={searchedData}
-        />
-      )}
-
-      {value === 'list' && (
-        <DataListComp
-          startDate={startDate}
-          endDate={endDate}
-          pageOffset={pageOffset}
-          specieValue={specieValue}
-        />
-      )}
       {value === 'stat' && (
         <DataStat
           startDate={startDate}
@@ -278,6 +363,59 @@ const Dashboard = () => {
           specieValue={specieValue}
         />
       )}
+      {value === 'list' && (
+      <>
+      <Box sx={{ marginTop: '30px' }}>
+        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+          <Button
+            variant="contained"
+            onClick={handleLoadData}
+            disabled={loading}
+            sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+          >
+            {loading ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+          </Button>
+
+          <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
+          <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
+        </Box>
+
+        <PredictionTableTmp
+          data={data}
+          onSelectionChange={handleSelectionChange}
+          onRowClick={handleRowClick}
+        />
+
+        <Typography sx={{ marginTop: '10px', color: navy }}>
+          총 {data.length}개의 데이터
+        </Typography>
+        <FilterModal
+          open={filterModalOpen}
+          onClose={() => setFilterModalOpen(false)}
+          onApply={handleApplyFilters}
+          filters={filters}
+          setFilters={setFilters}
+        />
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+        <Button
+          variant="contained"
+          onClick={goLearningPage}
+          disabled={selectedRows.length === 0}
+          sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+        >
+          학습하기
+        </Button>
+        <Button
+          variant="contained"
+          onClick={goPredictPage}
+          disabled={selectedRows.length === 0}
+          sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+        >
+          예측하기
+        </Button>
+        </Box>
+      </>)}
     </div>
   );
 };
