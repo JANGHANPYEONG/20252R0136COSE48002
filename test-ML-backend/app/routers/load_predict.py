@@ -28,7 +28,7 @@ class HSIPredictRequest(BaseModel):
     id: str  
     seqno: str  
 
-class HSIPredictResponse(BaseModel):
+class HSIPredictData(BaseModel):
     id: str
     seqno: int
     isRefrigerated: bool
@@ -39,8 +39,12 @@ class HSIPredictResponse(BaseModel):
     overall: Optional[float] = None
     createdAt: Optional[datetime] = None
 
+class HSIPredictResponse(BaseModel):
+    message: str
+    prediction: List[HSIPredictData]
 
-@router.post("/load_hsi-prediction", response_model=List[HSIPredictResponse])
+
+@router.post("/load_hsi-prediction", response_model=HSIPredictResponse)
 async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
     """
     AI HSI 예측 결과를 조회하는 엔드포인트
@@ -72,9 +76,9 @@ async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
             )
         
         # 결과를 리스트로 변환
-        response_list = []
+        prediction_list = []
         for prediction in hsi_predictions:
-            response_data = HSIPredictResponse(
+            prediction_data = HSIPredictData(
                 id=prediction.id,
                 seqno=prediction.seqno,
                 isRefrigerated=prediction.isRefrigerated,
@@ -85,10 +89,15 @@ async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
                 overall=prediction.Total,
                 createdAt=prediction.createdAt
             )
-            response_list.append(response_data)
+            prediction_list.append(prediction_data)
         
-        print(f"Found {len(response_list)} HSI prediction records")
-        return response_list
+        print(f"Found {len(prediction_list)} HSI prediction records")
+        
+        # message와 prediction 구조로 응답 반환
+        return HSIPredictResponse(
+            message="success",
+            prediction=prediction_list
+        )
         
     except HTTPException:
         # HTTPException은 그대로 재발생
@@ -97,4 +106,7 @@ async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
         print(f"Unexpected error in get_hsi_prediction endpoint: {type(e).__name__}: {e}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"HSI prediction query failed: {str(e)}")
+        return HSIPredictResponse(
+            message="failed",
+            prediction=[]
+        )
