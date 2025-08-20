@@ -195,7 +195,7 @@ def save_cam_arrays(
     basename: str = "gradcam",
     save_heatmap: bool = True,
     save_rgb: bool = False, # 원본 저장
-    save_overlay: bool = False, # overlay 저장 
+    save_overlay: bool = True, # overlay 저장 
 ):
     """
     CAM / 원본 / Overlay를 파일로 저장합니다.
