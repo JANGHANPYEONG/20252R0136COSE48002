@@ -188,3 +188,32 @@ class S3_:
         except Exception as e:
             print(f"Error uploading file: {e}")
             return False
+
+
+def get_s3_client():
+    """S3 클라이언트를 생성하고 반환합니다."""
+    try:
+        region = os.getenv("S3_REGION_NAME") or os.getenv("AWS_DEFAULT_REGION")
+        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        
+        if region:
+            s3_client = boto3.client(
+                "s3",
+                region_name=region,
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key
+            )
+        else:
+            s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key
+            )
+        
+        print("S3 client created successfully")
+        return s3_client
+        
+    except Exception as e:
+        print(f"Error creating S3 client: {e}")
+        raise
