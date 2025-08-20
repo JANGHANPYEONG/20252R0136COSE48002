@@ -121,6 +121,7 @@ class MeatDataUpload(BaseModel):
     period: Optional[str] = None
     marbling: Optional[float] = None
     meatColor: Optional[float] = None
+    meat_Color: Optional[float] = None  # 프론트엔드와 일치시키기 위해 추가
     texture: Optional[float] = None
     surfaceMoisture: Optional[float] = None
     total: Optional[float] = None
