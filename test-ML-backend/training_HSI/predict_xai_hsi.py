@@ -497,7 +497,7 @@ class HSIPredictor:
                                     basename=base,
                                     save_heatmap=True,
                                     save_rgb=False,
-                                    save_overlay=False
+                                    save_overlay=True
                                 )["heatmap"]
 
                             if self.xai_return == 'base64':
@@ -549,7 +549,7 @@ class HSIPredictor:
                                     basename=base,
                                     save_heatmap=True,
                                     save_rgb=False,
-                                    save_overlay=False
+                                    save_overlay=True
                                 )["heatmap"]
 
                             if self.xai_return == 'base64':
