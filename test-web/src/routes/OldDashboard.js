@@ -64,7 +64,7 @@ const OldDashboard = () => {
   //////////////////////////////////////////////////
   // 쿼리스트링 추출
   const location = useLocation();
-  const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
+  const { querypageOffset, queryStartDate, queryEndDate, queryDuration, queryTab } =
     useMemo(() => {
       const searchParams = new URLSearchParams(location.search);
       return {
@@ -72,12 +72,20 @@ const OldDashboard = () => {
         queryStartDate: searchParams.get('start') || '',
         queryEndDate: searchParams.get('end') || '',
         queryDuration: searchParams.get('duration') || '',
+        queryTab: searchParams.get('tab') || '',
       };
     }, [location.search]);
 
   useEffect(() => {
     setPageOffset(querypageOffset);
   }, [querypageOffset]);
+
+  // URL의 tab 쿼리 파라미터로 초기 탭 선택 (예: /NewDashboard?tab=reject)
+  useEffect(() => {
+    if (queryTab) {
+      setValue(queryTab);
+    }
+  }, [queryTab]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -99,9 +107,9 @@ const OldDashboard = () => {
         end = new Date(queryEndDate);
       }
     } else {
-      // 기본값 설정 (7일 전부터 현재까지)
+      // 기본값 설정 (1년 전부터 현재까지)
       start = new Date(now);
-      start.setDate(now.getDate() - 7);
+      start.setFullYear(now.getFullYear() - 1);
     }
 
     const formattedStartDate = new Date(start.getTime() + TIME_ZONE)

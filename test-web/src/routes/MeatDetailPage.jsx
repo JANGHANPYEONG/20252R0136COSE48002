@@ -2,7 +2,8 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
   Box, Paper, Typography, Chip, Divider, Button,
-  Table, TableHead, TableRow, TableCell, TableBody, Stack
+  Table, TableHead, TableRow, TableCell, TableBody, Stack,
+  Snackbar, Alert
 } from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { Tabs, Tab, ToggleButton, ToggleButtonGroup } from '@mui/material';
@@ -13,6 +14,8 @@ import {
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from 'recharts';
+import { updateDataStatus } from '../API/updateDataStatus';
+import { updateMeatInfo } from '../API/add/updateMeatInfo';
 const navy = '#0F3659';
 
 export default function MeatDetailPage() {
@@ -24,6 +27,10 @@ export default function MeatDetailPage() {
   const [mode, setMode] = useState('MSI');  // 'MSI' | 'RGB'
   const [tab, setTab] = useState(0);
   const [selectedWaves, setSelectedWaves] = useState([]);
+  const [stateChanged, setStateChanged] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+  const [editMode, setEditMode] = useState(false);
+  const [form, setForm] = useState({});
 
   // state → 세션 캐시 → null 순으로 복구
   const item = useMemo(() => {
@@ -118,8 +125,78 @@ export default function MeatDetailPage() {
     '즙성(Juiciness)', '풍미(Flavor)', '전체 기호도'
   ];
 
+  const handleReject = async () => {
+    try {
+      if (!item?.id) return;
+      await updateDataStatus('reject', item.id, setStateChanged);
+      // 안내 후 대시보드 탭으로 이동
+      setSnackbar({ open: true, message: '반려되었습니다' });
+      setTimeout(() => {
+        nav(`/DashBoard?tab`);
+      }, 1000);
+    } catch (e) {
+      // 실패해도 콘솔만 남기고 현재 페이지 유지
+      // 실제 운영 시 사용자 알림 토스트 등 추가 권장
+      // eslint-disable-next-line no-console
+      console.error('Reject failed:', e);
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      if (!item?.id) return;
+      await updateDataStatus('confirm', item.id, setStateChanged);
+      setSnackbar({ open: true, message: '승인되었습니다' });
+    } catch (e) {
+      console.error('Confirm failed:', e);
+    }
+  };
+
+  const startEdit = () => {
+    // 편집 시작 시 현재 상세값을 폼으로 복사
+    setForm({
+      meatId: item.id,
+      sampleNo: item.sampleNo ?? '',
+      part: item.part ?? '',
+      deepAging: item.deepAging ?? '',
+      slDate: item.slDate ?? '',
+      processDate: item.processDate ?? '',
+    });
+    setEditMode(true);
+  };
+
+  const handleChange = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const saveEdit = async () => {
+    try {
+      if (!form.meatId) return;
+      await updateMeatInfo(form);
+      setSnackbar({ open: true, message: '수정되었습니다' });
+      setEditMode(false);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Update failed:', e);
+      setSnackbar({ open: true, message: '수정에 실패했습니다' });
+      setEditMode(false);
+    }
+  };
+
+
   return (
     <div style={{ overflow: 'auto', width: '100%', marginTop: 100, height: '100%', paddingLeft: 30, paddingRight: 20 }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={1500}
+        onClose={() => setSnackbar({ open: false, message: '' })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: '50% !important'}}
+      >
+        <Alert severity="success" sx={{ width: '100%'}}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 634 }}>
         <span style={{ color: navy, fontSize: 30, fontWeight: 600 }}>육류 상세 조회</span>
         <ToggleButtonGroup
@@ -225,20 +302,88 @@ export default function MeatDetailPage() {
             <Typography variant="subtitle1" sx={{ color: navy, mb: 2 }}>상세정보</Typography>
             <Table size="small">
               <TableBody>
-                {infoRows.map(([k, v]) => (
-                  <TableRow key={k}>
-                    <TableCell width={140} sx={{ color: 'text.secondary' }}>{k}</TableCell>
-                    <TableCell>{v ?? '-'}</TableCell>
-                  </TableRow>
-                ))}
+                <TableRow>
+                  <TableCell width={140} sx={{ color: 'text.secondary' }}>이력번호</TableCell>
+                  <TableCell>{item.id}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary' }}>샘플번호</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <input
+                        value={form.sampleNo}
+                        onChange={(e) => handleChange('sampleNo', e.target.value)}
+                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
+                      />
+                    ) : (item.sampleNo ?? '-')}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary' }}>부위</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <input
+                        value={form.part}
+                        onChange={(e) => handleChange('part', e.target.value)}
+                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
+                      />
+                    ) : (item.part ?? '-')}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary' }}>딥에이징 여부</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <select
+                        value={form.deepAging}
+                        onChange={(e) => handleChange('deepAging', e.target.value)}
+                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
+                      >
+                        <option value="">-</option>
+                        <option value="Y">Y</option>
+                        <option value="N">N</option>
+                      </select>
+                    ) : (item.deepAging ?? '-')}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary' }}>도축일자</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <input
+                        type="date"
+                        value={form.slDate}
+                        onChange={(e) => handleChange('slDate', e.target.value)}
+                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
+                      />
+                    ) : (item.slDate ?? '-')}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell sx={{ color: 'text.secondary' }}>가공일자</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <input
+                        type="date"
+                        value={form.processDate}
+                        onChange={(e) => handleChange('processDate', e.target.value)}
+                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
+                      />
+                    ) : (item.processDate ?? '-')}
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
 
             <Divider sx={{ my: 2 }} />
             <Stack direction="row" spacing={1}>
-              <Button variant="outlined" color="error">반려</Button>
-              <Button variant="contained" color="success">승인</Button>
-              <Button variant="outlined">수정</Button>
+              <Button variant="outlined" color="error" onClick={handleReject}>반려</Button>
+              <Button variant="contained" color="success" onClick={handleConfirm}>승인</Button>
+              {editMode ? (
+                <Button variant="outlined" onClick={saveEdit}>수정완료</Button>
+              ) : (
+                <Button variant="outlined" onClick={startEdit}>수정</Button>
+              )}
             </Stack>
           </Paper>
         </Box>
