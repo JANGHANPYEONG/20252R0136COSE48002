@@ -403,8 +403,37 @@ async def upload_zip_csv_to_s3(
 
 # 데이터 조회
 # 필터링 기능 (부위, 파일 등록 날짜, 지역)
+# 이미지가 저장되는 테이블을 찾아 조회
 # def _parse_date_yyyy_mm_dd(s: str) -> datetime:
 #     return datetime.strptime(s, "%Y-%m-%d")
+
+from fastapi import Query 
+
+@router.get("/list")
+def list_data(
+    part: Optional[str] = Query(None),
+    subpart: Optional[str] = Query(None),
+    date: Optional[str] = Query(None),
+    location: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    # DB 연결
+
+    
+
+    # 데이터 조회 로직
+    query = db.query(Meat)
+
+    if part:
+        query = query.filter(Meat.part == part)
+    if subpart:
+        query = query.filter(Meat.subpart == subpart)
+    if date:
+        query = query.filter(Meat.created_at == _parse_date_yyyy_mm_dd(date))
+    if location:
+        query = query.filter(Meat.farm_addr.contains(location))
+
+    # 형식에 맞게 반환
 
 # @router.get("/list")
 # def list_data(
