@@ -76,7 +76,7 @@ class DashboardItem(BaseModel):
     )
 
     # 냉장 여부 1일 혹은 7일 (1일차 false, 7일차 true)
-    refrigerated: Optional[bool] = Field(None, alias="refrigeratedDay", description="냉장 여부")
+    refrigerated: Optional[bool] = Field(None, alias="refrigerated", description="냉장 여부")
 
 class DashboardResponse(BaseModel):
     """대시보드 응답"""
