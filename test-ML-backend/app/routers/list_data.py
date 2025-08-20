@@ -1,3 +1,12 @@
+# [0821] TODO 리스트
+"""
+# [0821] TODO 리스트
+# 냉장 1일차만 있으면 이거만 뜬다. 1일차 7일차 둘 다 있는 경우 id로 달라는 요청을 보내면, 1일차 7일차 둘 다 FE에 보내야한다.
+# DATA를 두개를 보내던지 구현이 편한대로 해서 보내야한다. 
+
+DB 관련해서 500 에러 나는거 해결
+"""
+
 from datetime import date, datetime
 from typing import List, Optional
 
@@ -7,8 +16,8 @@ from pydantic import BaseModel, Field, EmailStr, field_validator, model_validato
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from ..db.database import get_db
-from ..db.db_model import (
+from app.db.database import get_db
+from app.db.db_model import (
     Meat, CategoryInfo, DeepAgingInfo,
     SensoryEval, AI_SensoryEval,
     HeatedmeatSensoryEval, AI_HeatedmeatSeonsoryEval,
@@ -75,6 +84,9 @@ class DashboardItem(BaseModel):
         description="파장별 평균 흡수율(리스트에서는 Option)"
     )
 
+    # 냉장 여부 1일 혹은 7일 (1일차 false, 7일차 true), 기본값은 false
+    refrigerated: Optional[bool] = Field(False, alias="refrigerated", description="냉장 여부")
+
 class DashboardResponse(BaseModel):
     """대시보드 응답"""
     model_config = ConfigDict(populate_by_name=True)
@@ -99,6 +111,7 @@ def get_dashboard_data(
     period: Optional[str] = Query("전체", description="조회기간: 1주, 1개월, 1분기, 1년, 전체"),
     
     # 직접 날짜 입력 (데이터 생성일 기준)
+    # 날짜 입력 양식: YYYY-MM-DD
     start_date: Optional[date] = Query(None, alias="startDate", description="시작날짜 (생성일 기준)"),
     end_date: Optional[date] = Query(None, alias="endDate", description="종료날짜 (생성일 기준)"),
     
@@ -183,7 +196,7 @@ def get_dashboard_data(
                              .order_by(DeepAgingInfo.seqno.desc())
                              .first())
             
-            sample_no = deep_aging_info.seqno if deep_aging_info else 0
+            sample_no = deep_aging_info.seqno if deep_aging_info else 0 # deepaging 회차
             is_deep_aged = bool(deep_aging_info.isCompleted) if deep_aging_info else False
             process_date = deep_aging_info.date.strftime("%Y-%m-%d") if (deep_aging_info and deep_aging_info.date) else None
 
@@ -245,6 +258,9 @@ def get_dashboard_data(
             # 업로드 일시 (생성일 기준)
             uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
 
+            # 냉장 여부 가져오기 // 냉장 안한경우 false, 한 경우 true
+            refrigerated= ai_sensory.isRefrigerated if ai_sensory else None if sample_no > 0 else None
+
             # trace_key 생성 (이력번호-샘플번호)
             trace_key = f"{meat.traceNum}-{sample_no:02d}" if meat.traceNum else f"{meat.id}-{sample_no:02d}"
 
@@ -253,6 +269,7 @@ def get_dashboard_data(
                 traceNum=meat.traceNum,
                 sampleNo=sample_no,
                 traceKey=trace_key,
+                refrigerated=refrigerated,
                 part=Part(
                     primal=part_primal,
                     secondary=part_secondary

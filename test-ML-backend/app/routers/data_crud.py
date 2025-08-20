@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import APIRouter, HTTPException, Depends
@@ -420,6 +420,24 @@ def delete_sensory_eval(
 # 테스트용 엔드포인트 (개발 완료 후 제거 가능. 실제 운영 데이터와 혼동될 수 있음.)
 # ============================================================================
 
+@router.get("/test/init-reference-data")
+def initialize_reference_data(db: Session = Depends(get_db)):
+    """참조 데이터 초기화 (sex_info, category_info, grade_info, status_info 등)"""
+    try:
+        # 기존 초기 데이터 로더를 재사용하여 중복 로직 방지
+        from app.db.db_model import load_initial_data
+        load_initial_data(db)
+        return {
+            "success": True,
+            "message": "Reference data initialized successfully"
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to initialize reference data: {str(e)}"
+        )
+
 @router.get("/test/create-sample")
 def create_sample_data(db: Session = Depends(get_db)):
     """테스트용 샘플 데이터 생성"""
@@ -429,11 +447,16 @@ def create_sample_data(db: Session = Depends(get_db)):
         meat = db.query(Meat).filter(Meat.id == meat_id).first()
         
         if not meat:
+            # category_info에 존재하는 유효한 카테고리 ID를 선택 (가장 작은 ID 사용)
+            from app.db.db_model import CategoryInfo
+            category = db.query(CategoryInfo).order_by(CategoryInfo.id.asc()).first()
+            category_id = category.id if category else 0
+            
             meat = Meat(
                 id=meat_id,
                 userId="deeplant@example.com",
                 sexType=1,
-                categoryId=1,
+                categoryId=category_id,
                 gradeNum=2,
                 statusType=0,
                 createdAt=datetime.now(timezone.utc),
@@ -486,7 +509,9 @@ def create_sample_data(db: Session = Depends(get_db)):
                 color=4.0,
                 texture=3.2,
                 surfaceMoisture=1.5,
-                overall=3.8
+                overall=3.8,
+                manufactureYmd=datetime.now(timezone.utc),
+                expireYmd=datetime.now(timezone.utc) + timedelta(days=7)
             )
             db.add(sensory_eval)
             db.commit()
