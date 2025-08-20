@@ -447,11 +447,16 @@ def create_sample_data(db: Session = Depends(get_db)):
         meat = db.query(Meat).filter(Meat.id == meat_id).first()
         
         if not meat:
+            # category_info에 존재하는 유효한 카테고리 ID를 선택 (가장 작은 ID 사용)
+            from app.db.db_model import CategoryInfo
+            category = db.query(CategoryInfo).order_by(CategoryInfo.id.asc()).first()
+            category_id = category.id if category else 0
+            
             meat = Meat(
                 id=meat_id,
                 userId="deeplant@example.com",
                 sexType=1,
-                categoryId=1,
+                categoryId=category_id,
                 gradeNum=2,
                 statusType=0,
                 createdAt=datetime.now(timezone.utc),
