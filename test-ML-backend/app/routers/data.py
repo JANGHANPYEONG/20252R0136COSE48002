@@ -119,8 +119,8 @@ def _pack_xy(pt):
 @router.post("/ingest/row-upload")
 async def ingest_row_upload(
     request: Request,
-    payload: str = Form(..., description="한 행의 JSON(문자열)"),
-    overwrite: bool = Form(False, description="동일 키 존재 시 덮어쓰기 여부"),
+    payload: dict,  # JSON으로 직접 받기
+    overwrite: bool = False,  # 기본값 False
     db: Session = Depends(get_db),
 ):
     """
@@ -137,14 +137,10 @@ async def ingest_row_upload(
     print(f"[DEBUG] Request headers: {dict(request.headers)}")
     
     # -------------------------------
-    # 1) JSON 파싱 + 최소 검증
+    # 1) 데이터 검증 (이미 dict로 받음)
     # -------------------------------
-    try:
-        obj = json.loads(payload)
-        print(f"[DEBUG] Parsed JSON: {obj}")
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON parse error: {e}")
-        raise HTTPException(status_code=400, detail=f"payload JSON parse error: {e}")
+    obj = payload  # 이미 dict로 받았으므로 파싱 불필요
+    print(f"[DEBUG] Received payload: {obj}")
 
     try:
         user_id = safe_str(obj.get("userId"))  # 루트
