@@ -225,9 +225,11 @@ def get_dashboard_data(
 
             # 파장별 평균 흡수율 데이터 가져오기 (옵션)
             spectrum_data = []
-            if sample_no > 0:  # 샘플이 있는 경우만
+            # 스펙트럼 데이터는 성능상 제한적으로만 로드 (샘플이 있고, 리스트가 짧을 때만)
+            if sample_no > 0 and limit <= 10:  # 성능 최적화: 작은 페이지에서만
                 spectrum_records = (db.query(HSISensoryEval)
                                   .filter(HSISensoryEval.id == meat.id, HSISensoryEval.seqno == sample_no)
+                                  .limit(10)  # 최대 10개 파장만
                                   .all())
                 
                 for record in spectrum_records:
@@ -236,21 +238,22 @@ def get_dashboard_data(
                                    .filter(SpectralInfo.idx == record.spectralIdx)
                                    .first())
                     
-                    if spectral_info:
+                    if spectral_info and record.L is not None:
                         spectrum_data.append(SpectrumPoint(
                             wavelength_nm=float(spectral_info.wavelength),
-                            mean_absorption=float(record.L) if record.L else 0.0  # L 값을 흡수율로 사용
+                            mean_absorption=float(record.L)
                         ))
 
             # 업로드 일시 (생성일 기준)
             uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
 
             # trace_key 생성 (이력번호-샘플번호)
-            trace_key = f"{meat.traceNum}-{sample_no:02d}" if meat.traceNum else f"{meat.id}-{sample_no:02d}"
+            trace_num_safe = meat.traceNum or meat.id or "UNKNOWN"
+            trace_key = f"{trace_num_safe}-{sample_no:02d}"
 
             data_items.append(DashboardItem(
                 id=meat.id,
-                traceNum=meat.traceNum,
+                traceNum=meat.traceNum or "",
                 sampleNo=sample_no,
                 traceKey=trace_key,
                 part=Part(

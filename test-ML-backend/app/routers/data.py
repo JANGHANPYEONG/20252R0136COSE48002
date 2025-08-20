@@ -13,7 +13,7 @@ from PIL import Image
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.db_model import Meat, SensoryEval, HSIImagesBands
+from app.db.db_model import Meat, SensoryEval, HSIImagesBands, HSISensoryEval, AI_HSISensoryEval, AI_SensoryEval
 from app.utils import safe_int, safe_float, safe_str, convert_to_datetime
 from app.core.config import settings
 
@@ -90,6 +90,7 @@ def _pack_xy(pt):
 
 @router.post("/ingest/row-upload")
 async def ingest_row_upload(
+    request: Request,
     payload: str = Form(..., description="한 행의 JSON(문자열)"),
     images: Optional[List[UploadFile]] = File(
         None, description="이 행에 해당하는 이미지들(RGB 1 + HSI 여러 장)"
@@ -98,18 +99,29 @@ async def ingest_row_upload(
     db: Session = Depends(get_db),
 ):
     """
-    한 행(JSON) + 여러 이미지 파일을 받아서,
-    파일명을 {hash}_{wavelength}.jpg / {hash}_rgb.jpg 로 표준화한 뒤
-    S3의 /train_dataset/HSI/ 경로에 업로드 완료 후 DB(Meat / SensoryEval / MeatImage / HSIImagesBands)에 기록합니다.
+    한 행(JSON) + 여러 HSI 이미지 파일을 받아서,
+    파일명을 {hash}_{wavelength}.jpg 로 표준화한 뒤
+    S3의 /train_dataset/HSI/ 경로에 업로드 완료 후 DB(Meat / SensoryEval / HSISensoryEval / HSIImagesBands)에 기록합니다.
     """
     # 로깅 추가
     print(f"[DEBUG] Received request:")
     print(f"[DEBUG] payload: {payload}")
+    print(f"[DEBUG] images type: {type(images)}")
+    print(f"[DEBUG] images value: {images}")
     print(f"[DEBUG] images count: {len(images) if images else 0}")
     print(f"[DEBUG] overwrite: {overwrite}")
+    
+    # Request body 전체 로깅
+    print(f"[DEBUG] Request content type: {request.headers.get('content-type')}")
+    print(f"[DEBUG] Request headers: {dict(request.headers)}")
+    
     if images:
         for i, img in enumerate(images):
             print(f"[DEBUG] image[{i}]: filename={img.filename}, content_type={img.content_type}, size={img.size if hasattr(img, 'size') else 'unknown'}")
+            print(f"[DEBUG] image[{i}] type: {type(img)}")
+            print(f"[DEBUG] image[{i}] attributes: {dir(img)}")
+    else:
+        print(f"[DEBUG] No images received")
     
     # -------------------------------
     # 1) JSON 파싱 + 최소 검증
@@ -127,6 +139,7 @@ async def ingest_row_upload(
         meat = obj["meat"]
         trace_num = safe_str(meat["traceNum"])
         sample_num = safe_str(meat["sampleNum"])
+        seqno = safe_int(meat.get("seqno", 1))  # 가공 횟수, 기본값 1
         rgb_names = {safe_str(n).lower() for n in (meat.get("rgbImageName") or [])}
         hsi_names = {safe_str(n).lower() for n in (meat.get("hsiImageName") or [])}
         hsi_meta = meat.get("hsi") or {}
@@ -189,20 +202,14 @@ async def ingest_row_upload(
             jpg_bytes = _ensure_jpg(raw)
             print(f"[DEBUG] Converted to JPEG, size: {len(jpg_bytes)} bytes")
 
-            # RGB 판정: 파일명이 rgb 포함 or payload의 rgbImageName에 명시된 경우
-            is_rgb = _looks_rgb(orig_name) or (orig_name.lower() in rgb_names)
-            if is_rgb:
-                new_fname = f"{uid}_rgb.jpg"
-                print(f"[DEBUG] Detected as RGB image: {new_fname}")
-            else:
-                # 파장 추출
-                m = WL_PAT.search(orig_name)
-                if not m:
-                    print(f"[ERROR] Cannot detect wavelength from filename: {orig_name}")
-                    raise HTTPException(status_code=400, detail=f"cannot detect wavelength from filename: {orig_name}")
-                wl = f"{m.group(1)}nm".lower()
-                new_fname = f"{uid}_{wl}.jpg"
-                print(f"[DEBUG] Detected as HSI image: {new_fname}")
+            # HSI 이미지만 처리 (RGB는 제외)
+            m = WL_PAT.search(orig_name)
+            if not m:
+                print(f"[ERROR] Cannot detect wavelength from filename: {orig_name}")
+                raise HTTPException(status_code=400, detail=f"cannot detect wavelength from filename: {orig_name}")
+            wl = f"{m.group(1)}nm".lower()
+            new_fname = f"{uid}_{wl}.jpg"
+            print(f"[DEBUG] Detected as HSI image: {new_fname}")
 
             out_path = f"{tmpdir}/{new_fname}"
             with open(out_path, "wb") as f:
@@ -243,18 +250,15 @@ async def ingest_row_upload(
         def to_uri(name: str) -> str:
             return f"s3://{bucket}/{to_key(name)}"
 
-        # 대표 이미지(우선 RGB → 없으면 첫 HSI)
-        rgb_name = next((n for _, n in saved_files if n.endswith("_rgb.jpg")), None)
-        first_hsi_name = next((n for _, n in saved_files if not n.endswith("_rgb.jpg")), None)
-        representative_name = rgb_name or first_hsi_name
+        # 대표 이미지 (첫 번째 HSI 이미지)
+        first_hsi_name = next((n for _, n in saved_files), None)
+        representative_name = first_hsi_name
         representative_uri = to_uri(representative_name) if representative_name else None
         print(f"[DEBUG] Representative image: {representative_name} -> {representative_uri}")
 
         # 파장 수집(이번 요청 범위에서) → spectral_index 매기기
         wavelengths = []
         for _, fname in saved_files:
-            if fname.endswith("_rgb.jpg"):
-                continue
             m = re.search(r'_(\d{3,4})nm\.jpg$', fname, re.I)
             if m:
                 wavelengths.append(int(m.group(1)))
@@ -314,13 +318,13 @@ async def ingest_row_upload(
             # ── SensoryEval insert ───────────────────────────────────
             meat_sensory = SensoryEval(
                 id=uid,
-                seqno=None,
-                isRefrigerated=True if period > 1 else False,
+                seqno=seqno,  # payload에서 받은 가공 횟수
+                isRefrigerated=is_refrig,
                 createdAt=convert_to_datetime(None, 1),
                 userId=user_id,
                 period=period,
                 filmedAt=convert_to_datetime(meat.get("picturedDate"), 2),
-                imagePath=None,
+                imagePath=None,  # HSI 이미지이므로 None
                 weight_kg=None,
                 marbling=safe_float(meat.get("marbling")),
                 color=safe_float(meat.get("meatColor")),
@@ -333,34 +337,13 @@ async def ingest_row_upload(
             db.add(meat_sensory)
             print(f"[DEBUG] Added SensoryEval record: {uid}")
 
-            # ── MeatImage rows ───────────────────────────────────────
-            image_rows: List[MeatImage] = []
-            for _, fname in saved_files:
-                role = "rgb" if fname.endswith("_rgb.jpg") else "hsi"
-                wavelength = None
-                if role == "hsi":
-                    m2 = re.search(r'_(\d{3,4}nm)\.jpg$', fname, re.I)
-                    wavelength = m2.group(1).lower() if m2 else None
-
-                image_rows.append(
-                    MeatImage(
-                        uid=uid,
-                        role=role,
-                        wavelength=wavelength,          # '430nm' | None
-                        bucket=bucket,
-                        s3_key=to_key(fname),           # key
-                        filename=fname,                 # 원파일명(리네임된)
-                    )
-                )
-            print(f"[DEBUG] Created {len(image_rows)} MeatImage records")
+            # MeatImage 테이블은 사용하지 않음 - SensoryEval.imagePath와 HSIImagesBands.filename에 직접 저장
+            print(f"[DEBUG] Skipping MeatImage table, using existing tables")
 
             # ── HSIImagesBands rows ─────────────────────────────────
-            #   RGB는 제외, 각 파장별 좌표와 s3 uri 저장
+            #   각 파장별 좌표와 s3 uri 저장
             bands_rows: List[HSIImagesBands] = []
             for _, fname in saved_files:
-                if fname.endswith("_rgb.jpg"):
-                    continue
-
                 m2 = re.search(r'_(\d{3,4})nm\.jpg$', fname, re.I)
                 if not m2:
                     continue
@@ -376,7 +359,7 @@ async def ingest_row_upload(
                 bands_rows.append(
                     HSIImagesBands(
                         id=uid,
-                        seqno=None,                      # 필요하면 의미있는 값으로
+                        seqno=seqno,                     # SensoryEval과 동일한 seqno
                         isRefrigerated=is_refrig,        # boolean NN
                         spectral_index=sp_idx,           # NOT NULL이면 None 방지
                         filename=to_uri(fname),          # ✅ S3 경로(URI)
@@ -388,7 +371,61 @@ async def ingest_row_upload(
                 )
             print(f"[DEBUG] Created {len(bands_rows)} HSIImagesBands records")
 
-            db.add_all(image_rows + bands_rows)
+            # ── HSISensoryEval insert ───────────────────────────────────
+            hsi_sensory = HSISensoryEval(
+                id=uid,
+                seqno=seqno,  # SensoryEval과 동일한 seqno
+                isRefrigerated=is_refrig,
+                createdAt=convert_to_datetime(None, 1),
+                xai_imagePath=None,
+                xai_gradeNum=None,
+                xai_gradeNum_imagePath=None,
+                Marbling=safe_float(meat.get("marbling")),
+                Meat_Color=safe_float(meat.get("meatColor")),
+                Texture=safe_float(meat.get("texture")),
+                Surface_Moisture=safe_float(meat.get("surfaceMoisture")),
+                Total=safe_float(meat.get("total")),
+            )
+            db.add(hsi_sensory)
+            print(f"[DEBUG] Added HSISensoryEval record: {uid}")
+
+            # ── AI_HSISensoryEval insert ───────────────────────────────────
+            ai_hsi_sensory = AI_HSISensoryEval(
+                id=uid,
+                seqno=seqno,  # SensoryEval과 동일한 seqno
+                isRefrigerated=is_refrig,
+                createdAt=convert_to_datetime(None, 1),
+                xai_imagePath=None,
+                xai_gradeNum=None,
+                xai_gradeNum_imagePath=None,
+                Marbling=None,  # AI 예측 결과이므로 현재는 None
+                Meat_Color=None,
+                Texture=None,
+                Surface_Moisture=None,
+                Total=None,
+            )
+            db.add(ai_hsi_sensory)
+            print(f"[DEBUG] Added AI_HSISensoryEval record: {uid}")
+
+            # ── AI_SensoryEval insert ───────────────────────────────────
+            ai_sensory = AI_SensoryEval(
+                id=uid,
+                seqno=seqno,  # SensoryEval과 동일한 seqno
+                isRefrigerated=is_refrig,
+                createdAt=convert_to_datetime(None, 1),
+                xai_imagePath=None,
+                xai_gradeNum=None,
+                xai_gradeNum_imagePath=None,
+                marbling=None,  # AI 예측 결과이므로 현재는 None
+                color=None,
+                texture=None,
+                surfaceMoisture=None,
+                overall=None,
+            )
+            db.add(ai_sensory)
+            print(f"[DEBUG] Added AI_SensoryEval record: {uid}")
+
+            db.add_all(bands_rows)
             db.commit()
             print(f"[DEBUG] Database commit successful")
 
