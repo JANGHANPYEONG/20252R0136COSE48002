@@ -261,7 +261,7 @@ class HSIPredictor:
         if self.xai_mode == 'attn':
             if not self._has_attn:
                 raise RuntimeError("model에서 attention 모듈 찾을 수 없음")
-            cam_pack = generate_attention_arrays(
+            return generate_attention_arrays(
                 model=self.model,
                 image_tensor_bchw=img_tensor.to(self.device),
                 outputs=output,
