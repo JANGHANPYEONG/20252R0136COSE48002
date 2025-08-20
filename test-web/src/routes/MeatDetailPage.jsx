@@ -133,7 +133,7 @@ export default function MeatDetailPage() {
       // 안내 후 대시보드 탭으로 이동
       setSnackbar({ open: true, message: '반려되었습니다' });
       setTimeout(() => {
-        nav(`/NewDashboard?tab`);
+        nav(`/DashBoard?tab`);
       }, 1000);
     } catch (e) {
       // 실패해도 콘솔만 남기고 현재 페이지 유지
