@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 import cv2
+from typing import Optional
 
 IMAGE_FOLDER_PATH = "./images/"
 

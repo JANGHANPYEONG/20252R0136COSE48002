@@ -1,4 +1,9 @@
 {
   "backend-store-uri": "/mnt/data/mlflow_tracking",
-  "default-artifact-root": "/mnt/data/mlflow_artifacts"
+  "default-artifact-root": "/mnt/data/mlflow_artifacts",
+  "experiment_name": "HSI_Model_Training",
+  "cache_dirs": {
+    "image_cache": "/tmp/hsi_image_cache",
+    "xai_cache": "/tmp/hsi_xai_cache"
+  }
 }
