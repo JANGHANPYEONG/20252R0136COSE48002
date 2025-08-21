@@ -77,10 +77,15 @@ def main():
                        help='Disable MLflow logging')
     parser.add_argument('--save-interval', type=int,
                        help='Epoch interval for model checkpointing')
+    parser.add_argument('--experiment-id', type=str, default=None,
+                       help="Attach to an existing mlflow_experiment_id if provided")
+    parser.add_argument('--run-id', type=str, default=None,
+                        help="Attach to an existing mlflow_run_id if provided")
     args = parser.parse_args()
-    
-    run_id = None
-    
+
+    experiment_id = args.experiment_id
+    run_id = args.run_id
+
     # 설정 로드
     print("Loading configuration...")
     config = load_config(args.config)
@@ -101,8 +106,8 @@ def main():
     if not args.no_mlflow:
         try:
             logger = create_logger(config)
-            logger.start_run()
-            
+            logger.start_run(experiment_id=experiment_id, run_id=run_id)
+
             # 하이퍼파라미터 로깅
             params_to_log = {
                 'model_file': config['model']['file'],
