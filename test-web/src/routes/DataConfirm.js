@@ -20,7 +20,7 @@ const DataConfirm = () => {
       style={{
         width: '100%',
         height: '100%',
-        padding: '45px 80px',
+        padding: '20px 80px', // Reduced top padding to align with sidebar
         // display: 'flex',
         // flexDirection: 'column',
       }}

@@ -3,6 +3,7 @@
 /* 토글 버튼으로 사이드 바가 열리고, 아이콘 클릭 시 해당 페이지로 이동 */
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
+import { Link, useNavigate } from 'react-router-dom';
 // import mui component
 import {
   List,
@@ -13,15 +14,21 @@ import {
   Toolbar,
   Tooltip,
   Collapse,
+  Box,
 } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
-// import icons
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
 // import page lists
 import pageListItems from '../constants/pageListItems';
+// import images
+import deeplant_long from '../../../../src_assets/deeplant_long.webp';
+import logo from '../../../../src_assets/logo.png';
 
 // Drawer 스타일 설정
 const StyledDrawer = styled(MuiDrawer, {
@@ -31,6 +38,8 @@ const StyledDrawer = styled(MuiDrawer, {
     position: 'relative',
     whiteSpace: 'nowrap',
     width: open ? drawerWidth : '64px',
+    top: 0, // 상단에 붙임
+    marginTop: 0, // 상단 마진 제거
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -57,9 +66,12 @@ const Drawer = ({
   toggleDrawer,
   location,
   handleListItemClick,
-  drawerWidth
+  drawerWidth,
+  userInfo,
+  logout
 }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
+  const navigate = useNavigate();
 
   // 사이드바가 축소될 때 하위 메뉴도 함께 접기
   useEffect(() => {
@@ -205,28 +217,144 @@ const Drawer = ({
     );
   };
 
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'Manager':
+        return '#70E391';
+      case 'Researcher':
+        return '#D9C2FF';
+      default:
+        return '#FFF856';
+    }
+  };
+
   return (
     <StyledDrawer variant="permanent" open={open} drawerWidth={drawerWidth}>
-      <Toolbar />
-      <List
-        component="nav"
-        sx={{
-          pt: '14px',
-          pb: '12px',
-          ...(open && { mt: '8px' }),
+      {/* 로고 영역 */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '24px 16px',  // 위아래 패딩 증가
+          height: 'auto',  // 자동 높이로 변경하여 컨텐츠에 맞춤
+          minHeight: '120px',  // 최소 높이 설정
+          cursor: 'pointer',
+          backgroundColor: '#f9f9f9'  // 약간의 배경색 추가
         }}
+        onClick={toggleDrawer}
       >
-        {pageListItems.map(renderMenuItem)}
-      </List>
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          px: [1.2],
-        }}
-      >
-      </Toolbar>
+        {open ? (
+          <img 
+            src={deeplant_long} 
+            alt="Deeplant Logo" 
+            style={{ 
+              width: '90%',  // 너비를 퍼센트로 지정하여 컨테이너에 맞추고 비율 유지
+              height: 'auto',  // 높이는 자동으로 계산하여 원본 비율 유지
+              maxWidth: '100%'
+            }} 
+          />
+        ) : (
+          <img 
+            src={logo} 
+            alt="LOGO" 
+            style={{ 
+              width: '54px',  // 고정 너비로 설정 - 사이드바가 64px이므로 적절한 여백 확보
+              height: '54px',  // 정사각형 비율 유지
+              padding: '2px'   // 작은 패딩 추가
+            }} 
+          />
+        )}
+      </Box>
+      
+      <Divider sx={{ margin: '0 16px', marginBottom: '16px' }} />
+      
+      {/* 메인 메뉴 영역 */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <List
+          component="nav"
+          sx={{
+            pt: '14px',
+            pb: '12px',
+          }}
+        >
+          {pageListItems.map(renderMenuItem)}
+        </List>
+      </Box>
+      
+      {/* 사용자 정보 및 로그아웃 영역 */}
+      <Box sx={{ 
+        marginTop: 'auto', 
+        padding: '16px',
+        borderTop: '1px solid rgba(0, 0, 0, 0.12)',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          marginBottom: open ? '16px' : '8px',
+          justifyContent: open ? 'flex-start' : 'center'
+        }}>
+          <IconButton 
+            onClick={() => navigate('/profile')}
+            sx={{ 
+              backgroundColor: getTypeColor(userInfo?.type || 'Guest'),
+              borderRadius: '12px',
+              marginRight: open ? '8px' : '0px',
+              padding: '8px',
+              width: '40px',
+              height: '40px'
+            }}
+          >
+            <PersonOutlineOutlinedIcon />
+          </IconButton>
+          
+          {open && userInfo && (
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                {userInfo.name || '사용자'}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                {userInfo.type || '게스트'}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: open ? 'flex-start' : 'center'
+        }}>
+          <IconButton 
+            onClick={logout}
+            sx={{ 
+              backgroundColor: '#E8E8E8',
+              borderRadius: '12px',
+              marginRight: open ? '8px' : '0px',
+              padding: '8px',
+              width: '40px',
+              height: '40px'
+            }}
+          >
+            <LogoutIcon />
+          </IconButton>
+          
+          {open && (
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+              onClick={logout}
+            >
+              로그아웃
+            </Typography>
+          )}
+        </Box>
+      </Box>
     </StyledDrawer>
   );
 };

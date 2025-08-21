@@ -26,3 +26,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+test-ML-backend/datasets_HSI/
+
+# Claude Code files
+.claude/
+*.claude

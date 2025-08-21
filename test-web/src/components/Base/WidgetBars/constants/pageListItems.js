@@ -8,6 +8,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { path } from 'd3';
 
 const pageListItems = [
   {
@@ -39,16 +40,16 @@ const pageListItems = [
   {
     label: 'AI 학습',
     icon: <PsychologyIcon sx={{ fontSize: 30 }} />,
-    path: '/AI',
+    path: '/Learning/RGB',
     hasSubmenu: true,
     submenu: [
       {
-        label: '패턴분석',
-        path: '/Pattern',
+        label: 'RGB',
+        path: '/Learning/RGB',
       },
       {
-        label: '학습하기',
-        path: '/Learning',
+        label: 'MSI',
+        path  : '/Learning',
       },
     ],
   },

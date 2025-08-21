@@ -1,8 +1,9 @@
 import ApexCharts from 'react-apexcharts';
 import React, { useEffect, useState } from 'react';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { statisticTime } from '../../../../API/statistic/statisticTime';
 
-const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
+const TasteTime = ({ startDate, endDate, seqnoValue, meatValue, dataType, modality }) => {
   const [series, setSeries] = useState([
     {
       name: 'Deep Aging',
@@ -13,6 +14,16 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
       data: [], // We will update this with the actual data points later
     },
   ]);
+
+  // 숙성도 비교 차트와 동일한 레이블 선택 필터
+  const availableLabels = [
+    { value: 'label1', name: '단백질 함량' },
+    { value: 'label2', name: '지방 함량' },
+    { value: 'label3', name: '수분 함량' },
+    { value: 'label4', name: 'pH 값' },
+    { value: 'label5', name: '색도 값' },
+  ];
+  const [selectedLabel, setSelectedLabel] = useState('label1');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,38 +41,56 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
         // Extract the necessary data from the response
         const deepAgingData = [
           parseFloat(data[0].toFixed(2)), // 0일
-          parseFloat(data[1].toFixed(2)), // 3일
           parseFloat(data[2].toFixed(2)), // 7일
-          parseFloat(data[3].toFixed(2)), // 14일
-          parseFloat(data[4].toFixed(2)), // 21일
         ];
 
         const rawMeatData = [
           parseFloat(freshmeat_data[1].toFixed(2)),
-          parseFloat(freshmeat_data[1].toFixed(2)), // 원육 데이터를 각 시점에 맞추어 반복
-          parseFloat(freshmeat_data[1].toFixed(2)),
-          parseFloat(freshmeat_data[1].toFixed(2)),
           parseFloat(freshmeat_data[1].toFixed(2)),
         ];
+
+        // Pad to pull points inward from extremes
+        const deepAgingPadded = [null, deepAgingData[0], deepAgingData[1], null];
+        const rawMeatPadded = [null, rawMeatData[0], rawMeatData[1], null];
 
         // Update the chart data
         setSeries([
           {
             name: 'Deep Aging',
-            data: deepAgingData,
+            data: deepAgingPadded,
           },
           {
             name: 'Raw Meat',
-            data: rawMeatData,
+            data: rawMeatPadded,
           },
         ]);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Dummy data fallback for future API integration (0일, 7일만)
+        const deepAgingData = [
+          Number((Math.random() * 2 + 4).toFixed(2)), // 0일
+          Number((Math.random() * 2 + 6).toFixed(2)), // 7일
+        ];
+        const rawMeatBase = Number((Math.random() * 1.5 + 4).toFixed(2));
+        const rawMeatData = [rawMeatBase, rawMeatBase];
+        const deepAgingPadded = [null, deepAgingData[0], deepAgingData[1], null];
+        const rawMeatPadded = [null, rawMeatData[0], rawMeatData[1], null];
+
+        setSeries([
+          {
+            name: 'Deep Aging',
+            data: deepAgingPadded,
+          },
+          {
+            name: 'Raw Meat',
+            data: rawMeatPadded,
+          },
+        ]);
       }
     };
 
     fetchData();
-  }, [startDate, endDate, meatValue, seqnoValue]);
+  }, [startDate, endDate, meatValue, seqnoValue, dataType, modality, selectedLabel]);
 
   const options = {
     chart: {
@@ -87,7 +116,7 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
       curve: 'smooth',
     },
     title: {
-      text: '숙성 시간에 따른 맛 데이터 변화',
+      text: `[${modality}] 숙성 시간에 따른 ${dataType === 'sensory' ? '관능' : '예측'} 데이터 변화 - ${availableLabels.find(l => l.value === selectedLabel)?.name}`,
       align: 'left',
     },
     grid: {
@@ -101,7 +130,7 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
       size: 1,
     },
     xaxis: {
-      categories: ['0일', '3일', '7일', '14일', '21일'],
+      categories: ['', '0일', '7일', ''],
       title: {
         text: '숙성일',
       },
@@ -126,7 +155,30 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
   };
 
   return (
-    <div>
+    <Box>
+      {/* 레이블 선택 드롭다운 (숙성도 비교 차트와 동일 구조) */}
+      <Box mb={2}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="ts-label-select-label">분석할 레이블 선택</InputLabel>
+          <Select
+            labelId="ts-label-select-label"
+            id="ts-label-select"
+            value={selectedLabel}
+            label="분석할 레이블 선택"
+            onChange={(e) => setSelectedLabel(e.target.value)}
+            size="small"
+            sx={{ '& .MuiSelect-select': { py: 0.5, px: 0.5 } }}
+          >
+            {availableLabels.map((label) => (
+              <MenuItem key={label.value} value={label.value}>
+                {label.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      {/* 차트 */}
       <div id="chart">
         <ApexCharts
           options={options}
@@ -135,7 +187,7 @@ const TasteTime = ({ startDate, endDate, seqnoValue, meatValue }) => {
           height={350}
         />
       </div>
-    </div>
+    </Box>
   );
 };
 

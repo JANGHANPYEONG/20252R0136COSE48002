@@ -12,11 +12,6 @@ import home_ML from '../src_assets/home_ML.png';
 
 const cards = [
     {
-        title: '패턴분석',
-        image: data_ANA,
-        link: '/Pattern',
-    },
-    {
         title: '학습하기',
         image: home_ML,
         link: '/Learning',

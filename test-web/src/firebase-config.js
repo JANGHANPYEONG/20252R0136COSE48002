@@ -18,13 +18,12 @@ import { getStorage } from 'firebase/storage';
 // };
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB8neVkYr8xiD-V8QxXovkiLD4UzWeMapk",
-  authDomain: "r0136cose48002.firebaseapp.com",
-  projectId: "r0136cose48002",
-  storageBucket: "r0136cose48002.firebasestorage.app",
-  messagingSenderId: "880708399922",
-  appId: "1:880708399922:web:47bdbe9ac704c3ffe8dd2b",
-  measurementId: "G-DV8K5S2K9D"
+  apiKey: "AIzaSyACiwdOdfk6dA80uzWYZBln8qilMxItbAg",
+  authDomain: "deeplant-auth.firebaseapp.com",
+  projectId: "deeplant-auth",
+  storageBucket: "deeplant-auth.firebasestorage.app",
+  messagingSenderId: "487484740048",
+  appId: "1:487484740048:web:6efab33fbaec1b46d629d5"
 };
 
 
