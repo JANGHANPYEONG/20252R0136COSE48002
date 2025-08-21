@@ -24,13 +24,14 @@ def _require_state_attr(request: Request, name: str):
     return getattr(request.app.state, name)
 
 
-class HSIPredictRequest(BaseModel):
+class HSIPredictItem(BaseModel):
     id: str  
     seqno: str  
 
+class HSIPredictRequest(BaseModel):
+    items: List[HSIPredictItem]  # 여러 개체 조회를 위한 리스트  
+
 class HSIPredictData(BaseModel):
-    id: str
-    seqno: int
     isRefrigerated: bool
     marbling: Optional[float] = None
     color: Optional[float] = None
@@ -39,69 +40,98 @@ class HSIPredictData(BaseModel):
     overall: Optional[float] = None
     createdAt: Optional[datetime] = None
 
+class HSIPredictGroup(BaseModel):
+    id: str
+    seqno: int
+    predictions: List[HSIPredictData]  # 해당 개체의 예측 데이터들 (냉장/비냉장)
+
 class HSIPredictResponse(BaseModel):
     message: str
-    prediction: List[HSIPredictData]
+    prediction: List[HSIPredictGroup]  # 개체별로 그룹화된 예측 데이터
 
 
-@router.post("/load_hsi-prediction", response_model=HSIPredictResponse)
+@router.post("/prediction", response_model=HSIPredictResponse)
 async def get_hsi_prediction(request: Request, hsi_request: HSIPredictRequest):
     """
-    AI HSI 예측 결과를 조회하는 엔드포인트
+    AI HSI 예측 결과를 조회하는 엔드포인트 (여러 개체 지원)
     복합키 (id, seqno, isRefrigerated)를 사용하여 ai_hsi_sensory_eval 테이블에서 데이터 조회
     """
     try:
         # FastAPI의 app.state에서 DB 세션 가져오기
         db_session = _require_state_attr(request, "db_session")
         
-        print(f"HSI prediction request received: id={hsi_request.id}, seqno={hsi_request.seqno}")
+        print(f"HSI prediction request received for {len(hsi_request.items)} items")
         
         # 입력 검증
-        if not hsi_request.id or not str(hsi_request.id).strip():
-            raise HTTPException(status_code=400, detail="id cannot be empty")
-        
-        if not hsi_request.seqno or not str(hsi_request.seqno).strip():
-            raise HTTPException(status_code=400, detail="seqno cannot be empty")
-        
-        # 쿼리 구성 - id와 seqno로 조회하여 모든 isRefrigerated 값의 결과를 가져옴
-        hsi_predictions = db_session.query(AI_HSISensoryEval).filter(
-            AI_HSISensoryEval.id == str(hsi_request.id),
-            AI_HSISensoryEval.seqno == int(hsi_request.seqno)
-        ).all()
-        
-        if not hsi_predictions:
-            raise HTTPException(
-                status_code=404, 
-                detail=f"No HSI prediction data found for id={hsi_request.id}, seqno={hsi_request.seqno}"
+        if not hsi_request.items:
+            return HSIPredictResponse(
+                message="failed",
+                prediction=[]
             )
         
-        # 결과를 리스트로 변환
-        prediction_list = []
-        for prediction in hsi_predictions:
-            prediction_data = HSIPredictData(
-                id=prediction.id,
-                seqno=prediction.seqno,
-                isRefrigerated=prediction.isRefrigerated,
-                marbling=prediction.Marbling,
-                color=prediction.Meat_Color,
-                texture=prediction.Texture,
-                surfaceMoisture=prediction.Surface_Moisture,
-                overall=prediction.Total,
-                createdAt=prediction.createdAt
+        grouped_predictions = []
+        
+        # 각 아이템에 대해 조회 수행
+        for item in hsi_request.items:
+            print(f"Processing item: id={item.id}, seqno={item.seqno}")
+            
+            # 개별 아이템 입력 검증
+            if not item.id or not str(item.id).strip():
+                print(f"Skipping item with empty id: {item}")
+                continue
+                
+            if not item.seqno or not str(item.seqno).strip():
+                print(f"Skipping item with empty seqno: {item}")
+                continue
+            
+            # 개별 아이템에 대한 쿼리 수행
+            try:
+                hsi_predictions = db_session.query(AI_HSISensoryEval).filter(
+                    AI_HSISensoryEval.id == str(item.id),
+                    AI_HSISensoryEval.seqno == item.seqno
+                ).all()
+                
+                # 해당 개체의 예측 데이터들을 리스트로 구성
+                item_predictions = []
+                for prediction in hsi_predictions:
+                    prediction_data = HSIPredictData(
+                        isRefrigerated=prediction.isRefrigerated,
+                        marbling=prediction.Marbling,
+                        color=prediction.Meat_Color,
+                        texture=prediction.Texture,
+                        surfaceMoisture=prediction.Surface_Moisture,
+                        overall=prediction.Total,
+                        createdAt=prediction.createdAt
+                    )
+                    item_predictions.append(prediction_data)
+                
+                # 예측 데이터가 있는 경우에만 그룹에 추가
+                if item_predictions:
+                    group = HSIPredictGroup(
+                        id=str(item.id),
+                        seqno=int(item.seqno),
+                        predictions=item_predictions
+                    )
+                    grouped_predictions.append(group)
+                    
+            except Exception as item_error:
+                print(f"Error processing item {item.id}, {item.seqno}: {item_error}")
+                continue
+        
+        print(f"Found {len(grouped_predictions)} groups with prediction data")
+        
+        # 결과가 있으면 성공, 없으면 실패로 응답
+        if grouped_predictions:
+            return HSIPredictResponse(
+                message="success",
+                prediction=grouped_predictions
             )
-            prediction_list.append(prediction_data)
+        else:
+            return HSIPredictResponse(
+                message="failed",
+                prediction=[]
+            )
         
-        print(f"Found {len(prediction_list)} HSI prediction records")
-        
-        # message와 prediction 구조로 응답 반환
-        return HSIPredictResponse(
-            message="success",
-            prediction=prediction_list
-        )
-        
-    except HTTPException:
-        # HTTPException은 그대로 재발생
-        raise
     except Exception as e:
         print(f"Unexpected error in get_hsi_prediction endpoint: {type(e).__name__}: {e}")
         import traceback

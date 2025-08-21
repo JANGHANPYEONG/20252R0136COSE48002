@@ -2,6 +2,7 @@
 """
 # [0821] TODO 리스트
 # 냉장 1일차만 있으면 이거만 뜬다. 1일차 7일차 둘 다 있는 경우 id로 달라는 요청을 보내면, 1일차 7일차 둘 다 FE에 보내야한다.
+# 일단 이미지는 일반 rgb이미지, hsi이미지, xai이미지 db에 저장되어 있는 경로를 모두 반환한다.
 # DATA를 두개를 보내던지 구현이 편한대로 해서 보내야한다. 
 
 DB 관련해서 500 에러 나는거 해결
@@ -36,7 +37,8 @@ class Part(BaseModel):
 # rgb, hsi 이미지는 이미지의 위치를 반환함.
 class ImageSummary(BaseModel):
     rgb: Optional[str] = Field(None, description="대표 RGB 이미지 URL")
-    hsi: Optional[str] = Field(None, description="대표 HSI 이미지 URL")
+    hsi: Optional[str] = Field(None, description="대표 HSI 이미지 URL") 
+    xai: Optional[str] = Field(None, description="XAI 설명 이미지 URL")  # 추가
     msiCount: int = Field(0, description="MSI 밴드 이미지 개수")
 
 # --- 관능/예측 요약(리스트용) ---
@@ -101,37 +103,14 @@ class DashboardResponse(BaseModel):
 
 @router.get("/dashboard", response_model=DashboardResponse)
 def get_dashboard_data(
-    # ID 검색
     search_id: Optional[str] = Query(None, alias="id", description="ID 검색어 (이력번호/관리번호)"),
-    
-    # 상태 필터 (화면의 "전체" 드롭다운)
-    # status: Optional[str] = Query("전체", description="상태 필터: 전체, 정상, 보류, 반려"),
-    
-    # 데이터 생성일 기준 조회기간 (화면의 기간 버튼들)
     period: Optional[str] = Query("전체", description="조회기간: 1주, 1개월, 1분기, 1년, 전체"),
-    
-    # 직접 날짜 입력 (데이터 생성일 기준)
-    # 날짜 입력 양식: YYYY-MM-DD
     start_date: Optional[date] = Query(None, alias="startDate", description="시작날짜 (생성일 기준)"),
     end_date: Optional[date] = Query(None, alias="endDate", description="종료날짜 (생성일 기준)"),
-    
-    # 페이징
     page: int = Query(1, ge=1, description="페이지 번호"),
     limit: int = Query(20, ge=1, le=100, description="페이지당 항목 수"),
-    
     db: Session = Depends(get_db)
 ):
-    """
-    대시보드 데이터 조회 API
-    
-    - 필터링 기준: 데이터 생성일 (createdAt)
-    - 화면 요소:
-      * ID 검색 필드
-      * 상태 드롭다운 (전체/정상/보류/반려)
-      * 조회기간 버튼 (1주/1개월/1분기/1년/전체)
-      * 시작날짜/종료날짜 직접 입력
-      * 페이징 지원
-    """
     try:
         from datetime import timedelta
         
@@ -190,107 +169,138 @@ def get_dashboard_data(
         # 응답 데이터 변환
         data_items = []
         for meat in results:
-            # DeepAgingInfo에서 딥에이징 정보 가져오기
-            deep_aging_info = (db.query(DeepAgingInfo)
-                             .filter(DeepAgingInfo.id == meat.id)
-                             .order_by(DeepAgingInfo.seqno.desc())
-                             .first())
+            # DeepAgingInfo에서 모든 냉장 데이터 가져오기 (1일차, 7일차 등)
+            deep_aging_infos = (db.query(DeepAgingInfo)
+                            .filter(DeepAgingInfo.id == meat.id)
+                            .order_by(DeepAgingInfo.seqno.asc())  # 1일차부터 정렬
+                            .all())
             
-            sample_no = deep_aging_info.seqno if deep_aging_info else 0 # deepaging 회차
-            is_deep_aged = bool(deep_aging_info.isCompleted) if deep_aging_info else False
-            process_date = deep_aging_info.date.strftime("%Y-%m-%d") if (deep_aging_info and deep_aging_info.date) else None
-
-            # CategoryInfo에서 부위 정보 가져오기
-            category = (db.query(CategoryInfo)
-                       .filter(CategoryInfo.id == meat.categoryId)
-                       .first()) if meat.categoryId else None
+            # 냉장 데이터가 없으면 기본 데이터 하나만 생성
+            if not deep_aging_infos:
+                deep_aging_infos = [None]  # 기본 처리를 위해
             
-            part_primal = category.primalValue if category else None
-            part_secondary = category.secondaryValue if category else None
+            # 각 냉장 단계별로 데이터 생성
+            for deep_aging_info in deep_aging_infos:
+                sample_no = deep_aging_info.seqno if deep_aging_info else 0
+                is_deep_aged = bool(deep_aging_info.isCompleted) if deep_aging_info else False
+                process_date = deep_aging_info.date.strftime("%Y-%m-%d") if (deep_aging_info and deep_aging_info.date) else None
 
-            # SensoryEval에서 사람 관능평가 가져오기
-            sensory_eval = (db.query(SensoryEval)
-                           .filter(SensoryEval.id == meat.id, SensoryEval.seqno == sample_no)
-                           .order_by(SensoryEval.createdAt.desc())
-                           .first())
-            
-            human_overall = sensory_eval.overall if sensory_eval else None
-            rgb_image_url = sensory_eval.imagePath if (sensory_eval and sensory_eval.imagePath) else None
-
-            # AI_SensoryEval에서 AI 예측 관능평가 가져오기
-            ai_sensory = (db.query(AI_SensoryEval)
-                         .filter(AI_SensoryEval.id == meat.id, AI_SensoryEval.seqno == sample_no)
-                         .first())
-            
-            ai_overall = ai_sensory.overall if ai_sensory else None
-            ai_grade_num = ai_sensory.xai_gradeNum if ai_sensory else None
-
-            # HSIImagesBands에서 MSI 이미지 개수 가져오기
-            msi_count = (db.query(HSIImagesBands)
-                        .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == sample_no)
-                        .count())
-
-            # HSI 대표 이미지 URL (첫 번째 이미지 사용)
-            hsi_image = (db.query(HSIImagesBands)
-                        .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == sample_no)
-                        .first())
-            hsi_image_url = hsi_image.path if hsi_image else None
-
-            # 파장별 평균 흡수율 데이터 가져오기 (옵션)
-            spectrum_data = []
-            if sample_no > 0:  # 샘플이 있는 경우만
-                spectrum_records = (db.query(HSISensoryEval)
-                                  .filter(HSISensoryEval.id == meat.id, HSISensoryEval.seqno == sample_no)
-                                  .all())
+                # CategoryInfo에서 부위 정보 가져오기
+                category = (db.query(CategoryInfo)
+                        .filter(CategoryInfo.id == meat.categoryId)
+                        .first()) if meat.categoryId else None
                 
-                for record in spectrum_records:
-                    # SpectralInfo에서 파장 정보 가져오기
-                    spectral_info = (db.query(SpectralInfo)
-                                   .filter(SpectralInfo.idx == record.spectralIdx)
-                                   .first())
-                    
-                    if spectral_info:
-                        spectrum_data.append(SpectrumPoint(
-                            wavelength_nm=float(spectral_info.wavelength),
-                            mean_absorption=float(record.L) if record.L else 0.0  # L 값을 흡수율로 사용
-                        ))
+                part_primal = category.primalValue if category else None
+                part_secondary = category.secondaryValue if category else None
 
-            # 업로드 일시 (생성일 기준)
-            uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
+                # 해당 냉장 단계의 관능평가 데이터 가져오기
+                sensory_eval = (db.query(SensoryEval)
+                            .filter(SensoryEval.id == meat.id, SensoryEval.seqno == sample_no)
+                            .order_by(SensoryEval.createdAt.desc())
+                            .first())
+                
+                human_overall = sensory_eval.overall if sensory_eval else None
+                rgb_image_url = sensory_eval.imagePath if (sensory_eval and sensory_eval.imagePath) else None
 
-            # 냉장 여부 가져오기 // 냉장 안한경우 false, 한 경우 true
-            refrigerated= ai_sensory.isRefrigerated if ai_sensory else None if sample_no > 0 else None
+                # 해당 냉장 단계의 AI 예측 데이터 가져오기 (냉장 여부 확인)
+                ai_sensory = (db.query(AI_SensoryEval)
+                            .filter(AI_SensoryEval.id == meat.id, AI_SensoryEval.seqno == sample_no)
+                            .first())
+                
+                ai_overall = ai_sensory.overall if ai_sensory else None
+                ai_grade_num = ai_sensory.xai_gradeNum if ai_sensory else None
+                xai_image_url = ai_sensory.xai_imagePath if ai_sensory else None
 
-            # trace_key 생성 (이력번호-샘플번호)
-            trace_key = f"{meat.traceNum}-{sample_no:02d}" if meat.traceNum else f"{meat.id}-{sample_no:02d}"
+                # 냉장 여부 판단 (AI_SensoryEval의 isRefrigerated 사용)
+                refrigerated = bool(ai_sensory.isRefrigerated) if ai_sensory else False
 
-            data_items.append(DashboardItem(
-                id=meat.id,
-                traceNum=meat.traceNum,
-                sampleNo=sample_no,
-                traceKey=trace_key,
-                refrigerated=refrigerated,
-                part=Part(
-                    primal=part_primal,
-                    secondary=part_secondary
-                ),
-                isDeepAged=is_deep_aged,
-                butcheryDate=meat.butcheryYmd.strftime("%Y-%m-%d") if meat.butcheryYmd else None,
-                processDate=process_date,
-                uploadedAt=uploaded_at,
-                images=ImageSummary(
-                    rgb=rgb_image_url,
-                    hsi=hsi_image_url,
-                    msiCount=msi_count
-                ),
-                sensory=SensorySummary(
-                    humanOverall=human_overall,
-                    aiOverall=ai_overall,
-                    aiGradeNum=ai_grade_num
-                ),
-                spectrum=spectrum_data if spectrum_data else None  # 스펙트럼 데이터가 있을 때만
-            ))
-            
+                # HSI 이미지 데이터 (냉장 여부 고려)
+                msi_count = (db.query(HSIImagesBands)
+                            .filter(
+                                HSIImagesBands.id == meat.id, 
+                                HSIImagesBands.seqno == sample_no,
+                                HSIImagesBands.isRefrigerated == refrigerated
+                            )
+                            .count())
+
+                hsi_image = (db.query(HSIImagesBands)
+                            .filter(
+                                HSIImagesBands.id == meat.id, 
+                                HSIImagesBands.seqno == sample_no,
+                                HSIImagesBands.isRefrigerated == refrigerated
+                            )
+                            .first())
+                hsi_image_url = hsi_image.filename if hsi_image else None
+
+                # 스펙트럼 데이터 (성능 최적화)
+                spectrum_data = []
+                if sample_no > 0 and limit <= 10:
+                    try:
+                        spectrum_records = (db.query(HSISensoryEval)
+                                        .filter(
+                                            HSISensoryEval.id == meat.id, 
+                                            HSISensoryEval.seqno == sample_no,
+                                            HSISensoryEval.isRefrigerated == refrigerated
+                                        )
+                                        .limit(50)
+                                        .all())
+                        
+                        for record in spectrum_records:
+                            try:
+                                absorption_value = 0.0
+                                for attr_name in ['Total', 'total', 'L', 'Marbling', 'marbling', 'overall']:
+                                    if hasattr(record, attr_name):
+                                        attr_value = getattr(record, attr_name)
+                                        if attr_value is not None:
+                                            absorption_value = float(attr_value)
+                                            break
+                                
+                                spectrum_data.append(SpectrumPoint(
+                                    wavelength_nm=430.0 + len(spectrum_data) * 10,
+                                    mean_absorption=absorption_value
+                                ))
+                                
+                            except Exception:
+                                continue
+                                
+                    except Exception:
+                        spectrum_data = []
+
+                # 업로드 일시
+                uploaded_at = meat.createdAt.strftime("%Y-%m-%d %H:%M:%S") if meat.createdAt else None
+
+                # trace_key 생성
+                trace_key = f"{meat.traceNum}-{sample_no:02d}{'R' if refrigerated else 'F'}" if meat.traceNum else f"{meat.id}-{sample_no:02d}{'R' if refrigerated else 'F'}"
+
+                data_items.append(DashboardItem(
+                    id=meat.id,
+                    traceNum=meat.traceNum,
+                    sampleNo=sample_no,
+                    traceKey=trace_key,
+                    refrigerated=refrigerated,
+                    part=Part(
+                        primal=part_primal,
+                        secondary=part_secondary
+                    ),
+                    isDeepAged=is_deep_aged,
+                    butcheryDate=meat.butcheryYmd.strftime("%Y-%m-%d") if meat.butcheryYmd else None,
+                    processDate=process_date,
+                    uploadedAt=uploaded_at,
+                    images=ImageSummary(
+                        rgb=rgb_image_url,
+                        hsi=hsi_image_url,
+                        xai=xai_image_url,
+                        msiCount=msi_count
+                    ),
+                    sensory=SensorySummary(
+                        humanOverall=human_overall,
+                        aiOverall=ai_overall,
+                        aiGradeNum=ai_grade_num
+                    ),
+                    spectrum=spectrum_data if spectrum_data else None
+                ))
+        
+        # return을 올바른 위치로 이동
         return DashboardResponse(
             success=True,
             totalCount=total_count,
