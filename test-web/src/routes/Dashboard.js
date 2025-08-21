@@ -70,7 +70,7 @@ const Dashboard = () => {
 
   const [isLoaded, setisLoaded] = useState(false); // query on/off
   const queryClient = useQueryClient();
-  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded});
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: false});
 
 
   // 쿼리스트링 추출
