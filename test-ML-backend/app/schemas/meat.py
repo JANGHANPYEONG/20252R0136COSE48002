@@ -3,7 +3,7 @@
 """
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 class MeatBase(BaseModel):
     """육류 기본 스키마"""
@@ -108,29 +108,35 @@ class HSIMeta(BaseModel):
     expectedCount: Optional[int] = None
     isRefrigerated: Optional[bool] = None
 
+class BandData(BaseModel):
+    """HSI 밴드 데이터 스키마"""
+    spectral_index: int
+    topLeft: List[int]
+    topRight: List[int]
+    bottomRight: List[int]
+    bottomLeft: List[int]
+    filename: str
+
 class MeatDataUpload(BaseModel):
     """육류 데이터 업로드 스키마"""
-    traceNum: str
-    sampleNum: str
-    seqno: Optional[int] = 1
-    gradeNum: Optional[str] = None
-    butcheryDate: Optional[str] = None
-    picturedDate: Optional[str] = None
-    manufactureDate: Optional[str] = None
-    expirationDate: Optional[str] = None
-    period: Optional[str] = None
-    marbling: Optional[float] = None
-    meatColor: Optional[float] = None
-    meat_Color: Optional[float] = None  # 프론트엔드와 일치시키기 위해 추가
-    texture: Optional[float] = None
-    surfaceMoisture: Optional[float] = None
-    total: Optional[float] = None
-    hsi: Optional[HSIMeta] = None
-    edgePoint: Optional[Dict[str, Any]] = None
+    categoryId: Optional[int] = None
+    gradeNum: Optional[int] = None
+    seqno: int
+    marbling: float = Field(ge=1, le=10)
+    meat_color: float = Field(ge=1, le=10)
+    texture: float = Field(ge=1, le=10)
+    surface_moisture: float = Field(ge=1, le=10)
+    overall: float = Field(ge=1, le=10)
+    bands: List[BandData]
 
 class DataUploadRequest(BaseModel):
     """데이터 업로드 요청 스키마"""
     userId: str
     id: str
+    traceNum: str
+    butcheryYmd: str  # "2025-08-05" 형식
+    manufactureYmd: str  # "2025-08-06" 형식
+    filmedAt: str  # "2025-08-18" 형식
+    expireYmd: str  # "2025-09-19" 형식
+    isRefrigerated: bool
     meat: MeatDataUpload
-    hsiFilenames: list[str]
