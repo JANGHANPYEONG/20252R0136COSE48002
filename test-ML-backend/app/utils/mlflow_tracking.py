@@ -1,10 +1,16 @@
 # mlflow_progress.py
 from typing import Dict, Optional, List
+from datetime import datetime
 from mlflow.tracking import MlflowClient
 import time
 import math
 
 client = MlflowClient()
+
+def ms_to_datetime(ms: Optional[int]) -> Optional[str]:
+    if ms is None:
+        return None
+    return datetime.fromtimestamp(ms / 1000.0).strftime('%Y-%m-%d %H:%M:%S')
 
 def latest_metric(run_id: str, key: str):
     hist = client.get_metric_history(run_id, key)
@@ -70,6 +76,6 @@ def get_run_core(run_id: str) -> Dict:
             "epoch": None if m_progress is None else int(m_progress.step),
         },
         "eta_seconds": None if eta_sec is None else float(eta_sec),
-        "start_time": info.start_time,  # ms
-        "end_time": info.end_time,      # ms (진행 중이면 None)
+        "start_time": ms_to_datetime(info.start_time),  # ms
+        "end_time": ms_to_datetime(info.end_time),      # ms (진행 중이면 None)
     }
