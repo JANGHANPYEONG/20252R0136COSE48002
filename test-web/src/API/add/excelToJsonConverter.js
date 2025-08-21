@@ -1,4 +1,34 @@
 import * as XLSX from 'xlsx';
+/**
+ * 이미지 파일명과 JSON 데이터를 관리번호/샘플번호/파장 기준으로 매핑
+ * @param {Array} jsonList - 샘플별 JSON 데이터 배열
+ * @param {Object} imageMap - {관리번호: {샘플번호: {파장: {fileName, ...}}}}
+ * @returns {Array} - [{ fileName, data }]
+ */
+export function mapImageFilenamesToJsons(jsonList, imageMap) {
+  const result = [];
+  for (const sample of jsonList) {
+    const managementNumber = sample['관리번호'] || sample['이력번호'] || sample.traceNum;
+    const sampleNumber = (sample['샘플번호'] || sample.sampleNum || '').replace(/^[sS]/, '');
+    const wavelengths = (sample['파장 정보'] || '').split(',').map(w => w.trim()).filter(Boolean);
+
+    const images = [];
+    if (
+      imageMap[managementNumber] &&
+      imageMap[managementNumber][sampleNumber]
+    ) {
+      for (const wl of wavelengths) {
+        const imgObj = imageMap[managementNumber][sampleNumber][wl];
+        if (imgObj) images.push(imgObj.fileName);
+      }
+    }
+    result.push({
+      fileName: images.join(', '),
+      data: sample
+    });
+  }
+  return result;
+}
 
 /**
  * 엑셀 파일을 JSON 형식으로 변환하는 함수
@@ -22,21 +52,14 @@ export const convertExcelToJson = async (excelFile, dataFormat = 'HSI') => {
     const headers = data[0];
     const rows = data.slice(1).filter(row => row.some(cell => cell !== ''));
 
-    console.log('엑셀 헤더:', headers);
-    console.log('데이터 행 수:', rows.length);
-
     // 헤더 매핑
     const headerMap = createHeaderMap(headers);
-    
     // 각 행을 JSON으로 변환
     const jsonData = [];
-    
     for (const row of rows) {
       if (!row[headerMap.traceNum] || !row[headerMap.sampleNum]) continue;
-      
       const traceNum = String(row[headerMap.traceNum]).trim();
       const sampleNum = String(row[headerMap.sampleNum]).trim();
-      
       // 기본 meat 정보
       const meatData = {
         traceNum: traceNum,
@@ -55,17 +78,14 @@ export const convertExcelToJson = async (excelFile, dataFormat = 'HSI') => {
         surfaceMoisture: parseFloat(row[headerMap.surfaceMoisture]) || 0,
         total: parseFloat(row[headerMap.total]) || 0
       };
-
       // 파장별 edgePoint 데이터 추출
       const edgePoints = extractEdgePoints(row, headerMap, headers);
-      
       // HSI 설정
       const hsiConfig = {
         isRefrigerated: false,
         wavelengthFromFilename: true,
         expectedCount: Object.keys(edgePoints).length
       };
-
       const jsonItem = {
         userId: "deeplant@example.com",
         rowId: `sheet1-${traceNum}-${sampleNum}`,
@@ -75,13 +95,9 @@ export const convertExcelToJson = async (excelFile, dataFormat = 'HSI') => {
           hsi: hsiConfig
         }
       };
-
       jsonData.push(jsonItem);
     }
-
-    console.log(`엑셀 데이터 변환 완료: ${jsonData.length}개 항목`);
     return jsonData;
-
   } catch (error) {
     console.error('엑셀 to JSON 변환 오류:', error);
     throw new Error(`엑셀 파일 변환 실패: ${error.message}`);
@@ -347,4 +363,4 @@ export const createIndividualSampleJsons = (jsonArray) => {
   return individualJsons;
 };
 
-export default { convertExcelToJson, groupSamplesByTrace, createIndividualSampleJsons };
+export default { convertExcelToJson, groupSamplesByTrace, createIndividualSampleJsons, mapImageFilenamesToJsons };

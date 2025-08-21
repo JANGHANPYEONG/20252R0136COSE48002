@@ -66,11 +66,13 @@ const Dashboard = () => {
     { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
   ]);
   const navigate = useNavigate();
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
   //////////////////////////////////////////////////
   // data를 useState로 저장 -> usequeryClient 로 저장
   const [isLoaded, setisLoaded] = useState(false); // query on/off
   const queryClient = useQueryClient();
-  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded});
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: false});
 
 
   // 쿼리스트링 추출

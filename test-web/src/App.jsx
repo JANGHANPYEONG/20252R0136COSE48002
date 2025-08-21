@@ -19,7 +19,7 @@ import Data from './routes/Data';
 import DataRegister from './routes/DataRegister';
 import NewDashboard from './routes/OldDashboard';
 import MeatDetailPage from './routes/MeatDetailPage';
-
+import SpectralSender from './routes/SpectralSender';
 import { UserProvider } from './Utils/UserContext';
 
 import Box from '@mui/material/Box';
@@ -157,6 +157,11 @@ function App() {
       path: '/meat/:id',
       title: 'Meat Detail | Deeplant',
       component: <MeatDetailPage />,
+    },
+    {
+      path: '/spectrals',
+      title: 'Spectral Select | Deeplant',
+      component: <SpectralSender />,
     },
   ];
 

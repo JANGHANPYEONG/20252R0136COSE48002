@@ -8,7 +8,7 @@ export const useStatisticPieChart = (startDate, endDate) => {
   //pie chart 데이터를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : startDate, endDate
-    `http://${apiIP}/meat/statistic/ratio/fresh-and-processed?start=${startDate}&end=${endDate}`,
+    `http://${apiIP}/statistic/ratio/fresh-and-processed?start=${startDate}&end=${endDate}`,
     fetcher
   );
 

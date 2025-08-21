@@ -1,4 +1,8 @@
+import { mapImageFilenamesToJsons } from './excelToJsonConverter';
 import { convertExcelToJson, createIndividualSampleJsons } from './excelToJsonConverter';
+
+import { apiIP } from '../../config';
+
 
 /**
  * 샘플별 개별 JSON 파일을 result 폴더에 저장하는 함수
@@ -42,7 +46,7 @@ export const saveJsonToResult = async (data, columns, zipFile, dataFormat = 'HSI
     }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/save-multiple-json', {
+      const response = await fetch('http://localhost:3001/api/save-multiple-json', {  // 대응하는 backend API 구현되어 있지 않음.
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,4 +129,139 @@ export const saveJsonToResult = async (data, columns, zipFile, dataFormat = 'HSI
   }
 };
 
-export default saveJsonToResult;
+/**
+ * BE로 JSON 데이터를 전송하는 함수
+ * @param {Object} jsonData - 전송할 JSON 데이터 (data_list 형태)
+ * @param {string} traceNum - 이력번호
+ * @returns {Promise<Object>} - 전송 결과
+ */
+export const sendJsonToBackend = async (jsonData, traceNum) => {
+  try {
+    console.log('BE로 JSON 데이터 전송 시작...', { 
+      traceNum, 
+      dataCount: jsonData.data_list?.length,
+      sampleData: jsonData.data_list?.[0] // 첫 번째 샘플 구조 확인용
+    });
+    
+    const requestBody = {
+      traceNum: traceNum,
+      data_list: jsonData.data_list
+    };
+    
+    console.log('전송할 데이터 구조:', {
+      traceNum: requestBody.traceNum,
+      requestBodyKeys: Object.keys(requestBody),
+      dataListLength: requestBody.data_list?.length,
+      firstItemKeys: requestBody.data_list?.[0] ? Object.keys(requestBody.data_list[0]) : 'none'
+    });
+    
+    const response = await fetch(`http://${apiIP}/data-upload/bulk-upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('BE 응답 오류 상세:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText
+      });
+      throw new Error(`BE 응답 오류: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    
+    console.log('BE 전송 성공:', result);
+    
+    return {
+      success: true,
+      data: result,
+      message: `이력번호 ${traceNum}의 데이터가 BE로 전송되었습니다.`
+    };
+
+  } catch (error) {
+    console.error('BE 전송 오류:', error);
+    
+    return {
+      success: false,
+      error: error.message,
+      message: `BE 전송 실패: ${error.message}`
+    };
+  }
+};
+
+/**
+ * 샘플별 개별 JSON 파일을 result 폴더에 저장하고 BE로 전송하는 통합 함수
+ * @param {Array} data - 테이블 데이터 배열
+ * @param {Array} columns - 컬럼 이름 배열  
+ * @param {File} zipFile - ZIP 이미지 파일
+ * @param {string} dataFormat - 데이터 형식 ('HSI' 또는 'RGB')
+ * @param {File} excelFile - 엑셀 파일 (선택사항)
+ * @param {boolean} sendToBE - BE로 전송 여부 (기본값: false)
+ * @returns {Promise} - 저장 및 전송 결과
+ */
+export const saveAndSendJsonData = async (data, columns, zipFile, dataFormat = 'HSI', excelFile = null, sendToBE = false) => {
+  try {
+    // 1. 기본 JSON 저장
+    const saveResult = await saveJsonToResult(data, columns, zipFile, dataFormat, excelFile);
+    
+    if (!saveResult.success) {
+      return saveResult;
+    }
+
+    // 2. BE 전송 (선택적)
+    let beResult = null;
+    if (sendToBE && saveResult.data?.managementNumber) {
+      try {
+        // 저장된 JSON 파일 읽기
+        const managementNumber = saveResult.data.managementNumber;
+        const savedJsonPath = `test-data/result/${managementNumber}.json`;
+        
+        // 파일을 직접 읽지 말고 이미 생성된 데이터를 사용
+        const jsonArray = await convertExcelToJson(excelFile, dataFormat);
+        const individualJsons = await mapImageFilenamesToJsons(
+          createIndividualSampleJsons(jsonArray), 
+          zipFile
+        );
+        
+        if (individualJsons.length > 0) {
+          const jsonData = individualJsons[0].data; // 첫 번째 (그리고 유일한) JSON 데이터
+          beResult = await sendJsonToBackend(jsonData, managementNumber);
+        }
+        
+      } catch (beError) {
+        console.warn('BE 전송 실패했지만 로컬 저장은 완료:', beError);
+        beResult = {
+          success: false,
+          error: beError.message,
+          message: `로컬 저장 완료, BE 전송 실패: ${beError.message}`
+        };
+      }
+    }
+
+    // 3. 통합 결과 반환
+    return {
+      success: true,
+      data: {
+        ...saveResult.data,
+        beTransmission: beResult
+      },
+      message: beResult 
+        ? `${saveResult.message}\n${beResult.message}`
+        : saveResult.message
+    };
+
+  } catch (error) {
+    console.error('JSON 저장/전송 오류:', error);
+    
+    return {
+      success: false,
+      error: error.message,
+      message: `JSON 저장/전송 실패: ${error.message}`
+    };
+  }
+};
