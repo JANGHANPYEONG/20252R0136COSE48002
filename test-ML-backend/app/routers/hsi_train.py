@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Literal
+from mlflow.exceptions import RestException
 import json
 import tempfile
 import re
@@ -14,6 +15,7 @@ from botocore.exceptions import ClientError
 import pandas as pd
 
 from training_HSI.train_HSI_2d import main as train_hsi_2d
+from app.utils.mlflow_tracking import get_run_core, latest_metrics
 
 # Celery 및 APIRouter 설정
 celery_app = Celery(
@@ -586,3 +588,41 @@ async def cancel_hsi_train(train_id: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error cancelling training: {str(e)}")
+
+
+@router.get("/progress/{run_id}")
+def get_progress(run_id: str):
+    try:
+        core = get_run_core(run_id)
+        return {
+            "run_id": core["run_id"],
+            "experiment_id": core["experiment_id"],
+            "status": core["status_tag"],
+            "progress": core["metrics"]["progress"],
+            "epoch": core["metrics"]["epoch"],
+            "loss": core["metrics"]["loss"],
+            "val_loss": core["metrics"]["val_loss"],
+            "eta_seconds": core["metrics"]["eta_seconds"],
+            "start_time": core["start_time"],
+            "end_time": core["end_time"],
+        }
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving progress: {str(e)}")
+    
+
+@router.get("/metrics/{run_id}")
+def get_selected_metrics(run_id: str, keys: Optional[str] = None):
+    """
+        keys를 Comma-separated list로 받아서 해당 메트릭만 반환합니다.
+        ex) keys="loss, val_loss, accuracy"
+    """
+    try:
+        metric_keys = [k.strip() for k in keys.split(',')] if keys else ["progress"]
+        values = latest_metrics(run_id, metric_keys)
+        return {"run_id": run_id, "metrics": values}
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
