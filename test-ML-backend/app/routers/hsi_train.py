@@ -595,16 +595,16 @@ def get_progress(run_id: str):
     try:
         core = get_run_core(run_id)
         return {
-            "run_id": core["run_id"],
-            "experiment_id": core["experiment_id"],
-            "status": core["status_tag"],
-            "progress": core["metrics"]["progress"],
-            "epoch": core["metrics"]["epoch"],
-            "loss": core["metrics"]["loss"],
-            "val_loss": core["metrics"]["val_loss"],
-            "eta_seconds": core["metrics"]["eta_seconds"],
-            "start_time": core["start_time"],
-            "end_time": core["end_time"],
+            "run_id": core.get("run_id"),
+            "experiment_id": core.get("experiment_id"),
+            "status": core.get("status_tag"),
+            "progress": core.get("metrics", {}).get("progress"),
+            "epoch": core.get("metrics", {}).get("epoch"),
+            "loss": core.get("metrics", {}).get("loss"),
+            "val_loss": core.get("metrics", {}).get("val_loss"),
+            "eta_seconds": core.get("eta_seconds"),
+            "start_time": core.get("start_time"),
+            "end_time": core.get("end_time"),
         }
     except RestException as e:
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
