@@ -126,7 +126,6 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
               <TableRow>
                 <TableCell>선택</TableCell>
                 <TableCell>이력번호</TableCell>
-                <TableCell>샘플번호</TableCell>
                 <TableCell>부위</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
@@ -157,7 +156,6 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
                       />
                     </TableCell>
                     <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.sampleNo}</TableCell>
                     <TableCell>{row.part}</TableCell>
                     <TableCell>{row.isDeepAged}</TableCell>
                     <TableCell>{row.butcheryDate}</TableCell>

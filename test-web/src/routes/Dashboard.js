@@ -35,18 +35,22 @@ import { fetchPrediction } from '../API/predictData';
 import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 //////////////////////////////////////////////////
 
+// 캐싱용 패치
+import useFileList from '../Utils/useFileList';
+import { useQueryClient } from '@tanstack/react-query'
+import { Filter6Sharp } from '@mui/icons-material';
+
 const navy = '#0F3659';
 
 const Dashboard = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
-  const [searchedData, setSearchedData] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-
+  const [searchedData,setSearchedData] = useState(null);
   // temp for mocking
   const [groupedData, setGroupedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -59,9 +63,14 @@ const Dashboard = () => {
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
-  const [data, setData] = useState([]);
   const navigate = useNavigate();
   //////////////////////////////////////////////////
+  // data를 useState로 저장 -> usequeryClient 로 저장
+  const [isLoaded, setisLoaded] = useState(false); // query on/off
+  const queryClient = useQueryClient();
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded});
+
+
   // 쿼리스트링 추출
   const location = useLocation();
   const { querypageOffset, queryStartDate, queryEndDate, queryDuration } =
@@ -174,15 +183,12 @@ const Dashboard = () => {
   };
   // 데이터 불러오기 함수
   const handleLoadData = async () => {
-    setLoading(true);
-    // 실제 API 호출 로직이 여기에 들어갈 예정
-    // 필터 옵현 추가해야함
+    setisLoaded(true);
     try {
-      const result = await fetchFilteredData(filters, value);
-      setData(result);
-      // upload_batch_id 기준으로 그룹핑
-      const groupMap = {};
-      result.forEach((item) => {
+        const { data: fresh } = await refetch();
+        const list = fresh ?? [];
+        const groupMap = {};
+        list.forEach((item) => {
         const batchId = item.upload_batch_id || 'unknown_batch';
         if (!groupMap[batchId]) groupMap[batchId] = [];
         groupMap[batchId].push(item);
@@ -198,7 +204,7 @@ const Dashboard = () => {
       setSnackbar({
         open : true,
         severity: 'success',
-        message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
+        message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
@@ -208,7 +214,6 @@ const Dashboard = () => {
         message: '데이터 불러오기 실패! 서버를 확인해주세요.',
       });
     }
-    setLoading(false)
   };
 
   // 선택 변경 핸들러
@@ -223,32 +228,27 @@ const Dashboard = () => {
     setOpenPanel(true);
   };
 
-  // 선택된 데이터 predict하기
-  const handlePredict = async () => {
-    // if (selectedRows.length ===0) {
-    //   setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
-    //   return;
-    // }
-    setLoading(true);
-    try {
-      const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
-      const newData = data.map(row => (
-        result[row.id] ? { ...row, prediction: result[row.id] } : row
-      ));
-      setData(newData);
-      setSnackbar({  open: true, severity: 'success', message: '예측 성공!'});
-    } catch (err) {
-      setSnackbar({ open: true, severity: 'error', message: '예측 실패! 서버 상태를 확인해주세요.' });
-    }
-    setLoading(false);
-  }
   // 필터 함수
   const handleFilter = () => {
     setFilterModalOpen(true);
   };
-
-  const initializeData = () => {
-    setData([]);
+  
+  // 데이터 초기화 함수
+  const initializeData = async () => {
+    // 1) 진행 중인 요청 취소 (안 하면 응답이 도착하며 다시 채워질 수 있음)
+    await queryClient.cancelQueries({ queryKey: ['fileList'] });
+    // 2) 현재 붙어있는 쿼리들의 데이터를 즉시 빈 배열로 설정 (UI 즉시 비우기)
+    queryClient.setQueriesData({ queryKey: ['fileList'] }, () => []);
+    // 3) 캐시 항목 자체 제거 (다른 변형 키들도 함께)
+    queryClient.removeQueries({ queryKey: ['fileList'] });
+    // query loading off
+    setisLoaded(false);
+    // 4) UI 상태 리셋
+    setGroupedData([]);
+    setSelectedRows([]);
+    setOpenPanel(false);
+    setDetailData(null);
+    sessionStorage.removeItem('predict_data');
   }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
@@ -370,10 +370,10 @@ const Dashboard = () => {
           <Button
             variant="contained"
             onClick={handleLoadData}
-            disabled={loading}
+            disabled={isFetching}
             sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
           >
-            {loading ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+            {isFetching ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
           </Button>
 
           <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>

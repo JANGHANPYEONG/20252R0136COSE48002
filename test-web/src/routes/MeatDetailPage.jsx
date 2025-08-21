@@ -112,7 +112,6 @@ export default function MeatDetailPage() {
 
   const infoRows = [
     ['이력번호', item.id],
-    ['샘플번호', item.sampleNo],
     ['부위', item.part],
     ['딥에이징 여부', item.isDeepAged],
     ['도축일자', item.butcheryDate],
@@ -156,7 +155,6 @@ export default function MeatDetailPage() {
     // 편집 시작 시 현재 상세값을 폼으로 복사
     setForm({
       meatId: item.id,
-      sampleNo: item.sampleNo ?? '',
       part: item.part ?? '',
       deepAging: item.deepAging ?? '',
       slDate: item.slDate ?? '',
@@ -305,18 +303,6 @@ export default function MeatDetailPage() {
                 <TableRow>
                   <TableCell width={140} sx={{ color: 'text.secondary' }}>이력번호</TableCell>
                   <TableCell>{item.id}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell sx={{ color: 'text.secondary' }}>샘플번호</TableCell>
-                  <TableCell>
-                    {editMode ? (
-                      <input
-                        value={form.sampleNo}
-                        onChange={(e) => handleChange('sampleNo', e.target.value)}
-                        style={{ width: '100%', padding: 6, border: '1px solid #ddd', borderRadius: 4 }}
-                      />
-                    ) : (item.sampleNo ?? '-')}
-                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell sx={{ color: 'text.secondary' }}>부위</TableCell>

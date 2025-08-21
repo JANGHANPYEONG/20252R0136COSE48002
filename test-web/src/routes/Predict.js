@@ -19,14 +19,20 @@ import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
 import { fetchPrediction } from '../API/predictData';
 import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
+
+// 데이터 캐싱을 위한 import
+import useFileList from '../Utils/useFileList';
+import { useQueryClient } from '@tanstack/react-query';
+import { mergePredictions } from '../Utils/mergePredictions';
+
 const navy = '#0F3659';
 
 const Predict = () => {
   const location = useLocation();
-  const [data, setData] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [predicting, setPredicting] = useState(false);
+  const queryClient = useQueryClient();
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -50,11 +56,9 @@ const Predict = () => {
       value: null,
     },
   ]);
+  const { data = [], isFetching, refetch } = useFileList(filters);
   // Dashboard에서 넘어온 데이터로 초기화 + 새로고침 대비 sessionStorage 사용
   useEffect(() => {
-    if (location.state?.data) {
-      setData(location.state.data);
-    }
     if (location.state?.selectedRows) {
       setSelectedRows(location.state.selectedRows);
     }
@@ -159,15 +163,11 @@ const Predict = () => {
 
   // 데이터 불러오기 함수
   const handleLoadData = async () => {
-    setLoading(true);
-    // 실제 API 호출 로직이 여기에 들어갈 예정
-    // 필터 옵션 추가해야함
     try {
-      const result = await fetchFilteredData(filters);
-      setData(result);
-      // upload_batch_id 기준으로 그룹핑
-      const groupMap = {};
-      result.forEach((item) => {
+        const { data: fresh } = await refetch();
+        const list = fresh ?? [];
+        const groupMap = {};
+        list.forEach((item) => {
         const batchId = item.upload_batch_id || 'unknown_batch';
         if (!groupMap[batchId]) groupMap[batchId] = [];
         groupMap[batchId].push(item);
@@ -181,20 +181,34 @@ const Predict = () => {
       setGroupedData(grouped);
       // 성공 여부 알림
       setSnackbar({
-        open: true,
+        open : true,
         severity: 'success',
-        message: `데이터 ${result.length}개를 성공적으로 불러왔습니다.`,
+        message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
       setSnackbar({
-        open: true,
+        open : true,
         severity: 'error',
         message: '데이터 불러오기 실패! 서버를 확인해주세요.',
       });
     }
-    setLoading(false);
   };
+  useEffect(() => {
+    if (!data) return;
+    const groupMap = {};
+    data.forEach((item) => {
+      const batchId = item.upload_batch_id || 'unknown_batch';
+      if (!groupMap[batchId]) groupMap[batchId] = [];
+      groupMap[batchId].push(item);
+    });
+    const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
+      batchId,
+      timestamp: rows[0]?.timestamp || '',
+      rows,
+    }));
+    setGroupedData(grouped);
+  }, [data]);
 
   // 선택 변경 핸들러
   const handleSelectionChange = (newSelection) => {
@@ -214,21 +228,16 @@ const Predict = () => {
 
   // 선택된 데이터 predict하기
   const handlePredict = async () => {
+    setPredicting(true);
     // if (selectedRows.length ===0) {
     //   setSnackbar({ open: true, severity: 'warning', message:'예측할 데이터를 선택해주세요.'});
     //   return;
     // }
-    setLoading(true);
     try {
-      const result = await fetchPrediction(selectedRows); // { id : 예측하고 할(선택된) 값들}
-      const newData = data.map((row) => {
-        // 선택된 행이고 예측 결과가 있는 경우에만 업데이트
-        if (selectedRows.includes(row.id) && result[row.id]) {
-          return { ...row, prediction: result[row.id] };
-        }
-        return row;
-      });
-      setData(newData);
+      const result = await fetchPrediction(selectedRows);
+      queryClient.setQueriesData({ queryKey: ['fileList'] }, (old) =>
+      mergePredictions(old, result, 'prediction')
+    );
       setSnackbar({ open: true, severity: 'success', message: '예측 성공!' });
     } catch (err) {
       setSnackbar({
@@ -237,7 +246,7 @@ const Predict = () => {
         message: '예측 실패! 서버 상태를 확인해주세요.',
       });
     }
-    setLoading(false);
+    setPredicting(false);
   };
   // 필터 함수
   const handleFilter = () => {
@@ -245,7 +254,10 @@ const Predict = () => {
   };
 
   const initializeData = () => {
-    setData([]);
+    queryClient.removeQueries({ queryKey: ['fileList'] });
+    setSelectedRows([]);
+    setOpenPanel(false);
+    setDetailData(null);
   };
 
   // 필터 제거 함수
@@ -269,7 +281,8 @@ const Predict = () => {
     setFilters(appliedFilters);
     console.log('적용된 필터:', appliedFilters);
     // 여기서 필터링된 데이터를 API로 요청
-    handleLoadData(); // 필터 적용 후 데이터 다시 로드
+    // 필요하면 즉시 버튼 스피너를 띄우고 싶을 때만 refetch()
+    // refetch();
   };
 
   return (
@@ -309,13 +322,13 @@ const Predict = () => {
             <Button
               variant="contained"
               onClick={handleLoadData}
-              disabled={loading}
+              disabled={isFetching}
               sx={{
                 backgroundColor: navy,
                 '&:hover': { backgroundColor: '#0a2a4a' },
               }}
             >
-              {loading ? (
+              {isFetching ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
                 '데이터 불러오기'
@@ -482,12 +495,12 @@ const Predict = () => {
               '&:hover': { backgroundColor: '#0a2a4a' },
             }}
           >
-            예측하기
+            {predicting ? <CircularProgress size={20} color="inherit" /> : '예측하기'}
           </Button>
 
           <Button
             variant="outlined"
-            disabled={selectedRows.length === 0}
+            disabled={predicting || selectedRows.length === 0}
             onClick={() => ExportSelectedToExcel(selectedRows, data)}
             sx={{ borderColor: navy, color: navy }}
           >
