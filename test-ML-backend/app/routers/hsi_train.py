@@ -626,3 +626,17 @@ def get_selected_metrics(run_id: str, keys: Optional[str] = None):
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/metric-keys/{run_id}")
+def list_metric_keys(run_id: str):
+    try:
+        client = MlflowClient()
+        run = client.get_run(run_id)
+        # run.data.metrics: {key: latest_value}
+        keys = list((run.data.metrics or {}).keys())
+        return {"run_id": run_id, "metric_keys": keys}
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
