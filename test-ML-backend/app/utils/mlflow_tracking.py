@@ -46,9 +46,9 @@ def get_run_core(run_id: str) -> Dict:
     run = client.get_run(run_id)
     data = run.data
     info = run.info
-    tags = data.tags
-    print(type(data), data.params)
-    params = {p.key: p.value for p in data.params}
+    params = dict(data.params)
+
+    tags = data.tags or {}
     # 최신 메트릭
     m_progress = latest_metric(run_id, "progress")
     m_loss     = latest_metric(run_id, "loss")
@@ -61,7 +61,7 @@ def get_run_core(run_id: str) -> Dict:
         "experiment_id": info.experiment_id,
         "status_tag": tags.get("status", "running"),
         "lifecycle_stage": info.lifecycle_stage,
-        "run_name": run.info.run_name,  # 표시명 (없으면 None)
+        "run_name": info.run_name,  # 표시명 (없으면 None)
         "params": params,
         "metrics": {
             "progress": None if m_progress is None else float(m_progress.value),
