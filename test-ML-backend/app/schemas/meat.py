@@ -131,7 +131,6 @@ class MeatDataUpload(BaseModel):
 class DataUploadRequest(BaseModel):
     """데이터 업로드 요청 스키마"""
     userId: str
-    rowId: str
     id: str
     meat: MeatDataUpload
     hsiFilenames: list[str]
