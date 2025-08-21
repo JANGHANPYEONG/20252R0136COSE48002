@@ -8,7 +8,7 @@ export const useStatisticStackedBar = (startDate, endDate) => {
   //stacked bar 데이터를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : startDate, endDate
-    `http://${apiIP}/meat/statistic/counts/by-large-part?start=${startDate}&end=${endDate}`,
+    `http://${apiIP}/statistic/counts/by-large-part?start=${startDate}&end=${endDate}`,
     fetcher
   );
 
