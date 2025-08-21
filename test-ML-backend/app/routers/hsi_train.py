@@ -191,7 +191,15 @@ def create_csv_file(id_list: List[str], cache_dir: str) -> str:
                         
                         if hsi_image and hsi_image.filename:
                             # S3에서 로컬 캐시로 이미지 다운로드
-                            s3_key = f"train_dataset/HSI/{hsi_image.filename}"
+                            original_file = hsi_image.filename
+
+                            # 확장자가 .jpg면 .png로 교체 시도
+                            if original_file.lower().endswith(".jpg"):
+                                filename = original_file[:-4] + ".png"
+                            else:
+                                filename = original_file
+
+                            s3_key = f"train_dataset/HSI/{filename}"
                             cache_filename = f"{row_id}_{wavelength}.png"
                             local_cache_path = os.path.join(cache_dir, cache_filename)
                             
