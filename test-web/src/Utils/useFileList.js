@@ -4,10 +4,11 @@ import { fetchFilteredData } from '../API/fetchFileteredData';
 
 const buildKey = (filters) => {
   const date = filters?.find?.(f => f.name === '날짜')?.value || {};
-  const dtype = filters?.find?.(f => f.name === '데이터 타입')?.value || null;
+  const page = filters?.find?.(f => f.name === 'page')?.value || 1;
+  const pageSize = filters?.find?.(f => f.name === 'pageSize')?.value || 50;
   const start = date?.start ?? null;
-  const end   = date?.end   ?? null;
-  return ['fileList', { start, end, dtype }];
+  const end = date?.end ?? null;
+  return ['fileList', { start, end, page, pageSize }];
 };
 
 export default function useFileList(filters, { enabled = true } = {}) {

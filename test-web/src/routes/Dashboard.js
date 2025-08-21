@@ -61,6 +61,9 @@ const Dashboard = () => {
 
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+    { name: '품종', type: 'select', options: ['소', '돼지', '닭'], value: '' },
+    { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
+    { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
   ]);
   const navigate = useNavigate();
   //////////////////////////////////////////////////

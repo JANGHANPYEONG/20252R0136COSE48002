@@ -73,10 +73,63 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
 
     // 필터 후보 목록 - 사용자가 선택할 수 있는 필터들
     const filterCandidates = [
-        { name: '데이터 타입', options: ['RGB', 'MSI'] },
         { name: '품종', options: ['소', '돼지', '닭'] },
         { name: '지역', options: ['서울', '부산', '대구', '인천', '광주', '대전', '울산'] },
     ];
+
+    // 품종을 categoryIds로 변환하는 함수 (DB 모델에 정확히 맞게 수정)
+    const getCategoryIds = (specieValue) => {
+        switch (specieValue) {
+            case '소':
+                // 소: DB의 CategoryInfo.id 값들 (speciesId = 0)
+                // calId(id, s_id, 0) = 100 * 0 + 10 * id + s_id
+                // 대분할별로 모든 소분할 ID 생성
+                const cattleIds = [];
+                for (let largeId = 0; largeId <= 9; largeId++) { // 0~9 (대분할)
+                    const maxSmallId = largeId === 0 ? 0 : // 안심: 1개
+                                    largeId === 1 ? 3 : // 등심: 4개
+                                    largeId === 2 ? 0 : // 채끝: 1개
+                                    largeId === 3 ? 0 : // 목심: 1개
+                                    largeId === 4 ? 4 : // 앞다리: 5개
+                                    largeId === 5 ? 1 : // 우둔: 2개
+                                    largeId === 6 ? 4 : // 설도: 5개
+                                    largeId === 7 ? 6 : // 양지: 7개
+                                    largeId === 8 ? 2 : // 사태: 3개
+                                    largeId === 9 ? 7 : 0; // 갈비: 8개
+                    
+                    for (let smallId = 0; smallId <= maxSmallId; smallId++) {
+                        cattleIds.push(100 * 0 + 10 * largeId + smallId);
+                    }
+                }
+                return cattleIds;
+                
+            case '돼지':
+                // 돼지: DB의 CategoryInfo.id 값들 (speciesId = 1)
+                // calId(id, s_id, 1) = 100 * 1 + 10 * id + s_id
+                const pigIds = [];
+                for (let largeId = 0; largeId <= 6; largeId++) { // 0~6 (대분할)
+                    const maxSmallId = largeId === 0 ? 0 : // 안심: 1개
+                                    largeId === 1 ? 1 : // 등심: 2개
+                                    largeId === 2 ? 0 : // 목심: 1개
+                                    largeId === 3 ? 5 : // 앞다리: 6개
+                                    largeId === 4 ? 2 : // 갈비: 3개
+                                    largeId === 5 ? 4 : // 삼겹살: 5개
+                                    largeId === 6 ? 0 : 0; // 뒷다리: 1개
+                    
+                    for (let smallId = 0; smallId <= maxSmallId; smallId++) {
+                        pigIds.push(100 * 1 + 10 * largeId + smallId);
+                    }
+                }
+                return pigIds;
+                
+            case '닭':
+                // 닭: 아직 DB에 정의되지 않음 (빈 배열 반환)
+                return [];
+                
+            default:
+                return [];
+        }
+    };
 
     // 날짜 필터는 항상 존재
     const dateFilter = filters.find(f => f.name === '날짜') || {
@@ -127,10 +180,42 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
     };
 
     const handleApply = () => {
-        const appliedFilters = filters.map(f => ({
-            ...f,
-            value: f.name === '날짜' ? { start: startDate, end: endDate } : f.value
-        }));
+        // 품종 필터에서 categoryIds 생성
+        const specieFilter = filters.find(f => f.name === '품종');
+        const categoryIds = specieFilter && specieFilter.value ? getCategoryIds(specieFilter.value) : [];
+
+        // 백엔드가 기대하는 필터 구조로 변환
+        const appliedFilters = [
+            {
+                name: '날짜',
+                type: 'date',
+                options: [],
+                value: {
+                    start: startDate ? startDate.format('YYYY-MM-DD') : null,
+                    end: endDate ? endDate.format('YYYY-MM-DD') : null
+                }
+            },
+            {
+                name: '품종',
+                type: 'select',
+                options: ['소', '돼지', '닭'],
+                value: specieFilter ? specieFilter.value : '',
+                categoryIds: categoryIds
+            },
+            {
+                name: 'page',
+                type: 'select',
+                options: [1, 2, 3, 4, 5],
+                value: filters.page || 1
+            },
+            {
+                name: 'pageSize',
+                type: 'select',
+                options: [10, 25, 50, 100],
+                value: filters.pageSize || 50
+            }
+        ];
+
         onApply(appliedFilters);
         onClose();
     };
@@ -141,6 +226,16 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
             type: 'date',
             options: [],
             value: { start: null, end: null }
+        }, {
+            name: 'page',
+            type: 'select',
+            options: [1, 2, 3, 4, 5],
+            value: 1
+        }, {
+            name: 'pageSize',
+            type: 'select',
+            options: [10, 25, 50, 100],
+            value: 50
         }]);
         setStartDate(null);
         setEndDate(null);
@@ -242,6 +337,46 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                                 선택된 기간: {formatDate(startDate)} ~ {formatDate(endDate)}
                             </Typography>
                         )}
+                    </Box>
+
+                    {/* 페이지네이션 옵션 */}
+                    <Box mb={3}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            페이지네이션
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel>페이지 크기</InputLabel>
+                                    <Select
+                                        value={filters.pageSize || 50}
+                                        onChange={(e) => handleFilterValueChange('pageSize', e.target.value)}
+                                        label="페이지 크기"
+                                    >
+                                        <MenuItem value={10}>10개</MenuItem>
+                                        <MenuItem value={25}>25개</MenuItem>
+                                        <MenuItem value={50}>50개</MenuItem>
+                                        <MenuItem value={100}>100개</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel>페이지 번호</InputLabel>
+                                    <Select
+                                        value={filters.page || 1}
+                                        onChange={(e) => handleFilterValueChange('page', e.target.value)}
+                                        label="페이지 번호"
+                                    >
+                                        <MenuItem value={1}>1페이지</MenuItem>
+                                        <MenuItem value={2}>2페이지</MenuItem>
+                                        <MenuItem value={3}>3페이지</MenuItem>
+                                        <MenuItem value={4}>4페이지</MenuItem>
+                                        <MenuItem value={5}>5페이지</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                        </Grid>
                     </Box>
 
                     {/* 기존 필터들 */}
