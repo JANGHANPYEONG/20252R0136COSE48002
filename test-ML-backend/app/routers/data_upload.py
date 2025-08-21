@@ -36,6 +36,17 @@ class PresignedUrlResponse(BaseModel):
     upload_url: str
     file_key: str
 
+# 벌크 업로드를 위한 새로운 모델들
+class BulkUploadRequest(BaseModel):
+    data_list: List[DataUploadRequest] = Field(..., min_items=1, max_items=100, description="업로드할 데이터 리스트 (최대 100개)")
+
+class BulkUploadResponse(BaseModel):
+    message: str
+    total_count: int
+    success_count: int
+    failed_count: int
+    results: List[dict]
+
 # =============================================================================
 # S3 Presigned URL API
 # =============================================================================
@@ -432,4 +443,197 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"데이터 업로드 실패: {str(e)}"
+        )
+
+@router.post("/bulk-upload", status_code=status.HTTP_201_CREATED)
+async def bulk_upload_meat_data(request: BulkUploadRequest, db: Session = Depends(get_db)):
+    """
+    여러 개의 육류 데이터를 벌크로 업로드합니다.
+    
+    이 API는 여러 개의 육류 데이터를 한 번에 처리하여 다음과 같은 테이블들에 데이터를 삽입합니다:
+    1. Meat - 원육 기본 정보
+    2. DeepAgingInfo - 딥에이징 정보
+    3. SensoryEval - 관능검사 (원육)
+    4. HSISensoryEval - HSI 관능검사
+    5. HSIImagesBands - HSI 이미지 밴드 정보
+    6. AI 테이블들 - 예측값을 위한 빈 row 생성
+    
+    요청 데이터:
+    - data_list: DataUploadRequest 객체들의 리스트 (최대 100개)
+    
+    반환값:
+    - total_count: 전체 요청 개수
+    - success_count: 성공한 개수
+    - failed_count: 실패한 개수
+    - results: 각 데이터의 처리 결과
+    """
+    total_count = len(request.data_list)
+    success_count = 0
+    failed_count = 0
+    results = []
+    
+    print(f"DEBUG: Starting bulk upload with {total_count} items")
+    
+    for i, data_request in enumerate(request.data_list):
+        try:
+            print(f"DEBUG: Processing item {i+1}/{total_count}: {data_request.id}")
+            
+            # 날짜 문자열을 datetime 객체로 변환
+            butchery_date = datetime.strptime(data_request.butcheryYmd, "%Y-%m-%d")
+            manufacture_date = datetime.strptime(data_request.manufactureYmd, "%Y-%m-%d")
+            filmed_date = datetime.strptime(data_request.filmedAt, "%Y-%m-%d")
+            expire_date = datetime.strptime(data_request.expireYmd, "%Y-%m-%d")
+            current_time = datetime.now()
+            
+            # 1. Meat 테이블에 데이터 삽입
+            meat = Meat(
+                id=data_request.id,
+                userId=data_request.userId,
+                categoryId=data_request.meat.categoryId,
+                gradeNum=data_request.meat.gradeNum,
+                statusType=0,  # 기본값: 대기중
+                createdAt=current_time,
+                traceNum=data_request.traceNum,
+                butcheryYmd=butchery_date
+            )
+            db.add(meat)
+            db.flush()  # ID 생성
+            
+            # 2. DeepAgingInfo 테이블에 데이터 삽입
+            deep_aging = DeepAgingInfo(
+                id=data_request.id,
+                seqno=data_request.meat.seqno,
+                isCompleted=0,  # 기본값: 미완료
+                date=current_time,
+                minute=0  # 기본값: 0분
+            )
+            db.add(deep_aging)
+            db.flush()
+            
+            # 3. SensoryEval 테이블에 데이터 삽입
+            sensory_eval = SensoryEval(
+                id=data_request.id,
+                seqno=data_request.meat.seqno,
+                isRefrigerated=data_request.isRefrigerated,
+                createdAt=current_time,
+                userId=data_request.userId,
+                period=0,  # 기본값: 0일
+                filmedAt=filmed_date,
+                marbling=data_request.meat.marbling,
+                meat_color=data_request.meat.meat_color,
+                texture=data_request.meat.texture,
+                surface_moisture=data_request.meat.surface_moisture,
+                overall=data_request.meat.overall,
+                manufactureYmd=manufacture_date,
+                expireYmd=expire_date
+            )
+            db.add(sensory_eval)
+            db.flush()
+            
+            # 4. HSISensoryEval 테이블에 데이터 삽입
+            hsi_sensory_eval = HSISensoryEval(
+                id=data_request.id,
+                seqno=data_request.meat.seqno,
+                isRefrigerated=data_request.isRefrigerated,
+                createdAt=current_time,
+                marbling=data_request.meat.marbling,
+                meat_color=data_request.meat.meat_color,
+                texture=data_request.meat.texture,
+                surface_moisture=data_request.meat.surface_moisture,
+                overall=data_request.meat.overall
+            )
+            db.add(hsi_sensory_eval)
+            db.flush()
+            
+            # 5. HSIImagesBands 테이블에 데이터 삽입
+            for band in data_request.meat.bands:
+                # spectral_index 유효성 검사
+                spectral_info = db.query(SpectralInfo).filter(SpectralInfo.spectral_index == band.spectral_index).first()
+                if not spectral_info:
+                    print(f"WARNING: Spectral index {band.spectral_index} not found in SpectralInfo table for item {i+1}")
+                    # 임시로 기본값 사용
+                
+                hsi_band = HSIImagesBands(
+                    id=data_request.id,
+                    seqno=data_request.meat.seqno,
+                    isRefrigerated=data_request.isRefrigerated,
+                    spectral_index=band.spectral_index,
+                    topLeft=band.topLeft,  # [x, y] 좌표 배열 그대로 저장
+                    topRight=band.topRight,
+                    bottomRight=band.bottomRight,
+                    bottomLeft=band.bottomLeft,
+                    filename=band.filename
+                )
+                db.add(hsi_band)
+            
+            # 6. AI 테이블들에 빈 row 생성 (예측값을 위한 placeholder)
+            ai_sensory_eval = AI_SensoryEval(
+                id=data_request.id,
+                seqno=data_request.meat.seqno,
+                isRefrigerated=data_request.isRefrigerated,
+                createdAt=current_time
+            )
+            db.add(ai_sensory_eval)
+            
+            ai_hsi_sensory_eval = AI_HSISensoryEval(
+                id=data_request.id,
+                seqno=data_request.meat.seqno,
+                isRefrigerated=data_request.isRefrigerated,
+                createdAt=current_time
+            )
+            db.add(ai_hsi_sensory_eval)
+            
+            # 성공 결과 기록
+            results.append({
+                "index": i,
+                "meat_id": data_request.id,
+                "seqno": data_request.meat.seqno,
+                "status": "success",
+                "message": "데이터 업로드 성공",
+                "uploaded_at": current_time.isoformat()
+            })
+            success_count += 1
+            
+            print(f"DEBUG: Item {i+1} processed successfully")
+            
+        except Exception as e:
+            print(f"ERROR: Failed to process item {i+1}: {str(e)}")
+            failed_count += 1
+            
+            # 실패 결과 기록
+            results.append({
+                "index": i,
+                "meat_id": getattr(data_request, 'id', 'unknown'),
+                "seqno": getattr(data_request.meat, 'seqno', 'unknown') if hasattr(data_request, 'meat') else 'unknown',
+                "status": "failed",
+                "message": f"데이터 업로드 실패: {str(e)}",
+                "error": str(e)
+            })
+            
+            # 개별 실패는 전체 트랜잭션에 영향을 주지 않도록 계속 진행
+    
+    try:
+        # 모든 성공한 데이터 커밋
+        if success_count > 0:
+            print(f"DEBUG: Committing {success_count} successful items")
+            db.commit()
+            print(f"DEBUG: Bulk upload commit successful")
+        else:
+            print(f"DEBUG: No successful items to commit")
+            db.rollback()
+        
+        return BulkUploadResponse(
+            message=f"벌크 업로드 완료: {success_count}개 성공, {failed_count}개 실패",
+            total_count=total_count,
+            success_count=success_count,
+            failed_count=failed_count,
+            results=results
+        )
+        
+    except Exception as e:
+        print(f"ERROR: Failed to commit bulk upload: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"벌크 업로드 커밋 실패: {str(e)}"
         )
