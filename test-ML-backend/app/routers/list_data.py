@@ -234,7 +234,7 @@ def get_dashboard_data(
             hsi_image = (db.query(HSIImagesBands)
                         .filter(HSIImagesBands.id == meat.id, HSIImagesBands.seqno == sample_no)
                         .first())
-            hsi_image_url = hsi_image.path if hsi_image else None
+            hsi_image_url = hsi_image.filename if hsi_image else None
 
             # 파장별 평균 흡수율 데이터 가져오기 (옵션)
             spectrum_data = []
@@ -246,13 +246,12 @@ def get_dashboard_data(
                 for record in spectrum_records:
                     # SpectralInfo에서 파장 정보 가져오기
                     spectral_info = (db.query(SpectralInfo)
-                                   .filter(SpectralInfo.idx == record.spectralIdx)
+                                   .filter(SpectralInfo.spectral_index == getattr(record, 'spectralIdx', None))
                                    .first())
-                    
                     if spectral_info:
                         spectrum_data.append(SpectrumPoint(
-                            wavelength_nm=float(spectral_info.wavelength),
-                            mean_absorption=float(record.L) if record.L else 0.0  # L 값을 흡수율로 사용
+                            wavelength_nm=float(spectral_info.wavelength_nm),
+                            mean_absorption=float(getattr(record, 'L', 0.0)) if getattr(record, 'L', None) else 0.0
                         ))
 
             # 업로드 일시 (생성일 기준)
