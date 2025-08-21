@@ -7,7 +7,7 @@ export const statisticProbexptFresh = async (
   grade,
   meatValue
 ) => {
-  const url = `http://${apiIP}/meat/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}` + (meatValue && meatValue !== '전체' ? `&meatValue=${meatValue}` : '');
+  const url = `http://${apiIP}/statistic/probexpt-stats/fresh?start=${startDate}&end=${endDate}&animal_type=${animalType}&grade=${grade}`;
   const response = await fetch(url);
   return response;
 };
