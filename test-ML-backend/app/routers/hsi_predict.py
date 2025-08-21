@@ -530,7 +530,7 @@ async def hsi_predict(request: HSIPredictRequest, db: Session = Depends(get_db))
             if 'regression' in sample_result:
                 reg_values = sample_result['regression']
                 # column_config.json의 순서에 맞춰 정렬
-                label_order = ['Marbling', 'Meat Color', 'Texture', 'Surface Moisture', 'Total']
+                label_order = ['Marbling', 'Meat_Color', 'Texture', 'Surface_Moisture', 'Total']
                 for label in label_order:
                     if label in reg_values:
                         predictions.append(reg_values[label])
