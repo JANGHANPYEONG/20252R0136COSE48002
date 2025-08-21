@@ -133,21 +133,40 @@ export const saveJsonToResult = async (data, columns, zipFile, dataFormat = 'HSI
  */
 export const sendJsonToBackend = async (jsonData, traceNum) => {
   try {
-    console.log('BE로 JSON 데이터 전송 시작...', { traceNum, dataCount: jsonData.data_list?.length });
+    console.log('BE로 JSON 데이터 전송 시작...', { 
+      traceNum, 
+      dataCount: jsonData.data_list?.length,
+      sampleData: jsonData.data_list?.[0] // 첫 번째 샘플 구조 확인용
+    });
+    
+    const requestBody = {
+      traceNum: traceNum,
+      data_list: jsonData.data_list
+    };
+    
+    console.log('전송할 데이터 구조:', {
+      traceNum: requestBody.traceNum,
+      requestBodyKeys: Object.keys(requestBody),
+      dataListLength: requestBody.data_list?.length,
+      firstItemKeys: requestBody.data_list?.[0] ? Object.keys(requestBody.data_list[0]) : 'none'
+    });
     
     const response = await fetch(`http://${apiIP}/data-upload/bulk-upload`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        traceNum: traceNum,
-        data: jsonData
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
-      throw new Error(`BE 응답 오류: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('BE 응답 오류 상세:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText
+      });
+      throw new Error(`BE 응답 오류: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const result = await response.json();

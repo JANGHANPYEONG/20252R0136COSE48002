@@ -4,7 +4,7 @@ import { apiIP } from '../../config';
 /**
  * 파일명을 SHA-256 해시로 변환하는 함수
  * @param {string} originalFileName - 원본 파일명 (예: "140119100857_s1_430nm.png")
- * @returns {Promise<string>} - 해시된 파일명 (예: "abc123def_430nm.jpg")
+ * @returns {Promise<string>} - 해시된 파일명 (예: "abc123def_430nm.png")
  */
 const hashFileName = async (originalFileName) => {
   // 파장 정보 추출 (430nm, 540nm, rgb 등)
@@ -18,14 +18,16 @@ const hashFileName = async (originalFileName) => {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   
-  // 해시의 첫 8자리 사용하여 새로운 파일명 생성
+  // 원본 확장자 추출
+  const originalExtension = originalFileName.split('.').pop().toLowerCase();
+  
+  // 해시의 첫 8자리 사용하여 새로운 파일명 생성 (원본 확장자 유지)
   const shortHash = hashHex.substring(0, 8);
-  const extension = 'jpg'; // BE에서 JPEG 형식을 기본으로 사용
   
   if (wavelength) {
-    return `${shortHash}_${wavelength}.${extension}`;
+    return `${shortHash}_${wavelength}.${originalExtension}`;
   } else {
-    return `${shortHash}.${extension}`;
+    return `${shortHash}.${originalExtension}`;
   }
 };
 
@@ -60,70 +62,101 @@ const getBulkPresignedUrls = async (fileList) => {
 };
 
 /**
- * Presigned URL을 사용하여 S3에 이미지를 업로드하는 함수
- * @param {string} uploadUrl - S3 presigned upload URL
+ * Presigned PUT을 사용하여 S3에 이미지를 업로드하는 함수 (헤더 정확히 매칭)
+ * @param {string} uploadUrl - S3 presigned PUT URL
  * @param {Blob} imageBlob - 이미지 파일 Blob
  * @param {string} fileName - 파일명
+ * @param {string} expectedContentType - 예상되는 Content-Type (presigned URL과 정확히 매칭)
  * @returns {Promise<Object>} - 업로드 결과
  */
-const uploadToS3WithPresigned = async (uploadUrl, imageBlob, fileName) => {
+const uploadToS3WithPresigned = async (uploadUrl, imageBlob, fileName, expectedContentType) => {
   try {
-    // S3에 직접 PUT 요청으로 업로드
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'image/jpeg'
-      },
-      body: imageBlob
-    });
+    console.log(`S3 업로드 시도: ${fileName} (${imageBlob.size} bytes, type: ${imageBlob.type})`);
+    
+    // expectedContentType을 우선 사용하여 presigned URL과 정확히 매칭
+    const actualContentType = expectedContentType || imageBlob.type || 'application/octet-stream';
+    const headers = {
+      'Content-Type': actualContentType // presigned URL 생성 시와 동일한 타입
+    };
+    
+    console.log('==== S3 업로드 상세 정보 ====');
+    console.log('파일명:', fileName);
+    console.log('Blob 크기:', imageBlob.size, 'bytes');
+    console.log('Blob 원본 타입:', imageBlob.type);
+    console.log('기대되는 Content-Type:', expectedContentType);
+    console.log('실제 사용할 Content-Type:', actualContentType);
+    console.log('업로드 헤더:', headers);
+    console.log('업로드 URL (전체):', uploadUrl);
+    console.log('업로드 URL (기본):', uploadUrl.split('?')[0]);
+    
+    // Presigned URL에서 SignedHeaders 확인
+    const signedHeadersMatch = uploadUrl.match(/X-Amz-SignedHeaders=([^&]+)/);
+    const signedHeaders = signedHeadersMatch ? decodeURIComponent(signedHeadersMatch[1]) : 'none';
+    console.log('Presigned URL의 SignedHeaders:', signedHeaders);
+    
+    // Content-Type이 SignedHeaders에 포함되어 있는지 확인
+    const isContentTypeInSigned = signedHeaders.includes('content-type');
+    console.log('Content-Type이 서명된 헤더에 포함됨:', isContentTypeInSigned);
+    console.log('===============================');
+    
+    // CORS 문제 해결을 위한 추가 시도
+    console.log('fetch 요청 시작...');
+    
+    try {
+      // S3에 PUT 요청으로 업로드
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: headers,
+        body: imageBlob,
+        mode: 'cors', // 명시적으로 CORS 모드 설정
+        cache: 'no-cache'
+      });
+    
+    console.log(`S3 응답 상태: ${uploadResponse.status} ${uploadResponse.statusText}`);
     
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
+      console.error(`S3 업로드 실패 상세:`, {
+        status: uploadResponse.status,
+        statusText: uploadResponse.statusText,
+        errorText: errorText,
+        fileName: fileName,
+        blobType: imageBlob.type,
+        blobSize: imageBlob.size
+      });
       throw new Error(`S3 업로드 실패: ${uploadResponse.status} ${errorText}`);
     }
+    
+    console.log(`S3 업로드 성공: ${fileName}`);
     
     return {
       success: true,
       filename: fileName
     };
     
+    } catch (fetchError) {
+      console.error('==== fetch 요청 자체 오류 ====');
+      console.error('오류 타입:', fetchError.name);
+      console.error('오류 메시지:', fetchError.message);
+      console.error('오류 스택:', fetchError.stack);
+      
+      if (fetchError.message.includes('CORS')) {
+        console.error('CORS 관련 오류 - S3 버킷 CORS 설정 확인 필요');
+      } else if (fetchError.message.includes('Failed to fetch')) {
+        console.error('네트워크 연결 실패 - 인터넷 연결 또는 URL 확인 필요');
+      }
+      
+      console.error('============================');
+      throw fetchError;
+    }
+    
   } catch (error) {
-    console.error('S3 업로드 오류:', error);
+    console.error('S3 업로드 전체 오류:', error);
     throw error;
   }
 };
 
-/**
- * PNG를 JPEG로 변환하는 함수
- * @param {Blob} pngBlob - PNG 파일 Blob
- * @param {number} quality - JPEG 품질 (0.1-1.0)
- * @returns {Promise<Blob>} - JPEG Blob
- */
-const convertPngToJpeg = async (pngBlob, quality = 0.9) => {
-  return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
-      // 흰색 배경 추가 (PNG 투명도 처리)
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 이미지 그리기
-      ctx.drawImage(img, 0, 0);
-      
-      // JPEG Blob으로 변환
-      canvas.toBlob(resolve, 'image/jpeg', quality);
-    };
-    
-    img.onerror = reject;
-    img.src = URL.createObjectURL(pngBlob);
-  });
-};
+// JPEG 변환 함수는 더 이상 사용하지 않음 (원본 파일 그대로 업로드)
 
 /**
  * ZIP 파일에서 개별 이미지를 추출하고 해싱하여 S3에 업로드하는 함수
@@ -166,25 +199,24 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
       const imageFile = imageFiles[i];
       
       try {
-        // 1. 파일을 Blob으로 변환
+        // 1. 파일을 Blob으로 변환 (원본 그대로 유지)
         const originalBlob = await imageFile.file.async('blob');
         
-        // 2. PNG인 경우 JPEG로 변환
-        let imageBlob = originalBlob;
-        const isPng = imageFile.name.toLowerCase().endsWith('.png');
-        if (isPng) {
-          console.log(`PNG -> JPEG 변환: ${imageFile.name}`);
-          imageBlob = await convertPngToJpeg(originalBlob, 0.95);
-        }
+        // 2. 파일 타입 결정 (정확한 MIME 타입 매핑)
+        const originalExtension = imageFile.name.split('.').pop().toLowerCase();
+        const mimeType = originalExtension === 'png' ? 'image/png' : 
+                        (originalExtension === 'jpg' || originalExtension === 'jpeg') ? 'image/jpeg' : 
+                        'image/png'; // 기본값 (PNG)
         
-        // 3. 파일명 해싱
+        // 3. 파일명 해싱 (원본 확장자 유지)
         const hashedFileName = await hashFileName(imageFile.name);
         console.log(`파일명 해싱: ${imageFile.name} -> ${hashedFileName}`);
         
         fileProcessResults.push({
           originalFileName: imageFile.name,
           hashedFileName: hashedFileName,
-          imageBlob: imageBlob
+          imageBlob: originalBlob, // 원본 Blob 사용
+          contentType: mimeType
         });
         
       } catch (error) {
@@ -194,14 +226,53 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
     }
     
     // 2. 벌크 presigned URL 요청
-    console.log('벌크 presigned URL 요청...');
+    console.log('==== BE 요청 데이터 준비 ====');
     const fileList = fileProcessResults.map(item => ({
       filename: item.hashedFileName,
-      content_type: 'image/jpeg'
+      content_type: item.contentType // 각 파일의 원본 타입 사용
     }));
+    
+    console.log('BE로 전송할 파일 목록:');
+    fileList.forEach((file, index) => {
+      console.log(`${index + 1}. ${file.filename} (${file.content_type})`);
+    });
+    console.log('===============================');
+    
+    console.log('벌크 presigned URL 요청 중...');
     
     const bulkPresignedData = await getBulkPresignedUrls(fileList);
     console.log(`벌크 presigned URL 받음: ${bulkPresignedData.files?.length}개`);
+    
+    // presigned URL 응답 상세 로깅
+    console.log('==== BE presigned URL 응답 분석 ====');
+    console.log('전체 응답:', bulkPresignedData);
+    
+    if (bulkPresignedData.files && bulkPresignedData.files.length > 0) {
+      const firstFile = bulkPresignedData.files[0];
+      console.log('첫 번째 파일 정보:');
+      console.log('- file_key:', firstFile.file_key);
+      console.log('- upload_url 기본부:', firstFile.upload_url?.split('?')[0]);
+      
+      // URL 파라미터 분석
+      const urlParams = new URLSearchParams(firstFile.upload_url?.split('?')[1] || '');
+      console.log('- X-Amz-SignedHeaders:', urlParams.get('X-Amz-SignedHeaders'));
+      console.log('- X-Amz-Algorithm:', urlParams.get('X-Amz-Algorithm'));
+      console.log('- X-Amz-Credential:', urlParams.get('X-Amz-Credential')?.split('/')[0] + '/...');
+      console.log('- X-Amz-Date:', urlParams.get('X-Amz-Date'));
+      console.log('- X-Amz-Expires:', urlParams.get('X-Amz-Expires'), 'seconds');
+      
+      // Content-Type 관련 정보 확인
+      const signedHeaders = urlParams.get('X-Amz-SignedHeaders') || '';
+      const hasContentType = signedHeaders.includes('content-type');
+      console.log('- Content-Type이 서명에 포함됨:', hasContentType);
+      
+      if (hasContentType) {
+        console.log('⚠️  Presigned URL에 content-type이 서명되어 있음. 정확한 Content-Type 매칭 필요!');
+      } else {
+        console.log('ℹ️  Presigned URL에 content-type이 서명되지 않음. 헤더 자유도 높음.');
+      }
+    }
+    console.log('=====================================');
     
     // 3. 각 파일을 S3에 업로드
     const uploadResults = [];
@@ -224,18 +295,19 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
         
         console.log(`S3 업로드 중: ${fileResult.hashedFileName} (${i + 1}/${fileProcessResults.length})`);
         
-        // S3 업로드
+        // S3 직접 업로드 - presigned PUT URL 사용 (정확한 Content-Type 전달)
         const uploadResult = await uploadToS3WithPresigned(
-          presignedFileData.upload_url, 
+          presignedFileData.upload_url,
           fileResult.imageBlob, 
-          fileResult.hashedFileName
+          fileResult.hashedFileName,
+          fileResult.contentType  // 확장자로 결정했던 MIME 타입을 그대로 사용
         );
         
         uploadResults.push({
           originalFileName: fileResult.originalFileName,
           hashedFileName: fileResult.hashedFileName,
           s3Key: presignedFileData.file_key,
-          s3Url: presignedFileData.upload_url.split('?')[0], // 쿼리 파라미터 제거한 실제 S3 URL
+          s3Url: presignedFileData.upload_url.split('?')[0],
           success: true
         });
         
