@@ -259,7 +259,7 @@ const Dashboard = () => {
 
     // 5) 필터 초기화
     setFilters([
-      { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+      { name: '날짜', type: 'date', options: [], value: { start: startDate.split('T')[0], end: endDate.split('T')[0] } },
       { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
       { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
       { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
@@ -267,8 +267,42 @@ const Dashboard = () => {
   }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
-    setFilters(appliedFilters);
+    // appliedFilters는 백엔드용 필터 객체이므로, UI용 필터 상태는 유지
     console.log('적용된 필터:', appliedFilters);
+
+    // 백엔드 필터를 UI 필터 상태에 반영
+    if (appliedFilters.filters) {
+      const { categoryIds, butcheryYmd_from, butcheryYmd_to } = appliedFilters.filters;
+
+      // 날짜 필터 업데이트
+      if (butcheryYmd_from || butcheryYmd_to) {
+        setFilters(prev => prev.map(f =>
+          f.name === '날짜'
+            ? {
+              ...f, value: {
+                start: butcheryYmd_from ? butcheryYmd_from.split('T')[0] : null,
+                end: butcheryYmd_to ? butcheryYmd_to.split('T')[0] : null
+              }
+            }
+            : f
+        ));
+      }
+
+      // 품종 필터 업데이트
+      if (categoryIds && categoryIds.length > 0) {
+        let specieValue = '전체';
+        if (categoryIds.some(id => id >= 0 && id <= 9)) specieValue = '소';
+        else if (categoryIds.some(id => id >= 10 && id <= 20)) specieValue = '돼지';
+        else if (categoryIds.some(id => id >= 30 && id <= 40)) specieValue = '닭';
+
+        setFilters(prev => prev.map(f =>
+          f.name === '품종'
+            ? { ...f, value: specieValue }
+            : f
+        ));
+      }
+    }
+
     // 필터 적용 후 데이터 다시 로드
     setisLoaded(true);
     setTimeout(() => {
@@ -417,6 +451,8 @@ const Dashboard = () => {
               onApply={handleApplyFilters}
               filters={filters}
               setFilters={setFilters}
+              startDate={startDate}
+              endDate={endDate}
             />
           </Box>
           <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>

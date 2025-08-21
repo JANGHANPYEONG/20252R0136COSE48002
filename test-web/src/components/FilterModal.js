@@ -23,10 +23,18 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import dayjs from 'dayjs';
 
-const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
+const FilterModal = ({ open, onClose, onApply, filters, setFilters, startDate: initialStartDate, endDate: initialEndDate }) => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [duration, setDuration] = useState('week'); // 기간 선택 상태 추가
+
+    // 모달이 열릴 때 초기 날짜 설정
+    React.useEffect(() => {
+        if (open && initialStartDate && initialEndDate) {
+            setStartDate(dayjs(initialStartDate));
+            setEndDate(dayjs(initialEndDate));
+        }
+    }, [open, initialStartDate, initialEndDate]);
 
     // 기간별 날짜 계산 함수
     const calculateDateRange = (durationType) => {
@@ -182,7 +190,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
     const handleApply = () => {
         // 품종 필터에서 categoryIds 생성
         const specieFilter = filters.find(f => f.name === '품종');
-        const categoryIds = specieFilter && specieFilter.value ? getCategoryIds(specieFilter.value) : [];
+        const categoryIds = specieFilter && specieFilter.value && specieFilter.value !== '전체' ? getCategoryIds(specieFilter.value) : null;
 
         // 백엔드가 기대하는 필터 구조로 변환
         const appliedFilters = {

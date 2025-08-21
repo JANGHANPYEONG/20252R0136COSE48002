@@ -23,7 +23,7 @@ export const fetchFilteredData = async (filters) => {
         backendFilters.createdAt_from = `${dateFilter.value.start}T00:00:00`;
       }
       if (dateFilter.value.end) {
-        backendFilters.butcheryYmd_to = dateFilter.value.value.end;
+        backendFilters.butcheryYmd_to = dateFilter.value.end;
         backendFilters.createdAt_to = `${dateFilter.value.end}T23:59:59`;
       }
     }
