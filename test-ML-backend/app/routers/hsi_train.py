@@ -40,6 +40,8 @@ class HSITrainResponse(BaseModel):
     message: str
     train_id: str
     process_pid: Optional[int] = None
+    mlflow_run_id: Optional[str] = None
+    mlflow_experiment_id: Optional[str] = None
     created_at: datetime
 
 class HSITrainStatus(BaseModel):
@@ -416,6 +418,8 @@ async def start_hsi_train(request: HSITrainRequest):
             result = AsyncResult(task.id, app=celery_app)
             if result.state == 'TRAINING' and result.info:
                 process_pid = result.info.get('process_pid')
+                mlflow_run_id = result.info.get('mlflow_run_id')
+                mlflow_experiment_id = result.info.get('mlflow_experiment_id')
                 break
             time.sleep(0.1)
         
@@ -423,6 +427,8 @@ async def start_hsi_train(request: HSITrainRequest):
             message=f"HSI training started in background for {len(request.id_list)} images",
             train_id=task.id,
             process_pid=process_pid,
+            mlflow_run_id=mlflow_run_id,
+            mlflow_experiment_id=mlflow_experiment_id,
             created_at=datetime.now()
         )
     except Exception as e:
