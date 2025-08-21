@@ -284,7 +284,7 @@ async def get_presigned_url(request: PresignedUrlRequest):
         
         # 파일 키 생성 (timestamp + filename)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_key = f"meat_images/{timestamp}_{request.filename}"
+        file_key = f"train_dataset/HSI/{request.filename}"
         
         # Presigned URL 생성
         presigned_url = s3_client.generate_presigned_url(
@@ -354,7 +354,7 @@ async def get_bulk_presigned_urls(request: BulkPresignedUrlRequest):
             try:
                 # 각 파일마다 고유한 타임스탬프 생성 (밀리초 단위로 구분)
                 unique_timestamp = f"{base_timestamp}_{i:03d}"
-                file_key = f"meat_images/{unique_timestamp}_{file_request.filename}"
+                file_key = f"train_dataset/HSI/{unique_timestamp}_{file_request.filename}"
                 
                 print(f"DEBUG: Processing file {i+1}: {file_request.filename} -> {file_key}")
                 
