@@ -114,23 +114,32 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
     요청 데이터:
     - userId: 사용자 ID (이메일)
     - id: 육류 관리번호 (20자리 해시값)
+    - traceNum: 이력번호
+    - butcheryYmd: 도축일
+    - manufactureYmd: 제조일
+    - filmedAt: 촬영일
+    - expireYmd: 만료일
+    - isRefrigerated: 냉장 여부
     - meat: 육류 상세 데이터 (관능검사 점수, HSI 밴드 정보 등)
-    - hsiFilenames: HSI 파일명 리스트
     """
     try:
-        # 날짜 문자열을 datetime 객체로 변환 (필요한 경우)
+        # 날짜 문자열을 datetime 객체로 변환
+        butchery_date = datetime.strptime(request.butcheryYmd, "%Y-%m-%d")
+        manufacture_date = datetime.strptime(request.manufactureYmd, "%Y-%m-%d")
+        filmed_date = datetime.strptime(request.filmedAt, "%Y-%m-%d")
+        expire_date = datetime.strptime(request.expireYmd, "%Y-%m-%d")
         current_time = datetime.now()
         
         # 1. Meat 테이블에 데이터 삽입
         meat = Meat(
             id=request.id,
             userId=request.userId,
-            categoryId=request.meat.categoryId if hasattr(request.meat, 'categoryId') else None,
-            gradeNum=request.meat.gradeNum if hasattr(request.meat, 'gradeNum') else None,
+            categoryId=request.meat.categoryId,
+            gradeNum=request.meat.gradeNum,
             statusType=0,  # 기본값: 대기중
             createdAt=current_time,
-            traceNum=request.meat.traceNum,
-            butcheryYmd=current_time  # 기본값으로 현재 시간 사용
+            traceNum=request.traceNum,
+            butcheryYmd=butchery_date
         )
         db.add(meat)
         db.flush()  # ID 생성
@@ -150,18 +159,18 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
         sensory_eval = SensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
-            isRefrigerated=request.meat.hsi.isRefrigerated if request.meat.hsi else False,
+            isRefrigerated=request.isRefrigerated,
             createdAt=current_time,
             userId=request.userId,
             period=0,  # 기본값: 0일
-            filmedAt=current_time,  # 기본값으로 현재 시간 사용
+            filmedAt=filmed_date,
             marbling=request.meat.marbling,
-            meat_color=request.meat.meatColor or request.meat.meat_Color,
+            meat_color=request.meat.meat_color,
             texture=request.meat.texture,
-            surface_moisture=request.meat.surfaceMoisture,
-            overall=request.meat.total,
-            manufactureYmd=current_time,  # 기본값으로 현재 시간 사용
-            expireYmd=current_time  # 기본값으로 현재 시간 사용
+            surface_moisture=request.meat.surface_moisture,
+            overall=request.meat.overall,
+            manufactureYmd=manufacture_date,
+            expireYmd=expire_date
         )
         db.add(sensory_eval)
         db.flush()
@@ -170,30 +179,37 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
         hsi_sensory_eval = HSISensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
-            isRefrigerated=request.meat.hsi.isRefrigerated if request.meat.hsi else False,
+            isRefrigerated=request.isRefrigerated,
             createdAt=current_time,
             marbling=request.meat.marbling,
-            meat_color=request.meat.meatColor or request.meat.meat_Color,
+            meat_color=request.meat.meat_color,
             texture=request.meat.texture,
-            surface_moisture=request.meat.surfaceMoisture,
-            overall=request.meat.total
+            surface_moisture=request.meat.surface_moisture,
+            overall=request.meat.overall
         )
         db.add(hsi_sensory_eval)
         db.flush()
         
-        # 5. HSIImagesBands 테이블에 데이터 삽입 (hsiFilenames 기반)
-        for i, filename in enumerate(request.hsiFilenames):
-            # spectral_index는 파일 순서대로 할당 (0부터 시작)
+        # 5. HSIImagesBands 테이블에 데이터 삽입
+        for band in request.meat.bands:
+            # spectral_index 유효성 검사
+            spectral_info = db.query(SpectralInfo).filter(SpectralInfo.spectral_index == band.spectral_index).first()
+            if not spectral_info:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"유효하지 않은 spectral_index: {band.spectral_index}"
+                )
+            
             hsi_band = HSIImagesBands(
                 id=request.id,
                 seqno=request.meat.seqno,
-                isRefrigerated=request.meat.hsi.isRefrigerated if request.meat.hsi else False,
-                spectral_index=i,
-                topLeft=[0, 0],  # 기본값
-                topRight=[100, 0],  # 기본값
-                bottomRight=[100, 100],  # 기본값
-                bottomLeft=[0, 100],  # 기본값
-                filename=filename
+                isRefrigerated=request.isRefrigerated,
+                spectral_index=band.spectral_index,
+                topLeft=band.topLeft,  # [x, y] 좌표 배열 그대로 저장
+                topRight=band.topRight,
+                bottomRight=band.bottomRight,
+                bottomLeft=band.bottomLeft,
+                filename=band.filename
             )
             db.add(hsi_band)
         
@@ -201,7 +217,7 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
         ai_sensory_eval = AI_SensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
-            isRefrigerated=request.meat.hsi.isRefrigerated if request.meat.hsi else False,
+            isRefrigerated=request.isRefrigerated,
             createdAt=current_time
         )
         db.add(ai_sensory_eval)
@@ -209,7 +225,7 @@ async def upload_meat_data(request: DataUploadRequest, db: Session = Depends(get
         ai_hsi_sensory_eval = AI_HSISensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
-            isRefrigerated=request.meat.hsi.isRefrigerated if request.meat.hsi else False,
+            isRefrigerated=request.isRefrigerated,
             createdAt=current_time
         )
         db.add(ai_hsi_sensory_eval)
