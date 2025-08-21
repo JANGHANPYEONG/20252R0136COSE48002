@@ -6,7 +6,7 @@ import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
 import ImageUploadProgress from '../components/ImageUploadProgress';
 import uploadFiles from '../API/add/uploadToS3'; // 통합 업로드 API import
-import { saveJsonToResult } from '../API/add/saveJsonToResult'; // JSON 저장 API import
+import { convertToNewJsonFormat, sendNewJsonToBackend } from '../API/add/newJsonConverter'; // 새로운 JSON 변환 및 전송 API import
 import { uploadIndividualImages } from '../API/add/uploadIndividualImages'; // 개별 이미지 업로드 API import
 
 const navy = '#0F3659';
@@ -118,23 +118,58 @@ const DataRegister = () => {
       setLoading(true);
       
       try {
-        // 3. JSON 파일들 생성 및 저장 (로컬 모드)
-        console.log('JSON 파일 생성 및 저장 시작...');
-        const jsonResult = await saveJsonToResult(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile);
+        // 3. 새로운 형식의 JSON 생성
+        console.log('새로운 형식의 JSON 생성 시작...');
+        
+        // 이미지 매핑 정보 추출 (기존 데이터에서)
+        const imageMapping = {};
+        data.forEach(row => {
+          const traceNum = String(row['이력번호'] || '').trim();
+          const sampleNum = String(row['샘플번호'] || row['부위번호'] || '').replace(/[sS]/g, '');
+          
+          if (traceNum && sampleNum && row['매핑 상태'] === '매핑됨') {
+            if (!imageMapping[traceNum]) {
+              imageMapping[traceNum] = {};
+            }
+            
+            // 파장 정보에서 파장별 이미지 구성 (RGB 제외)
+            const wavelengthInfo = row['파장 정보'] || '';
+            const wavelengths = wavelengthInfo.split(', ')
+              .filter(wl => wl.trim())
+              .filter(wl => wl.toLowerCase() !== 'rgb'); // RGB 제외
+            
+            imageMapping[traceNum][sampleNum] = {};
+            wavelengths.forEach(wavelength => {
+              imageMapping[traceNum][sampleNum][wavelength] = {
+                wavelength: wavelength
+              };
+            });
+          }
+        });
+        
+        const jsonResult = await convertToNewJsonFormat(uploadedExcelFile, dataFormat, imageMapping);
         
         if (!jsonResult.success) {
-          throw new Error(`JSON 저장 실패: ${jsonResult.message}`);
+          throw new Error(`JSON 생성 실패: ${jsonResult.message}`);
         }
         
-        console.log('JSON 저장 완료:', jsonResult);
+        console.log('새로운 형식의 JSON 생성 완료:', jsonResult);
 
-        // 4. 개별 이미지 업로드 (ZIP 파일이 있는 경우에만)
+        // 4. BE로 JSON 데이터 전송
+        console.log('BE로 JSON 데이터 전송 시작...');
+        const traceNum = data.length > 0 ? String(data[0]['이력번호'] || '').trim() : 'unknown';
+        
+        const beResult = await sendNewJsonToBackend(jsonResult.data, traceNum);
+        
+        if (!beResult.success) {
+          console.warn('BE 전송 실패:', beResult.message);
+          // BE 전송 실패해도 계속 진행 (이미지 업로드는 해야 함)
+        }
+
+        // 5. 개별 이미지 업로드 (ZIP 파일이 있는 경우에만)
         let imageResult = null;
         if (uploadedZipFile) {
           console.log('개별 이미지 업로드 시작...');
-          
-          // 이력번호 추출 (첫 번째 데이터에서)
-          const traceNum = data.length > 0 ? String(data[0]['이력번호'] || '').trim() : 'unknown';
           
           // 진행 상황 콜백 함수
           const progressCallback = (progress) => {
@@ -179,17 +214,17 @@ const DataRegister = () => {
             // 진행 바 숨기기
             setUploadProgress(prev => ({ ...prev, show: false }));
             
-            // 이미지 업로드 실패해도 JSON은 저장되었으므로 경고만 표시
-            alert(`JSON 파일은 저장되었지만 이미지 업로드에 실패했습니다.\n오류: ${imageError.message}\n\nJSON 파일 저장 위치: ${jsonResult.data.localPath}`);
+            // 이미지 업로드 실패해도 JSON은 BE로 전송되었으므로 경고만 표시
+            alert(`JSON 데이터는 BE로 전송되었지만 이미지 업로드에 실패했습니다.\n오류: ${imageError.message}`);
           }
         } else {
           console.log('ZIP 파일이 없으므로 이미지 업로드를 건너뜁니다.');
         }
 
-        // 5. 성공 메시지 표시
+        // 6. 성공 메시지 표시
         const successDetails = [
-          `JSON 파일: ${jsonResult.data.fileCount}개 저장됨`,
-          `저장 경로: ${jsonResult.data.localPath}`,
+          `JSON 파일: ${jsonResult.data.data_list.length}개 샘플 포함하여 1개 파일 BE 전송 완료`,
+          beResult.success ? `BE 전송: 성공` : `BE 전송: 실패 (${beResult.message})`,
           imageResult ? `이미지: ${imageResult.data.successCount}개 업로드됨` : '이미지: 업로드 안됨'
         ].join('\n');
         
@@ -565,24 +600,24 @@ const DataRegister = () => {
         
         const sampleNumber = sampleMatch[1];
         
-        // 파일명에서 파장 정보 추출 (예: 140119100857_s1_430nm.png 또는 140119100857_s1_rgb_day7.png)
+        // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
         let wavelength = null;
         
-        // 1. nm 단위 파장 추출 시도 (HSI)
+        // RGB 패턴 체크 후 건너뛰기
+        const rgbMatch = fileName.match(/_rgb_/i);
+        if (rgbMatch) {
+          console.log(`❌ RGB 이미지 제외: ${fileName}`);
+          continue;
+        }
+        
+        // nm 단위 파장 추출 시도 (HSI만)
         const wavelengthMatch = fileName.match(/(\d+nm)/i);
         if (wavelengthMatch) {
           wavelength = wavelengthMatch[1];
-        } else {
-          // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
-          const rgbMatch = fileName.match(/_rgb_/i);
-          if (rgbMatch) {
-            wavelength = 'rgb';
-            console.log(`RGB 이미지 인식: ${fileName}`);
-          }
         }
         
         if (!wavelength) {
-          console.log(`❌ 파장/RGB 정보 없음: ${fileName}`);
+          console.log(`❌ 파장 정보 없음: ${fileName}`);
           continue;
         }
         
@@ -679,20 +714,20 @@ const DataRegister = () => {
             // 부위 폴더는 S1, s1, S2, s2 형태 모두 지원
             const sampleMatch = folder2.match(/^[sS](\d+)$/);
             if (sampleMatch) {
-              // 파일명에서 파장 정보 추출 (HSI 또는 RGB)
+              // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
               let extractedWavelength = null;
               
-              // 1. nm 단위 파장 추출 시도 (HSI)
+              // RGB 패턴 체크 후 건너뛰기
+              const rgbMatch = imageName.match(/_rgb_/i);
+              if (rgbMatch) {
+                console.log(`❌ ZIP RGB 이미지 제외: ${imageName}`);
+                continue; // RGB 이미지는 건너뛰기
+              }
+              
+              // nm 단위 파장 추출 시도 (HSI만)
               const wavelengthMatch = imageName.match(/(\d+nm)/i);
               if (wavelengthMatch) {
                 extractedWavelength = wavelengthMatch[1];
-              } else {
-                // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
-                const rgbMatch = imageName.match(/_rgb_/i);
-                if (rgbMatch) {
-                  extractedWavelength = 'rgb';
-                  console.log(`ZIP RGB 이미지 인식: ${imageName}`);
-                }
               }
               
               if (extractedWavelength) {
@@ -701,7 +736,7 @@ const DataRegister = () => {
                 wavelength = extractedWavelength;
                 console.log(`✅ ZIP 폴더 구조 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
               } else {
-                console.log(`❌ ZIP 파장/RGB 정보 없음: ${imageName}`);
+                console.log(`❌ ZIP 파장 정보 없음: ${imageName}`);
               }
             } else {
               console.log(`❌ ZIP 부위 폴더 패턴 불일치: ${folder2}`);
@@ -713,22 +748,20 @@ const DataRegister = () => {
         if (!managementNumber) {
           const imageName = pathParts[pathParts.length - 1];
           
-          // 2-1. HSI 패턴: 140119100857_s1_430nm.png
+          // RGB 패턴 체크 후 제외
+          const rgbPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_rgb_/i);
+          if (rgbPatternMatch) {
+            console.log(`❌ ZIP 파일명 RGB 패턴 제외: ${imageName}`);
+            continue; // RGB 이미지는 건너뛰기
+          }
+          
+          // HSI 패턴: 140119100857_s1_430nm.png
           const hsiPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_(\d+nm)\./i);
           if (hsiPatternMatch) {
             managementNumber = hsiPatternMatch[1];
             sampleNumber = hsiPatternMatch[2];
             wavelength = hsiPatternMatch[3];
             console.log(`✅ ZIP 파일명 HSI 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
-          } else {
-            // 2-2. RGB 패턴: 140119100857_s1_rgb_day7.png
-            const rgbPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_rgb_/i);
-            if (rgbPatternMatch) {
-              managementNumber = rgbPatternMatch[1];
-              sampleNumber = rgbPatternMatch[2];
-              wavelength = 'rgb';
-              console.log(`✅ ZIP 파일명 RGB 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
-            }
           }
         }
         
