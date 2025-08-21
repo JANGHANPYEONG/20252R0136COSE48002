@@ -21,7 +21,7 @@ from app.db.database import get_db
 from app.db.db_model import (
     Meat, CategoryInfo, DeepAgingInfo,
     SensoryEval, AI_SensoryEval,
-    HeatedmeatSensoryEval, AI_HeatedmeatSeonsoryEval,
+    HeatedmeatSensoryEval, AI_HeatedmeatSensoryEval,
     HSISensoryEval, AI_HSISensoryEval, HSIImagesBands, SpectralInfo
 )
 router = APIRouter()
