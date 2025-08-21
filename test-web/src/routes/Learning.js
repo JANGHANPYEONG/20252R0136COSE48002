@@ -1,5 +1,5 @@
 // src/routes/Learning.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, Button, CircularProgress, Typography, Snackbar, Alert } from '@mui/material';
 
@@ -12,24 +12,10 @@ import PredictionDetailPanel from '../components/PredictionDetailPanel';
 // APIs
 import trainSpectralModel from '../API/train/trainSpectralModel';
 import deploySpectralModel from '../API/train/deploySpectralModel';
+import { trainHSIModel, getHSITrainingStatus } from '../API/train/trainHSIModel';
 import { fetchFilteredData } from '../API/fetchFileteredData';
 import { fetchPrediction } from '../API/predictData';
 
-// ===== Mock train (keep until backend ready) =====
-const USE_MOCK_TRAIN = true;
-const makeMockTrainResult = () => {
-  const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-  const now = new Date();
-  const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const minutes = Math.floor(10 + Math.random() * 30); // 10~40
-  const auc = (0.78 + Math.random() * 0.1).toFixed(4);
-  const r2 = (0.55 + Math.random() * 0.2).toFixed(2);
-  const recall = (0.7 + Math.random() * 0.15).toFixed(2);
-  const loss = (0.85 + Math.random() * 0.1).toFixed(4);
-  // [생성날짜, 학습시간, AUC, R2, Recall, Loss]
-  return [dateStr, `${minutes}min`, auc, r2, recall, loss];
-};
-// ================================================
 
 const navy = '#0F3659';
 
@@ -51,6 +37,8 @@ const Learning = () => {
   const [results, setResults] = useState([]);        // 한 행([...]) 단위
   const [history, setHistory] = useState([]);        // 과거 결과들(행 배열)
   const [isTraining, setIsTraining] = useState(true);
+  const [currentTrainId, setCurrentTrainId] = useState(null); // 현재 HSI 학습 ID
+  const statusIntervalRef = useRef(null); // 상태 확인 인터벌을 저장할 ref
 
   // 상세 패널
   const [openPanel, setOpenPanel] = useState(false);
@@ -73,6 +61,17 @@ const Learning = () => {
       setSelectedRows(location.state.selectedRows);
     }
   }, [location.state]);
+
+  // 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      // ref를 통해 실제 인터벌 ID에 접근하여 정리
+      if (statusIntervalRef.current) {
+        clearInterval(statusIntervalRef.current);
+        statusIntervalRef.current = null;
+      }
+    };
+  }, []);
   // 데이터 불러오기
   const handleLoadData = async () => {
     setLoading(true);
@@ -117,35 +116,6 @@ const Learning = () => {
     setOpenPanel(true);
   };
 
-  // 선택 데이터 예측
-  const handlePredict = async () => {
-    if (selectedRows.length === 0) {
-      setSnackbar({ open: true, severity: 'warning', message: '예측할 데이터를 선택해주세요.' });
-      return;
-    }
-    setLoading(true);
-    try {
-      const result = await fetchPrediction(selectedRows);
-      // result가 배열 혹은 { [id]: prediction } 둘 다 지원
-      const idToPred = Array.isArray(result)
-        ? result.reduce((acc, r) => {
-            if (r?.id && r?.prediction) acc[r.id] = r.prediction;
-            return acc;
-          }, {})
-        : result;
-
-      const newData = data.map((row) =>
-        idToPred[row.id] ? { ...row, prediction: idToPred[row.id] } : row
-      );
-      setData(newData);
-      setSnackbar({ open: true, severity: 'success', message: '예측 성공!' });
-    } catch (err) {
-      console.error('예측 실패:', err);
-      setSnackbar({ open: true, severity: 'error', message: '예측 실패! 서버 상태를 확인해주세요.' });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 필터 열기/적용
   const handleFilter = () => setFilterModalOpen(true);
@@ -157,29 +127,111 @@ const Learning = () => {
   // 데이터 초기화
   const initializeData = () => setData([]);
 
-  // 학습
-  const handleTrain = async (trainDataSet) => {
-    if (!trainDataSet || trainDataSet.length === 0) {
-      setSnackbar({ open: true, severity: 'warning', message: '학습할 데이터가 없습니다.' });
-      return;
-    }
+  // HSI 학습
+  const handleHSITrain = async () => {
+    // 선택된 육류 데이터의 ID 리스트 추출
+    const idList = selectedRows.map(row => row.id);
+    
     setIsTraining(true);
     try {
-      if (USE_MOCK_TRAIN) {
-        const mockRow = makeMockTrainResult();
-        setResults(mockRow);
-        setSnackbar({ open: true, severity: 'success', message: '모델 학습이 완료되었습니다. (MOCK)' });
-      } else {
-        const response = await trainSpectralModel(trainDataSet);
-        setResults(response); // response가 [..] 한 행 형태라고 가정
-        setSnackbar({ open: true, severity: 'success', message: '모델 학습이 완료되었습니다.' });
-      }
+      const response = await trainHSIModel(idList);
+      
+      // 응답에서 필요한 정보 추출
+      const { message, train_id, process_pid, created_at } = response;
+      
+      // 현재 학습 ID 저장
+      setCurrentTrainId(train_id);
+      
+      // 학습 결과를 표시할 수 있도록 결과 저장
+      const trainResult = [
+        created_at.split('T')[0], // 날짜만 추출
+        train_id.substring(0, 20), // train_id 일부만 표시
+        process_pid.toString(),
+        'HSI Training Started'
+      ];
+      
+      setResults(trainResult);
+      setSnackbar({ 
+        open: true, 
+        severity: 'success', 
+        message: `HSI 학습이 시작되었습니다. (${idList.length}개 이미지)` 
+      });
+      
+      console.log('HSI Training started:', response);
+      
+      // 학습 상태 주기적 확인 시작
+      startStatusCheck(train_id);
     } catch (error) {
-      console.error('학습 실패:', error);
-      setSnackbar({ open: true, severity: 'error', message: '모델 학습 중 오류가 발생했습니다.' });
+      console.error('HSI 학습 실패:', error);
+      setSnackbar({ 
+        open: true, 
+        severity: 'error', 
+        message: 'HSI 학습 시작 중 오류가 발생했습니다.' 
+      });
       setIsTraining(false);
     }
   };
+
+  // HSI 학습 상태 주기적 확인
+  const startStatusCheck = async (trainId) => {
+    // 기존 인터벌이 있다면 정리
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current);
+      statusIntervalRef.current = null;
+    }
+    
+    const checkStatus = async () => {
+      try {
+        const statusResponse = await getHSITrainingStatus(trainId);
+        const { status } = statusResponse;
+        
+        // 상태에 따라 결과 업데이트
+        if (status === 'completed' || status === 'failed') {
+          setIsTraining(false);
+          
+          // 결과 테이블 업데이트
+          setResults(prev => {
+            if (prev.length >= 4) {
+              const newResults = [...prev];
+              newResults[3] = status === 'completed' ? 'HSI Training Completed' : 'HSI Training Failed';
+              return newResults;
+            }
+            return prev;
+          });
+          
+          if (status === 'completed') {
+            setSnackbar({ 
+              open: true, 
+              severity: 'success', 
+              message: 'HSI 학습이 완료되었습니다!' 
+            });
+          } else {
+            setSnackbar({ 
+              open: true, 
+              severity: 'error', 
+              message: 'HSI 학습이 실패했습니다.' 
+            });
+          }
+          
+          // 상태 확인 중단
+          if (statusIntervalRef.current) {
+            clearInterval(statusIntervalRef.current);
+            statusIntervalRef.current = null;
+          }
+        }
+      } catch (error) {
+        console.error('상태 확인 실패:', error);
+      }
+    };
+    
+    // 즉시 한 번 확인
+    await checkStatus();
+    
+    // 10초마다 상태 확인하고 ref에 저장
+    statusIntervalRef.current = setInterval(checkStatus, 10000);
+  };
+
+
 
   // 배포
   const handleDeploy = () => {
@@ -191,7 +243,7 @@ const Learning = () => {
   };
 
   // 학습 결과 테이블 컬럼
-  const getModelResults = () => ['생성 날짜', 'Train_Time', 'Test_AUC', 'R2_score', 'Recall', 'Loss'];
+  const getModelResults = () => ['학습 날짜', 'Train ID', 'Process ID', 'message'];
 
   const displayResults = [...history, ...(results.length ? [results] : [])];
 
@@ -222,7 +274,12 @@ const Learning = () => {
         </Box>
 
         {/* 데이터 테이블 + 선택/상세 */}
-        <PredictionTable data={data} onSelectionChange={handleSelectionChange} onRowClick={handleRowClick} />
+        <PredictionTable 
+          data={data} 
+          onSelectionChange={handleSelectionChange} 
+          onRowClick={handleRowClick}
+          selectedRows={selectedRows}
+        />
 
         <Typography sx={{ marginTop: '10px', color: navy }}>총 {data.length}개의 데이터</Typography>
 
@@ -230,12 +287,28 @@ const Learning = () => {
         <Box sx={{ display: 'flex', gap: 2, marginTop: '20px', marginBottom: '20px' }}>
           <Button
             variant="contained"
-            onClick={() => handleTrain(data)}
+            onClick={handleHSITrain}
             disabled={selectedRows.length === 0}
             sx={{ backgroundColor: '#28a745', '&:hover': { backgroundColor: '#218838' }, '&:disabled': { backgroundColor: '#6c757d' } }}
           >
-            학습하기
+            HSI 학습하기
           </Button>
+          {currentTrainId && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                // 기존 인터벌 정리 후 새로 시작
+                if (statusIntervalRef.current) {
+                  clearInterval(statusIntervalRef.current);
+                  statusIntervalRef.current = null;
+                }
+                startStatusCheck(currentTrainId);
+              }}
+              sx={{ borderColor: '#007bff', color: '#007bff' }}
+            >
+              상태 확인
+            </Button>
+          )}
         </Box>
 
         {/* 학습 결과 비교 표 */}

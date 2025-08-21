@@ -459,6 +459,7 @@ const Predict = () => {
           data={data}
           onSelectionChange={handleSelectionChange}
           onRowClick={handleRowClick}
+          selectedRows={selectedRows}
         />
 
         <Typography sx={{ marginTop: '10px', color: navy }}>
