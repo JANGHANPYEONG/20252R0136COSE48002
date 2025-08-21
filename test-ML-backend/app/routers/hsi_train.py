@@ -344,7 +344,7 @@ def run_hsi_train_task(self, id_list: List[str]):
         
         # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
         process = subprocess.Popen(
-            [sys.executable, "train_HSI_2d.py", '--config', config_path, "--run-id", run_id],
+            [sys.executable, "train_HSI_2d.py", '--config', config_path, "--experiment-id", exp.experiment_id, "--run-id", run_id],
             cwd=training_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
