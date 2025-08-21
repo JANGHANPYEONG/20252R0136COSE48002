@@ -32,7 +32,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
     const calculateDateRange = (durationType) => {
         const today = dayjs();
         let start, end;
-        
+
         switch (durationType) {
             case 'week':
                 start = today.subtract(7, 'day');
@@ -58,7 +58,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                 start = today.subtract(7, 'day');
                 end = today;
         }
-        
+
         return { start, end };
     };
 
@@ -87,45 +87,45 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                 const cattleIds = [];
                 for (let largeId = 0; largeId <= 9; largeId++) { // 0~9 (대분할)
                     const maxSmallId = largeId === 0 ? 0 : // 안심: 1개
-                                    largeId === 1 ? 3 : // 등심: 4개
-                                    largeId === 2 ? 0 : // 채끝: 1개
-                                    largeId === 3 ? 0 : // 목심: 1개
+                        largeId === 1 ? 3 : // 등심: 4개
+                            largeId === 2 ? 0 : // 채끝: 1개
+                                largeId === 3 ? 0 : // 목심: 1개
                                     largeId === 4 ? 4 : // 앞다리: 5개
-                                    largeId === 5 ? 1 : // 우둔: 2개
-                                    largeId === 6 ? 4 : // 설도: 5개
-                                    largeId === 7 ? 6 : // 양지: 7개
-                                    largeId === 8 ? 2 : // 사태: 3개
-                                    largeId === 9 ? 7 : 0; // 갈비: 8개
-                    
+                                        largeId === 5 ? 1 : // 우둔: 2개
+                                            largeId === 6 ? 4 : // 설도: 5개
+                                                largeId === 7 ? 6 : // 양지: 7개
+                                                    largeId === 8 ? 2 : // 사태: 3개
+                                                        largeId === 9 ? 7 : 0; // 갈비: 8개
+
                     for (let smallId = 0; smallId <= maxSmallId; smallId++) {
                         cattleIds.push(100 * 0 + 10 * largeId + smallId);
                     }
                 }
                 return cattleIds;
-                
+
             case '돼지':
                 // 돼지: DB의 CategoryInfo.id 값들 (speciesId = 1)
                 // calId(id, s_id, 1) = 100 * 1 + 10 * id + s_id
                 const pigIds = [];
                 for (let largeId = 0; largeId <= 6; largeId++) { // 0~6 (대분할)
                     const maxSmallId = largeId === 0 ? 0 : // 안심: 1개
-                                    largeId === 1 ? 1 : // 등심: 2개
-                                    largeId === 2 ? 0 : // 목심: 1개
-                                    largeId === 3 ? 5 : // 앞다리: 6개
+                        largeId === 1 ? 1 : // 등심: 2개
+                            largeId === 2 ? 0 : // 목심: 1개
+                                largeId === 3 ? 5 : // 앞다리: 6개
                                     largeId === 4 ? 2 : // 갈비: 3개
-                                    largeId === 5 ? 4 : // 삼겹살: 5개
-                                    largeId === 6 ? 0 : 0; // 뒷다리: 1개
-                    
+                                        largeId === 5 ? 4 : // 삼겹살: 5개
+                                            largeId === 6 ? 0 : 0; // 뒷다리: 1개
+
                     for (let smallId = 0; smallId <= maxSmallId; smallId++) {
                         pigIds.push(100 * 1 + 10 * largeId + smallId);
                     }
                 }
                 return pigIds;
-                
+
             case '닭':
                 // 닭: 아직 DB에 정의되지 않음 (빈 배열 반환)
                 return [];
-                
+
             default:
                 return [];
         }
@@ -142,7 +142,7 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
     // 선택된 필터 후보를 실제 필터로 추가
     const handleAddSelectedFilter = (filterName) => {
         if (!filterName) return; // 빈 값 선택 시 무시
-        
+
         const selectedCandidate = filterCandidates.find(f => f.name === filterName);
         if (selectedCandidate) {
             // 이미 존재하는 필터인지 확인
@@ -221,9 +221,9 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
 
     // 이미 추가된 필터들의 이름 목록
     const addedFilterNames = filters.filter(f => f.name !== '날짜').map(f => f.name);
-    
+
     // 아직 추가되지 않은 필터 후보들만 표시
-    const availableCandidates = filterCandidates.filter(candidate => 
+    const availableCandidates = filterCandidates.filter(candidate =>
         !addedFilterNames.includes(candidate.name)
     );
 
@@ -245,8 +245,8 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                         <Typography variant="subtitle1" gutterBottom>
                             조회 기간
                         </Typography>
-                        <Tabs 
-                            value={duration} 
+                        <Tabs
+                            value={duration}
                             onChange={handleDurationChange}
                             variant="fullWidth"
                             sx={{
