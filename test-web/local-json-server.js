@@ -19,7 +19,7 @@ if (!fs.existsSync(resultPath)) {
   console.log('result 폴더가 생성되었습니다:', resultPath);
 }
 
-// JSON 파일 저장 API (여러 파일 지원)
+// JSON 파일 저장 API (여러 파일 지원, result 디렉토리에 직접 저장)
 app.post('/api/save-multiple-json', async (req, res) => {
   try {
     const { files } = req.body;
@@ -40,6 +40,7 @@ app.post('/api/save-multiple-json', async (req, res) => {
         continue;
       }
 
+      // result 디렉토리에 직접 저장
       const filePath = path.join(resultPath, fileName);
       
       // JSON 파일 저장

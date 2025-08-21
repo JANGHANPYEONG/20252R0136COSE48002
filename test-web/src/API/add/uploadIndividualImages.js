@@ -147,11 +147,16 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(zipFile);
     
-    // 이미지 파일만 필터링 (jpg, jpeg, png)
+    // 이미지 파일만 필터링 (jpg, jpeg, png) - RGB 이미지 제외
     const imageFiles = Object.keys(zipContent.files)
       .filter(fileName => {
         const ext = fileName.split('.').pop().toLowerCase();
-        return ['jpg', 'jpeg', 'png'].includes(ext) && !zipContent.files[fileName].dir;
+        const isImageFile = ['jpg', 'jpeg', 'png'].includes(ext) && !zipContent.files[fileName].dir;
+        
+        // RGB 이미지 제외 (_rgb_ 패턴이 포함된 파일 제외)
+        const isRgbImage = fileName.toLowerCase().includes('_rgb_');
+        
+        return isImageFile && !isRgbImage;
       })
       .map(fileName => ({
         name: fileName,
