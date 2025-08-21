@@ -63,8 +63,11 @@ const Dashboard = () => {
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
   const navigate = useNavigate();
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
   //////////////////////////////////////////////////
   // data를 useState로 저장 -> usequeryClient 로 저장
+
   const [isLoaded, setisLoaded] = useState(false); // query on/off
   const queryClient = useQueryClient();
   const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded});
@@ -220,7 +223,12 @@ const Dashboard = () => {
     setSelectedRows(newSelection);
   };
 
-
+  // Rowclick 여부 다루기
+  const handleRowClick = (row) => {
+    if (!row.prediction) return;
+    setDetailData({ id: row.id, prediction: row.prediction, sensory: row.sensory});
+    setOpenPanel(true);
+  };
 
   // 필터 함수
   const handleFilter = () => {
@@ -377,6 +385,7 @@ const Dashboard = () => {
         <PredictionTableTmp
           data={data}
           onSelectionChange={handleSelectionChange}
+          onRowClick={handleRowClick}
         />
 
         <Typography sx={{ marginTop: '10px', color: navy }}>

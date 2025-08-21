@@ -364,7 +364,8 @@ export default function MeatDetailPage() {
             <Divider sx={{ my: 2 }} />
             <Stack direction="row" spacing={1}>
               <Button variant="outlined" color="error" onClick={handleReject}>반려</Button>
-              <Button variant="contained" color="success" onClick={handleConfirm}>승인</Button>
+              <Button variant="contained
+              " color="success" onClick={handleConfirm}>승인</Button>
               {editMode ? (
                 <Button variant="outlined" onClick={saveEdit}>수정완료</Button>
               ) : (
