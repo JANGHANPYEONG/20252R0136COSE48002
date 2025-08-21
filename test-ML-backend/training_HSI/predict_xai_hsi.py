@@ -21,6 +21,7 @@ import pickle
 import mlflow
 import tempfile
 import warnings
+import base64
 import cv2
 from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')
@@ -439,12 +440,22 @@ class HSIPredictor:
 
                     # (b) 회귀
                     if 'regression' in out_i and self.reg_indices:
-                        reg_vals = out_i['regression'].squeeze(0).cpu().numpy()  # (Cr,)
-                        reg_results = {}
-                        for idx_in_head, col_idx in enumerate(self.reg_indices):
-                            reg_results[self.label_columns[col_idx]] = float(reg_vals[idx_in_head])
-                        sample_results['regression'] = reg_results
+                        reg_vals = out_i['regression'].squeeze(0).cpu().numpy()  # (Cr,) 예상
+                        print(f"[DEBUG] regression output shape: {reg_vals.shape}, values: {reg_vals}")  # 디버깅용
+                        
+                        if reg_vals.size == 0:
+                            print("[WARN] Regression head returned empty output → skip regression for this sample")
+                            reg_results = {}
+                        else:
+                            reg_results = {}
+                            for idx_in_head, col_idx in enumerate(self.reg_indices):
+                                if idx_in_head < len(reg_vals):
+                                    reg_results[self.label_columns[col_idx]] = float(reg_vals[idx_in_head])
+                                else:
+                                    print(f"[WARN] Missing regression value for label {self.label_columns[col_idx]}")
+                                    reg_results[self.label_columns[col_idx]] = None  # or np.nan
 
+                        sample_results['regression'] = reg_results
                 else:
                     # 단일 헤드 (예: (1, K)) → 구성에 따라 분기
                     out_vec = out_i.squeeze(0)  # (K,)
