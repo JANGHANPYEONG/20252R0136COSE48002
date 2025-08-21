@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Literal
+from mlflow.exceptions import RestException
 import json
 import tempfile
 import re
@@ -14,6 +15,7 @@ from botocore.exceptions import ClientError
 import pandas as pd
 
 from training_HSI.train_HSI_2d import main as train_hsi_2d
+from app.utils.mlflow_tracking import get_run_core, latest_metrics
 
 # Celery 및 APIRouter 설정
 celery_app = Celery(
@@ -40,6 +42,8 @@ class HSITrainResponse(BaseModel):
     message: str
     train_id: str
     process_pid: Optional[int] = None
+    mlflow_run_id: Optional[str] = None
+    mlflow_experiment_id: Optional[str] = None
     created_at: datetime
 
 class HSITrainStatus(BaseModel):
@@ -309,6 +313,8 @@ def create_training_files(id_list: List[str]) -> tuple:
 # Celery 백그라운드에서 HSI 학습을 실행하는 함수
 @celery_app.task(bind=True)
 def run_hsi_train_task(self, id_list: List[str]):
+    from mlflow.tracking import MlflowClient
+    import mlflow
     import time
     import os
     import subprocess
@@ -320,13 +326,29 @@ def run_hsi_train_task(self, id_list: List[str]):
         
         # CSV 및 설정 파일 생성
         csv_path, config_path = create_training_files(id_list)
+
+        # MLflow run을 미리 생성
+        exp = mlflow.set_experiment("Deeplant_ML_training")
+        client = MlflowClient()
+        run = client.create_run(experiment_id=exp.experiment_id,
+                                tags={"job": "hsi_train", "source": "celery"})
+        run_id = run.info.run_id
+
+        # process를 실행하기 전에 상태에 run_id를 반영
+        meta = {
+            'input_type': 'hsi_image',
+            'mlflow_experiment_id': exp.experiment_id,
+            'mlflow_run_id': run_id,
+            'start_time': start_time,
+        }
+        self.update_state(state='TRAINING', meta=meta)
         
         # subprocess로 학습 프로세스 실행
         training_dir = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI"
         
         # subprocess로 학습 실행 (Worker와 분리된 별도 프로세스)
         process = subprocess.Popen(
-            [sys.executable, "train_HSI_2d.py", '--config', config_path],
+            [sys.executable, "train_HSI_2d.py", '--config', config_path, "--experiment-id", exp.experiment_id, "--run-id", run_id],
             cwd=training_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -334,11 +356,8 @@ def run_hsi_train_task(self, id_list: List[str]):
         )
         
         # 학습 상태 업데이트: TRAINING (subprocess PID 포함)
-        self.update_state(state='TRAINING', meta={
-            'input_type': 'hsi_image',
-            'process_pid': process.pid,  # ← 이제 별도 프로세스 PID
-            'start_time': start_time
-        })
+        meta['process_pid'] = process.pid
+        self.update_state(state='TRAINING', meta=meta)
         
         try:
             print(f"Starting HSI training with config: {config_path}")
@@ -352,62 +371,17 @@ def run_hsi_train_task(self, id_list: List[str]):
                 error_message = f"Training process failed with return code {process.returncode}\nSTDERR: {stderr}\nSTDOUT: {stdout}"
                 raise Exception(error_message)
             
-            # stdout에서 MLflow experiment ID, run ID 추출
-            mlflow_experiment_id = None
-            mlflow_run_id = None
-
-            if stdout:
-                import re
-                lines = stdout.strip().split('\n')
-                
-                # 여러 패턴으로 MLflow run ID 추출 시도
-                patterns = [
-                    r'[a-f0-9]{32}',  # 32자리 16진수
-                    r'MLflow run ID: ([a-f0-9]{32})',  # 명시적 표시
-                    r'run_id=([a-f0-9]{32})',  # 파라미터 형태
-                ]
-                
-                for line in lines:
-                    line = line.strip()
-                    
-                    # 32자리 16진수 문자열 패턴으로 MLflow experiment ID, run ID 추출
-                    if "Experiment ID" in line:
-                        pattern = r"Experiment ID:\s*(\d+),\s*Run ID:\s*([a-f0-9]+)"
-                        match = re.search(pattern, line)
-                        if match:
-                            mlflow_experiment_id, mlflow_run_id = match.groups()
-                            break
-                    
-                    # 여러 패턴으로 MLflow run ID 추출 시도 (experiment ID가 없는 경우)
-                    if not mlflow_run_id:
-                        for pattern in patterns:
-                            match = re.search(pattern, line)
-                            if match:
-                                mlflow_run_id = match.group(1) if len(match.groups()) > 0 else match.group()
-                                break
-                        if mlflow_run_id:
-                            break
-            
-            # MLflow run ID를 찾지 못한 경우 로그 출력
-            if not mlflow_run_id:
-                print("Warning: MLflow run ID not found in stdout")
-                print("Stdout content:", stdout[:500])  # 처음 500자만 출력
-            else:
-                print(f"Training completed with experiment ID: {mlflow_experiment_id}, run ID: {mlflow_run_id}")
             
             # 완료 시간 계산
             end_time = time.time()
             elapsed_time = end_time - start_time
             
             # 학습 완료 - SUCCESS 상태로 업데이트
-            self.update_state(state='SUCCESS', meta={
-                'mlflow_experiment_id': mlflow_experiment_id,
-                'mlflow_run_id': mlflow_run_id,
-                'elapsed_time': elapsed_time
-            })
+            meta['elapsed_time'] = elapsed_time
+            self.update_state(state='SUCCESS', meta=meta)
             
             # 최종 결과 반환
-            return {'mlflow_experiment_id': mlflow_experiment_id, 'mlflow_run_id': mlflow_run_id}
+            return {'mlflow_experiment_id': exp.experiment_id, 'mlflow_run_id': run_id}
 
         finally:
             # 임시 파일들 삭제
@@ -446,6 +420,8 @@ async def start_hsi_train(request: HSITrainRequest):
             result = AsyncResult(task.id, app=celery_app)
             if result.state == 'TRAINING' and result.info:
                 process_pid = result.info.get('process_pid')
+                mlflow_run_id = result.info.get('mlflow_run_id')
+                mlflow_experiment_id = result.info.get('mlflow_experiment_id')
                 break
             time.sleep(0.1)
         
@@ -453,6 +429,8 @@ async def start_hsi_train(request: HSITrainRequest):
             message=f"HSI training started in background for {len(request.id_list)} images",
             train_id=task.id,
             process_pid=process_pid,
+            mlflow_run_id=mlflow_run_id,
+            mlflow_experiment_id=mlflow_experiment_id,
             created_at=datetime.now()
         )
     except Exception as e:
@@ -610,3 +588,41 @@ async def cancel_hsi_train(train_id: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error cancelling training: {str(e)}")
+
+
+@router.get("/progress/{run_id}")
+def get_progress(run_id: str):
+    try:
+        core = get_run_core(run_id)
+        return {
+            "run_id": core["run_id"],
+            "experiment_id": core["experiment_id"],
+            "status": core["status_tag"],
+            "progress": core["metrics"]["progress"],
+            "epoch": core["metrics"]["epoch"],
+            "loss": core["metrics"]["loss"],
+            "val_loss": core["metrics"]["val_loss"],
+            "eta_seconds": core["metrics"]["eta_seconds"],
+            "start_time": core["start_time"],
+            "end_time": core["end_time"],
+        }
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving progress: {str(e)}")
+    
+
+@router.get("/metrics/{run_id}")
+def get_selected_metrics(run_id: str, keys: Optional[str] = None):
+    """
+        keys를 Comma-separated list로 받아서 해당 메트릭만 반환합니다.
+        ex) keys="loss, val_loss, accuracy"
+    """
+    try:
+        metric_keys = [k.strip() for k in keys.split(',')] if keys else ["progress"]
+        values = latest_metrics(run_id, metric_keys)
+        return {"run_id": run_id, "metrics": values}
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -65,3 +65,4 @@ extract_filename.py
 xai_outputs/
 
 label_backup.csv
+HSI_PREDICT_API_SPEC.md
