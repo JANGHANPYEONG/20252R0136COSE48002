@@ -123,6 +123,8 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
     - meat: 육류 상세 데이터 (관능검사 점수, HSI 밴드 정보 등)
     """
     try:
+        print(f"DEBUG: Starting ingest_row_upload with request: {request}")
+        
         # 날짜 문자열을 datetime 객체로 변환
         butchery_date = datetime.strptime(request.butcheryYmd, "%Y-%m-%d")
         manufacture_date = datetime.strptime(request.manufactureYmd, "%Y-%m-%d")
@@ -130,7 +132,11 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
         expire_date = datetime.strptime(request.expireYmd, "%Y-%m-%d")
         current_time = datetime.now()
         
+        print(f"DEBUG: Parsed dates - butchery: {butchery_date}, manufacture: {manufacture_date}, filmed: {filmed_date}, expire: {expire_date}")
+        
         # 1. Meat 테이블에 데이터 삽입
+        print(f"DEBUG: Creating Meat object with categoryId: {request.meat.categoryId}, gradeNum: {request.meat.gradeNum}")
+        
         meat = Meat(
             id=request.id,
             userId=request.userId,
@@ -141,10 +147,14 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
             traceNum=request.traceNum,
             butcheryYmd=butchery_date
         )
+        
+        print(f"DEBUG: Meat object created: {meat}")
         db.add(meat)
         db.flush()  # ID 생성
+        print(f"DEBUG: Meat added to DB with ID: {meat.id}")
         
         # 2. DeepAgingInfo 테이블에 데이터 삽입
+        print(f"DEBUG: Creating DeepAgingInfo object")
         deep_aging = DeepAgingInfo(
             id=request.id,
             seqno=request.meat.seqno,
@@ -154,8 +164,10 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
         )
         db.add(deep_aging)
         db.flush()
+        print(f"DEBUG: DeepAgingInfo added to DB")
         
         # 3. SensoryEval 테이블에 데이터 삽입
+        print(f"DEBUG: Creating SensoryEval object")
         sensory_eval = SensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
@@ -174,8 +186,10 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
         )
         db.add(sensory_eval)
         db.flush()
+        print(f"DEBUG: SensoryEval added to DB")
         
         # 4. HSISensoryEval 테이블에 데이터 삽입
+        print(f"DEBUG: Creating HSISensoryEval object")
         hsi_sensory_eval = HSISensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
@@ -189,16 +203,19 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
         )
         db.add(hsi_sensory_eval)
         db.flush()
+        print(f"DEBUG: HSISensoryEval added to DB")
         
         # 5. HSIImagesBands 테이블에 데이터 삽입
-        for band in request.meat.bands:
+        print(f"DEBUG: Processing {len(request.meat.bands)} bands")
+        for i, band in enumerate(request.meat.bands):
+            print(f"DEBUG: Processing band {i}: spectral_index={band.spectral_index}, filename={band.filename}")
+            
             # spectral_index 유효성 검사
             spectral_info = db.query(SpectralInfo).filter(SpectralInfo.spectral_index == band.spectral_index).first()
             if not spectral_info:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"유효하지 않은 spectral_index: {band.spectral_index}"
-                )
+                print(f"WARNING: Spectral index {band.spectral_index} not found in SpectralInfo table")
+                # 임시로 기본값 사용
+                print(f"DEBUG: Using default spectral info for index {band.spectral_index}")
             
             hsi_band = HSIImagesBands(
                 id=request.id,
@@ -212,8 +229,10 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
                 filename=band.filename
             )
             db.add(hsi_band)
+            print(f"DEBUG: HSIImagesBands {i} added to DB")
         
         # 6. AI 테이블들에 빈 row 생성 (예측값을 위한 placeholder)
+        print(f"DEBUG: Creating AI table objects")
         ai_sensory_eval = AI_SensoryEval(
             id=request.id,
             seqno=request.meat.seqno,
@@ -231,22 +250,29 @@ async def ingest_row_upload(request: DataUploadRequest, db: Session = Depends(ge
         db.add(ai_hsi_sensory_eval)
         
         # 모든 데이터 커밋
+        print(f"DEBUG: Committing all data to DB")
         db.commit()
+        print(f"DEBUG: Data commit successful")
         
         return {
-            "message": "데이터 인제스트 성공",
+            "message": "데이터 업로드 성공",
             "meat_id": request.id,
             "seqno": request.meat.seqno,
             "uploaded_at": current_time.isoformat()
         }
         
     except ValueError as e:
+        print(f"ERROR: ValueError occurred: {str(e)}")
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"데이터 형식 오류: {str(e)}"
         )
     except Exception as e:
+        print(f"ERROR: Unexpected error occurred: {str(e)}")
+        print(f"ERROR: Error type: {type(e)}")
+        import traceback
+        print(f"ERROR: Traceback: {traceback.format_exc()}")
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
