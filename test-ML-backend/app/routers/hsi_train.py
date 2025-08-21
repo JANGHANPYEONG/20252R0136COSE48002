@@ -630,6 +630,7 @@ def get_selected_metrics(run_id: str, keys: Optional[str] = None):
 
 @router.get("/metric-keys/{run_id}")
 def list_metric_keys(run_id: str):
+    from mlflow.tracking import MlflowClient
     try:
         client = MlflowClient()
         run = client.get_run(run_id)
