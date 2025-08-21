@@ -132,6 +132,7 @@ class MeatDataUpload(BaseModel):
 class DataUploadRequest(BaseModel):
     """데이터 업로드 요청 스키마"""
     userId: str
+    rowId: Optional[str] = None  # 선택적 필드로 추가 (하위 호환성)
     id: str
     traceNum: str
     butcheryYmd: str  # "2025-08-05" 형식
