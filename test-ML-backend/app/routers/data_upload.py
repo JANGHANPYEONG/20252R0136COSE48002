@@ -282,8 +282,7 @@ async def get_presigned_url(request: PresignedUrlRequest):
         
         bucket_name = settings.S3_BUCKET_NAME
         
-        # 파일 키 생성 (timestamp + filename)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # 파일 키 생성 (filename)
         file_key = f"train_dataset/HSI/{request.filename}"
         
         # Presigned URL 생성
@@ -345,7 +344,6 @@ async def get_bulk_presigned_urls(request: BulkPresignedUrlRequest):
         )
         
         bucket_name = settings.S3_BUCKET_NAME
-        base_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         presigned_urls = []
         
         print(f"DEBUG: Generating bulk presigned URLs for {len(request.files)} files")
@@ -353,8 +351,7 @@ async def get_bulk_presigned_urls(request: BulkPresignedUrlRequest):
         for i, file_request in enumerate(request.files):
             try:
                 # 각 파일마다 고유한 타임스탬프 생성 (밀리초 단위로 구분)
-                unique_timestamp = f"{base_timestamp}_{i:03d}"
-                file_key = f"train_dataset/HSI/{unique_timestamp}_{file_request.filename}"
+                file_key = f"train_dataset/HSI/{file_request.filename}"
                 
                 print(f"DEBUG: Processing file {i+1}: {file_request.filename} -> {file_key}")
                 
