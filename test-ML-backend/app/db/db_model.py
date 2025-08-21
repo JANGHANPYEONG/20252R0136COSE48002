@@ -515,10 +515,10 @@ class HSIImagesBands(Base):
     isRefrigerated = Column(Boolean, nullable=False, server_default='0', primary_key=True)
     spectral_index = Column(Integer, nullable=False, primary_key=True)
 
-    topLeft = Column(Integer)
-    topRight = Column(Integer)
-    bottomRight = Column(Integer)
-    bottomLeft = Column(Integer)
+    topLeft = Column(JSONB)  # [x, y] 좌표 배열
+    topRight = Column(JSONB)  # [x, y] 좌표 배열
+    bottomRight = Column(JSONB)  # [x, y] 좌표 배열
+    bottomLeft = Column(JSONB)  # [x, y] 좌표 배열
 
     filename = Column(String(255))
 
@@ -649,3 +649,11 @@ AI_HSISensoryEval.hsiSensoryEval = relationship("HSISensoryEval", back_populates
 # GradeInfo - AI_HSISensoryEval
 GradeInfo.aiHSISensoryEvals = relationship("AI_HSISensoryEval", back_populates="gradeInfo")
 AI_HSISensoryEval.gradeInfo = relationship("GradeInfo", back_populates="aiHSISensoryEvals")
+
+# HSISensoryEval - HSIImagesBands (누락된 relationship 추가)
+HSISensoryEval.hsiImagesBands = relationship("HSIImagesBands", back_populates="hsiSensoryEval", cascade="all, delete-orphan")
+HSIImagesBands.hsiSensoryEval = relationship("HSISensoryEval", back_populates="hsiImagesBands")
+
+# SpectralInfo - HSIImagesBands (누락된 relationship 추가)
+SpectralInfo.hsiImagesBands = relationship("HSIImagesBands", back_populates="spectralInfo", cascade="all, delete-orphan")
+HSIImagesBands.spectralInfo = relationship("SpectralInfo", back_populates="hsiImagesBands")
