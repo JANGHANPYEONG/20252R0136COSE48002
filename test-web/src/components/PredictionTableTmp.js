@@ -14,7 +14,7 @@ const groupByTimestamp = (data) => {
   return groups;
 };
 
-const PredictionTableTmp = ({ data, onSelectionChange }) => {
+const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const navigate = useNavigate(); // 추가
@@ -47,6 +47,18 @@ const PredictionTableTmp = ({ data, onSelectionChange }) => {
     onSelectionChange(newSelectedIds);
   };
 
+  const handleRowClick = (row, e) => {
+    // 체크박스 클릭이 아닌 경우에만 행 클릭 처리
+    if (e.target.type !== 'checkbox' && !e.target.closest('input[type="checkbox"]')) {
+      if (onRowClick) {
+        onRowClick(row);
+      } else {
+        // 기본 동작: 육류상세조회페이지로 이동
+        navigate(`/meat/${row.id}`, { state: { item: row } });
+      }
+    }
+  };
+
   return (
     <>
       {Object.entries(groups).map(([timestamp, rows]) => (
@@ -75,7 +87,7 @@ const PredictionTableTmp = ({ data, onSelectionChange }) => {
                 <TableRow
                   key={row.id}
                   hover
-                  onClick={() => navigate(`/meat/${row.id}`, { state: { item : row}})} // 여기서 navigate
+                  onClick={(e) => handleRowClick(row, e)}
                   sx={{ cursor: 'pointer' }}
                 >
                   <TableCell>
@@ -85,6 +97,7 @@ const PredictionTableTmp = ({ data, onSelectionChange }) => {
                         e.stopPropagation();
                         handleRowSelect(row.id);
                       }}
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
                   <TableCell>{row.id}</TableCell>

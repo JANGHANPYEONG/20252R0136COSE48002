@@ -22,7 +22,7 @@ const data = [
 ]
 */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableHead,
@@ -46,9 +46,15 @@ const groupByTimestamp = (data) => {
   return groups;
 };
 
-const PredictionTable = ({ data, onSelectionChange, onRowClick }) => {
-  const [selectedIds, setSelectedIds] = useState([]);
+const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [] }) => {
+  const [selectedIds, setSelectedIds] = useState(selectedRows.map(row => typeof row === 'string' ? row : row.id));
   const [selectedGroup, setSelectedGroup] = useState(null);
+
+  // selectedRows prop이 변경될 때 selectedIds 동기화
+  useEffect(() => {
+    const newSelectedIds = selectedRows.map(row => typeof row === 'string' ? row : row.id);
+    setSelectedIds(newSelectedIds);
+  }, [selectedRows]);
 
   const groups = groupByTimestamp(data);
   const allDataIds = data.map((row) => row.id);

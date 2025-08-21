@@ -210,7 +210,12 @@ const Learning = () => {
         </Box>
 
         {/* 데이터 테이블 + 선택/상세 */}
-        <PredictionTable data={data} onSelectionChange={handleSelectionChange} onRowClick={handleRowClick} />
+        <PredictionTable 
+          data={data} 
+          onSelectionChange={handleSelectionChange} 
+          onRowClick={handleRowClick}
+          selectedRows={selectedRows}
+        />
 
         <Typography sx={{ marginTop: '10px', color: navy }}>총 {data.length}개의 데이터</Typography>
 

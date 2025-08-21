@@ -58,8 +58,7 @@ const Dashboard = () => {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'info', message: '완료' });
 
-  const [openPanel, setOpenPanel] = useState(false);
-  const [detailData, setDetailData] = useState(null);
+
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
@@ -221,12 +220,7 @@ const Dashboard = () => {
     setSelectedRows(newSelection);
   };
 
-  // Rowclick 여부 다루기
-  const handleRowClick = (row) => {
-    if (!row.prediction) return;
-    setDetailData({ id: row.id, prediction: row.prediction, sensory: row.sensory});
-    setOpenPanel(true);
-  };
+
 
   // 필터 함수
   const handleFilter = () => {
@@ -383,7 +377,6 @@ const Dashboard = () => {
         <PredictionTableTmp
           data={data}
           onSelectionChange={handleSelectionChange}
-          onRowClick={handleRowClick}
         />
 
         <Typography sx={{ marginTop: '10px', color: navy }}>
