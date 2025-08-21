@@ -195,17 +195,25 @@ def get_dashboard_data(
 
                 # 해당 냉장 단계의 관능평가 데이터 가져오기
                 sensory_eval = (db.query(SensoryEval)
-                            .filter(SensoryEval.id == meat.id, SensoryEval.seqno == sample_no)
-                            .order_by(SensoryEval.createdAt.desc())
-                            .first())
+                .filter(
+                    SensoryEval.id == meat.id, 
+                    SensoryEval.seqno == sample_no,
+                    SensoryEval.isRefrigerated == refrigerated  # 냉장 여부 추가
+                )
+                .order_by(SensoryEval.createdAt.desc())
+                .first())
                 
                 human_overall = sensory_eval.overall if sensory_eval else None
                 rgb_image_url = sensory_eval.imagePath if (sensory_eval and sensory_eval.imagePath) else None
 
                 # 해당 냉장 단계의 AI 예측 데이터 가져오기 (냉장 여부 확인)
                 ai_sensory = (db.query(AI_SensoryEval)
-                            .filter(AI_SensoryEval.id == meat.id, AI_SensoryEval.seqno == sample_no)
-                            .first())
+                .filter(
+                    AI_SensoryEval.id == meat.id, 
+                    AI_SensoryEval.seqno == sample_no,
+                    AI_SensoryEval.isRefrigerated == refrigerated  # 냉장 여부 추가
+                )
+                .first())
                 
                 ai_overall = ai_sensory.overall if ai_sensory else None
                 ai_grade_num = ai_sensory.xai_gradeNum if ai_sensory else None
