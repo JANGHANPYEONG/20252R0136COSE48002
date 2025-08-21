@@ -30,6 +30,7 @@ const firebaseConfig = {
 
 const firebase = initializeApp(firebaseConfig);
 const app = initializeApp(firebaseConfig);
+
 export const db = getFirestore(app);
 export const fireStore = getFirestore(firebase);
 export const auth = getAuth(app); // 코드 추가

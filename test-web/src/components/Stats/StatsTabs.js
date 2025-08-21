@@ -50,6 +50,7 @@ const StatsTabs = ({ startDate, endDate }) => {
   useEffect(() => {
     // console.log('stat tab' + startDate, '-', endDate);
   }, [startDate, endDate]);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };

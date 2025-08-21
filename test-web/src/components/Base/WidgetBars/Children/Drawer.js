@@ -15,8 +15,11 @@ import {
   Tooltip,
   Collapse,
   Box,
+  Typography,
+  Divider,
 } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
+// import icons
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';

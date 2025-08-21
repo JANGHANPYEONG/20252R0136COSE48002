@@ -6,7 +6,7 @@ import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
 import ImageUploadProgress from '../components/ImageUploadProgress';
 import uploadFiles from '../API/add/uploadToS3'; // 통합 업로드 API import
-import { saveJsonToResult, saveAndSendJsonData } from '../API/add/saveJsonToResult'; // JSON 저장 API import
+import { saveJsonToResult } from '../API/add/saveJsonToResult'; // JSON 저장 API import
 import { uploadIndividualImages } from '../API/add/uploadIndividualImages'; // 개별 이미지 업로드 API import
 
 const navy = '#0F3659';
@@ -118,9 +118,9 @@ const DataRegister = () => {
       setLoading(true);
       
       try {
-        // 3. JSON 파일들 생성 및 저장 후 BE로 전송
-        console.log('JSON 파일 생성 및 BE 전송 시작...');
-        const jsonResult = await saveAndSendJsonData(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile, true);
+        // 3. JSON 파일들 생성 및 저장 (로컬 모드)
+        console.log('JSON 파일 생성 및 저장 시작...');
+        const jsonResult = await saveJsonToResult(data, columns, uploadedZipFile, dataFormat, uploadedExcelFile);
         
         if (!jsonResult.success) {
           throw new Error(`JSON 저장 실패: ${jsonResult.message}`);
@@ -231,18 +231,6 @@ const DataRegister = () => {
     setTimeout(() => {
       setSuccessMessage('');
     }, 3000); // 3초 후 사라짐
-  };
-
-  // 모든 데이터가 매핑되었는지 확인하는 함수
-  const isAllDataMapped = () => {
-    if (data.length === 0) return false;
-    
-    // 매핑 상태 컬럼이 있는지 확인
-    const statusColumn = '매핑 상태';
-    if (!columns.includes(statusColumn)) return false;
-    
-    // 모든 데이터가 '매핑됨' 상태인지 확인
-    return data.every(row => row[statusColumn] === '매핑됨');
   };
 
   // 데이터 삭제 함수 (확인 후 삭제)
@@ -577,21 +565,24 @@ const DataRegister = () => {
         
         const sampleNumber = sampleMatch[1];
         
-        // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
+        // 파일명에서 파장 정보 추출 (예: 140119100857_s1_430nm.png 또는 140119100857_s1_rgb_day7.png)
         let wavelength = null;
         
-        // nm 단위 파장 추출 시도 (HSI만)
+        // 1. nm 단위 파장 추출 시도 (HSI)
         const wavelengthMatch = fileName.match(/(\d+nm)/i);
         if (wavelengthMatch) {
           wavelength = wavelengthMatch[1];
         } else {
-          // RGB 패턴은 제외
-          console.log(`❌ HSI 파장 정보 없음 (RGB 제외): ${fileName}`);
-          continue;
+          // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
+          const rgbMatch = fileName.match(/_rgb_/i);
+          if (rgbMatch) {
+            wavelength = 'rgb';
+            console.log(`RGB 이미지 인식: ${fileName}`);
+          }
         }
         
         if (!wavelength) {
-          console.log(`❌ 파장 정보 없음: ${fileName}`);
+          console.log(`❌ 파장/RGB 정보 없음: ${fileName}`);
           continue;
         }
         
@@ -688,16 +679,20 @@ const DataRegister = () => {
             // 부위 폴더는 S1, s1, S2, s2 형태 모두 지원
             const sampleMatch = folder2.match(/^[sS](\d+)$/);
             if (sampleMatch) {
-              // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
+              // 파일명에서 파장 정보 추출 (HSI 또는 RGB)
               let extractedWavelength = null;
               
-              // nm 단위 파장 추출 시도 (HSI만)
+              // 1. nm 단위 파장 추출 시도 (HSI)
               const wavelengthMatch = imageName.match(/(\d+nm)/i);
               if (wavelengthMatch) {
                 extractedWavelength = wavelengthMatch[1];
               } else {
-                // RGB 패턴은 제외
-                console.log(`❌ ZIP HSI 파장 정보 없음 (RGB 제외): ${imageName}`);
+                // 2. RGB 패턴 확인 (파일명에 _rgb_ 포함)
+                const rgbMatch = imageName.match(/_rgb_/i);
+                if (rgbMatch) {
+                  extractedWavelength = 'rgb';
+                  console.log(`ZIP RGB 이미지 인식: ${imageName}`);
+                }
               }
               
               if (extractedWavelength) {
@@ -706,7 +701,7 @@ const DataRegister = () => {
                 wavelength = extractedWavelength;
                 console.log(`✅ ZIP 폴더 구조 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
               } else {
-                console.log(`❌ ZIP 파장 정보 없음: ${imageName}`);
+                console.log(`❌ ZIP 파장/RGB 정보 없음: ${imageName}`);
               }
             } else {
               console.log(`❌ ZIP 부위 폴더 패턴 불일치: ${folder2}`);
@@ -718,7 +713,7 @@ const DataRegister = () => {
         if (!managementNumber) {
           const imageName = pathParts[pathParts.length - 1];
           
-          // HSI 패턴만 인식: 140119100857_s1_430nm.png (RGB 제외)
+          // 2-1. HSI 패턴: 140119100857_s1_430nm.png
           const hsiPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_(\d+nm)\./i);
           if (hsiPatternMatch) {
             managementNumber = hsiPatternMatch[1];
@@ -726,8 +721,14 @@ const DataRegister = () => {
             wavelength = hsiPatternMatch[3];
             console.log(`✅ ZIP 파일명 HSI 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
           } else {
-            // RGB 패턴은 제외
-            console.log(`❌ ZIP HSI 패턴 불일치 (RGB 제외): ${imageName}`);
+            // 2-2. RGB 패턴: 140119100857_s1_rgb_day7.png
+            const rgbPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_rgb_/i);
+            if (rgbPatternMatch) {
+              managementNumber = rgbPatternMatch[1];
+              sampleNumber = rgbPatternMatch[2];
+              wavelength = 'rgb';
+              console.log(`✅ ZIP 파일명 RGB 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+            }
           }
         }
         
@@ -1132,14 +1133,12 @@ const DataRegister = () => {
               csvLoading || 
               imageLoading || 
               data.length === 0 ||
-              !uploadedExcelFile || // 엑셀 파일이 필수
-              !uploadedZipFile || // 이미지 파일이 필수
-              !isAllDataMapped() // 모든 데이터가 매핑되어야 함
+              !uploadedExcelFile // 엑셀 파일이 필수
             }
             sx={{
-              backgroundColor: (data.length > 0 && uploadedExcelFile && uploadedZipFile && isAllDataMapped()) ? '#28a745' : '#ccc',
+              backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#28a745' : '#ccc',
               '&:hover': { 
-                backgroundColor: (data.length > 0 && uploadedExcelFile && uploadedZipFile && isAllDataMapped()) ? '#218838' : '#bbb' 
+                backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#218838' : '#bbb' 
               },
               '&:disabled': { backgroundColor: '#ccc' },
             }}

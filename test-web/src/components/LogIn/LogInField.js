@@ -219,8 +219,10 @@ const LogInField = () => {
           style={{
             width: `${(323 / 1920) * 100}vw`,
             marginBottom: `${(48 / 1080) * 100}vh`,
+            marginTop: `${(200 / 1080) * 100}vh`,
           }}
         />
+
         <Box
           component="form"
           noValidate
@@ -305,6 +307,7 @@ const LogInField = () => {
               {loginError}
             </Typography>
           )}
+
           <Button
             onClick={login}
             variant="contained"

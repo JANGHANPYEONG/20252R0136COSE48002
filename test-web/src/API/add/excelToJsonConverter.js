@@ -1,25 +1,7 @@
 import * as XLSX from 'xlsx';
 
 /**
- * 이력번호와 샘플번호를 결합하여 해시 ID를 생성하는 함수
- * @param {string} traceNum - 이력번호
- * @param {string} sampleNum - 샘플번호
- * @returns {Promise<string>} - 20자리 해시 ID
- */
-const generateHashId = async (traceNum, sampleNum) => {
-  const combinedString = `${traceNum}_${sampleNum}`;
-  const encoder = new TextEncoder();
-  const data = encoder.encode(combinedString);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  // 20자리 해시 ID 반환
-  return hashHex.substring(0, 20);
-};
-
-/**
- * 엑셀 파일을 ex.json 형식으로 변환하는 함수
+ * 엑셀 파일을 JSON 형식으로 변환하는 함수
  * @param {File} excelFile - 엑셀 파일
  * @param {string} dataFormat - 데이터 형식 ('HSI' 또는 'RGB')
  * @returns {Promise<Array>} - 변환된 JSON 배열
@@ -55,44 +37,42 @@ export const convertExcelToJson = async (excelFile, dataFormat = 'HSI') => {
       const traceNum = String(row[headerMap.traceNum]).trim();
       const sampleNum = String(row[headerMap.sampleNum]).trim();
       
-      // 해시 ID 생성
-      const hashId = await generateHashId(traceNum, sampleNum);
+      // 기본 meat 정보
+      const meatData = {
+        traceNum: traceNum,
+        sampleNum: sampleNum,
+        part: row[headerMap.part] || '',
+        gradeNum: row[headerMap.grade] || 'X',
+        isDeepAging: parseDeepAging(row[headerMap.deepAging]),
+        butcheryDate: formatDate(row[headerMap.butcheryDate]),
+        manufactureDate: formatDate(row[headerMap.manufactureDate]),
+        picturedDate: parsePicturedDate(row[headerMap.picturedDate]),
+        period: extractPeriod(row[headerMap.picturedDate]),
+        expirationDate: formatDate(row[headerMap.expirationDate]),
+        marbling: parseFloat(row[headerMap.marbling]) || 0,
+        meatColor: parseFloat(row[headerMap.meatColor]) || 0,
+        texture: parseFloat(row[headerMap.texture]) || 0,
+        surfaceMoisture: parseFloat(row[headerMap.surfaceMoisture]) || 0,
+        total: parseFloat(row[headerMap.total]) || 0
+      };
+
+      // 파장별 edgePoint 데이터 추출
+      const edgePoints = extractEdgePoints(row, headerMap, headers);
       
-      // 촬영일자에서 isRefrigerated 판단
-      const picturedDateValue = row[headerMap.picturedDate];
-      const isRefrigerated = parseIsRefrigerated(picturedDateValue);
-      
-      // 등급 처리 (X인 경우 null로 변환)
-      const gradeNum = row[headerMap.grade];
-      const processedGrade = (gradeNum === 'X' || gradeNum === 'x') ? null : gradeNum;
-      
-      // 딥에이징 컬럼에서 seqno 결정 (NO=0, YES=1)
-      const deepAgingValue = row[headerMap.deepAging];
-      const seqno = parseDeepAging(deepAgingValue);
-      
-      // 파장별 좌표 데이터 추출 (RGB 제외)
-      const bands = extractBands(row, headerMap, headers);
-      
+      // HSI 설정
+      const hsiConfig = {
+        isRefrigerated: false,
+        wavelengthFromFilename: true,
+        expectedCount: Object.keys(edgePoints).length
+      };
+
       const jsonItem = {
         userId: "deeplant@example.com",
-        id: hashId,
-        traceNum: traceNum,
-        sampleNum: sampleNum, // 샘플번호 추가 (파일명 생성용)
-        butcheryYmd: formatDate(row[headerMap.butcheryDate]),
-        manufactureYmd: formatDate(row[headerMap.manufactureDate]),
-        filmedAt: formatDate(row[headerMap.picturedDate]),
-        expireYmd: formatDate(row[headerMap.expirationDate]),
-        isRefrigerated: isRefrigerated,
+        rowId: `sheet1-${traceNum}-${sampleNum}`,
         meat: {
-          categoryId: mapPartToCategoryId(row[headerMap.part]),
-          gradeNum: processedGrade,
-          seqno: seqno,
-          marbling: parseFloat(row[headerMap.marbling]) || 0,
-          meat_color: parseFloat(row[headerMap.meatColor]) || 0,
-          texture: parseFloat(row[headerMap.texture]) || 0,
-          surface_moisture: parseFloat(row[headerMap.surfaceMoisture]) || 0,
-          overall: parseFloat(row[headerMap.total]) || 0,
-          bands: bands
+          ...meatData,
+          edgePoint: edgePoints,
+          hsi: hsiConfig
         }
       };
 
@@ -220,12 +200,12 @@ const parseCoordinate = (coord) => {
 };
 
 /**
- * 딥에이징 값을 seqno로 파싱 (NO=0, YES=1)
+ * 딥에이징 값 파싱
  */
 const parseDeepAging = (value) => {
-  if (!value) return 0;
+  if (!value) return "No";
   const str = String(value).trim().toUpperCase();
-  return str === 'YES' || str === 'Y' || str === 'TRUE' || str === '1' ? 1 : 0;
+  return str === 'YES' || str === 'Y' || str === 'TRUE' ? "Yes" : "No";
 };
 
 /**
@@ -274,115 +254,6 @@ const extractPeriod = (value) => {
 };
 
 /**
- * 촬영일자에서 isRefrigerated 판단 (Day1 = false, Day7 = true)
- */
-const parseIsRefrigerated = (value) => {
-  if (!value) return false;
-  
-  const str = String(value).trim();
-  
-  // Day1이 포함되어 있으면 false (냉장 안됨)
-  if (str.includes('Day1')) {
-    return false;
-  }
-  
-  // Day7이 포함되어 있으면 true (냉장됨)
-  if (str.includes('Day7')) {
-    return true;
-  }
-  
-  // 기본값은 false
-  return false;
-};
-
-
-/**
- * 부위를 숫자 categoryId로 매핑하는 함수
- * @param {string} part - 부위명 (예: "s1", "S1", "목심" 등)
- * @returns {number} - categoryId (숫자)
- */
-const mapPartToCategoryId = (part) => {
-  if (!part) return 0;
-  
-  const partStr = String(part).trim().toLowerCase();
-  
-  // 샘플번호 패턴 (s1, s2, s3 등)
-  const sampleMatch = partStr.match(/^s(\d+)$/);
-  if (sampleMatch) {
-    return parseInt(sampleMatch[1]) - 1; // s1 -> 0, s2 -> 1, s3 -> 2
-  }
-  
-  // 기타 부위명은 숫자로 변환 시도, 실패 시 0
-  const numValue = parseInt(partStr);
-  return isNaN(numValue) ? 0 : numValue;
-};
-
-/**
- * 파장별 bands 데이터 추출 (RGB 제외, HSI만)
- * @param {Array} row - 데이터 행
- * @param {Object} headerMap - 헤더 매핑
- * @param {Array} headers - 전체 헤더 배열
- * @returns {Array} - bands 배열
- */
-const extractBands = (row, headerMap, headers) => {
-  const bands = [];
-  const wavelengthData = {};
-  
-  // 파장별 좌표 패턴 찾기 (RGB 제외)
-  headers.forEach((header, index) => {
-    const h = String(header).trim();
-    
-    // 파장 정보 추출 (430nm, 540nm 등 - RGB 제외)
-    const wavelengthMatch = h.match(/\((\d+nm)\)/);
-    if (wavelengthMatch) {
-      const wavelength = wavelengthMatch[1];
-      
-      if (!wavelengthData[wavelength]) {
-        wavelengthData[wavelength] = {};
-      }
-      
-      // 좌표 위치 확인
-      if (h.includes('TL')) {
-        wavelengthData[wavelength].topLeft = parseCoordinate(row[index]);
-      } else if (h.includes('TR')) {
-        wavelengthData[wavelength].topRight = parseCoordinate(row[index]);
-      } else if (h.includes('BR')) {
-        wavelengthData[wavelength].bottomRight = parseCoordinate(row[index]);
-      } else if (h.includes('BL')) {
-        wavelengthData[wavelength].bottomLeft = parseCoordinate(row[index]);
-      }
-    }
-  });
-  
-  // 파장별로 bands 생성 (파장 순서대로 정렬)
-  const sortedWavelengths = Object.keys(wavelengthData).sort((a, b) => {
-    const numA = parseInt(a.replace('nm', ''));
-    const numB = parseInt(b.replace('nm', ''));
-    return numA - numB;
-  });
-  
-  sortedWavelengths.forEach((wavelength, index) => {
-    const positions = wavelengthData[wavelength];
-    
-    // 모든 좌표가 있는 경우에만 추가
-    if (positions.topLeft && positions.topRight && 
-        positions.bottomRight && positions.bottomLeft) {
-      
-      bands.push({
-        spectral_index: index, // 0부터 시작
-        topLeft: positions.topLeft,
-        topRight: positions.topRight,
-        bottomRight: positions.bottomRight,
-        bottomLeft: positions.bottomLeft,
-        filename: `${wavelength}.jpg` // 임시 파일명 (나중에 해싱된 이름으로 교체됨)
-      });
-    }
-  });
-  
-  return bands;
-};
-
-/**
  * 여러 샘플을 각각 완전한 meat 객체로 그룹화
  * @param {Array} jsonArray - 개별 샘플 JSON 배열
  * @returns {Object} - 그룹화된 JSON (각 샘플별로 완전한 meat 객체)
@@ -428,65 +299,52 @@ export const groupSamplesByTrace = (jsonArray) => {
 };
 
 /**
- * 이력번호별로 하나의 JSON 파일 생성을 위한 함수 (data_list 형식)
+ * 샘플별로 개별 JSON 파일 생성을 위한 함수
  * @param {Array} jsonArray - 개별 샘플 JSON 배열
- * @returns {Array} - 이력번호별 JSON 객체 배열
+ * @returns {Array} - 샘플별 개별 JSON 객체 배열
  */
 export const createIndividualSampleJsons = (jsonArray) => {
-  const groupedByTrace = {};
+  const individualJsons = [];
   
-  // 이력번호별로 샘플들을 그룹화
   jsonArray.forEach(item => {
-    const traceNum = item.traceNum;
+    const traceNum = item.meat.traceNum;
+    const sampleNum = item.meat.sampleNum;
     
-    if (!groupedByTrace[traceNum]) {
-      groupedByTrace[traceNum] = [];
-    }
-    
-    // 원본 seqno 값을 유지 (딥에이징 컬럼에서 파싱된 값)
-    const dataItem = {
+    // 각 샘플별로 완전한 JSON 구조 생성
+    const individualJson = {
       userId: item.userId,
-      id: item.id,
-      traceNum: item.traceNum,
-      butcheryYmd: item.butcheryYmd,
-      manufactureYmd: item.manufactureYmd,
-      filmedAt: item.filmedAt,
-      expireYmd: item.expireYmd,
-      isRefrigerated: item.isRefrigerated,
+      rowId: `sheet1-${traceNum}-${sampleNum}`,
+      traceNum: traceNum,
+      butcheryDate: item.meat.butcheryDate,
+      manufactureDate: item.meat.manufactureDate,
+      picturedDate: item.meat.picturedDate,
+      period: item.meat.period,
+      expirationDate: item.meat.expirationDate,
+      hsi: {
+        ...item.meat.hsi,
+        expectedCount: Object.keys(item.meat.edgePoint).length
+      },
       meat: {
-        categoryId: item.meat.categoryId,
+        sampleNum: item.meat.sampleNum,
+        part: item.meat.part,
         gradeNum: item.meat.gradeNum,
-        seqno: item.meat.seqno,
+        isDeepAging: item.meat.isDeepAging,
         marbling: item.meat.marbling,
-        meat_color: item.meat.meat_color,
+        meatColor: item.meat.meatColor,
         texture: item.meat.texture,
-        surface_moisture: item.meat.surface_moisture,
-        overall: item.meat.overall,
-        bands: item.meat.bands
+        surfaceMoisture: item.meat.surfaceMoisture,
+        total: item.meat.total,
+        edgePoint: item.meat.edgePoint
       }
     };
     
-    groupedByTrace[traceNum].push(dataItem);
-  });
-  
-  // 이력번호별로 하나의 JSON 파일 생성
-  const resultJsons = [];
-  
-  Object.keys(groupedByTrace).forEach(traceNum => {
-    const dataList = groupedByTrace[traceNum];
-    
-    const jsonStructure = {
-      data_list: dataList
-    };
-    
-    resultJsons.push({
-      fileName: `${traceNum}.json`,
-      traceNum: traceNum,
-      data: jsonStructure
+    individualJsons.push({
+      fileName: `${traceNum}_${sampleNum}.json`,
+      data: individualJson
     });
   });
   
-  return resultJsons;
+  return individualJsons;
 };
 
 export default { convertExcelToJson, groupSamplesByTrace, createIndividualSampleJsons };
