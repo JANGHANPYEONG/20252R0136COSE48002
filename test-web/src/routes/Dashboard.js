@@ -63,6 +63,8 @@ const Dashboard = () => {
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
   ]);
   const navigate = useNavigate();
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
   //////////////////////////////////////////////////
   // data를 useState로 저장 -> usequeryClient 로 저장
   const [isLoaded, setisLoaded] = useState(false); // query on/off
