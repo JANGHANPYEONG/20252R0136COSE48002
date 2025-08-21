@@ -173,7 +173,7 @@ def create_csv_file(id_list: List[str], cache_dir: str) -> str:
                     
                     # 5. 이미지 경로 처리
                     s3_client = get_s3_client()
-                    bucket_name = os.getenv('S3_BUCKET_NAME', 'deeplant-bucket')
+                    bucket_name = os.getenv('S3_BUCKET_NAME', 'test-deeplant-bucket')
                     
                     for wavelength in wavelengths:
                         # hsi_images_bands에서 해당 파장의 이미지 파일명 조회
