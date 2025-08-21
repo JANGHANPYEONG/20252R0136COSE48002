@@ -478,6 +478,21 @@ async def bulk_upload_meat_data(request: BulkUploadRequest, db: Session = Depend
         try:
             print(f"DEBUG: Processing item {i+1}/{total_count}: {data_request.id}")
             
+            # 중복 ID 체크
+            existing_meat = db.query(Meat).filter(Meat.id == data_request.id).first()
+            if existing_meat:
+                print(f"WARNING: Meat ID {data_request.id} already exists, skipping...")
+                results.append({
+                    "index": i,
+                    "meat_id": data_request.id,
+                    "seqno": data_request.meat.seqno,
+                    "status": "skipped",
+                    "message": f"중복된 ID: {data_request.id}",
+                    "error": "duplicate_key"
+                })
+                failed_count += 1
+                continue
+            
             # 날짜 문자열을 datetime 객체로 변환
             butchery_date = datetime.strptime(data_request.butcheryYmd, "%Y-%m-%d")
             manufacture_date = datetime.strptime(data_request.manufactureYmd, "%Y-%m-%d")
@@ -611,6 +626,12 @@ async def bulk_upload_meat_data(request: BulkUploadRequest, db: Session = Depend
             })
             
             # 개별 실패는 전체 트랜잭션에 영향을 주지 않도록 계속 진행
+            # 세션을 롤백하여 다음 항목 처리를 위한 깨끗한 상태로 만듦
+            try:
+                db.rollback()
+                print(f"DEBUG: Session rolled back for item {i+1}")
+            except Exception as rollback_error:
+                print(f"WARNING: Failed to rollback session for item {i+1}: {str(rollback_error)}")
     
     try:
         # 모든 성공한 데이터 커밋
