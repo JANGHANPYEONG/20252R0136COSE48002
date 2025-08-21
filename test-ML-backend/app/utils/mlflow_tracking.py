@@ -47,6 +47,7 @@ def get_run_core(run_id: str) -> Dict:
     data = run.data
     info = run.info
     tags = data.tags
+    print(type(data), data.params)
     params = {p.key: p.value for p in data.params}
     # 최신 메트릭
     m_progress = latest_metric(run_id, "progress")
