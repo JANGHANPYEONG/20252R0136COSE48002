@@ -179,7 +179,7 @@ export const saveJsonToResult = async (data, columns, zipFile, dataFormat = 'HSI
     }));
 
     try {
-      const response = await fetch('http://localhost:3001/api/save-multiple-json', {
+      const response = await fetch('http://localhost:3001/api/save-multiple-json', {  // 대응하는 backend API 구현되어 있지 않음.
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

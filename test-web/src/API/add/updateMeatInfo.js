@@ -1,7 +1,7 @@
 import { apiIP } from '../../config';
 
 export async function updateMeatInfo(payload) {
-  const response = await fetch(`http://${apiIP}/meat/add`, {
+  const response = await fetch(`http://${apiIP}/meat`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

@@ -40,7 +40,7 @@ export const addProbexptData = async (
 
   // /meat/add/probexpt-data로 실험실 데이터 생성/수정 API 전송
   try {
-    const response = await fetch(`http://${apiIP}/meat/add/probexpt-data`, {
+    const response = await fetch(`http://${apiIP}/meat/probexpt-data`, {
       method: `${isPost ? 'POST' : 'PATCH'}`,
       headers: {
         'Content-Type': 'application/json',
