@@ -147,9 +147,9 @@ def create_csv_file(id_list: List[str], cache_dir: str) -> str:
                     # 회귀 라벨 (1-10 스케일)
                     regression_labels = [
                         record.marbling or 0,
-                        record.color or 0,
+                        record.meat_color or 0,
                         record.texture or 0,
-                        record.surfaceMoisture or 0,
+                        record.surface_moisture or 0,
                         record.overall or 0
                     ]
                     row_data.extend(regression_labels)
@@ -191,7 +191,15 @@ def create_csv_file(id_list: List[str], cache_dir: str) -> str:
                         
                         if hsi_image and hsi_image.filename:
                             # S3에서 로컬 캐시로 이미지 다운로드
-                            s3_key = f"train_dataset/HSI/{hsi_image.filename}"
+                            original_file = hsi_image.filename
+
+                            # 확장자가 .jpg면 .png로 교체 시도
+                            if original_file.lower().endswith(".jpg"):
+                                filename = original_file[:-4] + ".png"
+                            else:
+                                filename = original_file
+
+                            s3_key = f"train_dataset/HSI/{filename}"
                             cache_filename = f"{row_id}_{wavelength}.png"
                             local_cache_path = os.path.join(cache_dir, cache_filename)
                             
@@ -415,7 +423,11 @@ async def start_hsi_train(request: HSITrainRequest):
         
         # 작업이 시작될 때까지 잠시 기다려서 PID 가져오기
         import time
+        
         process_pid = None
+        mlflow_run_id = None
+        mlflow_experiment_id = None
+
         for _ in range(10):  # 최대 1초 대기
             result = AsyncResult(task.id, app=celery_app)
             if result.state == 'TRAINING' and result.info:
@@ -595,16 +607,16 @@ def get_progress(run_id: str):
     try:
         core = get_run_core(run_id)
         return {
-            "run_id": core["run_id"],
-            "experiment_id": core["experiment_id"],
-            "status": core["status_tag"],
-            "progress": core["metrics"]["progress"],
-            "epoch": core["metrics"]["epoch"],
-            "loss": core["metrics"]["loss"],
-            "val_loss": core["metrics"]["val_loss"],
-            "eta_seconds": core["metrics"]["eta_seconds"],
-            "start_time": core["start_time"],
-            "end_time": core["end_time"],
+            "run_id": core.get("run_id"),
+            "experiment_id": core.get("experiment_id"),
+            "status": core.get("status_tag"),
+            "progress": core.get("metrics", {}).get("progress"),
+            "epoch": core.get("metrics", {}).get("epoch"),
+            "loss": core.get("metrics", {}).get("loss"),
+            "val_loss": core.get("metrics", {}).get("val_loss"),
+            "eta_seconds": core.get("eta_seconds"),
+            "start_time": core.get("start_time"),
+            "end_time": core.get("end_time"),
         }
     except RestException as e:
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
@@ -622,6 +634,21 @@ def get_selected_metrics(run_id: str, keys: Optional[str] = None):
         metric_keys = [k.strip() for k in keys.split(',')] if keys else ["progress"]
         values = latest_metrics(run_id, metric_keys)
         return {"run_id": run_id, "metrics": values}
+    except RestException as e:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/metric-keys/{run_id}")
+def list_metric_keys(run_id: str):
+    from mlflow.tracking import MlflowClient
+    try:
+        client = MlflowClient()
+        run = client.get_run(run_id)
+        # run.data.metrics: {key: latest_value}
+        keys = list((run.data.metrics or {}).keys())
+        return {"run_id": run_id, "metric_keys": keys}
     except RestException as e:
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}") from e
     except Exception as e:

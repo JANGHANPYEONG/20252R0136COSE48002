@@ -1,10 +1,17 @@
 # mlflow_progress.py
 from typing import Dict, Optional, List
+from datetime import datetime, timezone, timedelta
 from mlflow.tracking import MlflowClient
 import time
 import math
 
 client = MlflowClient()
+
+def ms_to_datetime(ms: Optional[int]) -> Optional[str]:
+    if ms is None:
+        return None
+    kst = timezone(timedelta(hours=9))  # KST (UTC+9)
+    return datetime.fromtimestamp(ms / 1000.0, tz=kst).strftime('%Y-%m-%d %H:%M:%S')
 
 def latest_metric(run_id: str, key: str):
     hist = client.get_metric_history(run_id, key)
@@ -46,8 +53,9 @@ def get_run_core(run_id: str) -> Dict:
     run = client.get_run(run_id)
     data = run.data
     info = run.info
-    tags = data.tags
-    params = {p.key: p.value for p in data.params}
+    params = dict(data.params)
+
+    tags = data.tags or {}
     # 최신 메트릭
     m_progress = latest_metric(run_id, "progress")
     m_loss     = latest_metric(run_id, "loss")
@@ -60,7 +68,7 @@ def get_run_core(run_id: str) -> Dict:
         "experiment_id": info.experiment_id,
         "status_tag": tags.get("status", "running"),
         "lifecycle_stage": info.lifecycle_stage,
-        "run_name": run.info.run_name,  # 표시명 (없으면 None)
+        "run_name": info.run_name,  # 표시명 (없으면 None)
         "params": params,
         "metrics": {
             "progress": None if m_progress is None else float(m_progress.value),
@@ -69,6 +77,6 @@ def get_run_core(run_id: str) -> Dict:
             "epoch": None if m_progress is None else int(m_progress.step),
         },
         "eta_seconds": None if eta_sec is None else float(eta_sec),
-        "start_time": info.start_time,  # ms
-        "end_time": info.end_time,      # ms (진행 중이면 None)
+        "start_time": ms_to_datetime(info.start_time),  # ms
+        "end_time": ms_to_datetime(info.end_time),      # ms (진행 중이면 None)
     }
