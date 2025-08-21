@@ -30,56 +30,51 @@ const hashFileName = async (originalFileName) => {
 };
 
 /**
- * BE에서 presigned URL을 요청하는 함수
- * @param {string} hashedFileName - 해시된 파일명
- * @param {string} contentType - MIME 타입 (기본: image/jpeg)
- * @returns {Promise<Object>} - presigned URL 정보
+ * BE에서 벌크 presigned URL을 요청하는 함수
+ * @param {Array} fileList - 파일 목록 [{filename, content_type}, ...]
+ * @returns {Promise<Object>} - 벌크 presigned URL 정보
  */
-const getPresignedUrl = async (hashedFileName, contentType = 'image/jpeg') => {
+const getBulkPresignedUrls = async (fileList) => {
   try {
-    const response = await fetch(`http://${apiIP}/upload/presigned-url?filename=${hashedFileName}&content_type=${contentType}`, {
-      method: 'GET',
+    const response = await fetch(`http://${apiIP}/data-upload/bulk-presigned-url`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        files: fileList
+      })
     });
     
     if (!response.ok) {
-      throw new Error(`Presigned URL 요청 실패: ${response.status} ${response.statusText}`);
+      throw new Error(`벌크 Presigned URL 요청 실패: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
     return data;
     
   } catch (error) {
-    console.error('Presigned URL 요청 오류:', error);
+    console.error('벌크 Presigned URL 요청 오류:', error);
     throw error;
   }
 };
 
 /**
  * Presigned URL을 사용하여 S3에 이미지를 업로드하는 함수
- * @param {Object} presignedData - presigned URL 데이터
+ * @param {string} uploadUrl - S3 presigned upload URL
  * @param {Blob} imageBlob - 이미지 파일 Blob
+ * @param {string} fileName - 파일명
  * @returns {Promise<Object>} - 업로드 결과
  */
-const uploadToS3WithPresigned = async (presignedData, imageBlob) => {
+const uploadToS3WithPresigned = async (uploadUrl, imageBlob, fileName) => {
   try {
-    // multipart form data 생성
-    const formData = new FormData();
-    
-    // presigned POST의 fields를 formData에 추가
-    Object.keys(presignedData.fields).forEach(key => {
-      formData.append(key, presignedData.fields[key]);
-    });
-    
-    // 파일을 마지막에 추가 (중요: 순서가 중요함)
-    formData.append('file', imageBlob, presignedData.filename);
-    
-    // S3에 업로드
-    const uploadResponse = await fetch(presignedData.presigned_url, {
-      method: 'POST',
-      body: formData
+    // S3에 직접 PUT 요청으로 업로드
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'image/jpeg'
+      },
+      body: imageBlob
     });
     
     if (!uploadResponse.ok) {
@@ -89,9 +84,7 @@ const uploadToS3WithPresigned = async (presignedData, imageBlob) => {
     
     return {
       success: true,
-      s3Url: `${presignedData.presigned_url}/${presignedData.key}`,
-      key: presignedData.key,
-      filename: presignedData.filename
+      filename: fileName
     };
     
   } catch (error) {
@@ -164,26 +157,15 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
       throw new Error('ZIP 파일에서 이미지 파일을 찾을 수 없습니다.');
     }
     
-    const uploadResults = [];
-    const errors = [];
+    // 1. 모든 이미지 파일을 먼저 처리하여 해싱된 파일명 목록 생성
+    const fileProcessResults = [];
     
-    // 각 이미지 파일을 개별적으로 처리
+    console.log('이미지 파일 전처리 시작...');
+    
     for (let i = 0; i < imageFiles.length; i++) {
       const imageFile = imageFiles[i];
       
       try {
-        // 진행상황 콜백 호출
-        if (progressCallback) {
-          progressCallback({
-            current: i + 1,
-            total: imageFiles.length,
-            fileName: imageFile.name,
-            stage: 'processing'
-          });
-        }
-        
-        console.log(`처리 중: ${imageFile.name} (${i + 1}/${imageFiles.length})`);
-        
         // 1. 파일을 Blob으로 변환
         const originalBlob = await imageFile.file.async('blob');
         
@@ -199,26 +181,70 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
         const hashedFileName = await hashFileName(imageFile.name);
         console.log(`파일명 해싱: ${imageFile.name} -> ${hashedFileName}`);
         
-        // 4. Presigned URL 요청
-        const presignedData = await getPresignedUrl(hashedFileName, 'image/jpeg');
-        
-        // 5. S3 업로드
-        const uploadResult = await uploadToS3WithPresigned(presignedData, imageBlob);
-        
-        uploadResults.push({
+        fileProcessResults.push({
           originalFileName: imageFile.name,
           hashedFileName: hashedFileName,
-          s3Key: presignedData.key,
-          s3Url: uploadResult.s3Url,
+          imageBlob: imageBlob
+        });
+        
+      } catch (error) {
+        console.error(`이미지 전처리 실패: ${imageFile.name}`, error);
+        throw error;
+      }
+    }
+    
+    // 2. 벌크 presigned URL 요청
+    console.log('벌크 presigned URL 요청...');
+    const fileList = fileProcessResults.map(item => ({
+      filename: item.hashedFileName,
+      content_type: 'image/jpeg'
+    }));
+    
+    const bulkPresignedData = await getBulkPresignedUrls(fileList);
+    console.log(`벌크 presigned URL 받음: ${bulkPresignedData.files?.length}개`);
+    
+    // 3. 각 파일을 S3에 업로드
+    const uploadResults = [];
+    const errors = [];
+    
+    for (let i = 0; i < fileProcessResults.length; i++) {
+      const fileResult = fileProcessResults[i];
+      const presignedFileData = bulkPresignedData.files[i];
+      
+      try {
+        // 진행상황 콜백 호출
+        if (progressCallback) {
+          progressCallback({
+            current: i + 1,
+            total: fileProcessResults.length,
+            fileName: fileResult.originalFileName,
+            stage: 'uploading'
+          });
+        }
+        
+        console.log(`S3 업로드 중: ${fileResult.hashedFileName} (${i + 1}/${fileProcessResults.length})`);
+        
+        // S3 업로드
+        const uploadResult = await uploadToS3WithPresigned(
+          presignedFileData.upload_url, 
+          fileResult.imageBlob, 
+          fileResult.hashedFileName
+        );
+        
+        uploadResults.push({
+          originalFileName: fileResult.originalFileName,
+          hashedFileName: fileResult.hashedFileName,
+          s3Key: presignedFileData.file_key,
+          s3Url: presignedFileData.upload_url.split('?')[0], // 쿼리 파라미터 제거한 실제 S3 URL
           success: true
         });
         
-        console.log(`업로드 완료: ${hashedFileName}`);
+        console.log(`업로드 완료: ${fileResult.hashedFileName}`);
         
       } catch (error) {
-        console.error(`이미지 업로드 실패: ${imageFile.name}`, error);
+        console.error(`이미지 업로드 실패: ${fileResult.originalFileName}`, error);
         errors.push({
-          fileName: imageFile.name,
+          fileName: fileResult.originalFileName,
           error: error.message
         });
       }
@@ -227,8 +253,8 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
     // 최종 진행상황 콜백
     if (progressCallback) {
       progressCallback({
-        current: imageFiles.length,
-        total: imageFiles.length,
+        current: fileProcessResults.length,
+        total: fileProcessResults.length,
         stage: 'completed'
       });
     }
@@ -242,7 +268,7 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
       success: errorCount === 0,
       data: {
         traceNum: traceNum,
-        totalFiles: imageFiles.length,
+        totalFiles: fileProcessResults.length,
         successCount: successCount,
         errorCount: errorCount,
         uploadedImages: uploadResults,

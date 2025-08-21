@@ -4,6 +4,9 @@ export const TIME_ZONE = 9 * 60 * 60 * 1000;
 // 사용할 서버 주소를 아래에서 선택하세요
 
 // 로컬 개발 서버 (로컬 테스트용)
+// export const apiIP = 'localhost:8001';
+
+// AWS 서버 (운영 환경) - 현재 사용 중
 export const apiIP = '3.38.117.43:8000';
 
 // Ubuntu AWS 서버 (운영 환경) - 서버 실행 후 사용
