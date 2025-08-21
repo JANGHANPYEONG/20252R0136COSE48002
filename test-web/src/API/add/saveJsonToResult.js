@@ -1,4 +1,8 @@
+import { mapImageFilenamesToJsons } from './excelToJsonConverter';
 import { convertExcelToJson, createIndividualSampleJsons } from './excelToJsonConverter';
+
+import { apiIP } from '../../config';
+
 
 /**
  * 샘플별 개별 JSON 파일을 result 폴더에 저장하는 함수
