@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data_upload, data_crud, xai, hsi_predict, hsi_train, list_data
+from app.routers import train, predict, meat, user, statistic_api, data_upload, data_crud, xai, hsi_predict, hsi_train, list_data, load_predict
 from app.core.config import settings
 
 # 미들웨어 임포트
@@ -114,3 +114,4 @@ async def get_performance_stats():
                 return middleware.kwargs['instance'].get_stats()
     
     return {"message": "Performance monitoring not enabled"} 
+
