@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from pydantic import BaseModel
 
-from app.database import get_db
+from app.db.database import get_db
 from app.db.db_model import (
     Meat, DeepAgingInfo, SensoryEval, AI_SensoryEval, 
     HSISensoryEval, AI_HSISensoryEval, HSIImagesBands,
