@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data_upload, data_crud, xai, hsi_predict, hsi_train, list_data, spectral_info, dashboard
+from app.routers import train, predict, meat, user, statistic_api, data_upload, data_crud, xai, hsi_predict, hsi_train, spectral_info, dashboard
 from app.core.config import settings
 
 # 미들웨어 임포트
@@ -76,8 +76,8 @@ app.include_router(data_crud.router, prefix="/data", tags=["data-crud"])  # 데�
 app.include_router(xai.router, prefix="/xai", tags=["explainable AI"])  # XAI 관련 API
 app.include_router(hsi_predict.router, prefix="/hsipredict", tags=["HSI prediction"])  # HSI 예측 API
 # app.include_router(training_stream.router, prefix="/train-stream", tags=["training-stream"])  # 스트리밍 학습 API 추가
-app.include_router(list_data.router, prefix="/list-data", tags=["list-data"])  # 데이터 목록 조회 API
-app.include_router(spectral_info.router, prefix="/spectral", tags=["spectral-info"])  # 스펙트럼 정보 관리 API
+
+app.include_router(spectral_info.router, prefix="/spectral", tags=["Spectral Info"])  # 스펙트럼 정보 관리 API
 app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])  # 대시보드 데이터 조회 API
 
 #  - 여기서는 기존 호환을 위해 그대로 두고, 라우터 내부에서 엔드포인트별 보호를 권장

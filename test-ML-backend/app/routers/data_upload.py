@@ -15,7 +15,7 @@ from app.db.db_model import (
 from app.core.config import settings
 from app.schemas.meat import DataUploadRequest, MeatDataUpload
 
-router = APIRouter(prefix="", tags=["data-operations"])
+router = APIRouter(prefix="", tags=["data-upload"])
 
 # =============================================================================
 # Pydantic Models (기존 모델들은 schemas/meat.py로 이동)
