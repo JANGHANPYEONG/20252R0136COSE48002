@@ -1,5 +1,5 @@
 {
   "backend-store-uri": "/mnt/data/mlflow_tracking",
   "default-artifact-root": "/mnt/data/mlflow_artifacts",
-  "experiment_name": "HSI_Model_Training"
+  "experiment_name": "HSI_DUAL_BRANCH_REGRESSION"
 }
