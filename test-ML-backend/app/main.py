@@ -115,3 +115,4 @@ async def get_performance_stats():
                 return middleware.kwargs['instance'].get_stats()
     
     return {"message": "Performance monitoring not enabled"} 
+
