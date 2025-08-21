@@ -147,9 +147,9 @@ def create_csv_file(id_list: List[str], cache_dir: str) -> str:
                     # 회귀 라벨 (1-10 스케일)
                     regression_labels = [
                         record.marbling or 0,
-                        record.color or 0,
+                        record.meat_color or 0,
                         record.texture or 0,
-                        record.surfaceMoisture or 0,
+                        record.surface_moisture or 0,
                         record.overall or 0
                     ]
                     row_data.extend(regression_labels)
