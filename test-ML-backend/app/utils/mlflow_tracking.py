@@ -1,6 +1,6 @@
 # mlflow_progress.py
 from typing import Dict, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from mlflow.tracking import MlflowClient
 import time
 import math
@@ -10,7 +10,8 @@ client = MlflowClient()
 def ms_to_datetime(ms: Optional[int]) -> Optional[str]:
     if ms is None:
         return None
-    return datetime.fromtimestamp(ms / 1000.0).strftime('%Y-%m-%d %H:%M:%S')
+    kst = timezone(timedelta(hours=9))  # KST (UTC+9)
+    return datetime.fromtimestamp(ms / 1000.0, tz=kst).strftime('%Y-%m-%d %H:%M:%S')
 
 def latest_metric(run_id: str, key: str):
     hist = client.get_metric_history(run_id, key)
