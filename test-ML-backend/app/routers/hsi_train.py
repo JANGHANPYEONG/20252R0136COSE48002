@@ -415,7 +415,11 @@ async def start_hsi_train(request: HSITrainRequest):
         
         # 작업이 시작될 때까지 잠시 기다려서 PID 가져오기
         import time
+        
         process_pid = None
+        mlflow_run_id = None
+        mlflow_experiment_id = None
+
         for _ in range(10):  # 최대 1초 대기
             result = AsyncResult(task.id, app=celery_app)
             if result.state == 'TRAINING' and result.info:
