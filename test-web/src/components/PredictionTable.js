@@ -165,9 +165,9 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.sampleNo}</TableCell>
                     <TableCell>{row.part}</TableCell>
-                    <TableCell>{row.deepAging}</TableCell>
-                    <TableCell>{row.slDate}</TableCell>
-                    <TableCell>{row.processedDate || '-'}</TableCell>
+                    <TableCell>{row.isDeepAged}</TableCell>
+                    <TableCell>{row.butcheryDate}</TableCell>
+                    <TableCell>{row.processDate || '-'}</TableCell>
                   </TableRow>
                 );
               })}

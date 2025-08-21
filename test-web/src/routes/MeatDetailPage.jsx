@@ -23,7 +23,6 @@ export default function MeatDetailPage() {
   const nav = useNavigate();
   const location = useLocation();
 
-  // 상태 및 헬퍼 추가
   // 상태 및 헬퍼 추가  (⚠️ item, mode를 가장 먼저 준비)
   const [mode, setMode] = useState('MSI');  // 'MSI' | 'RGB'
   const [tab, setTab] = useState(0);
@@ -115,10 +114,10 @@ export default function MeatDetailPage() {
     ['이력번호', item.id],
     ['샘플번호', item.sampleNo],
     ['부위', item.part],
-    ['딥에이징 여부', item.deepAging],
-    ['도축일자', item.slDate],
+    ['딥에이징 여부', item.isDeepAged],
+    ['도축일자', item.butcheryDate],
     ['가공일자', item.processDate],
-    ['업로드 일시', item.timestamp],
+    ['업로드 일시', item.uploadedAt],
   ];
 
   const labels = [
