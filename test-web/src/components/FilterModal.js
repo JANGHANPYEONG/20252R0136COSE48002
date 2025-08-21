@@ -185,36 +185,17 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
         const categoryIds = specieFilter && specieFilter.value ? getCategoryIds(specieFilter.value) : [];
 
         // 백엔드가 기대하는 필터 구조로 변환
-        const appliedFilters = [
-            {
-                name: '날짜',
-                type: 'date',
-                options: [],
-                value: {
-                    start: startDate ? startDate.format('YYYY-MM-DD') : null,
-                    end: endDate ? endDate.format('YYYY-MM-DD') : null
-                }
-            },
-            {
-                name: '품종',
-                type: 'select',
-                options: ['소', '돼지', '닭'],
-                value: specieFilter ? specieFilter.value : '',
-                categoryIds: categoryIds
-            },
-            {
-                name: 'page',
-                type: 'select',
-                options: [1, 2, 3, 4, 5],
-                value: filters.page || 1
-            },
-            {
-                name: 'pageSize',
-                type: 'select',
-                options: [10, 25, 50, 100],
-                value: filters.pageSize || 50
+        const appliedFilters = {
+            filters: {
+                categoryIds: categoryIds,
+                butcheryYmd_from: startDate ? startDate.format('YYYY-MM-DD') : null,
+                butcheryYmd_to: endDate ? endDate.format('YYYY-MM-DD') : null,
+                createdAt_from: startDate ? startDate.format('YYYY-MM-DDTHH:mm:ss') : null,
+                createdAt_to: endDate ? endDate.format('YYYY-MM-DDTHH:mm:ss') : null,
+                page: 1,
+                pageSize: 50
             }
-        ];
+        };
 
         onApply(appliedFilters);
         onClose();
@@ -226,16 +207,6 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
             type: 'date',
             options: [],
             value: { start: null, end: null }
-        }, {
-            name: 'page',
-            type: 'select',
-            options: [1, 2, 3, 4, 5],
-            value: 1
-        }, {
-            name: 'pageSize',
-            type: 'select',
-            options: [10, 25, 50, 100],
-            value: 50
         }]);
         setStartDate(null);
         setEndDate(null);
@@ -337,46 +308,6 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters }) => {
                                 선택된 기간: {formatDate(startDate)} ~ {formatDate(endDate)}
                             </Typography>
                         )}
-                    </Box>
-
-                    {/* 페이지네이션 옵션 */}
-                    <Box mb={3}>
-                        <Typography variant="subtitle1" gutterBottom>
-                            페이지네이션
-                        </Typography>
-                        <Grid container spacing={2}>
-                            <Grid item xs={6}>
-                                <FormControl fullWidth>
-                                    <InputLabel>페이지 크기</InputLabel>
-                                    <Select
-                                        value={filters.pageSize || 50}
-                                        onChange={(e) => handleFilterValueChange('pageSize', e.target.value)}
-                                        label="페이지 크기"
-                                    >
-                                        <MenuItem value={10}>10개</MenuItem>
-                                        <MenuItem value={25}>25개</MenuItem>
-                                        <MenuItem value={50}>50개</MenuItem>
-                                        <MenuItem value={100}>100개</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <FormControl fullWidth>
-                                    <InputLabel>페이지 번호</InputLabel>
-                                    <Select
-                                        value={filters.page || 1}
-                                        onChange={(e) => handleFilterValueChange('page', e.target.value)}
-                                        label="페이지 번호"
-                                    >
-                                        <MenuItem value={1}>1페이지</MenuItem>
-                                        <MenuItem value={2}>2페이지</MenuItem>
-                                        <MenuItem value={3}>3페이지</MenuItem>
-                                        <MenuItem value={4}>4페이지</MenuItem>
-                                        <MenuItem value={5}>5페이지</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                        </Grid>
                     </Box>
 
                     {/* 기존 필터들 */}

@@ -251,10 +251,18 @@ const Dashboard = () => {
   }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
-    setFilters(appliedFilters);
-    console.log('적용된 필터:', appliedFilters);
-    // 여기서 필터링된 데이터를 API로 요청
-    handleLoadData(); // 필터 적용 후 데이터 다시 로드
+    // 새로운 백엔드 필터 형식 처리
+    if (appliedFilters.filters) {
+      // 백엔드로 직접 전송할 수 있는 형식
+      console.log('적용된 필터:', appliedFilters);
+      // 여기서 필터링된 데이터를 API로 요청
+      handleLoadData(); // 필터 적용 후 데이터 다시 로드
+    } else {
+      // 기존 형식 처리 (하위 호환성)
+      setFilters(appliedFilters);
+      console.log('적용된 필터:', appliedFilters);
+      handleLoadData();
+    }
   };
 ////////////////////////////////////////////////////////
 
