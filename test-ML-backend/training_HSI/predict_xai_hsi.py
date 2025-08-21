@@ -177,7 +177,7 @@ class HSIPredictor:
         print(f"Loading artifacts from MLflow directory: {model_dir}")
 
         # 1. column_config 로드 (config['data']['column_config']에서 경로 가져오기)
-        column_config_path = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config.json"
+        column_config_path = "/home/ubuntu/2025-Deeplant-Dev/20252R0136COSE48002/test-ML-backend/training_HSI/configs/column_config_tmp.json"
         column_config_path = self.config['data'].get('column_config', column_config_path)
 
         if not os.path.exists(column_config_path):
