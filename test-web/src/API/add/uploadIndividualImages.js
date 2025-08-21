@@ -2,33 +2,70 @@ import JSZip from 'jszip';
 import { apiIP } from '../../config';
 
 /**
- * 파일명을 SHA-256 해시로 변환하는 함수
- * @param {string} originalFileName - 원본 파일명 (예: "140119100857_s1_430nm.png")
- * @returns {Promise<string>} - 해시된 파일명 (예: "abc123def_430nm.png")
+ * 파일 경로에서 이력번호+샘플번호를 추출하여 20자리 해시 파일명으로 변환하는 함수
+ * @param {string} filePath - 파일 경로 (예: "140119100857_day7/S1/140119100857_s1_430nm.png")
+ * @returns {Promise<string|null>} - 해시된 파일명 (예: "e3b3ff1e7a200b6274c4_430nm.png") 또는 null
  */
-const hashFileName = async (originalFileName) => {
-  // 파장 정보 추출 (430nm, 540nm, rgb 등)
-  const wavelengthMatch = originalFileName.match(/(\d{3,4}nm|rgb)/i);
+const hashFileName = async (filePath) => {
+  // 파일 경로를 정리하여 파일명과 폴더 구조 분석
+  const pathParts = filePath.split('/').filter(part => part.length > 0);
+  const fileName = pathParts[pathParts.length - 1]; // 마지막이 파일명
+  
+  // 파장 정보 추출 (430nm, 540nm 등, rgb 제외)
+  const wavelengthMatch = fileName.match(/(\d{3,4}nm)/i);
   const wavelength = wavelengthMatch ? wavelengthMatch[1].toLowerCase() : '';
   
-  // 원본 파일명을 해시화
-  const encoder = new TextEncoder();
-  const data = encoder.encode(originalFileName);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  // 원본 확장자 추출
-  const originalExtension = originalFileName.split('.').pop().toLowerCase();
-  
-  // 해시의 첫 8자리 사용하여 새로운 파일명 생성 (원본 확장자 유지)
-  const shortHash = hashHex.substring(0, 8);
-  
-  if (wavelength) {
-    return `${shortHash}_${wavelength}.${originalExtension}`;
-  } else {
-    return `${shortHash}.${originalExtension}`;
+  if (!wavelength) {
+    console.warn('파장 정보를 찾을 수 없습니다:', filePath);
+    return null;
   }
+  
+  let traceNum = '';
+  let sampleNum = '';
+  
+  // 방법 1: 파일명에서 직접 추출 (140119100857_s1_430nm.png)
+  const fileNamePattern = fileName.match(/^(\d+)_[sS](\d+)_\d+nm\./i);
+  if (fileNamePattern) {
+    traceNum = fileNamePattern[1];
+    sampleNum = fileNamePattern[2];
+  } else {
+    // 방법 2: 폴더 구조에서 추출 (140119100857_day7/S1/파일명)
+    if (pathParts.length >= 3) {
+      const folderName = pathParts[pathParts.length - 3]; // 관리번호 폴더
+      const partFolder = pathParts[pathParts.length - 2];  // 부위 폴더 (S1, s1 등)
+      
+      // 관리번호 추출: _ 앞의 숫자 부분만 가져오기
+      let extractedNumber = folderName;
+      const underscoreIndex = folderName.indexOf('_');
+      if (underscoreIndex > 0) {
+        const beforeUnderscore = folderName.substring(0, underscoreIndex);
+        if (/^\d+$/.test(beforeUnderscore)) {
+          extractedNumber = beforeUnderscore;
+        }
+      }
+      
+      // 부위 폴더에서 샘플 번호 추출 (S1, s1 -> 1)
+      const sampleMatch = partFolder.match(/^[sS](\d+)$/);
+      if (sampleMatch && /^\d+$/.test(extractedNumber)) {
+        traceNum = extractedNumber;
+        sampleNum = sampleMatch[1];
+      }
+    }
+  }
+  
+  if (!traceNum || !sampleNum) {
+    console.warn('이력번호/샘플번호를 추출할 수 없습니다:', filePath);
+    return null;
+  }
+  
+  // 이력번호+샘플번호로 20자리 해시 생성 (JSON과 동일한 로직)
+  const { generateHashId } = await import('./hashUtils');
+  const hashId = await generateHashId(traceNum, sampleNum);
+  
+  console.log(`파일 경로 분석: ${filePath} -> 이력번호: ${traceNum}, 샘플: ${sampleNum}, 해시: ${hashId}`);
+  
+  // 해시ID_파장.png 형식으로 반환
+  return `${hashId}_${wavelength}.png`;
 };
 
 /**
@@ -161,7 +198,7 @@ const uploadToS3WithPresigned = async (uploadUrl, imageBlob, fileName, expectedC
 /**
  * ZIP 파일에서 개별 이미지를 추출하고 해싱하여 S3에 업로드하는 함수
  * @param {File} zipFile - 이미지가 포함된 ZIP 파일
- * @param {string} traceNum - 이력번호
+ * @param {string} traceNum - 이력번호 (ZIP에서 추출된 이력번호와 일치 확인용)
  * @param {Function} progressCallback - 진행상황 콜백 함수 (선택사항)
  * @returns {Promise<Object>} - 업로드 결과
  */
@@ -173,11 +210,14 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(zipFile);
     
-    // 이미지 파일만 필터링 (jpg, jpeg, png)
+    // 이미지 파일만 필터링 (jpg, jpeg, png) - RGB 파일 제외
     const imageFiles = Object.keys(zipContent.files)
       .filter(fileName => {
         const ext = fileName.split('.').pop().toLowerCase();
-        return ['jpg', 'jpeg', 'png'].includes(ext) && !zipContent.files[fileName].dir;
+        const isValidImage = ['jpg', 'jpeg', 'png'].includes(ext) && !zipContent.files[fileName].dir;
+        const isRgbImage = fileName.toLowerCase().includes('_rgb_') || fileName.toLowerCase().includes('rgb');
+        
+        return isValidImage && !isRgbImage; // RGB 이미지는 제외
       })
       .map(fileName => ({
         name: fileName,
@@ -208,8 +248,14 @@ export const uploadIndividualImages = async (zipFile, traceNum, progressCallback
                         (originalExtension === 'jpg' || originalExtension === 'jpeg') ? 'image/jpeg' : 
                         'image/png'; // 기본값 (PNG)
         
-        // 3. 파일명 해싱 (원본 확장자 유지)
+        // 3. 파일명 해싱 (이력번호+샘플번호 기반 20자리)
         const hashedFileName = await hashFileName(imageFile.name);
+        
+        if (!hashedFileName) {
+          console.warn(`파일명 해싱 실패, 건너뜀: ${imageFile.name}`);
+          continue;
+        }
+        
         console.log(`파일명 해싱: ${imageFile.name} -> ${hashedFileName}`);
         
         fileProcessResults.push({
