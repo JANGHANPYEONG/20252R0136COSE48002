@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import train, predict, meat, user, statistic_api, data_upload, data_crud, xai, hsi_predict, hsi_train, spectral_info, dashboard
+from app.routers import train, predict, meat, user, statistic_api, data_upload, xai, hsi_predict, hsi_train, spectral_info, dashboard
 from app.core.config import settings
 
 # 미들웨어 임포트
