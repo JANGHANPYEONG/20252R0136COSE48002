@@ -7,7 +7,8 @@ import {
 const groupByTimestamp = (data) => {
   const groups = {};
   data.forEach(row => {
-    const key = row.timestamp;
+    // butcheryYmd를 기준으로 그룹화
+    const key = row.butcheryYmd ? row.butcheryYmd.split('T')[0] : 'Unknown';
     if (!groups[key]) groups[key] = [];
     groups[key].push(row);
   });
@@ -59,6 +60,14 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
     }
   };
 
+  // categoryId를 품종명으로 변환하는 함수
+  const getCategoryName = (categoryId) => {
+    if (categoryId >= 0 && categoryId <= 9) return '소';
+    if (categoryId >= 10 && categoryId <= 20) return '돼지';
+    if (categoryId >= 30 && categoryId <= 40) return '닭';
+    return '기타';
+  };
+
   return (
     <>
       {Object.entries(groups).map(([timestamp, rows]) => (
@@ -76,10 +85,10 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
               <TableRow>
                 <TableCell>선택</TableCell>
                 <TableCell>이력번호</TableCell>
-                <TableCell>부위</TableCell>
+                <TableCell>품종</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
-                <TableCell>가공일자</TableCell>
+                <TableCell>추적번호</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -101,10 +110,10 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
                     />
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.part.primal}/{row.part.secondary}</TableCell>
-                  <TableCell>{row.isDeepAged}</TableCell>
-                  <TableCell>{row.butcheryDate}</TableCell>
-                  <TableCell>{row.processDate}</TableCell>
+                  <TableCell>{getCategoryName(row.categoryId)}</TableCell>
+                  <TableCell>{row.hasDeepAging ? '있음' : '없음'}</TableCell>
+                  <TableCell>{row.butcheryYmd ? row.butcheryYmd.split('T')[0] : '-'}</TableCell>
+                  <TableCell>{row.traceNum || '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

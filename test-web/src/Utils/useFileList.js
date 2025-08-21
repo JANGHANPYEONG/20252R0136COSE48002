@@ -6,9 +6,10 @@ const buildKey = (filters) => {
   const date = filters?.find?.(f => f.name === '날짜')?.value || {};
   const page = filters?.find?.(f => f.name === 'page')?.value || 1;
   const pageSize = filters?.find?.(f => f.name === 'pageSize')?.value || 50;
+  const specie = filters?.find?.(f => f.name === '품종')?.value || '전체';
   const start = date?.start ?? null;
   const end = date?.end ?? null;
-  return ['fileList', { start, end, page, pageSize }];
+  return ['fileList', { start, end, page, pageSize, specie }];
 };
 
 export default function useFileList(filters, { enabled = true } = {}) {

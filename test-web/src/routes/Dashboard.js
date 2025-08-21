@@ -50,7 +50,7 @@ const Dashboard = () => {
   const [pageOffset, setPageOffset] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [searchedData,setSearchedData] = useState(null);
+  const [searchedData, setSearchedData] = useState(null);
   // temp for mocking
   const [groupedData, setGroupedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -61,7 +61,7 @@ const Dashboard = () => {
 
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
-    { name: '품종', type: 'select', options: ['소', '돼지', '닭'], value: '' },
+    { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
     { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
     { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
   ]);
@@ -72,7 +72,7 @@ const Dashboard = () => {
   // data를 useState로 저장 -> usequeryClient 로 저장
   const [isLoaded, setisLoaded] = useState(false); // query on/off
   const queryClient = useQueryClient();
-  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: false});
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded });
 
 
   // 쿼리스트링 추출
@@ -126,6 +126,14 @@ const Dashboard = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
+
+    // 날짜 필터 업데이트
+    setFilters(prev => prev.map(f =>
+      f.name === '날짜'
+        ? { ...f, value: { start: formattedStartDate.split('T')[0], end: formattedEndDate.split('T')[0] } }
+        : f
+    ));
+
     setIsLoading(false);
   }, [queryStartDate, queryEndDate, queryDuration, location.search]);
 
@@ -153,7 +161,7 @@ const Dashboard = () => {
       </Box>
     );
   }
-// temp for mocking
+  // temp for mocking
   // 예측 페이지로 이동
   const goLearningPage = () => {
     const selectedSet = new Set(
@@ -166,7 +174,7 @@ const Dashboard = () => {
     // 새로고침 대비 백업(옵션)
     try {
       sessionStorage.setItem('predict_data', JSON.stringify(payload));
-    } catch {}
+    } catch { }
 
     navigate('/Learning', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
   };
@@ -181,39 +189,39 @@ const Dashboard = () => {
     // 새로고침 대비 백업(옵션)
     try {
       sessionStorage.setItem('predict_data', JSON.stringify(payload));
-    } catch {}
+    } catch { }
 
     navigate('/predict', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
   };
   // 데이터 불러오기 함수
   const handleLoadData = async () => {
-    setisLoaded(true);
     try {
-        const { data: fresh } = await refetch();
-        const list = fresh ?? [];
-        const groupMap = {};
-        list.forEach((item) => {
-        const batchId = item.upload_batch_id || 'unknown_batch';
+      const { data: fresh } = await refetch();
+      const list = fresh ?? [];
+      const groupMap = {};
+      list.forEach((item) => {
+        // butcheryYmd를 기준으로 그룹화
+        const batchId = item.butcheryYmd ? item.butcheryYmd.split('T')[0] : 'Unknown';
         if (!groupMap[batchId]) groupMap[batchId] = [];
         groupMap[batchId].push(item);
       });
       const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
         batchId,
-        timestamp: rows[0]?.timestamp || '',
+        timestamp: batchId,
         rows,
       }));
 
       setGroupedData(grouped);
       // 성공 여부 알림
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'success',
         message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'error',
         message: '데이터 불러오기 실패! 서버를 확인해주세요.',
       });
@@ -231,7 +239,7 @@ const Dashboard = () => {
   const handleFilter = () => {
     setFilterModalOpen(true);
   };
-  
+
   // 데이터 초기화 함수
   const initializeData = async () => {
     // 1) 진행 중인 요청 취소 (안 하면 응답이 도착하며 다시 채워질 수 있음)
@@ -248,15 +256,26 @@ const Dashboard = () => {
     setOpenPanel(false);
     setDetailData(null);
     sessionStorage.removeItem('predict_data');
+
+    // 5) 필터 초기화
+    setFilters([
+      { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+      { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
+      { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
+      { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
+    ]);
   }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
     setFilters(appliedFilters);
     console.log('적용된 필터:', appliedFilters);
-    // 여기서 필터링된 데이터를 API로 요청
-    handleLoadData(); // 필터 적용 후 데이터 다시 로드
+    // 필터 적용 후 데이터 다시 로드
+    setisLoaded(true);
+    setTimeout(() => {
+      handleLoadData();
+    }, 100);
   };
-////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
 
 
 
@@ -363,57 +382,62 @@ const Dashboard = () => {
         />
       )}
       {value === 'list' && (
-      <>
-      <Box sx={{ marginTop: '30px' }}>
-        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-          <Button
-            variant="contained"
-            onClick={handleLoadData}
-            disabled={isFetching}
-            sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
-          >
-            {isFetching ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
-          </Button>
+        <>
+          <Box sx={{ marginTop: '30px' }}>
+            <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setisLoaded(true);
+                  setTimeout(() => {
+                    handleLoadData();
+                  }, 100);
+                }}
+                disabled={isFetching}
+                sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+              >
+                {isFetching ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+              </Button>
 
-          <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
-          <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
-        </Box>
+              <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
+              <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
+            </Box>
 
-        <PredictionTableTmp
-          data={data}
-          onSelectionChange={handleSelectionChange}
-        />
+            <PredictionTableTmp
+              data={data}
+              onSelectionChange={handleSelectionChange}
+            />
 
-        <Typography sx={{ marginTop: '10px', color: navy }}>
-          총 {data.length}개의 데이터
-        </Typography>
-        <FilterModal
-          open={filterModalOpen}
-          onClose={() => setFilterModalOpen(false)}
-          onApply={handleApplyFilters}
-          filters={filters}
-          setFilters={setFilters}
-        />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
-        <Button
-          variant="contained"
-          onClick={goLearningPage}
-          disabled={selectedRows.length === 0}
-          sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
-        >
-          학습하기
-        </Button>
-        <Button
-          variant="contained"
-          onClick={goPredictPage}
-          disabled={selectedRows.length === 0}
-          sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
-        >
-          예측하기
-        </Button>
-        </Box>
-      </>)}
+            <Typography sx={{ marginTop: '10px', color: navy }}>
+              총 {data.length}개의 데이터
+            </Typography>
+            <FilterModal
+              open={filterModalOpen}
+              onClose={() => setFilterModalOpen(false)}
+              onApply={handleApplyFilters}
+              filters={filters}
+              setFilters={setFilters}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+            <Button
+              variant="contained"
+              onClick={goLearningPage}
+              disabled={selectedRows.length === 0}
+              sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            >
+              학습하기
+            </Button>
+            <Button
+              variant="contained"
+              onClick={goPredictPage}
+              disabled={selectedRows.length === 0}
+              sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            >
+              예측하기
+            </Button>
+          </Box>
+        </>)}
     </div>
   );
 };
