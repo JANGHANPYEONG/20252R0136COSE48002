@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 // mui
-import { Box, Button, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Button, Select, MenuItem, CircularProgress, Typography } from '@mui/material';
 // style
 import style from './style/dashboardstyle';
 // icon, timezone
@@ -24,16 +24,78 @@ import SearchedDataListComp from '../components/DataListView/SearchedDataListCom
 // 구간 계산 함수
 import updateDates from '../Utils/updateDates';
 
+// temp for mocking
+import PredictionTableTmp from '../components/PredictionTableTmp';
+import FilterModal from '../components/FilterModal';
+import PredictionTable from '../components/PredictionTable';
+import PredictionDetailPanel from '../components/PredictionDetailPanel';
+import { fetchFilteredData } from '../API/fetchFileteredData';
+import { Snackbar, Alert } from '@mui/material';
+import { fetchPrediction } from '../API/predictData';
+import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
+//////////////////////////////////////////////////
+
+// 캐싱용 패치
+import useFileList from '../Utils/useFileList';
+import { useQueryClient } from '@tanstack/react-query'
+import { Filter6Sharp } from '@mui/icons-material';
+
 const navy = '#0F3659';
 
 const Dashboard = () => {
   const [value, setValue] = useState('list');
   const [specieValue, setSpecieValue] = useState('전체');
-  const [searchedData, setSearchedData] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [pageOffset, setPageOffset] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [searchedData, setSearchedData] = useState(null);
+  // temp for mocking
+  const [groupedData, setGroupedData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'info', message: '완료' });
+
+
+  const [filters, setFilters] = useState([
+    { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+    { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
+  ]);
+  const navigate = useNavigate();
+  const [openPanel, setOpenPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
+  //////////////////////////////////////////////////
+  // data를 useState로 저장 -> usequeryClient 로 저장
+  const [isLoaded, setisLoaded] = useState(false); // query on/off
+  const queryClient = useQueryClient();
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded });
+
+  // 필터 상태를 localStorage에서 복원하는 함수
+  const restoreFiltersFromStorage = () => {
+    try {
+      const savedFilters = localStorage.getItem('dashboardFilters');
+      if (savedFilters) {
+        const parsedFilters = JSON.parse(savedFilters);
+        setFilters(parsedFilters);
+        return parsedFilters;
+      }
+    } catch (error) {
+      console.error('필터 복원 중 오류:', error);
+    }
+    return null;
+  };
+
+  // 필터 상태를 localStorage에 저장하는 함수
+  const saveFiltersToStorage = (newFilters) => {
+    try {
+      localStorage.setItem('dashboardFilters', JSON.stringify(newFilters));
+    } catch (error) {
+      console.error('필터 저장 중 오류:', error);
+    }
+  };
+
 
   // 쿼리스트링 추출
   const location = useLocation();
@@ -47,10 +109,6 @@ const Dashboard = () => {
         queryDuration: searchParams.get('duration') || '',
       };
     }, [location.search]);
-
-  useEffect(() => {
-    setPageOffset(querypageOffset);
-  }, [querypageOffset]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -86,6 +144,22 @@ const Dashboard = () => {
 
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
+
+    // 저장된 필터가 있으면 복원, 없으면 기본값 설정
+    const savedFilters = restoreFiltersFromStorage();
+    if (savedFilters) {
+      // 저장된 필터가 있으면 그것을 사용
+      setFilters(savedFilters);
+    } else {
+      // 저장된 필터가 없으면 기본값 설정
+      const defaultFilters = [
+        { name: '날짜', type: 'date', options: [], value: { start: formattedStartDate.split('T')[0], end: formattedEndDate.split('T')[0] } },
+        { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
+      ];
+      setFilters(defaultFilters);
+      saveFiltersToStorage(defaultFilters);
+    }
+
     setIsLoading(false);
   }, [queryStartDate, queryEndDate, queryDuration, location.search]);
 
@@ -113,6 +187,165 @@ const Dashboard = () => {
       </Box>
     );
   }
+  // temp for mocking
+  // 예측 페이지로 이동
+  const goLearningPage = () => {
+    const selectedSet = new Set(
+      selectedRows.map((s) => (typeof s === 'string' ? s : s.id))
+    );
+    const payload =
+      selectedRows.length > 0
+        ? data.filter((row) => selectedSet.has(row.id))
+        : data;
+    // 새로고침 대비 백업(옵션)
+    try {
+      sessionStorage.setItem('predict_data', JSON.stringify(payload));
+    } catch { }
+
+    navigate('/Learning', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
+  };
+  const goPredictPage = () => {
+    const selectedSet = new Set(
+      selectedRows.map((s) => (typeof s === 'string' ? s : s.id))
+    );
+    const payload =
+      selectedRows.length > 0
+        ? data.filter((row) => selectedSet.has(row.id))
+        : data;
+    // 새로고침 대비 백업(옵션)
+    try {
+      sessionStorage.setItem('predict_data', JSON.stringify(payload));
+    } catch { }
+
+    navigate('/predict', { state: { data: payload, selectedRows: selectedRows, from: 'dashboard' } });
+  };
+  // 데이터 불러오기 함수
+  const handleLoadData = async () => {
+    try {
+      const { data: fresh } = await refetch();
+      const list = fresh ?? [];
+      const groupMap = {};
+      list.forEach((item) => {
+        // butcheryYmd를 기준으로 그룹화
+        const batchId = item.butcheryYmd ? item.butcheryYmd.split('T')[0] : 'Unknown';
+        if (!groupMap[batchId]) groupMap[batchId] = [];
+        groupMap[batchId].push(item);
+      });
+      const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
+        batchId,
+        timestamp: batchId,
+        rows,
+      }));
+
+      setGroupedData(grouped);
+      // 성공 여부 알림
+      setSnackbar({
+        open: true,
+        severity: 'success',
+        message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
+      });
+    } catch (err) {
+      console.error('데이터 불러오기 실패:', err);
+      setSnackbar({
+        open: true,
+        severity: 'error',
+        message: '데이터 불러오기 실패! 서버를 확인해주세요.',
+      });
+    }
+  };
+
+  // 선택 변경 핸들러
+  const handleSelectionChange = (newSelection) => {
+    setSelectedRows(newSelection);
+  };
+
+
+
+  // 필터 함수
+  const handleFilter = () => {
+    setFilterModalOpen(true);
+  };
+
+  // 데이터 초기화 함수
+  const initializeData = async () => {
+    // 1) 진행 중인 요청 취소 (안 하면 응답이 도착하며 다시 채워질 수 있음)
+    await queryClient.cancelQueries({ queryKey: ['fileList'] });
+    // 2) 현재 붙어있는 쿼리들의 데이터를 즉시 빈 배열로 설정 (UI 즉시 비우기)
+    queryClient.setQueriesData({ queryKey: ['fileList'] }, () => []);
+    // 3) 캐시 항목 자체 제거 (다른 변형 키들도 함께)
+    queryClient.removeQueries({ queryKey: ['fileList'] });
+    // query loading off
+    setisLoaded(false);
+    // 4) UI 상태 리셋
+    setGroupedData([]);
+    setSelectedRows([]);
+    setOpenPanel(false);
+    setDetailData(null);
+    sessionStorage.removeItem('predict_data');
+
+    // 5) 필터 초기화 및 localStorage에서 제거
+    const defaultFilters = [
+      { name: '날짜', type: 'date', options: [], value: { start: startDate.split('T')[0], end: endDate.split('T')[0] } },
+      { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
+    ];
+    setFilters(defaultFilters);
+    localStorage.removeItem('dashboardFilters');
+  }
+  // 필터 적용 함수
+  const handleApplyFilters = (appliedFilters) => {
+    // appliedFilters는 백엔드용 필터 객체이므로, UI용 필터 상태는 유지
+    console.log('적용된 필터:', appliedFilters);
+
+    // 백엔드 필터를 UI 필터 상태에 반영
+    if (appliedFilters.filters) {
+      const { categoryIds, butcheryYmd_from, butcheryYmd_to } = appliedFilters.filters;
+
+      // 날짜 필터 업데이트
+      if (butcheryYmd_from || butcheryYmd_to) {
+        setFilters(prev => {
+          const newFilters = prev.map(f =>
+            f.name === '날짜'
+              ? {
+                ...f, value: {
+                  start: butcheryYmd_from ? butcheryYmd_from.split('T')[0] : null,
+                  end: butcheryYmd_to ? butcheryYmd_to.split('T')[0] : null
+                }
+              }
+              : f
+          );
+          saveFiltersToStorage(newFilters);
+          return newFilters;
+        });
+      }
+
+      // 품종 필터 업데이트
+      if (categoryIds && categoryIds.length > 0) {
+        let specieValue = '전체';
+        if (categoryIds.some(id => id >= 0 && id <= 99)) specieValue = '소';
+        else if (categoryIds.some(id => id >= 100 && id <= 199)) specieValue = '돼지';
+        else if (categoryIds.some(id => id >= 200 && id <= 299)) specieValue = '닭';
+
+        setFilters(prev => {
+          const newFilters = prev.map(f =>
+            f.name === '품종'
+              ? { ...f, value: specieValue }
+              : f
+          );
+          saveFiltersToStorage(newFilters);
+          return newFilters;
+        });
+      }
+    }
+
+    // 필터 적용 후 데이터 다시 로드
+    setisLoaded(true);
+    setTimeout(() => {
+      handleLoadData();
+    }, 100);
+  };
+  ////////////////////////////////////////////////////////
+
+
 
   return (
     <div
@@ -201,67 +434,6 @@ const Dashboard = () => {
           )}
         </div>
       </Box>
-
-      {/**검색필터, 엑셀  */}
-      <Box sx={style.fixed}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
-        >
-          <SearchFilterBar />
-          <SearchById
-            onDataFetch={handleSearchedDataFetch}
-            onValueChange={handleValueChange}
-            startDate={startDate}
-            endDate={endDate}
-            specieValue={specieValue}
-          />
-          <Select
-            labelId="species"
-            id="species"
-            value={specieValue}
-            onChange={handleSpeciesChange}
-            label="종류"
-          >
-            <MenuItem value="전체">전체</MenuItem>
-            <MenuItem value="소">소</MenuItem>
-            <MenuItem value="돼지">돼지</MenuItem>
-          </Select>
-        </Box>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingRight: '85px',
-          }}
-        >
-          {(value === 'list' || value === 'searched') && (
-            <ExcelController
-              startDate={startDate}
-              endDate={endDate}
-              specieValue={specieValue}
-            />
-          )}
-          {/* {value === 'stat' && <StatsExport />} */}
-        </div>
-      </Box>
-
-      {value === 'searched' && (
-        <SearchedDataListComp
-          startDate={startDate}
-          endDate={endDate}
-          searchedData={searchedData}
-        />
-      )}
-
-      {value === 'list' && (
-        <DataListComp
-          startDate={startDate}
-          endDate={endDate}
-          pageOffset={pageOffset}
-          specieValue={specieValue}
-        />
-      )}
       {value === 'stat' && (
         <DataStat
           startDate={startDate}
@@ -277,6 +449,68 @@ const Dashboard = () => {
           specieValue={specieValue}
         />
       )}
+      {value === 'list' && (
+        <>
+          <Box sx={{ marginTop: '30px' }}>
+            <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setisLoaded(true);
+                  setTimeout(() => {
+                    handleLoadData();
+                  }, 100);
+                }}
+                disabled={isFetching}
+                sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+              >
+                {isFetching ? <CircularProgress size={20} color="inherit" /> : '데이터 불러오기'}
+              </Button>
+
+              <Button variant="outlined" onClick={handleFilter} sx={{ borderColor: navy, color: navy }}>필터</Button>
+              <Button variant="outlined" onClick={initializeData} sx={{ borderColor: navy, color: navy }}>데이터 초기화</Button>
+            </Box>
+
+            <PredictionTableTmp
+              data={data}
+              onSelectionChange={handleSelectionChange}
+            />
+
+            <Typography sx={{ marginTop: '10px', color: navy }}>
+              총 {data.length}개의 데이터
+            </Typography>
+            <FilterModal
+              open={filterModalOpen}
+              onClose={() => setFilterModalOpen(false)}
+              onApply={handleApplyFilters}
+              filters={filters}
+              setFilters={(newFilters) => {
+                setFilters(newFilters);
+                saveFiltersToStorage(newFilters);
+              }}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, marginBottom: '20px' }}>
+            <Button
+              variant="contained"
+              onClick={goLearningPage}
+              disabled={selectedRows.length === 0}
+              sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            >
+              학습하기
+            </Button>
+            <Button
+              variant="contained"
+              onClick={goPredictPage}
+              disabled={selectedRows.length === 0}
+              sx={{ backgroundColor: navy, '&:hover': { backgroundColor: '#0a2a4a' } }}
+            >
+              예측하기
+            </Button>
+          </Box>
+        </>)}
     </div>
   );
 };

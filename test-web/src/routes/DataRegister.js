@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Button, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Switch, FormControlLabel, Typography, Paper } from '@mui/material';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import style from './style/dashboardstyle';
 import DataListWithURL from '../components/DataListWithURL';
-import uploadDataToServer from '../API/add/uploadDataToServer'; // 새로운 API import
+import ImageUploadProgress from '../components/ImageUploadProgress';
+import uploadFiles from '../API/add/uploadToS3'; // 통합 업로드 API import
+import { convertToNewJsonFormat, sendNewJsonToBackend } from '../API/add/newJsonConverter'; // 새로운 JSON 변환 및 전송 API import
+import { uploadIndividualImages } from '../API/add/uploadIndividualImages'; // 개별 이미지 업로드 API import
 
 const navy = '#0F3659';
 
@@ -15,7 +18,18 @@ const DataRegister = () => {
   const [csvLoading, setCsvLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(''); // 성공 메시지 상태
-  const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 상태 추가
+  const [uploadedZipFile, setUploadedZipFile] = useState(null); // ZIP 파일 또는 폴더 상태 추가
+  const [uploadedExcelFile, setUploadedExcelFile] = useState(null); // 엑셀 파일 상태 추가
+  const [dataFormat, setDataFormat] = useState('HSI'); // 데이터 형식 상태 (기본값: HSI)
+  
+  // 이미지 업로드 진행 상황 상태
+  const [uploadProgress, setUploadProgress] = useState({
+    show: false,
+    current: 0,
+    total: 0,
+    fileName: '',
+    stage: 'processing'
+  });
 
   const fileInputRef = useRef(null);
 
@@ -86,56 +100,145 @@ const DataRegister = () => {
   }, [data, columns]);
 
   const handleLoadClick = () => fileInputRef.current?.click();
-  
-  const handleImageClick = () => {
-    // ZIP 파일만 허용하는 이미지 업로드 input
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.zip'; // ZIP 파일만 허용
-    input.addEventListener('change', handleZipImageUpload);
-    input.click();
-  };
 
   const handleRegister = async () => {
     try {
       // 1. 데이터 존재 여부 확인
       if (!data || data.length === 0) {
-        alert('업로드할 데이터가 없습니다. 먼저 CSV 파일을 업로드해주세요.');
+        alert('업로드할 데이터가 없습니다. 먼저 XLSX 파일을 업로드해주세요.');
         return;
       }
 
-      // 2. ZIP 파일 존재 여부 확인
-      if (!uploadedZipFile) {
-        alert('ZIP 파일이 업로드되지 않았습니다. 먼저 ZIP 파일을 업로드해주세요.');
-        return;
-      }
-
-      // 3. 매핑 상태 확인
-      const unmappedData = data.filter(row => 
-        row['매핑 상태'] === '매핑안됨' || 
-        !row['매핑 상태'] || 
-        row['매핑 상태'] === ''
-      );
-
-      if (unmappedData.length > 0) {
-        alert(`매핑되지 않은 데이터가 ${unmappedData.length}개 있습니다.\n모든 데이터를 매핑한 후 다시 시도해주세요.`);
+      // 2. 엑셀 파일 존재 여부 확인
+      if (!uploadedExcelFile) {
+        alert('엑셀 파일이 업로드되지 않았습니다. 먼저 XLSX 파일을 업로드해주세요.');
         return;
       }
 
       setLoading(true);
       
-      // 4. 서버에 데이터 업로드
-      const result = await uploadDataToServer(data, columns, uploadedZipFile);
-      
-      if (result.success) {
-        alert('데이터 등록이 성공적으로 완료되었습니다!');
+      try {
+        // 3. 새로운 형식의 JSON 생성
+        console.log('새로운 형식의 JSON 생성 시작...');
+        
+        // 이미지 매핑 정보 추출 (기존 데이터에서)
+        const imageMapping = {};
+        data.forEach(row => {
+          const traceNum = String(row['이력번호'] || '').trim();
+          const sampleNum = String(row['샘플번호'] || row['부위번호'] || '').replace(/[sS]/g, '');
+          
+          if (traceNum && sampleNum && row['매핑 상태'] === '매핑됨') {
+            if (!imageMapping[traceNum]) {
+              imageMapping[traceNum] = {};
+            }
+            
+            // 파장 정보에서 파장별 이미지 구성 (RGB 제외)
+            const wavelengthInfo = row['파장 정보'] || '';
+            const wavelengths = wavelengthInfo.split(', ')
+              .filter(wl => wl.trim())
+              .filter(wl => wl.toLowerCase() !== 'rgb'); // RGB 제외
+            
+            imageMapping[traceNum][sampleNum] = {};
+            wavelengths.forEach(wavelength => {
+              imageMapping[traceNum][sampleNum][wavelength] = {
+                wavelength: wavelength
+              };
+            });
+          }
+        });
+        
+        const jsonResult = await convertToNewJsonFormat(uploadedExcelFile, dataFormat, imageMapping);
+        
+        if (!jsonResult.success) {
+          throw new Error(`JSON 생성 실패: ${jsonResult.message}`);
+        }
+        
+        console.log('새로운 형식의 JSON 생성 완료:', jsonResult);
+
+        // 4. BE로 JSON 데이터 전송
+        console.log('BE로 JSON 데이터 전송 시작...');
+        const traceNum = data.length > 0 ? String(data[0]['이력번호'] || '').trim() : 'unknown';
+        
+        const beResult = await sendNewJsonToBackend(jsonResult.data, traceNum);
+        
+        if (!beResult.success) {
+          console.warn('BE 전송 실패:', beResult.message);
+          // BE 전송 실패해도 계속 진행 (이미지 업로드는 해야 함)
+        }
+
+        // 5. 개별 이미지 업로드 (ZIP 파일이 있는 경우에만)
+        let imageResult = null;
+        if (uploadedZipFile) {
+          console.log('개별 이미지 업로드 시작...');
+          
+          // 진행 상황 콜백 함수
+          const progressCallback = (progress) => {
+            console.log(`이미지 업로드 진행: ${progress.current}/${progress.total} - ${progress.fileName || ''}`);
+            setUploadProgress({
+              show: true,
+              current: progress.current,
+              total: progress.total,
+              fileName: progress.fileName || '',
+              stage: progress.stage || 'processing'
+            });
+          };
+          
+          // 진행 상황 표시 시작
+          setUploadProgress({
+            show: true,
+            current: 0,
+            total: 1,
+            fileName: '이미지 업로드 준비 중...',
+            stage: 'processing'
+          });
+          
+          try {
+            imageResult = await uploadIndividualImages(uploadedZipFile, traceNum, progressCallback);
+            console.log('이미지 업로드 완료:', imageResult);
+            
+            // 업로드 완료 상태 표시
+            setUploadProgress(prev => ({
+              ...prev,
+              stage: 'completed',
+              fileName: `${imageResult.data.successCount}개 파일 업로드 완료`
+            }));
+            
+            // 2초 후 진행 바 숨기기
+            setTimeout(() => {
+              setUploadProgress(prev => ({ ...prev, show: false }));
+            }, 2000);
+            
+          } catch (imageError) {
+            console.warn('이미지 업로드 실패:', imageError);
+            
+            // 진행 바 숨기기
+            setUploadProgress(prev => ({ ...prev, show: false }));
+            
+            // 이미지 업로드 실패해도 JSON은 BE로 전송되었으므로 경고만 표시
+            alert(`JSON 데이터는 BE로 전송되었지만 이미지 업로드에 실패했습니다.\n오류: ${imageError.message}`);
+          }
+        } else {
+          console.log('ZIP 파일이 없으므로 이미지 업로드를 건너뜁니다.');
+        }
+
+        // 6. 성공 메시지 표시
+        const successDetails = [
+          `JSON 파일: ${jsonResult.data.data_list.length}개 샘플 포함하여 1개 파일 BE 전송 완료`,
+          beResult.success ? `BE 전송: 성공` : `BE 전송: 실패 (${beResult.message})`,
+          imageResult ? `이미지: ${imageResult.data.successCount}개 업로드됨` : '이미지: 업로드 안됨'
+        ].join('\n');
+        
+        alert(`데이터 등록이 완료되었습니다!\n\n${successDetails}`);
         showSuccessMessage('데이터 등록 완료!');
         
         // 등록 성공 시 모든 데이터 초기화
         clearData();
         setUploadedZipFile(null);
-      } else {
-        alert(`데이터 등록에 실패했습니다.\n오류: ${result.message}`);
+        setUploadedExcelFile(null);
+
+      } catch (uploadError) {
+        console.error('업로드 처리 오류:', uploadError);
+        alert(`데이터 등록에 실패했습니다.\n오류: ${uploadError.message}`);
       }
       
     } catch (err) {
@@ -151,6 +254,7 @@ const DataRegister = () => {
     setColumns([]);
     setData([]);
     setUploadedZipFile(null); // ZIP 파일 상태도 초기화
+    setUploadedExcelFile(null); // 엑셀 파일 상태도 초기화
     localStorage.removeItem('dataRegister_data');
     localStorage.removeItem('dataRegister_columns');
     console.log('모든 데이터가 초기화되었습니다.');
@@ -182,6 +286,12 @@ const DataRegister = () => {
       return;
     }
     
+    // 엑셀 파일인 경우 파일 객체 저장
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      setUploadedExcelFile(file);
+      console.log('엑셀 파일 저장됨:', file.name);
+    }
+    
     setCsvLoading(true);
     const reader = new FileReader();
     
@@ -190,21 +300,50 @@ const DataRegister = () => {
         let rowsArray = [];
         
         if (file.name.toLowerCase().endsWith('.csv')) {
-          // CSV 파일 처리
+          // CSV 파일 처리 - 개선된 파싱
           const csvText = evt.target.result;
           const lines = csvText.split('\n');
           rowsArray = lines.map(line => {
-            // CSV 파싱 (간단한 버전, 콤마로 구분)
-            return line.split(',').map(cell => cell.trim().replace(/"/g, ''));
+            // 개선된 CSV 파싱 - RFC 4180 호환
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              const nextChar = line[i + 1];
+              
+              if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                  // 연속된 따옴표는 이스케이프된 따옴표
+                  current += '"';
+                  i++; // 다음 문자 건너뛰기
+                } else {
+                  // 따옴표 상태 토글
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                // 따옴표 밖의 콤마는 구분자
+                result.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            
+            // 마지막 셀 추가
+            result.push(current.trim());
+            
+            return result;
           }).filter(row => row.some(cell => cell !== ''));
         } else {
           // Excel 파일 처리
           const wb = XLSX.read(evt.target.result, { type: 'array' });
           const sheet = wb.Sheets[wb.SheetNames[0]];
-          rowsArray = XLSX.utils.sheet_to_json(sheet, {
-            header: 1,
-            defval: '',
-          });
+          rowsArray = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          
+          // 빈 행 제거
+          rowsArray = rowsArray.filter(row => row.some(cell => cell !== ''));
         }
         
         if (!rowsArray.length) {
@@ -226,12 +365,54 @@ const DataRegister = () => {
         const dataRows = rowsArray
           .slice(1)
           .filter((r) => r.some((c) => c !== ''));
+        
+        // Excel 날짜 시리얼 번호를 날짜로 변환하는 함수
+        const excelDateToJS = (serial) => {
+          // Excel 1900 시스템: 1900년 1월 1일 = 1
+          // 하지만 실제로는 1899년 12월 31일을 0으로 계산해야 정확함
+          const excelBaseDate = new Date(1900, 0, 1); // 1900년 1월 1일
+          const millisecondsPerDay = 24 * 60 * 60 * 1000;
+          
+          // Excel 시리얼 번호에서 1을 빼고 계산 (Excel이 1부터 시작하므로)
+          const resultDate = new Date(excelBaseDate.getTime() + (serial - 1) * millisecondsPerDay);
+          
+          return resultDate;
+        };
+        
+        // 특정 날짜 컬럼인지 확인하는 함수
+        const isSpecificDateColumn = (columnName) => {
+          if (!columnName) return false;
+          const name = columnName.toString();
+          return name.includes('도축일자') || 
+                 name.includes('제조(가공)일자') || 
+                 name.includes('소비기한');
+        };
+        
         const mapped = dataRows.map((rowArr) => {
           const obj = {};
           // 상태 컬럼을 먼저 추가 (초기값: 매핑안됨)
           obj['매핑 상태'] = '매핑안됨';
           validIdx.forEach((i, idx) => {
-            obj[filteredHeaders[idx]] = rowArr[i];
+            const columnName = filteredHeaders[idx];
+            let cellValue = rowArr[i] || '';
+            
+            // 특정 날짜 컬럼이고 숫자(시리얼 번호)인 경우 날짜로 변환
+            if (isSpecificDateColumn(columnName)) {
+              // 문자열을 숫자로 변환 시도
+              const numValue = parseFloat(cellValue);
+              if (!isNaN(numValue) && numValue > 1 && numValue < 100000) {
+                try {
+                  const date = excelDateToJS(numValue);
+                  cellValue = date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+                  console.log(`날짜 변환: ${columnName} ${numValue} -> ${cellValue}`);
+                } catch (e) {
+                  console.error('날짜 변환 오류:', e);
+                  cellValue = cellValue.toString();
+                }
+              }
+            }
+            
+            obj[columnName] = cellValue;
           });
           return obj;
         });
@@ -250,7 +431,34 @@ const DataRegister = () => {
     };
     
     if (file.name.toLowerCase().endsWith('.csv')) {
-      reader.readAsText(file);
+      // CSV 파일의 경우 여러 인코딩 시도
+      const tryEncodings = async () => {
+        const encodings = ['UTF-8', 'EUC-KR', 'CP949'];
+        
+        for (const encoding of encodings) {
+          try {
+            const text = await new Promise((resolve, reject) => {
+              const testReader = new FileReader();
+              testReader.onload = (e) => resolve(e.target.result);
+              testReader.onerror = reject;
+              testReader.readAsText(file, encoding);
+            });
+            
+            // 한글이 깨지지 않는지 확인
+            if (!text.includes('�') && text.includes(',')) {
+              reader.onload({target: {result: text}});
+              return;
+            }
+          } catch (err) {
+            console.log(`${encoding} 인코딩 실패:`, err);
+          }
+        }
+        
+        // 모든 인코딩이 실패하면 기본 UTF-8로 읽기
+        reader.readAsText(file, 'UTF-8');
+      };
+      
+      tryEncodings();
     } else {
       reader.readAsArrayBuffer(file);
     }
@@ -283,61 +491,318 @@ const DataRegister = () => {
     }
   };
 
-  // ZIP 파일 처리
+  // 폴더 업로드 처리
+  const handleFolderImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+    
+    setImageLoading(true);
+    
+    try {
+      console.log('폴더 처리:', files.length, '개 파일');
+      
+      // 1. 이미지 매핑 처리
+      await handleFolderFiles(files);
+      
+      // 2. 폴더 파일들을 ZIP으로 압축
+      console.log('폴더를 ZIP 파일로 압축 중...');
+      const zipFile = await createZipFromFiles(files);
+      
+      // 3. ZIP 파일을 상태에 저장
+      setUploadedZipFile(zipFile);
+      
+      console.log('폴더 처리 및 ZIP 생성 완료');
+    } catch (error) {
+      console.error('폴더 처리 오류:', error);
+      alert('폴더 처리 중 오류가 발생했습니다.');
+      setUploadedZipFile(null); // 오류 시 상태 초기화
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // 폴더 파일들을 ZIP 파일로 압축하는 함수
+  const createZipFromFiles = async (files) => {
+    const zip = new JSZip();
+    
+    // 루트 폴더명 추출 (첫 번째 파일의 경로에서)
+    const firstFilePath = files[0].webkitRelativePath || files[0].name;
+    const rootFolderName = firstFilePath.split('/')[0] || 'folder';
+    
+    console.log(`ZIP 파일 생성: 루트 폴더명 = ${rootFolderName}`);
+    
+    // 모든 파일을 ZIP에 추가
+    for (const file of files) {
+      const relativePath = file.webkitRelativePath || file.name;
+      console.log(`ZIP에 파일 추가: ${relativePath}`);
+      zip.file(relativePath, file);
+    }
+    
+    // ZIP 파일 생성
+    const zipBlob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 6
+      }
+    });
+    
+    // File 객체로 변환 (원본 ZIP 파일과 동일한 형태)
+    const zipFile = new File([zipBlob], `${rootFolderName}.zip`, {
+      type: 'application/zip'
+    });
+    
+    console.log(`ZIP 파일 생성 완료: ${zipFile.name} (${(zipFile.size / 1024 / 1024).toFixed(2)} MB)`);
+    
+    return zipFile;
+  };
+
+  // 폴더 파일들 처리
+  const handleFolderFiles = async (files) => {
+    try {
+      const imageMap = {};
+      
+      // 모든 파일을 순회
+      for (const file of files) {
+        // 이미지 파일 확인
+        const isImage = /\.(jpg|jpeg|png|gif|bmp)$/i.test(file.name);
+        if (!isImage) continue;
+        
+        // 파일 경로 분석: 관리번호/부위폴더/이미지파일명
+        const fullPath = file.webkitRelativePath || file.name;
+        const pathParts = fullPath.split('/');
+        
+        // 최소 3단계 경로 필요: 관리번호폴더/부위폴더/파일명
+        if (pathParts.length < 3) continue;
+        
+        const rawFolderName = pathParts[pathParts.length - 3]; // 원본 폴더명 (예: 140119100857_day7)
+        const partFolder = pathParts[pathParts.length - 2];    // 부위 폴더 (예: S1, s1)
+        const fileName = pathParts[pathParts.length - 1];      // 파일명
+        
+        // 관리번호 추출: _ 앞의 숫자 부분만 가져오기
+        let managementNumber = rawFolderName;
+        const underscoreIndex = rawFolderName.indexOf('_');
+        if (underscoreIndex > 0) {
+          const beforeUnderscore = rawFolderName.substring(0, underscoreIndex);
+          // _ 앞 부분이 숫자인지 확인
+          if (/^\d+$/.test(beforeUnderscore)) {
+            managementNumber = beforeUnderscore;
+            console.log(`폴더명 파싱: "${rawFolderName}" -> 관리번호 "${managementNumber}"`);
+          }
+        }
+        
+        // 부위 폴더에서 샘플 번호 추출 (S1, s1 모두 지원)
+        const sampleMatch = partFolder.match(/^[sS](\d+)$/);
+        if (!sampleMatch) {
+          console.log(`❌ 부위 폴더 패턴 불일치: ${partFolder}`);
+          continue;
+        }
+        
+        const sampleNumber = sampleMatch[1];
+        
+        // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
+        let wavelength = null;
+        
+        // RGB 패턴 체크 후 건너뛰기
+        const rgbMatch = fileName.match(/_rgb_/i);
+        if (rgbMatch) {
+          console.log(`❌ RGB 이미지 제외: ${fileName}`);
+          continue;
+        }
+        
+        // nm 단위 파장 추출 시도 (HSI만)
+        const wavelengthMatch = fileName.match(/(\d+nm)/i);
+        if (wavelengthMatch) {
+          wavelength = wavelengthMatch[1];
+        }
+        
+        if (!wavelength) {
+          console.log(`❌ 파장 정보 없음: ${fileName}`);
+          continue;
+        }
+        
+        // 이미지 맵 구성
+        if (!imageMap[managementNumber]) {
+          imageMap[managementNumber] = {};
+        }
+        
+        if (!imageMap[managementNumber][sampleNumber]) {
+          imageMap[managementNumber][sampleNumber] = {};
+        }
+        
+        // 파일을 Blob URL로 변환
+        const objectUrl = URL.createObjectURL(file);
+        
+        // 파장별로 이미지 저장
+        imageMap[managementNumber][sampleNumber][wavelength] = {
+          fileName: fileName,
+          url: objectUrl,
+          wavelength: wavelength,
+          sampleNumber: sampleNumber,
+          file: file
+        };
+        
+        console.log(`✅ 폴더 이미지 매핑: ${managementNumber} / S${sampleNumber} / ${wavelength} -> ${fileName}`);
+      }
+      
+      // 기존 데이터와 매칭
+      await matchImagesWithData(imageMap);
+      
+    } catch (error) {
+      console.error('폴더 파일 처리 오류:', error);
+      throw error;
+    }
+  };
+
+  // ZIP 파일 처리 (단순화 버전)
   const handleZipFile = async (zipFile) => {
     try {
+      console.log('=== ZIP 파일 처리 시작 ===');
       const zip = new JSZip();
       const zipData = await zip.loadAsync(zipFile);
       const imageMap = {};
       
+      console.log('ZIP 파일 내용:', Object.keys(zipData.files));
+      
       // ZIP 파일 내의 모든 파일을 순회
       for (const [fileName, fileObj] of Object.entries(zipData.files)) {
-        if (fileObj.dir) continue; // 폴더는 건너뛰기
+        if (fileObj.dir) {
+          console.log(`폴더 건너뛰기: ${fileName}`);
+          continue;
+        }
         
         // 이미지 파일 확인
         const isImage = /\.(jpg|jpeg|png|gif|bmp)$/i.test(fileName);
-        if (!isImage) continue;
+        if (!isImage) {
+          console.log(`이미지가 아님: ${fileName}`);
+          continue;
+        }
         
-        // 파일 경로에서 ID 추출
-        const pathParts = fileName.split('/');
-        let id = null;
-        let imageNumber = null;
+        console.log(`처리 중인 이미지: ${fileName}`);
         
-        if (pathParts.length > 1) {
-          // 폴더 구조: ID/ID_P숫자.확장자 (예: O0260_R01_N112/O0260_R01_N112_P10.png)
-          id = pathParts[pathParts.length - 2]; // 폴더명이 ID
-          const imageFileName = pathParts[pathParts.length - 1];
+        // 파일 경로 분석
+        const pathParts = fileName.split('/').filter(part => part.length > 0);
+        console.log(`경로 분석: ${JSON.stringify(pathParts)}`);
+        
+        let managementNumber = null;
+        let sampleNumber = null;
+        let wavelength = null;
+        
+        // 방법 1: 폴더 구조 분석 (관리번호/S1/파일명.png)
+        if (pathParts.length >= 3) {
+          const rawFolderName = pathParts[pathParts.length - 3]; // 원본 폴더명 (예: 140119100857_day7)
+          const folder2 = pathParts[pathParts.length - 2]; // 부위 폴더 (S1, s1, S2, s2, ...)
+          const imageName = pathParts[pathParts.length - 1]; // 파일명
           
-          // ID_P숫자.확장자 패턴 매칭
-          const match = imageFileName.match(/^(.+)_P(\d+)\./);
-          if (match && match[1] === id) {
-            imageNumber = match[2]; // P 뒤의 숫자
+          // 관리번호 추출: _ 앞의 숫자 부분만 가져오기
+          let extractedNumber = rawFolderName;
+          const underscoreIndex = rawFolderName.indexOf('_');
+          if (underscoreIndex > 0) {
+            const beforeUnderscore = rawFolderName.substring(0, underscoreIndex);
+            // _ 앞 부분이 숫자인지 확인
+            if (/^\d+$/.test(beforeUnderscore)) {
+              extractedNumber = beforeUnderscore;
+              console.log(`ZIP 폴더명 파싱: "${rawFolderName}" -> 관리번호 "${extractedNumber}"`);
+            }
+          } else if (!/^\d+$/.test(rawFolderName)) {
+            // _ 없고 숫자가 아닌 경우 건너뛰기
+            console.log(`❌ ZIP 폴더명이 숫자가 아님: ${rawFolderName}`);
           }
-        } else {
-          // 직접 파일: ID_P숫자.확장자 패턴
-          const match = fileName.match(/^(.+)_P(\d+)\./);
-          if (match) {
-            id = match[1];
-            imageNumber = match[2];
+          
+          // 관리번호가 숫자인지 확인 (원본이 숫자이거나 _ 앞 부분이 숫자인 경우)
+          if (/^\d+$/.test(extractedNumber)) {
+            // 부위 폴더는 S1, s1, S2, s2 형태 모두 지원
+            const sampleMatch = folder2.match(/^[sS](\d+)$/);
+            if (sampleMatch) {
+              // 파일명에서 파장 정보 추출 (HSI만, RGB 제외)
+              let extractedWavelength = null;
+              
+              // RGB 패턴 체크 후 건너뛰기
+              const rgbMatch = imageName.match(/_rgb_/i);
+              if (rgbMatch) {
+                console.log(`❌ ZIP RGB 이미지 제외: ${imageName}`);
+                continue; // RGB 이미지는 건너뛰기
+              }
+              
+              // nm 단위 파장 추출 시도 (HSI만)
+              const wavelengthMatch = imageName.match(/(\d+nm)/i);
+              if (wavelengthMatch) {
+                extractedWavelength = wavelengthMatch[1];
+              }
+              
+              if (extractedWavelength) {
+                managementNumber = extractedNumber;
+                sampleNumber = sampleMatch[1];
+                wavelength = extractedWavelength;
+                console.log(`✅ ZIP 폴더 구조 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+              } else {
+                console.log(`❌ ZIP 파장 정보 없음: ${imageName}`);
+              }
+            } else {
+              console.log(`❌ ZIP 부위 폴더 패턴 불일치: ${folder2}`);
+            }
           }
         }
         
-        if (id && imageNumber) {
-          if (!imageMap[id]) {
-            imageMap[id] = {};
+        // 방법 2: 파일명 패턴 분석 (숫자_s숫자_파장nm.확장자 또는 숫자_s숫자_rgb_추가정보.확장자)
+        if (!managementNumber) {
+          const imageName = pathParts[pathParts.length - 1];
+          
+          // RGB 패턴 체크 후 제외
+          const rgbPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_rgb_/i);
+          if (rgbPatternMatch) {
+            console.log(`❌ ZIP 파일명 RGB 패턴 제외: ${imageName}`);
+            continue; // RGB 이미지는 건너뛰기
           }
           
-          // 파일 데이터를 Blob URL로 변환
-          const blob = await fileObj.async('blob');
-          const objectUrl = URL.createObjectURL(blob);
-          
-          imageMap[id][imageNumber] = {
-            fileName: fileName.split('/').pop(),
-            url: objectUrl, // 임시 URL 사용
-            number: imageNumber
-          };
+          // HSI 패턴: 140119100857_s1_430nm.png
+          const hsiPatternMatch = imageName.match(/^(\d+)_[sS](\d+)_(\d+nm)\./i);
+          if (hsiPatternMatch) {
+            managementNumber = hsiPatternMatch[1];
+            sampleNumber = hsiPatternMatch[2];
+            wavelength = hsiPatternMatch[3];
+            console.log(`✅ ZIP 파일명 HSI 패턴 인식: ${managementNumber}/S${sampleNumber}/${wavelength}`);
+          }
         }
+        
+        // 인식 실패 시 로그
+        if (!managementNumber || !sampleNumber || !wavelength) {
+          console.log(`❌ 인식 실패: ${fileName} (관리번호=${managementNumber}, 샘플=${sampleNumber}, 파장=${wavelength})`);
+          continue;
+        }
+        
+        // 이미지 맵 구성
+        if (!imageMap[managementNumber]) {
+          imageMap[managementNumber] = {};
+          console.log(`새 관리번호 생성: ${managementNumber}`);
+        }
+        
+        if (!imageMap[managementNumber][sampleNumber]) {
+          imageMap[managementNumber][sampleNumber] = {};
+          console.log(`새 샘플번호 생성: ${managementNumber}/S${sampleNumber}`);
+        }
+        
+        // 파일 데이터를 Blob URL로 변환
+        const blob = await fileObj.async('blob');
+        const objectUrl = URL.createObjectURL(blob);
+        
+        // 파장별로 이미지 저장
+        imageMap[managementNumber][sampleNumber][wavelength] = {
+          fileName: pathParts[pathParts.length - 1],
+          url: objectUrl,
+          wavelength: wavelength,
+          sampleNumber: sampleNumber
+        };
+        
+        console.log(`✅ ZIP 이미지 저장 완료: ${managementNumber}/S${sampleNumber}/${wavelength}`);
       }
+      
+      console.log('=== 최종 이미지 맵 ===');
+      console.log('인식된 관리번호들:', Object.keys(imageMap));
+      Object.keys(imageMap).forEach(mgmtNum => {
+        console.log(`관리번호 ${mgmtNum}의 샘플들:`, Object.keys(imageMap[mgmtNum]));
+      });
+      console.log('전체 이미지 맵:', imageMap);
       
       // 기존 데이터와 매칭
       await matchImagesWithData(imageMap);
@@ -348,90 +813,111 @@ const DataRegister = () => {
     }
   };
 
-  // 이미지와 데이터 매칭
+  // 이미지와 데이터 매칭 (간단한 버전)
   const matchImagesWithData = async (imageMap) => {
     if (!columns.length) {
-      alert('먼저 CSV 파일을 업로드해주세요.');
+      alert('먼저 XLSX 파일을 업로드해주세요.');
       return;
     }
     
-    // ID 컬럼 찾기
-    const idColumn = columns.find(col => 
-      col.toLowerCase().includes('id') || 
-      col.toLowerCase().includes('ID') ||
-      col === 'ID' ||
-      col === 'id'
+    console.log('=== 매칭 시작 ===');
+    console.log('이미지 맵 키들:', Object.keys(imageMap));
+    console.log('이미지 맵 전체 구조:');
+    Object.keys(imageMap).forEach(mgmtNum => {
+      console.log(`  관리번호 ${mgmtNum}:`);
+      Object.keys(imageMap[mgmtNum]).forEach(sampleNum => {
+        const wavelengths = Object.keys(imageMap[mgmtNum][sampleNum]);
+        console.log(`    샘플 ${sampleNum}: [${wavelengths.join(', ')}]`);
+      });
+    });
+    console.log('기존 데이터:', data);
+    console.log('컬럼들:', columns);
+    
+    // 관리번호와 샘플번호 컬럼 찾기
+    const managementNumberColumn = columns.find(col => 
+      col.includes('관리번호') || col.includes('이력번호') || col.includes('이력')
     );
     
-    if (!idColumn) {
-      alert('CSV 파일에서 ID 컬럼을 찾을 수 없습니다.');
+    const sampleIdColumn = columns.find(col => 
+      col.includes('샘플번호') || col.includes('샘플') || col.includes('부위번호') || col.includes('부위')
+    );
+    
+    if (!managementNumberColumn || !sampleIdColumn) {
+      alert(`매칭에 필요한 컬럼을 찾을 수 없습니다.\n관리번호 컬럼: ${managementNumberColumn}\n샘플번호 컬럼: ${sampleIdColumn}`);
       return;
     }
     
-    // 상태 컬럼과 이미지 관련 컬럼 추가 (이미지_URL 제외)
+    console.log(`매칭 기준 컬럼: ${managementNumberColumn}, ${sampleIdColumn}`);
+    
+    // 상태 컬럼과 이미지 관련 컬럼 추가
     const statusColumn = '매핑 상태';
-    const imageColumns = ['이미지 파일명', '이미지 개수']; // 이미지_URL 제거
+    const imageColumns = ['이미지 파일명', '이미지 개수', '파장 정보'];
     
-    // 기존 컬럼에서 매핑_상태가 이미 있는지 확인
     let newColumns = [...columns];
-    
-    // 매핑_상태가 없으면 맨 앞에 추가
     if (!newColumns.includes(statusColumn)) {
       newColumns = [statusColumn, ...newColumns];
     }
-    
-    // 이미지 관련 컬럼들 추가 (중복 확인)
     imageColumns.forEach(col => {
       if (!newColumns.includes(col)) {
         newColumns.push(col);
       }
     });
     
-    // 기존 데이터 업데이트 및 새로운 데이터 추가
-    const updatedData = [...data];
-    const existingIds = new Set(data.map(row => String(row[idColumn])));
+    // 기존 데이터 복사 및 매핑 상태 초기화
+    const updatedData = data.map(row => {
+      const newRow = { ...row };
+      newRow[statusColumn] = '매핑안됨';
+      newRow['이미지 파일명'] = '';
+      newRow['이미지 개수'] = 0;
+      newRow['파장 정보'] = '';
+      return newRow;
+    });
     
-    // 기존 데이터 업데이트
-    updatedData.forEach(row => {
-      const rowId = String(row[idColumn]);
-      if (imageMap[rowId]) {
-        const images = Object.values(imageMap[rowId]);
+    let matchedCount = 0;
+    
+    // 각 데이터 행에 대해 이미지 찾기
+    updatedData.forEach((row, index) => {
+      const managementNumber = String(row[managementNumberColumn] || '').trim();
+      const originalSampleId = String(row[sampleIdColumn] || '').trim();
+      const sampleId = originalSampleId.replace(/^[sS]/i, ''); // S1, s1 모두 -> 1
+      
+      console.log(`[행 ${index}] 매칭 시도: 관리번호="${managementNumber}", 원본샘플="${originalSampleId}", 변환샘플="${sampleId}"`);
+      
+      // 이미지 맵에서 해당 관리번호와 샘플번호로 이미지 찾기
+      if (imageMap[managementNumber] && imageMap[managementNumber][sampleId]) {
+        const sampleImages = imageMap[managementNumber][sampleId];
+        const wavelengths = Object.keys(sampleImages);
+        const fileNames = wavelengths.map(wl => sampleImages[wl].fileName);
+        
         row[statusColumn] = '매핑됨';
-        row['이미지 파일명'] = images.map(img => img.fileName).join(', ');
-        row['이미지 개수'] = images.length;
+        row['이미지 파일명'] = fileNames.join(', ');
+        row['이미지 개수'] = fileNames.length;
+        row['파장 정보'] = wavelengths.join(', ');
+        
+        matchedCount++;
+        console.log(`✅ 매칭 성공: ${managementNumber}/S${sampleId} - ${fileNames.length}개 이미지 (${wavelengths.join(', ')})`);
       } else {
-        row[statusColumn] = '매핑안됨';
-        row['이미지 파일명'] = '';
-        row['이미지 개수'] = 0;
+        // 매칭 실패 시 상세한 디버깅 정보 제공
+        const hasManagementNumber = imageMap[managementNumber];
+        const availableManagementNumbers = Object.keys(imageMap);
+        const availableSamples = hasManagementNumber ? Object.keys(imageMap[managementNumber]) : [];
+        
+        console.log(`❌ 매칭 실패: ${managementNumber}/S${sampleId}`);
+        console.log(`  - 관리번호 존재: ${hasManagementNumber ? 'O' : 'X'}`);
+        console.log(`  - 사용 가능한 관리번호: [${availableManagementNumbers.join(', ')}]`);
+        if (hasManagementNumber) {
+          console.log(`  - 관리번호 ${managementNumber}의 사용 가능한 샘플: [${availableSamples.join(', ')}]`);
+        }
       }
     });
     
-    // 새로운 ID 데이터 추가 (CSV에 없지만 이미지에는 있는 경우)
-    Object.keys(imageMap).forEach(imageId => {
-      if (!existingIds.has(imageId)) {
-        const images = Object.values(imageMap[imageId]);
-        const newRow = {};
-        
-        // 상태 컬럼 먼저 설정
-        newRow[statusColumn] = '매핑됨';
-        
-        // 기존 컬럼들을 빈 값으로 초기화
-        columns.forEach(col => {
-          newRow[col] = col === idColumn ? imageId : '';
-        });
-        
-        // 이미지 정보 추가 (URL 제외)
-        newRow['이미지 파일명'] = images.map(img => img.fileName).join(', ');
-        newRow['이미지 개수'] = images.length;
-        
-        updatedData.push(newRow);
-      }
-    });
-    
+    // 상태 업데이트
     setColumns(newColumns);
     setData(updatedData);
     
-    console.log('이미지 매칭 완료:', Object.keys(imageMap).length, '개 ID의 이미지 처리됨');
+    console.log('=== 매칭 완료 ===');
+    // alert 대신 자동으로 사라지는 메시지 사용
+    showSuccessMessage(`매칭 완료! 총 ${data.length}개 데이터 중 ${matchedCount}개 매칭됨`);
   };
 
   return (
@@ -439,7 +925,7 @@ const DataRegister = () => {
       style={{
         overflow: 'auto',
         width: '100%',
-        marginTop: '100px',
+        marginTop: '20px', // Reduced top margin to match with sidebar
         height: '100%',
         paddingLeft: '30px',
         paddingRight: '20px',
@@ -478,12 +964,100 @@ const DataRegister = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           minWidth: '634px',
+          marginBottom: '24px', // 제목 아래 여백 추가
         }}
       >
         <span style={{ color: `${navy}`, fontSize: '30px', fontWeight: '600' }}>
           데이터 등록
         </span>
       </Box>
+
+      {/* 데이터 형식 선택 스위치 */}
+      <Paper 
+        elevation={1}
+        sx={{
+          p: 2,
+          mb: 3, // 아래 여백도 조금 늘림
+          backgroundColor: '#f8f9fa',
+          border: `1px solid ${dataFormat === 'HSI' ? '#4caf50' : '#ff9800'}`,
+          borderRadius: 2,
+          minWidth: '634px'
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 1, color: navy, fontWeight: '500' }}>
+          데이터 형식 선택
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: dataFormat === 'RGB' ? navy : '#666',
+              fontWeight: dataFormat === 'RGB' ? '600' : '400'
+            }}
+          >
+            RGB
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={dataFormat === 'HSI'}
+                onChange={(e) => setDataFormat(e.target.checked ? 'HSI' : 'RGB')}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#4caf50',
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    backgroundColor: '#4caf50',
+                  },
+                  '& .MuiSwitch-switchBase': {
+                    color: '#ff9800',
+                  },
+                  '& .MuiSwitch-track': {
+                    backgroundColor: '#ff9800',
+                  },
+                }}
+              />
+            }
+            label=""
+            sx={{ m: 0 }}
+          />
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: dataFormat === 'HSI' ? navy : '#666',
+              fontWeight: dataFormat === 'HSI' ? '600' : '400'
+            }}
+          >
+            HSI
+          </Typography>
+          <Box
+            sx={{
+              ml: 2,
+              px: 2,
+              py: 0.5,
+              backgroundColor: dataFormat === 'HSI' ? '#e8f5e8' : '#fff3e0',
+              border: `1px solid ${dataFormat === 'HSI' ? '#4caf50' : '#ff9800'}`,
+              borderRadius: 1,
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: dataFormat === 'HSI' ? '#2e7d32' : '#f57c00',
+                fontWeight: '600'
+              }}
+            >
+              현재: {dataFormat}
+            </Typography>
+          </Box>
+        </Box>
+        <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
+          {dataFormat === 'HSI' 
+            ? 'Hyperspectral Image - 다중 스펙트럼 데이터' 
+            : 'RGB - 컬러 이미지 데이터'
+          }
+        </Typography>
+      </Paper>
 
       {/* 숨겨진 입력들 */}
       <input
@@ -517,12 +1091,18 @@ const DataRegister = () => {
             {csvLoading ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              'CSV 불러오기'
+              'XLSX 불러오기'
             )}
           </Button>
           <Button
             variant="contained"
-            onClick={handleImageClick}
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.zip';
+              input.addEventListener('change', handleZipImageUpload);
+              input.click();
+            }}
             disabled={csvLoading || imageLoading}
             sx={{
               backgroundColor: navy,
@@ -532,7 +1112,29 @@ const DataRegister = () => {
             {imageLoading ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              '사진 불러오기(ZIP)'
+              '이미지 불러오기 (ZIP)'
+            )}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              const folderInput = document.createElement('input');
+              folderInput.type = 'file';
+              folderInput.webkitdirectory = true;
+              folderInput.multiple = true;
+              folderInput.addEventListener('change', handleFolderImageUpload);
+              folderInput.click();
+            }}
+            disabled={csvLoading || imageLoading}
+            sx={{
+              backgroundColor: navy,
+              '&:hover': { backgroundColor: '#0a2a4a' },
+            }}
+          >
+            {imageLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              '이미지 불러오기 (폴더)'
             )}
           </Button>
           {data.length > 0 && (
@@ -563,18 +1165,13 @@ const DataRegister = () => {
               loading || 
               csvLoading || 
               imageLoading || 
-              data.length === 0 || 
-              !uploadedZipFile ||
-              data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태'])
+              data.length === 0 ||
+              !uploadedExcelFile // 엑셀 파일이 필수
             }
             sx={{
-              backgroundColor: data.length > 0 && uploadedZipFile && 
-                              !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
-                              ? '#28a745' : '#ccc',
+              backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#28a745' : '#ccc',
               '&:hover': { 
-                backgroundColor: data.length > 0 && uploadedZipFile && 
-                               !data.some(row => row['매핑 상태'] === '매핑안됨' || !row['매핑 상태']) 
-                               ? '#218838' : '#bbb' 
+                backgroundColor: (data.length > 0 && uploadedExcelFile) ? '#218838' : '#bbb' 
               },
               '&:disabled': { backgroundColor: '#ccc' },
             }}
@@ -592,6 +1189,15 @@ const DataRegister = () => {
       </Box>
 
       <DataListWithURL title="미리보기" columns={columns} data={data} />
+      
+      {/* 이미지 업로드 진행 상황 표시 */}
+      <ImageUploadProgress
+        show={uploadProgress.show}
+        current={uploadProgress.current}
+        total={uploadProgress.total}
+        fileName={uploadProgress.fileName}
+        stage={uploadProgress.stage}
+      />
     </div>
   );
 };

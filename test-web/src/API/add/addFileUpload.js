@@ -41,7 +41,7 @@ export const addFileUpload = async (
     formData.append('description', description);
 
     // 3. 서버에 파일 업로드 (/mnt/data 경로에 저장)
-    const response = await fetch(`http://${apiIP}/mnt/data`, {
+    const response = await fetch(`http://${apiIP}/mnt/data`, {  //backend API 구현되어 있지 않음.
       method: 'POST',
       body: formData, // FormData는 Content-Type 헤더를 자동으로 설정
     });

@@ -1,7 +1,7 @@
 import { apiIP } from '../../config';
 
 export const deleteMeat = async (req) => {
-  await fetch(`http://${apiIP}/meat/delete/`, {
+  await fetch(`http://${apiIP}/meat`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

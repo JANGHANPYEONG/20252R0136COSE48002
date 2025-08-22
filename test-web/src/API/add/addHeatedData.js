@@ -35,7 +35,7 @@ export const addHeatedData = async (
 
   //meat/add/heatedmeat-eval로 가열육 데이터 생성/수정 API 전송
   try {
-    const response = await fetch(`http://${apiIP}/meat/add/heatedmeat-eval`, {
+    const response = await fetch(`http://${apiIP}/meat/heatedmeat-eval`, {
       method: `${isPost ? 'POST' : 'PATCH'}`,
       headers: {
         'Content-Type': 'application/json',

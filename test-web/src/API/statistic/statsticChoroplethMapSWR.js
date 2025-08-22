@@ -8,7 +8,7 @@ export const useStatisticChoroplethMap = (startDate, endDate) => {
   //지역 별 데이터 개수를 API 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : startDate, endDate
-    `http://${apiIP}/meat/statistic/counts/by-farm-location?start=${startDate}&end=${endDate}`,
+    `http://${apiIP}/statistic/counts/by-farm-location?start=${startDate}&end=${endDate}`,
     fetcher
   );
 

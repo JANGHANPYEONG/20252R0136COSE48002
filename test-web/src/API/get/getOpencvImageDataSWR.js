@@ -7,7 +7,7 @@ export const useOpencvImageData = (meatId, seqno) => {
   //id에 대항하는 육류 상세 데이터를 AmI 서버로 부터 fetch
   const { data, error } = useSWR(
     //query parameter : id
-    `http://${apiIP}/meat/get/opencv-image?meatId=${meatId}&seqno=${seqno}`,
+    `http://${apiIP}/meat/opencv-image?meatId=${meatId}&seqno=${seqno}`,
     //fetcher 함수 사용
     fetcher
   );
