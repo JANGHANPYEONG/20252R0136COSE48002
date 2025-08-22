@@ -60,11 +60,11 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
     }
   };
 
-  // categoryId를 품종명으로 변환하는 함수
+  // categoryId를 품종명으로 변환하는 함수 (새로운 로직)
   const getCategoryName = (categoryId) => {
-    if (categoryId >= 0 && categoryId <= 9) return '소';
-    if (categoryId >= 10 && categoryId <= 20) return '돼지';
-    if (categoryId >= 30 && categoryId <= 40) return '닭';
+    if (categoryId >= 100) return '돼지';  // 100-199: 돼지
+    if (categoryId >= 10) return '돼지';   // 10-16: 돼지 대분류
+    if (categoryId >= 0) return '소';     // 0-99: 소
     return '기타';
   };
 

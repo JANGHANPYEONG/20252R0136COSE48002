@@ -1,4 +1,5 @@
 import { generateHashId, getSpectralIndex } from './hashUtils';
+import { getCategoryId } from '../../Utils/categoryMapping';
 
 /**
  * JSON 데이터를 로컬 result 폴더에 저장하는 함수
@@ -117,6 +118,11 @@ export const convertToNewJsonFormat = async (excelFile, dataFormat = 'HSI', imag
         const originalGradeNum = sampleData.meat?.gradeNum || sampleData.등급;
         const gradeNum = originalGradeNum === 'X' ? null : originalGradeNum;
         
+        // 부위 정보로 categoryId 생성
+        const partName = sampleData.meat?.part || sampleData.부위 || sampleData.meat?.sampleNum || sampleData.샘플번호;
+        const speciesName = sampleData.meat?.species || sampleData.축종 || sampleData.품종;
+        const categoryId = getCategoryId(partName, speciesName);
+        
         // seqno 결정 (딥에이징이 NO면 0, YES면 1)
         const isDeepAging = sampleData.meat?.isDeepAging || sampleData.딥에이징 || 'No';
         const seqno = isDeepAging.toLowerCase() === 'yes' || isDeepAging === 'YES' ? 1 : 0;
@@ -177,7 +183,7 @@ export const convertToNewJsonFormat = async (excelFile, dataFormat = 'HSI', imag
           expireYmd: sampleData.meat?.expirationDate || sampleData.expirationDate || sampleData.소비기한 || "2025-09-19",
           isRefrigerated: isRefrigerated,
           meat: {
-            categoryId: 0, // 하드코딩
+            categoryId: categoryId >= 0 ? categoryId : 0, // 부위명으로 생성된 categoryId, 실패시 기본값 0
             gradeNum: gradeNum,
             seqno: seqno,
             marbling: parseInt(sampleData.meat?.marbling || sampleData.마블링 || 0),

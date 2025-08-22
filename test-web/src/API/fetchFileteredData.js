@@ -66,6 +66,12 @@ export const fetchFilteredData = async (filters) => {
 
     const result = await response.json();
 
+    // 디버깅을 위한 로깅 추가
+    console.log('API 응답 데이터:', result);
+    if (result && result.items && result.items.length > 0) {
+      console.log('첫 번째 아이템 구조:', result.items[0]);
+    }
+
     // 백엔드 응답 구조에 맞게 데이터 반환
     if (result && result.items) {
       return result.items;

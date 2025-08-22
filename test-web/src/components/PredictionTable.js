@@ -50,6 +50,14 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
   const [selectedIds, setSelectedIds] = useState(selectedRows.map(row => typeof row === 'string' ? row : row.id));
   const [selectedGroup, setSelectedGroup] = useState(null);
 
+  // categoryId를 품종명으로 변환하는 함수 (새로운 로직)
+  const getCategoryName = (categoryId) => {
+    if (categoryId >= 100) return '돼지';  // 100-199: 돼지
+    if (categoryId >= 10) return '돼지';   // 10-16: 돼지 대분류
+    if (categoryId >= 0) return '소';     // 0-99: 소
+    return '기타';
+  };
+
   // selectedRows prop이 변경될 때 selectedIds 동기화
   useEffect(() => {
     const newSelectedIds = selectedRows.map(row => typeof row === 'string' ? row : row.id);
@@ -131,11 +139,10 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
             <TableHead>
               <TableRow>
                 <TableCell>선택</TableCell>
-                <TableCell>이력번호</TableCell>
-                <TableCell>부위</TableCell>
+                <TableCell>관리번호</TableCell>
+                <TableCell>품종</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
-                <TableCell>가공일자</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -162,10 +169,9 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
                       />
                     </TableCell>
                     <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.part}</TableCell>
-                    <TableCell>{row.isDeepAged}</TableCell>
-                    <TableCell>{row.butcheryDate}</TableCell>
-                    <TableCell>{row.processDate || '-'}</TableCell>
+                    <TableCell>{getCategoryName(row.categoryId)}</TableCell>
+                    <TableCell>{row.hasDeepAging ? 'Yes' : 'No'}</TableCell>
+                    <TableCell>{row.butcheryYmd ? row.butcheryYmd.split('T')[0] : '-'}</TableCell>
                   </TableRow>
                 );
               })}
