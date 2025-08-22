@@ -36,6 +36,6 @@ tmux send-keys -t $SESSION "cd $PROJECT_DIR" C-m
 tmux send-keys -t $SESSION "source $VENV" C-m
 tmux send-keys -t $SESSION "export PYTHONPATH=$BACKEND_DIR" C-m
 tmux send-keys -t $SESSION "cd $BACKEND_DIR" C-m
-tmux send-keys -t $SESSION "celery -A app.routers.train.celery_app worker --loglevel=info --pool=threads --concurrency=1" C-m
+tmux send-keys -t $SESSION "celery -A app.routers.hsi_train.celery_app worker --loglevel=info --pool=threads --concurrency=1" C-m
 
 tmux attach -t $SESSION
