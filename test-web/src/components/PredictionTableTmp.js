@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // 추가
+import { getPartNameFromCategoryId } from '../Utils/categoryMapping';
 import {
   Table, TableHead, TableRow, TableCell, TableBody, Checkbox, Button
 } from '@mui/material';
@@ -60,12 +61,14 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
     }
   };
 
-  // categoryId를 품종명으로 변환하는 함수 (새로운 로직)
+  // categoryId를 부위명으로 변환하는 함수
   const getCategoryName = (categoryId) => {
-    if (categoryId >= 100) return '돼지';  // 100-199: 돼지
-    if (categoryId >= 10) return '돼지';   // 10-16: 돼지 대분류
-    if (categoryId >= 0) return '소';     // 0-99: 소
-    return '기타';
+    try {
+      return getPartNameFromCategoryId(categoryId) || '알 수 없음';
+    } catch (error) {
+      console.error('부위명 변환 오류:', error);
+      return '알 수 없음';
+    }
   };
 
   return (
@@ -85,7 +88,7 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
               <TableRow>
                 <TableCell>선택</TableCell>
                 <TableCell>관리번호</TableCell>
-                <TableCell>품종</TableCell>
+                <TableCell>부위</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
                 <TableCell>추적번호</TableCell>

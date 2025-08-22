@@ -23,6 +23,7 @@ const data = [
 */
 
 import React, { useState, useEffect } from 'react';
+import { getPartNameFromCategoryId } from '../Utils/categoryMapping';
 import {
   Table,
   TableHead,
@@ -50,12 +51,14 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
   const [selectedIds, setSelectedIds] = useState(selectedRows.map(row => typeof row === 'string' ? row : row.id));
   const [selectedGroup, setSelectedGroup] = useState(null);
 
-  // categoryId를 품종명으로 변환하는 함수 (새로운 로직)
+  // categoryId를 부위명으로 변환하는 함수
   const getCategoryName = (categoryId) => {
-    if (categoryId >= 100) return '돼지';  // 100-199: 돼지
-    if (categoryId >= 10) return '돼지';   // 10-16: 돼지 대분류
-    if (categoryId >= 0) return '소';     // 0-99: 소
-    return '기타';
+    try {
+      return getPartNameFromCategoryId(categoryId) || '알 수 없음';
+    } catch (error) {
+      console.error('부위명 변환 오류:', error);
+      return '알 수 없음';
+    }
   };
 
   // selectedRows prop이 변경될 때 selectedIds 동기화
@@ -140,7 +143,7 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
               <TableRow>
                 <TableCell>선택</TableCell>
                 <TableCell>관리번호</TableCell>
-                <TableCell>품종</TableCell>
+                <TableCell>부위</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
               </TableRow>

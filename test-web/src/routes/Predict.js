@@ -35,24 +35,6 @@ const navy = '#0F3659';
 const Predict = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
-
-  // 전역 예측 상태 사용
-  const {
-    predictionProgress,
-    predictionResults,
-    isPredictionCompleted,
-    isPredicting,
-    progressModalOpen,
-    resultModalOpen,
-    startPrediction,
-    updateProgress,
-    completePrediction,
-    closeProgressModal,
-    closeResultModal,
-  } = usePrediction();
-
-  const [groupedData, setGroupedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [openPanel, setOpenPanel] = useState(false);
@@ -100,22 +82,6 @@ const Predict = () => {
       });
     }
   };
-
-  useEffect(() => {
-    if (!data) return;
-    const groupMap = {};
-    data.forEach((item) => {
-      const batchId = item.upload_batch_id || 'unknown_batch';
-      if (!groupMap[batchId]) groupMap[batchId] = [];
-      groupMap[batchId].push(item);
-    });
-    const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
-      batchId,
-      timestamp: rows[0]?.timestamp || '',
-      rows,
-    }));
-    setGroupedData(grouped);
-  }, [data]);
 
   // 선택 변경 핸들러
   const handleSelectionChange = (newSelection) => {
