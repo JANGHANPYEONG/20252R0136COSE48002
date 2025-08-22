@@ -164,10 +164,10 @@ const Predict = () => {
   // 데이터 불러오기 함수
   const handleLoadData = async () => {
     try {
-        const { data: fresh } = await refetch();
-        const list = fresh ?? [];
-        const groupMap = {};
-        list.forEach((item) => {
+      const { data: fresh } = await refetch();
+      const list = fresh ?? [];
+      const groupMap = {};
+      list.forEach((item) => {
         const batchId = item.upload_batch_id || 'unknown_batch';
         if (!groupMap[batchId]) groupMap[batchId] = [];
         groupMap[batchId].push(item);
@@ -181,14 +181,14 @@ const Predict = () => {
       setGroupedData(grouped);
       // 성공 여부 알림
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'success',
         message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
       setSnackbar({
-        open : true,
+        open: true,
         severity: 'error',
         message: '데이터 불러오기 실패! 서버를 확인해주세요.',
       });
@@ -236,8 +236,8 @@ const Predict = () => {
     try {
       const result = await fetchPrediction(selectedRows);
       queryClient.setQueriesData({ queryKey: ['fileList'] }, (old) =>
-      mergePredictions(old, result, 'prediction')
-    );
+        mergePredictions(old, result, 'prediction')
+      );
       setSnackbar({ open: true, severity: 'success', message: '예측 성공!' });
     } catch (err) {
       setSnackbar({
@@ -459,11 +459,11 @@ const Predict = () => {
                     (f.value.start || f.value.end)) ||
                   (f.type === 'select' && f.value)
               ) && (
-                <Typography variant="body2" sx={{ color: '#666' }}>
-                  필터 버튼을 클릭하여 데이터 타입(RGB/MSI) 및 기타 필터 조건을
-                  설정할 수 있습니다.
-                </Typography>
-              )}
+                  <Typography variant="body2" sx={{ color: '#666' }}>
+                    필터 버튼을 클릭하여 데이터 타입(RGB/MSI) 및 기타 필터 조건을
+                    설정할 수 있습니다.
+                  </Typography>
+                )}
             </Box>
           </Box>
         </Box>
