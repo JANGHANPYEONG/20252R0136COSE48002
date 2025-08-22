@@ -23,7 +23,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import dayjs from 'dayjs';
 
-const FilterModal = ({ open, onClose, onApply, filters, setFilters, startDate: initialStartDate, endDate: initialEndDate }) => {
+const FilterModal = ({ open, onClose, onApply, filters = [], setFilters, startDate: initialStartDate, endDate: initialEndDate }) => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [duration, setDuration] = useState('week'); // 기간 선택 상태 추가
@@ -377,13 +377,13 @@ const FilterModal = ({ open, onClose, onApply, filters, setFilters, startDate: i
                     )}
 
                     {/* 현재 적용된 필터 표시 */}
-                    {filters.some(f => f.value && (f.type === 'select' ? f.value !== '' : true)) && (
+                    {(filters || []).some(f => f.value && (f.type === 'select' ? f.value !== '' : true)) && (
                         <Box mt={3}>
                             <Typography variant="subtitle2" gutterBottom>
                                 적용된 필터:
                             </Typography>
                             <Box display="flex" flexWrap="wrap" gap={1}>
-                                {filters.map((filter) => {
+                                {(filters || []).map((filter) => {
                                     if (filter.name === '날짜' && startDate && endDate) {
                                         return (
                                             <Chip

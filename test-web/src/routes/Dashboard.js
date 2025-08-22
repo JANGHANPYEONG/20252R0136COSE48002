@@ -72,6 +72,30 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
   const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded });
 
+  // 필터 상태를 localStorage에서 복원하는 함수
+  const restoreFiltersFromStorage = () => {
+    try {
+      const savedFilters = localStorage.getItem('dashboardFilters');
+      if (savedFilters) {
+        const parsedFilters = JSON.parse(savedFilters);
+        setFilters(parsedFilters);
+        return parsedFilters;
+      }
+    } catch (error) {
+      console.error('필터 복원 중 오류:', error);
+    }
+    return null;
+  };
+
+  // 필터 상태를 localStorage에 저장하는 함수
+  const saveFiltersToStorage = (newFilters) => {
+    try {
+      localStorage.setItem('dashboardFilters', JSON.stringify(newFilters));
+    } catch (error) {
+      console.error('필터 저장 중 오류:', error);
+    }
+  };
+
 
   // 쿼리스트링 추출
   const location = useLocation();
@@ -85,10 +109,6 @@ const Dashboard = () => {
         queryDuration: searchParams.get('duration') || '',
       };
     }, [location.search]);
-
-  useEffect(() => {
-    setPageOffset(querypageOffset);
-  }, [querypageOffset]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -125,12 +145,20 @@ const Dashboard = () => {
     setStartDate(formattedStartDate);
     setEndDate(formattedEndDate);
 
-    // 날짜 필터 업데이트
-    setFilters(prev => prev.map(f =>
-      f.name === '날짜'
-        ? { ...f, value: { start: formattedStartDate.split('T')[0], end: formattedEndDate.split('T')[0] } }
-        : f
-    ));
+    // 저장된 필터가 있으면 복원, 없으면 기본값 설정
+    const savedFilters = restoreFiltersFromStorage();
+    if (savedFilters) {
+      // 저장된 필터가 있으면 그것을 사용
+      setFilters(savedFilters);
+    } else {
+      // 저장된 필터가 없으면 기본값 설정
+      const defaultFilters = [
+        { name: '날짜', type: 'date', options: [], value: { start: formattedStartDate.split('T')[0], end: formattedEndDate.split('T')[0] } },
+        { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
+      ];
+      setFilters(defaultFilters);
+      saveFiltersToStorage(defaultFilters);
+    }
 
     setIsLoading(false);
   }, [queryStartDate, queryEndDate, queryDuration, location.search]);
@@ -255,11 +283,13 @@ const Dashboard = () => {
     setDetailData(null);
     sessionStorage.removeItem('predict_data');
 
-    // 5) 필터 초기화
-    setFilters([
+    // 5) 필터 초기화 및 localStorage에서 제거
+    const defaultFilters = [
       { name: '날짜', type: 'date', options: [], value: { start: startDate.split('T')[0], end: endDate.split('T')[0] } },
       { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
-    ]);
+    ];
+    setFilters(defaultFilters);
+    localStorage.removeItem('dashboardFilters');
   }
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
@@ -272,30 +302,38 @@ const Dashboard = () => {
 
       // 날짜 필터 업데이트
       if (butcheryYmd_from || butcheryYmd_to) {
-        setFilters(prev => prev.map(f =>
-          f.name === '날짜'
-            ? {
-              ...f, value: {
-                start: butcheryYmd_from ? butcheryYmd_from.split('T')[0] : null,
-                end: butcheryYmd_to ? butcheryYmd_to.split('T')[0] : null
+        setFilters(prev => {
+          const newFilters = prev.map(f =>
+            f.name === '날짜'
+              ? {
+                ...f, value: {
+                  start: butcheryYmd_from ? butcheryYmd_from.split('T')[0] : null,
+                  end: butcheryYmd_to ? butcheryYmd_to.split('T')[0] : null
+                }
               }
-            }
-            : f
-        ));
+              : f
+          );
+          saveFiltersToStorage(newFilters);
+          return newFilters;
+        });
       }
 
-              // 품종 필터 업데이트
-        if (categoryIds && categoryIds.length > 0) {
-          let specieValue = '전체';
-          if (categoryIds.some(id => id >= 0 && id <= 99)) specieValue = '소';
-          else if (categoryIds.some(id => id >= 100 && id <= 199)) specieValue = '돼지';
-          else if (categoryIds.some(id => id >= 200 && id <= 299)) specieValue = '닭';
+      // 품종 필터 업데이트
+      if (categoryIds && categoryIds.length > 0) {
+        let specieValue = '전체';
+        if (categoryIds.some(id => id >= 0 && id <= 99)) specieValue = '소';
+        else if (categoryIds.some(id => id >= 100 && id <= 199)) specieValue = '돼지';
+        else if (categoryIds.some(id => id >= 200 && id <= 299)) specieValue = '닭';
 
-        setFilters(prev => prev.map(f =>
-          f.name === '품종'
-            ? { ...f, value: specieValue }
-            : f
-        ));
+        setFilters(prev => {
+          const newFilters = prev.map(f =>
+            f.name === '품종'
+              ? { ...f, value: specieValue }
+              : f
+          );
+          saveFiltersToStorage(newFilters);
+          return newFilters;
+        });
       }
     }
 
@@ -446,7 +484,10 @@ const Dashboard = () => {
               onClose={() => setFilterModalOpen(false)}
               onApply={handleApplyFilters}
               filters={filters}
-              setFilters={setFilters}
+              setFilters={(newFilters) => {
+                setFilters(newFilters);
+                saveFiltersToStorage(newFilters);
+              }}
               startDate={startDate}
               endDate={endDate}
             />

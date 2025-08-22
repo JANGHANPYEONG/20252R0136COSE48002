@@ -2,121 +2,228 @@
 
 import { apiIP } from '../config'; // 백엔드 ML 서버 주소
 
-export const fetchPrediction = async (selectedRows, originalData) => {
-  // dummy data
-  //   const dummy = {
-  //     'L01709271277001': {
-  //         '색상(Color)': 7.0,
-  //         '향(Aroma)': 6.5,
-  //         '조직감(Texture)': 7.0,
-  //         '즙성(Juiciness)': 6.2,
-  //         '풍미(Flavor)': 6.8,
-  //         '전체 기호도': 6.9,
-  //     },
-  //     'L01709271277002': {
-  //         '색상(Color)': 7.5,
-  //         '향(Aroma)': 5.5,
-  //         '조직감(Texture)': 6.4,
-  //         '즙성(Juiciness)': 7.7,
-  //         '풍미(Flavor)': 9.1,
-  //         '전체 기호도': 8.0,
-  //     },
-  //     'L01709271277003': {
-  //         '색상(Color)': 8.0,
-  //         '향(Aroma)': 7.0,
-  //         '조직감(Texture)': 6.9,
-  //         '즙성(Juiciness)': 6.5,
-  //         '풍미(Flavor)': 7.2,
-  //         '전체 기호도': 7.4,
-  //     },
-  //     'L01709271277004': {
-  //         '색상(Color)': 7.2,
-  //         '향(Aroma)': 6.6,
-  //         '조직감(Texture)': 7.1,
-  //         '즙성(Juiciness)': 6.8,
-  //         '풍미(Flavor)': 7.0,
-  //         '전체 기호도': 7.1,
-  //     },
-  //     'L01709271277005': {
-  //         '색상(Color)': 7.4,
-  //         '향(Aroma)': 6.9,
-  //         '조직감(Texture)': 6.7,
-  //         '즙성(Juiciness)': 6.4,
-  //         '풍미(Flavor)': 6.8,
-  //         '전체 기호도': 7.0,
-  //     },
-  //     'L01709271277006': {
-  //         '색상(Color)': 7.3,
-  //         '향(Aroma)': 6.7,
-  //         '조직감(Texture)': 6.8,
-  //         '즙성(Juiciness)': 6.9,
-  //         '풍미(Flavor)': 7.1,
-  //         '전체 기호도': 7.2,
-  //     },
-  //     'L01709271277007': {
-  //         '색상(Color)': 7.6,
-  //         '향(Aroma)': 6.8,
-  //         '조직감(Texture)': 6.9,
-  //         '즙성(Juiciness)': 6.6,
-  //         '풍미(Flavor)': 7.0,
-  //         '전체 기호도': 7.1,
-  //     },
-  //     'L01709271277008': {
-  //         '색상(Color)': 7.9,
-  //         '향(Aroma)': 7.0,
-  //         '조직감(Texture)': 7.0,
-  //         '즙성(Juiciness)': 6.7,
-  //         '풍미(Flavor)': 7.1,
-  //         '전체 기호도': 7.3,
-  //     },
-  //     'L01709271277009': {
-  //         '색상(Color)': 7.5,
-  //         '향(Aroma)': 6.4,
-  //         '조직감(Texture)': 6.8,
-  //         '즙성(Juiciness)': 6.6,
-  //         '풍미(Flavor)': 6.9,
-  //         '전체 기호도': 7.0,
-  //     },
-  //     'L01709271277010': {
-  //         '색상(Color)': 7.8,
-  //         '향(Aroma)': 6.9,
-  //         '조직감(Texture)': 7.2,
-  //         '즙성(Juiciness)': 6.8,
-  //         '풍미(Flavor)': 7.2,
-  //         '전체 기호도': 7.3,
-  //     }
-  // }
-
+// 개별 데이터 상세 정보 가져오기
+const fetchIndividualData = async (id) => {
   try {
-    // selectedRows는 ID 배열이므로, 원본 데이터에서 해당 traceNum을 찾음
-    const firstId = selectedRows[0]; // 첫 번째 선택된 ID
-    const firstRow = originalData.find(item => item.id === firstId);
-    
-    if (!firstRow || !firstRow.traceNum) {
-      throw new Error('선택된 데이터에서 traceNum을 찾을 수 없습니다.');
+    const response = await fetch(`http://${apiIP}/dashboard/dashboard/individual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`개별 데이터 조회 실패: ${response.status}`);
     }
 
+    return await response.json();
+  } catch (error) {
+    console.error(`개별 데이터 조회 실패 (ID: ${id}):`, error);
+    throw error;
+  }
+};
+
+// 단일 예측 API 호출
+const predictSingleItem = async (id, seqno, isRefrigerated) => {
+  try {
     const response = await fetch(`http://${apiIP}/hsipredict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        traceNum: firstRow.traceNum,   // Dashboard에서 받아오는 traceNum 사용
-        seqno: 0,
-        isRefrigerated: true
+        id,
+        seqno,
+        isRefrigerated
       }),
     });
-    console.log('traceNum =', firstRow.traceNum, 'type =', typeof firstRow.traceNum);
+
     if (!response.ok) {
-      throw new Error('ML 서버 예측 요청 실패');
+      throw new Error(`예측 API 실패: ${response.status}`);
     }
 
     const result = await response.json();
-    // 실제로는 result를 받아야함
-    return result;
-  } catch (err) {
-    console.error('예측 API 실패:', err);
-    throw err;
+    return {
+      ...result,
+      id,
+      seqno,
+      isRefrigerated,
+      status: 'completed',
+      completedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`예측 실패 (ID: ${id}, seqno: ${seqno}):`, error);
+    return {
+      id,
+      seqno,
+      isRefrigerated,
+      status: 'failed',
+      error: error.message,
+      completedAt: new Date().toISOString()
+    };
   }
+};
+
+// 메인 예측 함수
+export const fetchPrediction = async (selectedRows, originalData, onProgressUpdate) => {
+  try {
+    const results = [];
+    const progress = [];
+    let totalItems = 0;
+    let completedItems = 0;
+
+    // 먼저 모든 예측 항목을 파악하고 진행 상황 배열 초기화
+    const allPredictionItems = [];
+
+    for (let i = 0; i < selectedRows.length; i++) {
+      const id = selectedRows[i];
+
+      try {
+        // 개별 데이터 조회
+        const individualData = await fetchIndividualData(id);
+
+        if (!individualData.by_seqno_and_condition || individualData.by_seqno_and_condition.length === 0) {
+          // 데이터가 없는 경우 진행 상황에 추가
+          allPredictionItems.push({
+            id,
+            seqno: null,
+            isRefrigerated: null,
+            hasData: false
+          });
+          continue;
+        }
+
+        // 각 seqno와 condition에 대해 예측 항목 추가
+        for (const condition of individualData.by_seqno_and_condition) {
+          const { seqno, isRefrigerated } = condition;
+          allPredictionItems.push({
+            id,
+            seqno,
+            isRefrigerated,
+            hasData: true
+          });
+        }
+
+      } catch (error) {
+        console.error(`ID ${id} 데이터 조회 실패:`, error);
+        // 에러가 발생한 경우 진행 상황에 추가
+        allPredictionItems.push({
+          id,
+          seqno: null,
+          isRefrigerated: null,
+          hasData: false,
+          error: error.message
+        });
+      }
+    }
+
+    // 모든 예측 항목을 "대기중" 상태로 진행 상황 배열 초기화
+    totalItems = allPredictionItems.filter(item => item.hasData).length;
+    console.log(`총 ${totalItems}개 예측 항목을 처리합니다.`);
+
+    for (const item of allPredictionItems) {
+      if (item.hasData) {
+        progress.push({
+          id: item.id,
+          seqno: item.seqno,
+          isRefrigerated: item.isRefrigerated,
+          status: 'pending',
+          message: `예측 대기 중... (seqno: ${item.seqno}, ${item.isRefrigerated ? '숙성' : '냉장'})`,
+          hasData: true
+        });
+        console.log(`예측 항목 추가: ${item.id} (seqno: ${item.seqno}, ${item.isRefrigerated ? '숙성' : '냉장'})`);
+      } else {
+        progress.push({
+          id: item.id,
+          status: 'failed',
+          error: item.error || '데이터 구조가 올바르지 않습니다.',
+          seqno: null,
+          isRefrigerated: null,
+          hasData: false
+        });
+        console.log(`실패 항목 추가: ${item.id} - ${item.error || '데이터 구조 오류'}`);
+      }
+    }
+
+    // 초기 진행 상황 업데이트 (모든 항목이 "대기중" 상태)
+    if (onProgressUpdate) {
+      console.log('초기 진행 상황 업데이트:', progress.length, '개 항목');
+      onProgressUpdate([...progress], totalItems, completedItems);
+    }
+
+    // 이제 각 예측 항목을 순차적으로 처리
+    console.log('예측 처리 시작...');
+    for (let i = 0; i < progress.length; i++) {
+      const progressItem = progress[i];
+
+      // 데이터가 없는 항목은 건너뛰기
+      if (!progressItem.hasData) {
+        console.log(`건너뛰기: ${progressItem.id} (데이터 없음)`);
+        continue;
+      }
+
+      console.log(`예측 시작: ${progressItem.id} (seqno: ${progressItem.seqno}, ${progressItem.isRefrigerated ? '숙성' : '냉장'})`);
+
+      try {
+        // 예측 API 호출
+        const predictionResult = await predictSingleItem(
+          progressItem.id,
+          progressItem.seqno,
+          progressItem.isRefrigerated
+        );
+
+        results.push(predictionResult);
+
+        // 진행 상황 업데이트
+        if (predictionResult.status === 'completed') {
+          progressItem.status = 'completed';
+          progressItem.message = '예측 완료';
+          progressItem.predictions = predictionResult.predictions;
+          progressItem.xai_image_urls = predictionResult.xai_image_urls;
+          progressItem.created_at = predictionResult.created_at;
+          completedItems++;
+          console.log(`예측 완료: ${progressItem.id} (${completedItems}/${totalItems})`);
+        } else {
+          progressItem.status = 'failed';
+          progressItem.error = predictionResult.error;
+          progressItem.message = '예측 실패';
+          console.log(`예측 실패: ${progressItem.id} - ${predictionResult.error}`);
+        }
+
+        // 진행 상황 업데이트 콜백 호출 (각 예측 완료 시마다)
+        if (onProgressUpdate) {
+          onProgressUpdate([...progress], totalItems, completedItems);
+        }
+
+      } catch (error) {
+        console.error(`예측 실패 (ID: ${progressItem.id}, seqno: ${progressItem.seqno}):`, error);
+        progressItem.status = 'failed';
+        progressItem.error = error.message;
+        progressItem.message = '예측 실패';
+
+        // 진행 상황 업데이트 콜백 호출
+        if (onProgressUpdate) {
+          onProgressUpdate([...progress], totalItems, completedItems);
+        }
+      }
+    }
+
+    return {
+      results,
+      progress,
+      totalCount: totalItems,
+      completedCount: completedItems,
+      failedCount: totalItems - completedItems
+    };
+
+  } catch (error) {
+    console.error('예측 프로세스 실패:', error);
+    throw error;
+  }
+};
+
+// 단일 예측 (테스트용)
+export const predictSingle = async (id, seqno, isRefrigerated) => {
+  return await predictSingleItem(id, seqno, isRefrigerated);
 };

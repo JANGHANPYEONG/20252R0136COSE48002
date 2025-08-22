@@ -21,6 +21,8 @@ import NewDashboard from './routes/OldDashboard';
 import MeatDetailPage from './routes/MeatDetailPage';
 import SpectralSender from './routes/SpectralSender';
 import { UserProvider } from './Utils/UserContext';
+import { PredictionProvider } from './context/PredictionContext';
+import GlobalPredictionModals from './components/GlobalPredictionModals';
 
 import Box from '@mui/material/Box';
 import MainWidgetBars from './components/Base/WidgetBars/MainWidgetBars';
@@ -167,53 +169,57 @@ function App() {
 
   return (
     <UserProvider>
-      <Router>
-        <Routes>
-          {routes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={
-                <>
-                  <Helmet>
-                    <title>{route.title}</title>
-                  </Helmet>
-                  <ThemeProvider theme={defaultTheme}>
-                    <CssBaseline />
-                    {!localStorage.getItem('isloggedIn') === 'true' ? (
-                      <LogIn />
-                    ) : (
-                      <Box sx={{ display: 'flex', margin: 0, padding: 0 }}>
-                        {route.path !== '/' && <MainWidgetBars />}
-                        <Box
-                          component="main"
-                          sx={{
-                            backgroundColor: '#FAFBFC',
-                            flexGrow: 1,
-                            height: '100vh',
-                            overflow: 'auto',
-                            display: 'flex',
-                            alignItems: 'flex-start', 
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            paddingTop: '0', 
-                            paddingBottom: '0',
-                            margin: '0', // 모든 방향의 마진 제거
-                            position: 'relative', // 위치 지정
-                            top: '0', // 상단에서 시작
-                          }}
-                        >
-                          {route.component}
+      <PredictionProvider>
+        <Router>
+          <Routes>
+            {routes.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={
+                  <>
+                    <Helmet>
+                      <title>{route.title}</title>
+                    </Helmet>
+                    <ThemeProvider theme={defaultTheme}>
+                      <CssBaseline />
+                      {!localStorage.getItem('isloggedIn') === 'true' ? (
+                        <LogIn />
+                      ) : (
+                        <Box sx={{ display: 'flex', margin: 0, padding: 0 }}>
+                          {route.path !== '/' && <MainWidgetBars />}
+                          <Box
+                            component="main"
+                            sx={{
+                              backgroundColor: '#FAFBFC',
+                              flexGrow: 1,
+                              height: '100vh',
+                              overflow: 'auto',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              justifyContent: 'center',
+                              flexDirection: 'column',
+                              paddingTop: '0',
+                              paddingBottom: '0',
+                              margin: '0', // 모든 방향의 마진 제거
+                              position: 'relative', // 위치 지정
+                              top: '0', // 상단에서 시작
+                            }}
+                          >
+                            {route.component}
+                          </Box>
                         </Box>
-                      </Box>
-                    )}
-                  </ThemeProvider>
-                </>
-              }
-            />
-          ))}
-        </Routes>
-      </Router>
+                      )}
+                    </ThemeProvider>
+                  </>
+                }
+              />
+            ))}
+          </Routes>
+          {/* 전역 예측 모달들 - 모든 페이지에서 표시 */}
+          <GlobalPredictionModals />
+        </Router>
+      </PredictionProvider>
     </UserProvider>
   );
 }

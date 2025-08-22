@@ -42,6 +42,7 @@ import { updateMeatInfo } from '../API/add/updateMeatInfo';
 import useMeatDetail from '../API/meat/useMeatDetail'; // ✅ 새 API 훅
 import { getSpectralInfo } from '../API/meat/getSpectralInfo'; // 파장 정보 API
 import { apiIP } from '../config'; // API IP 주소
+import XAIViewer from '../components/XAIViewer'; // XAI 뷰어 컴포넌트 추가
 const navy = '#0F3659';
 
 // ========================= 새 스키마 전용 라벨 세트 =========================
@@ -205,6 +206,10 @@ export default function MeatDetailPage() {
   const [selectedSeqno, setSelectedSeqno] = useState(0); // 선택된 seqno
   const [selectedHsiImageIndex, setSelectedHsiImageIndex] = useState(0); // 선택된 HSI 이미지 인덱스
   const [spectralInfo, setSpectralInfo] = useState([]); // 파장 정보
+  const [xaiViewerOpen, setXaiViewerOpen] = useState(false); // XAI 뷰어 열림 상태
+  const [xaiImageUrls, setXaiImageUrls] = useState([]); // XAI 이미지 URL들
+  const [xaiPredictions, setXaiPredictions] = useState([]); // XAI 예측값들
+  const [clickedTabIndex, setClickedTabIndex] = useState(0); // 클릭된 탭 인덱스
 
   // state → 세션 캐시(raw) → null 순으로 복구 + 정규화
   const item = useMemo(() => {
@@ -400,6 +405,66 @@ export default function MeatDetailPage() {
     setSelectedWaves(diffs.slice(0, 3).map((o) => o.w));
   }, [item, mode]);
 
+  // XAI 이미지 경로 생성 함수
+  const generateXaiImageUrls = (seqno, isRefrigerated) => {
+    if (!data?.by_seqno_and_condition) return [];
+
+    const currentSeqnoData = data.by_seqno_and_condition.find(
+      (x) => x.seqno === seqno
+    );
+
+    if (!currentSeqnoData?.ai_hsi_sensory_eval?.xai_imagePath) return [];
+
+    const basePath = currentSeqnoData.ai_hsi_sensory_eval.xai_imagePath;
+    const sampleIdx = seqno;
+    const condition = isRefrigerated ? 'True' : 'False';
+
+    // 각 라벨에 해당하는 XAI 이미지 경로 생성 (표 순서와 동일하게)
+    const xaiPaths = [
+      `${basePath}/sample_idx_${sampleIdx}_Meat_Color_gradcam_overlay.png`, // 육색
+      `${basePath}/sample_idx_${sampleIdx}_Marbling_gradcam_overlay.png`, // 마블링
+      `${basePath}/sample_idx_${sampleIdx}_Texture_gradcam_overlay.png`, // 조직감
+      `${basePath}/sample_idx_${sampleIdx}_Surface_Moisture_gradcam_overlay.png`, // 표면육즙
+      `${basePath}/sample_idx_${sampleIdx}_Total_gradcam_overlay.png`, // 전체기호도
+    ];
+
+    return xaiPaths;
+  };
+
+  // XAI 예측값 가져오기 함수
+  const getXaiPredictions = (seqno) => {
+    if (!data?.by_seqno_and_condition) return [];
+
+    const currentSeqnoData = data.by_seqno_and_condition.find(
+      (x) => x.seqno === seqno
+    );
+
+    if (!currentSeqnoData?.ai_hsi_sensory_eval) return [];
+
+    const aiHsiEval = currentSeqnoData.ai_hsi_sensory_eval;
+    // 표 순서와 동일하게 반환 (육색, 마블링, 조직감, 표면육즙, 전체기호도)
+    return [
+      aiHsiEval.meat_color, // 육색
+      aiHsiEval.marbling, // 마블링
+      aiHsiEval.texture, // 조직감
+      aiHsiEval.surface_moisture, // 표면육즙
+      aiHsiEval.overall, // 전체기호도
+    ];
+  };
+
+  // XAI 뷰어 열기 함수
+  const openXaiViewer = (seqno, isRefrigerated, clickedIndex) => {
+    const urls = generateXaiImageUrls(seqno, isRefrigerated);
+    const predictions = getXaiPredictions(seqno);
+
+    if (urls.length > 0) {
+      setXaiImageUrls(urls);
+      setXaiPredictions(predictions);
+      setClickedTabIndex(clickedIndex); // 클릭된 항목의 인덱스 저장
+      setXaiViewerOpen(true);
+    }
+  };
+
   if (!item) {
     return (
       <Box sx={{ p: 3 }}>
@@ -480,6 +545,16 @@ export default function MeatDetailPage() {
         paddingRight: 20,
       }}
     >
+      {/* XAI 뷰어 컴포넌트 */}
+      <XAIViewer
+        open={xaiViewerOpen}
+        onClose={() => setXaiViewerOpen(false)}
+        xaiImageUrls={xaiImageUrls}
+        predictions={xaiPredictions}
+        title="HSI XAI 분석 결과"
+        initialTabIndex={clickedTabIndex} // 클릭된 항목의 인덱스 전달
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={1500}
@@ -500,9 +575,25 @@ export default function MeatDetailPage() {
           minWidth: 634,
         }}
       >
-        <span style={{ color: navy, fontSize: 30, fontWeight: 600 }}>
-          육류 상세 조회
-        </span>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => nav('/Dashboard')}
+            sx={{
+              borderColor: navy,
+              color: navy,
+              '&:hover': {
+                borderColor: '#0a2a4a',
+                backgroundColor: 'rgba(15, 54, 89, 0.04)',
+              },
+            }}
+          >
+            ← 뒤로가기
+          </Button>
+          <span style={{ color: navy, fontSize: 30, fontWeight: 600 }}>
+            육류 상세 조회
+          </span>
+        </Box>
         <ToggleButtonGroup
           size="small"
           value={mode}
@@ -805,7 +896,6 @@ export default function MeatDetailPage() {
 
             const sensory = currentSeqnoData?.sensory_eval;
             const aiPrediction = currentSeqnoData?.ai_sensory_eval;
-            const hsiPrediction = currentSeqnoData?.hsi_sensory_eval;
             const aiHsiPrediction = currentSeqnoData?.ai_hsi_sensory_eval;
 
             const fmt = (v) =>
@@ -815,26 +905,67 @@ export default function MeatDetailPage() {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>항목</TableCell>
+                    <TableCell
+                      sx={{
+                        color: navy,
+                        fontWeight: 600,
+                        position: 'relative',
+                        '&::after': {
+                          content: '"클릭하여 XAI 보기"',
+                          position: 'absolute',
+                          right: 8,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          fontSize: '0.7rem',
+                          color: 'text.secondary',
+                          fontWeight: 'normal',
+                          whiteSpace: 'nowrap',
+                        },
+                      }}
+                    >
+                      항목 🔍
+                    </TableCell>
                     <TableCell align="center">관능 평가</TableCell>
                     <TableCell align="center">RGB AI 예측</TableCell>
-                    <TableCell align="center">HSI 관능</TableCell>
                     <TableCell align="center">HSI AI 예측</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {LABELS.map(({ key, name }) => {
+                  {LABELS.map(({ key, name }, index) => {
                     const sensoryVal = sensory?.[key];
                     const aiPredVal = aiPrediction?.[key];
-                    const hsiVal = hsiPrediction?.[key];
                     const aiHsiVal = aiHsiPrediction?.[key];
 
                     return (
                       <TableRow key={key}>
-                        <TableCell>{name}</TableCell>
+                        <TableCell
+                          sx={{
+                            cursor: 'pointer',
+                            fontWeight: 500,
+                            color: navy,
+                            '&:hover': {
+                              backgroundColor: 'rgba(15, 54, 89, 0.1)',
+                              textDecoration: 'underline',
+                            },
+                            position: 'relative',
+                            '&::after': {
+                              content: '"🔍"',
+                              position: 'absolute',
+                              right: 8,
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              fontSize: '0.8rem',
+                              opacity: 0.7,
+                            },
+                          }}
+                          onClick={() =>
+                            openXaiViewer(selectedSeqno, isRefrigerated, index)
+                          }
+                        >
+                          {name}
+                        </TableCell>
                         <TableCell align="center">{fmt(sensoryVal)}</TableCell>
                         <TableCell align="center">{fmt(aiPredVal)}</TableCell>
-                        <TableCell align="center">{fmt(hsiVal)}</TableCell>
                         <TableCell align="center">{fmt(aiHsiVal)}</TableCell>
                       </TableRow>
                     );
@@ -867,7 +998,6 @@ export default function MeatDetailPage() {
             항목: name,
             '관능 평가': sensory?.[key] ?? null,
             'RGB AI 예측': aiPrediction?.[key] ?? null,
-            'HSI 관능': hsiPrediction?.[key] ?? null,
             'HSI AI 예측': aiHsiPrediction?.[key] ?? null,
           }));
 
@@ -896,11 +1026,6 @@ export default function MeatDetailPage() {
                           type="monotone"
                           dataKey="RGB AI 예측"
                           stroke="#82ca9d"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="HSI 관능"
-                          stroke="#ffc658"
                         />
                         <Line
                           type="monotone"
