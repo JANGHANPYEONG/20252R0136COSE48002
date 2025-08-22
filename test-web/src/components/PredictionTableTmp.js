@@ -84,7 +84,7 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
             <TableHead>
               <TableRow>
                 <TableCell>선택</TableCell>
-                <TableCell>이력번호</TableCell>
+                <TableCell>관리번호</TableCell>
                 <TableCell>품종</TableCell>
                 <TableCell>딥에이징여부</TableCell>
                 <TableCell>도축일자</TableCell>
@@ -109,7 +109,7 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
                       onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
-                  <TableCell>{row.traceNum}</TableCell>
+                  <TableCell>{row.id}</TableCell>
                   <TableCell>{getCategoryName(row.categoryId)}</TableCell>
                   <TableCell>{row.hasDeepAging ? '있음' : '없음'}</TableCell>
                   <TableCell>{row.butcheryYmd ? row.butcheryYmd.split('T')[0] : '-'}</TableCell>

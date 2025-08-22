@@ -39,63 +39,95 @@ import {
 } from 'recharts';
 import { confirmMeat, rejectMeat } from '../API/updateDataStatus';
 import { updateMeatInfo } from '../API/add/updateMeatInfo';
-import useMeatDetail from '../API/meat/useMeatDetail';  // ✅ 새 API 훅
+import useMeatDetail from '../API/meat/useMeatDetail'; // ✅ 새 API 훅
+import { getSpectralInfo } from '../API/meat/getSpectralInfo'; // 파장 정보 API
+import { apiIP } from '../config'; // API IP 주소
 const navy = '#0F3659';
 
 // ========================= 새 스키마 전용 라벨 세트 =========================
 const LABELS = [
-  { key: 'meat_color',       name: '육색' },
-  { key: 'marbling',         name: '마블링' },
-  { key: 'texture',          name: '조직감' },
+  { key: 'meat_color', name: '육색' },
+  { key: 'marbling', name: '마블링' },
+  { key: 'texture', name: '조직감' },
   { key: 'surface_moisture', name: '표면육즙' },
-  { key: 'overall',          name: '전체 기호도' },
+  { key: 'overall', name: '전체 기호도' },
 ];
 
 // ========================= 정규화 어댑터 =========================
 function normalizeItemFromBackend(src) {
-  const idxId   = src?.id ?? null;                    // 내부 index (이력+샘플)
-  const traceId = src?.meat?.traceNum ?? null;        // 실제 이력번호
+  const idxId = src?.id ?? null; // 내부 index (이력+샘플)
+  const traceId = src?.meat?.traceNum ?? null; // 실제 이력번호
 
-  const seq0 = src?.by_seqno_and_condition?.find(x => x.seqno === 0) ?? null; // period 0 (표기상 1일차로 사용)
-  const seq1 = src?.by_seqno_and_condition?.find(x => x.seqno === 1) ?? null; // period 7 (7일차)
+  const seq0 = src?.by_seqno_and_condition?.find((x) => x.seqno === 0) ?? null; // period 0 (표기상 1일차로 사용)
+  const seq1 = src?.by_seqno_and_condition?.find((x) => x.seqno === 1) ?? null; // period 7 (7일차)
 
-  const pickEval = (e) => e ? ({
-    meat_color:       e.meat_color ?? null,
-    marbling:         e.marbling ?? null,
-    texture:          e.texture ?? null,
-    surface_moisture: e.surface_moisture ?? null,
-    overall:          e.overall ?? null,
-  }) : null;
+  const pickEval = (e) =>
+    e
+      ? {
+          meat_color: e.meat_color ?? null,
+          marbling: e.marbling ?? null,
+          texture: e.texture ?? null,
+          surface_moisture: e.surface_moisture ?? null,
+          overall: e.overall ?? null,
+        }
+      : null;
 
   const sensory = {
-    '1': pickEval(seq0?.sensory_eval),
-    '7': pickEval(seq1?.sensory_eval),
+    1: pickEval(seq0?.sensory_eval),
+    7: pickEval(seq1?.sensory_eval),
   };
 
   const prediction = {
-    '1': {
+    1: {
       RGB: pickEval(seq0?.ai_sensory_eval),
       MSI: pickEval(seq0?.hsi_sensory_eval),
     },
-    '7': {
+    7: {
       RGB: pickEval(seq1?.ai_sensory_eval),
       MSI: pickEval(seq1?.hsi_sensory_eval),
     },
   };
 
-  // RGB 썸네일: 관능 촬영 이미지 경로 사용 / MSI는 현재 없음(빈값 허용)
+  // RGB 썸네일: 관능 촬영 이미지 경로 사용
   const images = {
     RGB: {
-      '0': seq0?.sensory_eval?.imagePath ?? null,
-      '7': seq1?.sensory_eval?.imagePath ?? null,
+      0: seq0?.sensory_eval?.imagePath ?? null,
+      7: seq1?.sensory_eval?.imagePath ?? null,
     },
-    MSI: { '0': null, '7': null },
+    MSI: { 0: null, 7: null },
+  };
+
+  // HSI 이미지 데이터 정규화
+  const hsiImages = {
+    0:
+      seq0?.hsi_images_bands?.map((band) => ({
+        spectralIndex: band.spectral_index,
+        filename: band.filename,
+        coordinates: {
+          topLeft: band.topLeft,
+          topRight: band.topRight,
+          bottomRight: band.bottomRight,
+          bottomLeft: band.bottomLeft,
+        },
+      })) ?? [],
+    7:
+      seq1?.hsi_images_bands?.map((band) => ({
+        spectralIndex: band.spectral_index,
+        filename: band.filename,
+        coordinates: {
+          topLeft: band.topLeft,
+          topRight: band.topRight,
+          bottomRight: band.bottomRight,
+          bottomLeft: band.bottomLeft,
+        },
+      })) ?? [],
   };
 
   // deepAging: seqnos에 1이 있으면 'Y', 아니면 'N'
   const deepAgingYn =
-    (Array.isArray(src?.deepAging?.seqnos) && src.deepAging.seqnos.includes(1))
-      ? 'Y' : 'N';
+    Array.isArray(src?.deepAging?.seqnos) && src.deepAging.seqnos.includes(1)
+      ? 'Y'
+      : 'N';
 
   return {
     // 상세 표가 item.id를 "이력번호"로 보여오던 흐름을 유지하기 위해 traceNum을 id로 노출
@@ -107,37 +139,50 @@ function normalizeItemFromBackend(src) {
     deepAging: deepAgingYn, // 'Y' | 'N'
 
     meat: {
-      categoryId:  src?.meat?.categoryId ?? null, // 부위
+      categoryId: src?.meat?.categoryId ?? null, // 부위
       butcheryYmd: src?.meat?.butcheryYmd ?? null, // 도축일자
-      birthYmd:    src?.meat?.birthYmd ?? null,    // 가공일자
-      createdAt:   src?.meat?.createdAt ?? null,   // 업로드/생성일시
-      sexType:     src?.meat?.sexType ?? null,     // 0 암, 1 수
-      gradeNum:    src?.meat?.gradeNum ?? null,    // 등급
+      birthYmd: src?.meat?.birthYmd ?? null, // 가공일자
+      createdAt: src?.meat?.createdAt ?? null, // 업로드/생성일시
+      sexType: src?.meat?.sexType ?? null, // 0 암, 1 수
+      gradeNum: src?.meat?.gradeNum ?? null, // 등급
     },
 
     images,
+    hsiImages,
 
     // 분광 곡선 데이터는 현 응답에 없음 → 그래프 섹션에서 "없음"으로 안내
-    spectral: { MSI: { '1': null, '7': null }, RGB: { '1': null, '7': null } },
+    spectral: { MSI: { 1: null, 7: null }, RGB: { 1: null, 7: null } },
 
     sensory,
     prediction,
 
     // 일자별 냉장/숙성 헤더 표기용
     refrigeration: {
-      '1': !!seq0?.isRefrigerated, // false=냉장, true=숙성
-      '7': !!seq1?.isRefrigerated,
+      1: !!seq0?.isRefrigerated, // false=냉장, true=숙성
+      7: !!seq1?.isRefrigerated,
     },
 
     // XAI 자산도 보관(향후 사용)
     xai: {
-      '1': {
-        RGB: { cam: seq0?.ai_sensory_eval?.xai_imagePath ?? null,   grade: seq0?.ai_sensory_eval?.xai_gradeNum_imagePath ?? null },
-        MSI: { cam: seq0?.hsi_sensory_eval?.xai_imagePath ?? null,  grade: seq0?.hsi_sensory_eval?.xai_gradeNum_imagePath ?? null },
+      1: {
+        RGB: {
+          cam: seq0?.ai_sensory_eval?.xai_imagePath ?? null,
+          grade: seq0?.ai_sensory_eval?.xai_gradeNum_imagePath ?? null,
+        },
+        MSI: {
+          cam: seq0?.hsi_sensory_eval?.xai_imagePath ?? null,
+          grade: seq0?.hsi_sensory_eval?.xai_gradeNum_imagePath ?? null,
+        },
       },
-      '7': {
-        RGB: { cam: seq1?.ai_sensory_eval?.xai_imagePath ?? null,   grade: seq1?.ai_sensory_eval?.xai_gradeNum_imagePath ?? null },
-        MSI: { cam: seq1?.hsi_sensory_eval?.xai_imagePath ?? null,  grade: seq1?.hsi_sensory_eval?.xai_gradeNum_imagePath ?? null },
+      7: {
+        RGB: {
+          cam: seq1?.ai_sensory_eval?.xai_imagePath ?? null,
+          grade: seq1?.ai_sensory_eval?.xai_gradeNum_imagePath ?? null,
+        },
+        MSI: {
+          cam: seq1?.hsi_sensory_eval?.xai_imagePath ?? null,
+          grade: seq1?.hsi_sensory_eval?.xai_gradeNum_imagePath ?? null,
+        },
       },
     },
   };
@@ -157,26 +202,179 @@ export default function MeatDetailPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
+  const [selectedSeqno, setSelectedSeqno] = useState(0); // 선택된 seqno
+  const [selectedHsiImageIndex, setSelectedHsiImageIndex] = useState(0); // 선택된 HSI 이미지 인덱스
+  const [spectralInfo, setSpectralInfo] = useState([]); // 파장 정보
 
   // state → 세션 캐시(raw) → null 순으로 복구 + 정규화
   const item = useMemo(() => {
     return data ? normalizeItemFromBackend(data) : null;
   }, [data]);
 
+  // seqno별 탭 생성 (deepAging.seqnos 기반)
+  const seqnoTabs = useMemo(() => {
+    if (!data?.deepAging?.seqnos) return [];
+    return data.deepAging.seqnos.map((seqno) => ({
+      seqno,
+      label: `가공 ${seqno + 1}회`,
+      isRefrigerated:
+        data.by_seqno_and_condition?.find((x) => x.seqno === seqno)
+          ?.isRefrigerated ?? false,
+    }));
+  }, [data]);
+
   // 이번 방문에 state로 넘어왔다면 raw 캐시
   useEffect(() => {
     if (location.state?.item) {
       try {
-        sessionStorage.setItem('lastMeatItemRaw', JSON.stringify(location.state.item));
+        sessionStorage.setItem(
+          'lastMeatItemRaw',
+          JSON.stringify(location.state.item)
+        );
       } catch {}
     }
   }, [location.state]);
+
+  // seqno가 변경될 때 HSI 이미지 인덱스 초기화
+  useEffect(() => {
+    setSelectedHsiImageIndex(0);
+  }, [selectedSeqno]);
+
+  // 파장 정보 가져오기
+  useEffect(() => {
+    const fetchSpectralInfo = async () => {
+      try {
+        const data = await getSpectralInfo();
+        setSpectralInfo(data);
+      } catch (error) {
+        console.error('Failed to fetch spectral info:', error);
+      }
+    };
+    fetchSpectralInfo();
+  }, []);
 
   function TabPanel({ value, index, children }) {
     return (
       <div role="tabpanel" hidden={value !== index}>
         {value === index && <Box sx={{ mt: 2 }}>{children}</Box>}
       </div>
+    );
+  }
+
+  // HSI 이미지 슬라이더 컴포넌트
+  function HsiImageSlider({
+    images,
+    title,
+    onImageChange,
+    selectedIndex,
+    spectralInfo,
+  }) {
+    if (!images || images.length === 0) {
+      return (
+        <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+          <Typography variant="body2">HSI 이미지가 없습니다</Typography>
+        </Box>
+      );
+    }
+
+    // spectral_index를 실제 파장으로 매핑
+    const getWavelength = (spectralIndex) => {
+      const info = spectralInfo.find(
+        (item) => item.spectral_index === spectralIndex
+      );
+      return info ? info.wavelength_nm : spectralIndex;
+    };
+
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="subtitle2" sx={{ mb: 1, color: navy }}>
+          {title}
+        </Typography>
+
+        {/* 이미지 표시 */}
+        <Box
+          sx={{
+            height: 300,
+            border: '1px solid #eee',
+            borderRadius: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: '#fafafa',
+            mb: 2,
+            position: 'relative',
+          }}
+        >
+          {images[selectedIndex] ? (
+            <>
+              <img
+                src={`https://test-deeplant-bucket.s3.ap-northeast-2.amazonaws.com/train_dataset/HSI/${images[selectedIndex].filename}`} // S3 HSI 이미지 경로
+                alt={`HSI ${getWavelength(images[selectedIndex].spectralIndex)}nm`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: 8,
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  display: 'none',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                이미지를 불러올 수 없습니다
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              이미지를 불러올 수 없습니다
+            </Typography>
+          )}
+        </Box>
+
+        {/* 파장 선택 슬라이더 */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="caption" sx={{ minWidth: 60 }}>
+            파장:
+          </Typography>
+          <input
+            type="range"
+            min="0"
+            max={Math.max(0, images.length - 1)}
+            value={selectedIndex}
+            onChange={(e) => onImageChange(parseInt(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          <Typography variant="caption" sx={{ minWidth: 40 }}>
+            {getWavelength(images[selectedIndex]?.spectralIndex)}nm
+          </Typography>
+        </Box>
+
+        {/* 파장별 미리보기 버튼들 */}
+        <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
+          {images.map((img, idx) => (
+            <Button
+              key={idx}
+              size="small"
+              variant={selectedIndex === idx ? 'contained' : 'outlined'}
+              onClick={() => onImageChange(idx)}
+              sx={{ minWidth: 'auto', px: 1, py: 0.5, fontSize: '0.75rem' }}
+            >
+              {getWavelength(img.spectralIndex)}nm
+            </Button>
+          ))}
+        </Box>
+      </Box>
     );
   }
 
@@ -194,7 +392,10 @@ export default function MeatDetailPage() {
     const map1 = new Map(spec1.wavelengths.map((w, i) => [w, spec1.values[i]]));
     const map7 = new Map(spec7.wavelengths.map((w, i) => [w, spec7.values[i]]));
     const common = spec1.wavelengths.filter((w) => map7.has(w));
-    const diffs = common.map((w) => ({ w, d: Math.abs((map7.get(w) ?? 0) - (map1.get(w) ?? 0)) }));
+    const diffs = common.map((w) => ({
+      w,
+      d: Math.abs((map7.get(w) ?? 0) - (map1.get(w) ?? 0)),
+    }));
     diffs.sort((a, b) => b.d - a.d);
     setSelectedWaves(diffs.slice(0, 3).map((o) => o.w));
   }, [item, mode]);
@@ -248,7 +449,8 @@ export default function MeatDetailPage() {
     setEditMode(true);
   };
 
-  const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (key, value) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
   const saveEdit = async () => {
     try {
@@ -317,6 +519,41 @@ export default function MeatDetailPage() {
         <Tab label="분석(그래프)" />
       </Tabs>
 
+      {/* seqno별 탭 */}
+      {seqnoTabs.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
+            가공 단계별 데이터
+          </Typography>
+          <Tabs
+            value={selectedSeqno}
+            onChange={(_, v) => setSelectedSeqno(v)}
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
+            {seqnoTabs.map(({ seqno, label, isRefrigerated }) => (
+              <Tab
+                key={seqno}
+                value={seqno}
+                label={
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography variant="body2">{label}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {isRefrigerated ? '숙성' : '냉장'}
+                    </Typography>
+                  </Box>
+                }
+              />
+            ))}
+          </Tabs>
+        </Box>
+      )}
+
       {/* ======================== 상세 탭 ======================== */}
       <TabPanel value={tab} index={0}>
         <Box
@@ -327,87 +564,52 @@ export default function MeatDetailPage() {
             mt: 3,
           }}
         >
-          {/* 좌: 이미지 영역 */}
+          {/* 좌: HSI 이미지 영역 */}
           <Paper sx={{ p: 2 }}>
             <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
-              육류 이미지 {`(${mode} · 0/7일차 동시 표시)`}
+              HSI 이미지{' '}
+              {`(${selectedSeqno === 0 ? '0일차' : '7일차'} · 파장별 표시)`}
             </Typography>
 
             {(() => {
-              const getImg = (d) =>
-                item?.images?.[mode]?.[d] ??
-                item?.image?.[mode]?.[d] ??
-                item?.[`image_${mode}_${d}`] ??
-                item?.[`${mode.toLowerCase()}Image_${d}`] ??
-                item?.[`${mode.toLowerCase()}_image_${d}`];
+              // 선택된 seqno에 해당하는 HSI 이미지 가져오기
+              const currentHsiImages =
+                item?.hsiImages?.[selectedSeqno === 0 ? '0' : '7'] ?? [];
+              const currentSeqnoData = data?.by_seqno_and_condition?.find(
+                (x) => x.seqno === selectedSeqno
+              );
+              const isRefrigerated = currentSeqnoData?.isRefrigerated ?? false;
+              const dayLabel = isRefrigerated ? '7일차' : '0일차';
+              const conditionLabel = isRefrigerated ? '숙성' : '냉장';
 
-              const renderDayBox = (dLabel) => {
-                const src = getImg(dLabel);
+              if (currentHsiImages.length === 0) {
                 return (
                   <Box
-                    key={dLabel}
                     sx={{
-                      position: 'relative',
+                      height: 320,
                       border: '1px solid #eee',
                       borderRadius: 2,
-                      p: 1,
-                      height: 320,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       bgcolor: '#fafafa',
                     }}
                   >
-                    {/* 좌상단 배지 */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        px: 1,
-                        py: 0.25,
-                        fontSize: 12,
-                        borderRadius: 1,
-                        bgcolor: '#e7f1ff',
-                        color: navy,
-                        border: '1px solid #cfe3ff',
-                      }}
-                    >
-                      {dLabel}일차
-                    </Box>
-
-                    {src ? (
-                      <img
-                        src={src}
-                        alt={`${item.id} ${mode} ${dLabel}일차`}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain',
-                          borderRadius: 8,
-                        }}
-                      />
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        ({mode} · {dLabel}일차 이미지가 없습니다)
-                      </Typography>
-                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      {dayLabel} ({conditionLabel}) HSI 이미지가 없습니다
+                    </Typography>
                   </Box>
                 );
-              };
+              }
 
               return (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: 2,
-                    mb: 2,
-                  }}
-                >
-                  {renderDayBox('0')}
-                  {renderDayBox('7')}
-                </Box>
+                <HsiImageSlider
+                  images={currentHsiImages}
+                  title={`${dayLabel} (${conditionLabel}) HSI 이미지`}
+                  selectedIndex={selectedHsiImageIndex}
+                  onImageChange={setSelectedHsiImageIndex}
+                  spectralInfo={spectralInfo}
+                />
               );
             })()}
 
@@ -470,7 +672,9 @@ export default function MeatDetailPage() {
                     {editMode ? (
                       <select
                         value={form.deepAging}
-                        onChange={(e) => handleChange('deepAging', e.target.value)}
+                        onChange={(e) =>
+                          handleChange('deepAging', e.target.value)
+                        }
                         style={{
                           width: '100%',
                           padding: 6,
@@ -518,7 +722,9 @@ export default function MeatDetailPage() {
                       <input
                         type="date"
                         value={form.processDate}
-                        onChange={(e) => handleChange('processDate', e.target.value)}
+                        onChange={(e) =>
+                          handleChange('processDate', e.target.value)
+                        }
                         style={{
                           width: '100%',
                           padding: 6,
@@ -527,7 +733,23 @@ export default function MeatDetailPage() {
                         }}
                       />
                     ) : (
-                      item.meat.birthYmd ?? '-'
+                      (() => {
+                        // 선택된 seqno에 해당하는 가공일자 가져오기
+                        const currentSeqnoData =
+                          data?.by_seqno_and_condition?.find(
+                            (x) => x.seqno === selectedSeqno
+                          );
+                        const manufactureYmd =
+                          currentSeqnoData?.sensory_eval?.manufactureYmd;
+
+                        if (manufactureYmd) {
+                          // ISO 날짜 문자열을 YYYY-MM-DD 형식으로 변환
+                          const date = new Date(manufactureYmd);
+                          return date.toISOString().split('T')[0];
+                        }
+
+                        return item.meat.birthYmd ?? '-';
+                      })()
                     )}
                   </TableCell>
                 </TableRow>
@@ -545,7 +767,11 @@ export default function MeatDetailPage() {
               <Button variant="outlined" color="error" onClick={handleReject}>
                 반려
               </Button>
-              <Button variant="contained" color="success" onClick={handleConfirm}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleConfirm}
+              >
                 승인
               </Button>
               {editMode ? (
@@ -564,65 +790,52 @@ export default function MeatDetailPage() {
         {/* 하단 비교표 */}
         <Paper sx={{ p: 2, mt: 3 }}>
           <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
-            1일차 · 7일차 비교 (관능 vs {mode})
+            {selectedSeqno === 0 ? '0일차' : '7일차'} 데이터 비교 (관능 vs{' '}
+            {mode})
           </Typography>
 
           {(() => {
-            const s1 = getSensoryByKey('1');
-            const s7 = getSensoryByKey('7');
-            const p1 = getPredictionByKey('1', mode);
-            const p7 = getPredictionByKey('7', mode);
+            // 선택된 seqno에 해당하는 데이터 가져오기
+            const currentSeqnoData = data?.by_seqno_and_condition?.find(
+              (x) => x.seqno === selectedSeqno
+            );
+            const isRefrigerated = currentSeqnoData?.isRefrigerated ?? false;
+            const dayLabel = isRefrigerated ? '7일차' : '0일차';
+            const conditionLabel = isRefrigerated ? '숙성' : '냉장';
 
-            const colTitle = (isRef) => (isRef ? '숙성' : '냉장');
-            const col1 = colTitle(item?.refrigeration?.['1']);
-            const col7 = colTitle(item?.refrigeration?.['7']);
+            const sensory = currentSeqnoData?.sensory_eval;
+            const aiPrediction = currentSeqnoData?.ai_sensory_eval;
+            const hsiPrediction = currentSeqnoData?.hsi_sensory_eval;
+            const aiHsiPrediction = currentSeqnoData?.ai_hsi_sensory_eval;
 
             const fmt = (v) =>
               v === null || v === undefined || Number.isNaN(v) ? '-' : v;
-            const diffNum = (a, b) =>
-              typeof a === 'number' && typeof b === 'number'
-                ? (a - b).toFixed(2)
-                : '-';
 
             return (
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell rowSpan={2}>항목</TableCell>
-                    <TableCell align="center" colSpan={2}>
-                      {col1} 1일차
-                    </TableCell>
-                    <TableCell align="center" colSpan={2}>
-                      {col7} 7일차
-                    </TableCell>
-                    <TableCell align="center" colSpan={1}>
-                      예측 차이(7일−1일)
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>관능</TableCell>
-                    <TableCell>{mode} 예측</TableCell>
-                    <TableCell>관능</TableCell>
-                    <TableCell>{mode} 예측</TableCell>
-                    <TableCell>Δ</TableCell>
+                    <TableCell>항목</TableCell>
+                    <TableCell align="center">관능 평가</TableCell>
+                    <TableCell align="center">RGB AI 예측</TableCell>
+                    <TableCell align="center">HSI 관능</TableCell>
+                    <TableCell align="center">HSI AI 예측</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {LABELS.map(({ key, name }) => {
-                    const s1v = s1?.[key];
-                    const p1v = p1?.[key];
-                    const s7v = s7?.[key];
-                    const p7v = p7?.[key];
-                    const predGap = diffNum(p7v, p1v);
+                    const sensoryVal = sensory?.[key];
+                    const aiPredVal = aiPrediction?.[key];
+                    const hsiVal = hsiPrediction?.[key];
+                    const aiHsiVal = aiHsiPrediction?.[key];
 
                     return (
                       <TableRow key={key}>
                         <TableCell>{name}</TableCell>
-                        <TableCell>{fmt(s1v)}</TableCell>
-                        <TableCell>{fmt(p1v)}</TableCell>
-                        <TableCell>{fmt(s7v)}</TableCell>
-                        <TableCell>{fmt(p7v)}</TableCell>
-                        <TableCell>{predGap}</TableCell>
+                        <TableCell align="center">{fmt(sensoryVal)}</TableCell>
+                        <TableCell align="center">{fmt(aiPredVal)}</TableCell>
+                        <TableCell align="center">{fmt(hsiVal)}</TableCell>
+                        <TableCell align="center">{fmt(aiHsiVal)}</TableCell>
                       </TableRow>
                     );
                   })}
@@ -636,18 +849,26 @@ export default function MeatDetailPage() {
       {/* ======================== 분석(그래프) 탭 ======================== */}
       <TabPanel value={tab} index={1}>
         {(() => {
-          const s1 = getSensoryByKey('1');
-          const s7 = getSensoryByKey('7');
-          const p1 = getPredictionByKey('1', mode);
-          const p7 = getPredictionByKey('7', mode);
+          // 선택된 seqno에 해당하는 데이터 가져오기
+          const currentSeqnoData = data?.by_seqno_and_condition?.find(
+            (x) => x.seqno === selectedSeqno
+          );
+          const isRefrigerated = currentSeqnoData?.isRefrigerated ?? false;
+          const dayLabel = isRefrigerated ? '7일차' : '0일차';
+          const conditionLabel = isRefrigerated ? '숙성' : '냉장';
+
+          const sensory = currentSeqnoData?.sensory_eval;
+          const aiPrediction = currentSeqnoData?.ai_sensory_eval;
+          const hsiPrediction = currentSeqnoData?.hsi_sensory_eval;
+          const aiHsiPrediction = currentSeqnoData?.ai_hsi_sensory_eval;
 
           // (A) 예측값 비교 라인 차트용 데이터
           const predChartData = LABELS.map(({ key, name }) => ({
             항목: name,
-            '관능 1일': s1?.[key] ?? null,
-            [`${mode} 예측 1일`]: p1?.[key] ?? null,
-            '관능 7일': s7?.[key] ?? null,
-            [`${mode} 예측 7일`]: p7?.[key] ?? null,
+            '관능 평가': sensory?.[key] ?? null,
+            'RGB AI 예측': aiPrediction?.[key] ?? null,
+            'HSI 관능': hsiPrediction?.[key] ?? null,
+            'HSI AI 예측': aiHsiPrediction?.[key] ?? null,
           }));
 
           return (
@@ -655,7 +876,7 @@ export default function MeatDetailPage() {
               {/* (A) 예측값 라인 차트 */}
               <Paper sx={{ p: 2, mb: 2 }}>
                 <Typography variant="subtitle1" sx={{ color: navy, mb: 1 }}>
-                  예측값 비교 (1일 vs 7일) · {mode}
+                  {dayLabel} ({conditionLabel}) 예측값 비교 · {mode}
                 </Typography>
                 {predChartData.length > 0 ? (
                   <Box sx={{ height: 320 }}>
@@ -666,10 +887,26 @@ export default function MeatDetailPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="관능 1일" />
-                        <Line type="monotone" dataKey={`${mode} 예측 1일`} />
-                        <Line type="monotone" dataKey="관능 7일" />
-                        <Line type="monotone" dataKey={`${mode} 예측 7일`} />
+                        <Line
+                          type="monotone"
+                          dataKey="관능 평가"
+                          stroke="#8884d8"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="RGB AI 예측"
+                          stroke="#82ca9d"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="HSI 관능"
+                          stroke="#ffc658"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="HSI AI 예측"
+                          stroke="#ff7300"
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </Box>
@@ -693,16 +930,26 @@ export default function MeatDetailPage() {
                   if (!spec1 || !spec7) {
                     return (
                       <Typography variant="body2" color="text.secondary">
-                        분광 데이터가 없습니다. <code>spectral.{'{MSI|RGB}'}.{'{1|7}'}</code>{' '}
-                        형태의 데이터를 제공하면 파장-흡수율 그래프가 표시됩니다.
+                        분광 데이터가 없습니다.{' '}
+                        <code>
+                          spectral.{'{MSI|RGB}'}.{'{1|7}'}
+                        </code>{' '}
+                        형태의 데이터를 제공하면 파장-흡수율 그래프가
+                        표시됩니다.
                       </Typography>
                     );
                   }
 
                   // 공통 파장 풀
-                  const map1 = new Map(spec1.wavelengths.map((w, i) => [w, spec1.values[i]]));
-                  const map7 = new Map(spec7.wavelengths.map((w, i) => [w, spec7.values[i]]));
-                  const availableWaves = spec1.wavelengths.filter((w) => map7.has(w));
+                  const map1 = new Map(
+                    spec1.wavelengths.map((w, i) => [w, spec1.values[i]])
+                  );
+                  const map7 = new Map(
+                    spec7.wavelengths.map((w, i) => [w, spec7.values[i]])
+                  );
+                  const availableWaves = spec1.wavelengths.filter((w) =>
+                    map7.has(w)
+                  );
 
                   // 선택된 파장들(최대 5개)
                   const chosen = (selectedWaves || [])
@@ -712,8 +959,14 @@ export default function MeatDetailPage() {
 
                   // 시간축 시리즈 (1일/7일)
                   const timeSeries = [
-                    Object.fromEntries([['day', '1일'], ...chosen.map((w) => [keyLabel(w), map1.get(w)])]),
-                    Object.fromEntries([['day', '7일'], ...chosen.map((w) => [keyLabel(w), map7.get(w)])]),
+                    Object.fromEntries([
+                      ['day', '1일'],
+                      ...chosen.map((w) => [keyLabel(w), map1.get(w)]),
+                    ]),
+                    Object.fromEntries([
+                      ['day', '7일'],
+                      ...chosen.map((w) => [keyLabel(w), map7.get(w)]),
+                    ]),
                   ];
 
                   return (
@@ -725,17 +978,22 @@ export default function MeatDetailPage() {
                           multiple
                           value={chosen.length ? chosen : []}
                           onChange={(e) => {
-                            const val = typeof e.target.value === 'string'
-                              ? e.target.value.split(',')
-                              : e.target.value;
+                            const val =
+                              typeof e.target.value === 'string'
+                                ? e.target.value.split(',')
+                                : e.target.value;
                             setSelectedWaves(val.map((v) => Number(v)));
                           }}
                           input={<OutlinedInput label="파장 선택" />}
-                          renderValue={(sel) => sel.map((w) => `${w}nm`).join(', ')}
+                          renderValue={(sel) =>
+                            sel.map((w) => `${w}nm`).join(', ')
+                          }
                         >
                           {availableWaves.map((w) => (
                             <MenuItem key={w} value={w}>
-                              <Checkbox checked={(selectedWaves || []).indexOf(w) > -1} />
+                              <Checkbox
+                                checked={(selectedWaves || []).indexOf(w) > -1}
+                              />
                               <ListItemText primary={`${w} nm`} />
                             </MenuItem>
                           ))}
@@ -750,13 +1008,21 @@ export default function MeatDetailPage() {
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="day" />
                               <YAxis
-                                label={{ value: '흡수율', angle: -90, position: 'insideLeft' }}
+                                label={{
+                                  value: '흡수율',
+                                  angle: -90,
+                                  position: 'insideLeft',
+                                }}
                                 domain={['auto', 'auto']}
                               />
                               <Tooltip />
                               <Legend />
                               {chosen.map((w) => (
-                                <Line key={w} type="monotone" dataKey={keyLabel(w)} />
+                                <Line
+                                  key={w}
+                                  type="monotone"
+                                  dataKey={keyLabel(w)}
+                                />
                               ))}
                             </LineChart>
                           </ResponsiveContainer>
