@@ -4,7 +4,7 @@
 <img width="300" alt="image" src="https://raw.githubusercontent.com/SincerityHun/Deep_Plant1_Final/main/web/images/l_deeplant.png">
 </div>
 
-> 개발기간: 2024.05 ~ 2024.12
+> 개발기간: 2025.06 ~ 
 >
 > Built with Python
 
