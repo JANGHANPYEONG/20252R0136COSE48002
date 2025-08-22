@@ -69,5 +69,16 @@ test-ML-backend/.env
 # MLflow experiment tracking
 mlruns/
 mlartifacts/
+"test-ML-backend/serviceAccountKey.json" 
+label.csv
+migration_local
+HSI_PREDICT_API_SPEC.md
+HSI_TRAIN_IMPLEMENTATION_PLAN.md
+HSI_TRAIN_README.md
+HSI_PREDICT_API_SPEC.md
+migration_local.py
+check_ai_table_schema.py
+check_table_schema.py
+test_hsi_predict.py
 
-
+datasets_HSI

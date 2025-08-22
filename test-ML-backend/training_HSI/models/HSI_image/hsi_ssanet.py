@@ -9,6 +9,8 @@ import json
 # SeAM: Spectral Attention Module
 # 분류에 유용한 밴드(파장)를 선택하는 모듈
 # 다만, 우리의 입력 데이터는 이미 밴드가 선별되어 오기 때문에, on/off 하며 실험 필요
+# Input : (B, C, H, W)
+# Output: (B, C, H, W)
 class SeAM(nn.Module):
     def __init__(self, channels, reduction):
         super().__init__()
@@ -32,6 +34,9 @@ class SeAM(nn.Module):
 
 # SaAM: Spatial Attention Module
 # 공간적 중요도를 강조하는 모듈
+# Input : (B, C, H, W)
+# Output: (B, C, H, W)
+
 class SaAM(nn.Module):
     def __init__(self, kernel_size: int, padding: int):
         super().__init__()
@@ -114,6 +119,11 @@ class TransformerEncoderBlock(nn.Module):
         x = x_res + self.dropout(self.ffn(x))
         return x
 
+# Dense Transformer Encoder
+# 여러 Transformer Encoder Block을 쌓아 올리는 구조
+# 각 블록의 출력은 이전 블록의 출력과 concat하여 차원을 늘리고, 
+# 다시 원래 차원으로 줄이는 프로젝션 레이어를 사용
+# 입력은 (B, N+1, D) 형태로, B는 배치 크기, N은 패치의 수, D는 각 패치의 임베딩 차원
 class DenseTransformer(nn.Module):
     def __init__(self, block_cls, num_layers, dim, heads, mlp_ratio, dropout):
         super().__init__()
@@ -129,11 +139,76 @@ class DenseTransformer(nn.Module):
         feats = [x]           # x: (B, N+1, D)
         out = x
         for i, blk in enumerate(self.blocks):
-            out = blk(out)    # (B, N+1, D)
-            feats.append(out) # 누적
+            out = blk(out)    # (B, N+1, D), 현재 입력에 대해 Transformer block 적용
+            feats.append(out) # 누적, 출력 저장
             cat = torch.cat(feats[1:], dim=-1)  # 첫 입력 제외하고 concat (B, N+1, D * (i+1))
-            out = self.projs[i](cat)            # (B, N+1, D)로 압축
+            out = self.projs[i](cat)            # concat된 텐서를 다시 원래 차원으로 (B, N+1, D)로 압축
         return out
+
+# [250731] branch attention
+# 병렬 처리니까 따로 처리 후 마지막에 concat 하면 될거 같음.
+class Branch_Attention(nn.Module):
+    def __init__(self, channels: int, reduction: int, kernel_size: int, padding: int):
+        super().__init__()
+        # SeAM
+        self.avg_pool = nn.AdaptiveAvgPool2d(1) # 출력의 크기를 1x1로 조정
+        self.max_pool = nn.AdaptiveMaxPool2d(1) # 출력의 크기를 1x1로 조정
+
+        self.fc = nn.Sequential(
+            nn.Linear(channels, channels // reduction, bias=False), # 첫 번째 FC 레이어
+            nn.ReLU(), # 활성화 함수
+            nn.Linear(channels // reduction, channels, bias=False) # 두 번째 FC 레이어
+        )
+        self.sigmoid = nn.Sigmoid()
+
+        # SaAM
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding)
+        self.sigmoid = nn.Sigmoid()
+
+        # 1x1 conv로 다시 (B, C, H, W)로 축소
+        self.reduce = nn.Conv2d(channels * 2, channels, kernel_size=1)
+
+        # MLP based fusion
+        self.fusion_mlp = nn.Sequential(
+            nn.Conv2d(channels * 2, channels * 2, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(channels * 2, channels, kernel_size=1)
+        )
+
+    def forward(self, x):
+        # SeAM
+        SeAM_x = x
+        b, c, _, _ = x.size()  # 입력 텐서 x: (B, C, H, W), 여기서 C는 spectral band 수
+        avg_out = self.fc(self.avg_pool(SeAM_x).view(b, c))
+        max_out = self.fc(self.max_pool(SeAM_x).view(b, c))
+        out = avg_out + max_out  # 두 결과를 더해 밴드별 중요도 벡터 생성
+        scale = self.sigmoid(out).view(b, c, 1, 1)
+        res_SeAM = SeAM_x * scale  # 입력에 밴드별 중요도 적용: y'' = x * Pse
+
+        # SaAM
+        SaAM_x = x
+        avg_out = torch.mean(SaAM_x, dim=1, keepdim=True) # dim=1은 채널 차원(C)을 평균/최대로 줄이는 것
+        max_out, _ = torch.max(SaAM_x, dim=1, keepdim=True)
+        combined = torch.cat([avg_out, max_out], dim=1)
+        attention = self.sigmoid(self.conv(combined))
+        res_SaAM = SaAM_x * attention  # 공간적 중요도 적용
+
+        # [250805] branch attention comment
+        # concat 및 축소 method를 유의미한 방법으로 변경할 필요가 있어보임
+        # 현재의 단순한 concat은 채널 차원을 단순히 늘리는 것에 불과함
+        # 또한, 현재의 reduce는 단순히 1x1 conv로 채널 차원을 줄이는 것
+
+        # 채널 차원 concat: (B, 2C, H, W)
+        res = torch.cat([res_SeAM, res_SaAM], dim=1)
+
+        # 1x1 conv로 다시 (B, C, H, W)로 축소
+        # res = self.reduce(res)
+
+        # [250806] MLP based fusion
+        res = self.fusion_mlp(res)  # MLP based fusion
+
+        return res  # (B, C, H, W)
+        
 
 # Spectral-Spatial Attention Network (SSANet)
 # This combines SeAM and SaAM for HSI data
@@ -149,20 +224,30 @@ class SpectralSpatialAttention(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size, 
                  SeAM_reduction, SaAM_kernel_size, SaAM_padding,
-                 SeAM_use, SaAM_use):
+                 SeAM_use, SaAM_use, branch_mode):
         super().__init__()
         self.se = SeAM(in_channels, SeAM_reduction)
         self.sa = SaAM(kernel_size=SaAM_kernel_size, padding=SaAM_padding)
         self.reduce = nn.Conv2d(in_channels, out_channels, kernel_size=1)
         self.SeAM_use = SeAM_use
         self.SaAM_use = SaAM_use
+        # branch attention
+        self.branch_mode = branch_mode
+        self.branch_attention = Branch_Attention(in_channels, SeAM_reduction, kernel_size=SaAM_kernel_size, padding=SaAM_padding)
 
     def forward(self, x):
-        if self.SeAM_use:
-            x = self.se(x)
-        if self.SaAM_use:
-            x = self.sa(x)
-        x = self.reduce(x)
+        if not self.branch_mode:  # branch 사용하지 않을 경우
+            if self.SeAM_use:
+                x = self.se(x)
+            if self.SaAM_use:
+                x = self.sa(x)
+            # x = self.reduce(x)
+        else:  # branch 사용할 경우
+            x = self.branch_attention(x)
+        
+        # PatchifyPositionEmbedding 입력 크기에 맞게 조정
+        x = self.reduce(x) # (SeAM + SaAM) 결과를 1x1 conv로 축소
+
         return x
 
 # HSI SSANet Model
@@ -174,7 +259,7 @@ class HSI_SSANet(nn.Module):
                  num_TransformerEncoder_heads, num_TransformerEncoder_layers,
                  transformer_mlp_ratio, transformer_dropout,
                  seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size,
-                 UsingSeAM, UsingSaAM):
+                 UsingSeAM, UsingSaAM, branch_mode):
         super().__init__()
 
         self.in_channels = in_channels
@@ -189,7 +274,8 @@ class HSI_SSANet(nn.Module):
             SaAM_kernel_size=saam_kernel_size,
             SaAM_padding=saam_padding,
             SeAM_use=UsingSeAM,
-            SaAM_use=UsingSaAM
+            SaAM_use=UsingSaAM,
+            branch_mode=branch_mode
         )
 
         # 2. Patchify + Position Embedding
@@ -254,6 +340,9 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     UsingSeAM = model_cfg.get('UsingSeAM', {}).get('use', True)
     UsingSaAM = model_cfg.get('UsingSaAM', {}).get('use', True)
 
+    # Branch mode
+    branch_mode = model_cfg.get('BranchAttention', {}).get('use', False)
+
     model = HSI_SSANet(
         in_channels=in_channels,
         num_classes=num_classes,
@@ -270,7 +359,8 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
         saam_padding=saam_padding,
         ssa_kernel_size=ssa_kernel_size,
         UsingSeAM=UsingSeAM,
-        UsingSaAM=UsingSaAM
+        UsingSaAM=UsingSaAM,
+        branch_mode=branch_mode
     )
 
     return model

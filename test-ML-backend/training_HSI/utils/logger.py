@@ -7,6 +7,12 @@ from typing import Dict, Any, Optional, List
 import torch
 import numpy as np
 from datetime import datetime
+from mlflow.tracking import MlflowClient
+
+# 헤드리스 안전을 위한 matplotlib 백엔드 고정
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 
 class MLflowLogger:
@@ -21,22 +27,51 @@ class MLflowLogger:
         self.tracking_uri = tracking_uri
         self.experiment_name = experiment_name
         self.run_id = None
+        self.experiment_id = None
+        self.client = MlflowClient()
         
         # MLflow 설정
         mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
     
-    def start_run(self, run_name: Optional[str] = None):
+    def start_run(self, experiment_id: Optional[str] = None, run_id: Optional[str] = None):
         """MLflow run을 시작합니다."""
-        if run_name is None:
-            run_name = f"hsi_2d_cnn_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        if run_id is not None:
+            mlflow.start_run(run_id=run_id)
+            self.run_id = run_id
+
+            # 실제 experiment_id를 조회하여 검증/설정
+            run_info = mlflow.get_run(run_id).info
+            self.experiment_id = run_info.experiment_id
+
+            if experiment_id is not None and str(self.experiment_id) != str(experiment_id):
+                mlflow.end_run()
+                self.run_id = None
+                self.experiment_id = None
+                raise ValueError(
+                    f"Provided experiment_id {experiment_id} does not match run's experiment_id {self.experiment_id}"
+                )
+
+            print(f"Mlflow attached: run_id={self.run_id}, experiment_id={self.experiment_id})")
+            return
+
+        if experiment_id is None:
+        # experiment_name 으로 선택/생성
+            exp = mlflow.set_experiment(self.experiment_name)  # Experiment 객체 반환
+            experiment_id = exp.experiment_id
         else:
-            run_name = f"{run_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        mlflow.start_run(run_name=run_name)
-        self.run_id = mlflow.active_run().info.run_id
-        print(f"MLflow run started: {run_name} (ID: {self.run_id})")
-    
+            # 주어진 experiment_id가 유효한지(선택적으로) 확인
+            exp = self.client.get_experiment(str(experiment_id))
+            if exp is None:
+                raise ValueError(f"Experiment id {experiment_id} not found")
+
+        # experiment_id 아래 새 run 생성
+        run = mlflow.start_run(experiment_id=str(experiment_id))
+        self.run_id = run.info.run_id
+        self.experiment_id = run.info.experiment_id
+
+        print(f"MLflow STARTED: run_id={self.run_id}, experiment_id={self.experiment_id}")
+
     def end_run(self):
         """MLflow run을 종료합니다."""
         if mlflow.active_run():
@@ -97,7 +132,6 @@ class MLflowLogger:
                           train_metrics: Dict[str, list], val_metrics: Dict[str, list],
                           plot_keys: Optional[List[str]] = None):
         """훈련 곡선을 로깅합니다."""
-        import matplotlib.pyplot as plt
         
         # 기본 플롯 키 설정
         if plot_keys is None:
@@ -164,8 +198,8 @@ class MLflowLogger:
 def create_logger(config: Dict[str, Any]) -> MLflowLogger:
     """설정에서 로거를 생성합니다."""
     mlflow_config = config.get('mlflow', {})
-    tracking_uri = mlflow_config.get('tracking_uri', 'http://127.0.0.1:5000')
-    experiment_name = mlflow_config.get('experiment_name', 'HSI_2D_CNN')
+    tracking_uri = mlflow_config.get('tracking_uri', 'http://3.38.117.43:5000')
+    experiment_name = mlflow_config.get('experiment_name', 'Deeplant_ML_training')
     
     return MLflowLogger(tracking_uri, experiment_name)
 

@@ -1,0 +1,36 @@
+{
+  "column_order": {
+    "id_column_index": 0,
+    "label_start_index": 2,
+    "vector_start_index": null,
+    "image_path_start_index": 7,
+    "rgb_image_path_start_index": null,
+    "rgb_mask_path_index": null
+  },
+  "label_columns": [
+    "Marbling",
+    "Meat_Color",
+    "Texture",
+    "Surface_Moisture",
+    "Total"
+  ],
+  "label_types": {
+    "classification": [],
+    "regression": [
+      "Marbling",
+      "Meat_Color",
+      "Texture",
+      "Surface_Moisture",
+      "Total"
+    ]
+  },
+  "wavelengths": [430, 540],
+  "image_size": [256, 256],
+  "rgb_image_size": [224, 224],
+  "base_dirs": {
+    "hsi_image_dir": "/mnt/data/datasets_HSI/hsi_meat_image",
+    "rgb_image_dir": "/mnt/data/datasets_RGB/rgb_meat_image",
+    "rgb_mask_dir": "/mnt/data/datasets_RGB/masks"
+  },
+  "mask_template": "{stem}_mask.png"
+}

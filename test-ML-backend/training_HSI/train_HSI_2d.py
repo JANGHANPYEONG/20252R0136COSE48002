@@ -6,7 +6,8 @@ HSI 2D CNN 학습 파이프라인
 멀티태스크 학습을 지원하며, 분류 및 회귀 작업을 동시에 수행할 수 있습니다.
 
 사용법:
-    python train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
+    python3 train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
+
 """
 
 import os
@@ -76,8 +77,15 @@ def main():
                        help='Disable MLflow logging')
     parser.add_argument('--save-interval', type=int,
                        help='Epoch interval for model checkpointing')
+    parser.add_argument('--experiment-id', type=str, default=None,
+                       help="Attach to an existing mlflow_experiment_id if provided")
+    parser.add_argument('--run-id', type=str, default=None,
+                        help="Attach to an existing mlflow_run_id if provided")
     args = parser.parse_args()
-    
+
+    experiment_id = args.experiment_id
+    run_id = args.run_id
+
     # 설정 로드
     print("Loading configuration...")
     config = load_config(args.config)
@@ -96,22 +104,27 @@ def main():
     # MLflow 로거 설정
     logger = None
     if not args.no_mlflow:
-        logger = create_logger(config)
-        logger.start_run()
-        
-        # 하이퍼파라미터 로깅
-        params_to_log = {
-            'model_file': config['model']['file'],
-            'num_classes': config['model']['num_classes'],
-            'batch_size': config['data']['batch_size'],
-            'epochs': config['train']['epochs'],
-            'optimizer': config['train']['optimizer'],
-            'lr': config['train']['lr'],
-            'scheduler': config['train']['scheduler'],
-            'save_interval': config['train'].get('save_interval', 5),
-            'seed': seed
-        }
-        logger.log_params(params_to_log)
+        try:
+            logger = create_logger(config)
+            logger.start_run(experiment_id=experiment_id, run_id=run_id)
+
+            # 하이퍼파라미터 로깅
+            params_to_log = {
+                'model_file': config['model']['file'],
+                'num_classes': config['model']['num_classes'],
+                'batch_size': config['data']['batch_size'],
+                'epochs': config['train']['epochs'],
+                'optimizer': config['train']['optimizer'],
+                'lr': config['train']['lr'],
+                'scheduler': config['train']['scheduler'],
+                'save_interval': config['train'].get('save_interval', 5),
+                'seed': seed
+            }
+            logger.log_params(params_to_log)
+        except Exception as e:
+            print(f"MLflow connection failed: {e}")
+            print("Continuing without MLflow logging...")
+            logger = None
     
     try:
         # Transform 설정
@@ -231,6 +244,11 @@ def main():
                 final_metrics=final_metrics,
                 training_time=training_results['training_time']
             )
+
+            run_id = logger.run_id  # MLflow run ID 저장
+            
+            # MLflow run ID를 명시적으로 출력 (스트리밍 시스템에서 추출용)
+            print(f"MLflow run ID: {run_id}")
         
         print("Training completed successfully!")
         
@@ -254,6 +272,8 @@ def main():
         # MLflow run 종료
         if logger is not None:
             logger.end_run()
+            
+        return run_id
 
 
 if __name__ == "__main__":

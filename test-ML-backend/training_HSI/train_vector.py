@@ -10,7 +10,7 @@ Vector ML 모델 학습 파이프라인
 """
 
 from utils.trainer_vector import SearchHyperparameter
-from utils.model_loader_vector import load_model, validate_model_config, get_model_info
+from utils.model_loader import load_vector_model as load_model, validate_vector_model_config as validate_model_config, get_vector_model_info as get_model_info
 from utils.logger import create_logger, log_training_ml_summary
 from utils.dataset_vector import load_vector_data, get_label_info
 from sklearn.model_selection import train_test_split
@@ -56,6 +56,8 @@ def main():
                         help='Disable MLflow logging')
     args = parser.parse_args()
 
+    run_id = None
+
     # 설정 로드
     print("Loading configuration...")
     config = load_config(args.config)
@@ -71,6 +73,7 @@ def main():
     if not args.no_mlflow:
         logger = create_logger(config)
         logger.start_run(run_name="hsi_vector")
+        run_id = logger.run.info.run_id  # MLflow run ID 저장
         
         # 하이퍼파라미터 로깅
         params_to_log = {
@@ -87,7 +90,13 @@ def main():
             csv_path=csv_path,
             column_config_path=column_config_path
         )
-
+        #tmp data for hybrid
+        y_tmp, _ = load_vector_data(
+            csv_path="/mnt/data/datasets_HSI/label/VS_label.csv",
+            column_config_path=column_config_path
+        )
+        y_tmp = y_tmp.labels
+        ############################
         X = dataset.spectral_data
         y = dataset.labels
 
@@ -128,14 +137,20 @@ def main():
         training_time = time.time() - start_time
         print(f"✅ Training done in {training_time/60:.2f} min")
 
-        best_params = grid.searcher.best_params_
-        best_estimator = grid.searcher.best_estimator_
-        best_val_score = grid.searcher.best_score_
-        print(f"Best Parameter: {best_params}\n")
+        if grid.searcher == 'no' :
+            y_pred = estimator.predict(X_test)
+            results = grid.calculate_metrics(y_tmp, y_pred)
+            best_estimator = estimator
+            best_val_score = 42
+        else :
+            best_params = grid.searcher.best_params_
+            best_estimator = grid.searcher.best_estimator_
+            best_val_score = grid.searcher.best_score_
+            print(f"Best Parameter: {best_params}\n")
 
-        # 평가 데이터에 대해 예측 수행
-        y_pred = best_estimator.predict(X_test)
-        results = grid.calculate_metrics(y_test, y_pred)
+            # 평가 데이터에 대해 예측 수행
+            y_pred = best_estimator.predict(X_test)
+            results = grid.calculate_metrics(y_test, y_pred)
 
         # 최종 결과 로깅
         if logger is not None:
@@ -180,6 +195,8 @@ def main():
         # MLflow run 종료
         if logger is not None:
             logger.end_run()
+            
+        return run_id
 
 
 if __name__ == "__main__":

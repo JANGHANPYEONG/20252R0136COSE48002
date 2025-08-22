@@ -24,19 +24,23 @@
     "TransformerEncoderBlock": {
       "num_heads": 4,
       "mlp_ratio": 4.0,
-      "dropout": 0.1
+      "dropout": 0.1,
+      "num_layers": 4
     },
     "UsingSeAM": {
       "use": true
     },
     "UsingSaAM": {
       "use": true
+    },
+    "BranchAttention": {
+      "use": false
     }
 
   },
   "data": {
-    "csv": "../datasets_HSI/label/label.csv",
-    "column_config": "../column_config.json",
+    "csv": "/mnt/data/datasets_HSI/label/label.csv",
+    "column_config": "configs/column_config.json",
     "val_split": 0.1,
     "test_split": 0.1,
     "batch_size": 8,

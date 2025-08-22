@@ -20,6 +20,11 @@ class HybridModel:
     def __init__(self, config):
         self.config = config
 
+        #메모리 최적화
+        self.batch_size   = config.get("train", {}).get("batch_size", 16)
+        self.fp16_enabled = config.get("train", {}).get("fp16", True)
+        ####
+        self.n_jobs = config.get("train", {}).get("n_jobs", -1)
         self.mlflow_info = config.get("mlflow_info", {})
         self.n_estimators = config.get("parameters", {}).get("n_estimators", 1)
         self.max_depth = config.get("parameters", {}).get("max_depth", None)
@@ -79,42 +84,61 @@ class HybridModel:
         reduced = (reduced - reduced.min()) / (reduced.max() - reduced.min() + 1e-6)
         return (reduced * 255).astype(np.uint8)
 
-    def process_all(self, dir):
-        tensor_list = []
-        for folder in sorted(os.listdir(dir)):
-            folder_path = os.path.join(dir, folder)
-            if not os.path.isdir(folder_path): continue
-            stack = self.load_stack(folder_path)
-            pca_img = self.apply_pca(stack)
-            tensor = self.transform(pca_img)
-            tensor_list.append(tensor)
-        return tensor_list
+    def process_one(self, dir):
+        stack = self.load_stack(dir)
+        pca_img = self.apply_pca(stack)
+        tensor = self.transform(pca_img)
+        return tensor
+
+    def process_all(self, dir : str) -> List[torch.Tensor]:
+        folders = [os.path.join(dir, d) for d in sorted(os.listdir(dir)) if os.path.isdir(os.path.join(dir, d))]
+
+        gen = Parallel(n_jobs=self.n_jobs, return_as = "generator")(delayed(self.process_one)(f) for f in folders)
+        results = [out for out in tqdm(gen, total = len(folders), desc="Processing folder")]
+        return results
+    
     
     # 이미지 추출
     def extract_features(self, model, images):
         features = []
-        with torch.no.grad():
-            for img in images:
-                img = img.unsqueeze(0).to(DEVICE)
-                outputs = model(pixel_values=img)['last_hidden_state'][:, 0, :]
-                features.append(outputs.squeeze(0).cpu().numpy())
-        return np.array(features)
 
-    def load_labels(self, file_path):
-        df_list = []
-        df = pd.read_csv(file_path)
-        label_cols = [col for col in df.columns if col.startswith('disease_')]
-        for label in label_cols:
-            df_list.append(df[label].values)
-        return np.array(df_list)
+        # ──────────── 배치 전처리를 직접 수행 ────────────
+        for i in range(0, len(images), self.batch_size):
+            # (1) 현재 배치만 뽑아 numpy 로 변환
+            batch_imgs = [
+                img.mul(255).byte().permute(1, 2, 0).cpu().numpy()
+                for img in images[i : i + self.batch_size]
+            ]
+            inputs = self.processor(images=batch_imgs, return_tensors="pt")
+            pixel_values = inputs["pixel_values"].to(
+                DEVICE, non_blocking=True, memory_format=torch.contiguous_format
+            )
+            if self.fp16_enabled:
+                pixel_values = pixel_values.half()
+
+            # (2) 추론
+            with torch.inference_mode(), torch.cuda.amp.autocast(enabled=self.fp16_enabled):
+                cls = self.vit(pixel_values=pixel_values).last_hidden_state[:, 0]  # (B, D)
+
+            # (3) 즉시 CPU로 옮겨 누적 → GPU 메모리 해제
+            features.append(cls.cpu())
+            del pixel_values, cls
+            torch.cuda.empty_cache()
+        
+        return torch.cat(features).numpy()
+
+    def load_labels(self, csv_path : str) -> np.ndarray:
+        df = pd.read_csv(csv_path)
+        label_cols = [c for c in df.columns if c.startswith("disease_")]
+        return df[label_cols].values    # shape = (N, L)
 
     def fit(self, X, y):
         train_list = self.process_all(self.TS_path)
-        val_list = self.process_all(self.VS_path)
+        #val_list = self.process_all(self.VS_path)
         vit_features_train = self.extract_features(self.vit, train_list)
-        vit_features_val = self.extract_features(self.vit, val_list)
+        #vit_features_val = self.extract_features(self.vit, val_list)
 
-        X_train, X_test = vit_features_train, vit_features_val
+        X_train = vit_features_train
         y_train = np.array(self.load_labels(self.TS_label))
         return self.model.fit(X_train, y_train)
 
@@ -132,7 +156,9 @@ class HybridModel:
         return self
 
     def predict(self, X):
-        return self.model.predict(X)
+        val_list = self.process_all(self.VS_path)
+        vit_features_val = self.extract_features(self.vit, val_list)
+        return self.model.predict(vit_features_val)
 
 def create_model(config: Dict):
     """RandomForest 모델 생성 함수"""

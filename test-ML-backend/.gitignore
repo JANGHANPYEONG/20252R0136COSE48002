@@ -2,6 +2,13 @@
 mlruns/
 mlartifacts/
 
+# Environment variables (실제 설정 파일들)
+.env
+.env.local
+.env.staging
+.env.production
+.env.*.local
+
 # Python cache
 __pycache__/
 *.pyc
@@ -44,3 +51,18 @@ HSI_band_selection/configs/image_pipeline_config.json
 
 # HSI 이미지 데이터 무시
 datasets_HSI/image/
+
+# Roadmap 무시시
+INTEGRATION_ROADMAP.md
+
+# Sensitive files in this module
+serviceAccountKey.json
+roadmap.md
+docs
+
+extract_filename.py
+# xai results
+xai_outputs/
+
+label_backup.csv
+HSI_PREDICT_API_SPEC.md
