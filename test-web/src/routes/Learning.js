@@ -288,7 +288,7 @@ const Learning = () => {
           <Button
             variant="contained"
             onClick={handleHSITrain}
-            disabled={selectedRows.length === 0}
+            disabled={selectedRows.length === 1}
             sx={{ backgroundColor: '#28a745', '&:hover': { backgroundColor: '#218838' }, '&:disabled': { backgroundColor: '#6c757d' } }}
           >
             HSI 학습하기

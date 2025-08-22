@@ -28,6 +28,10 @@ const pageListItems = [
         path: '/DataRegister',
       },
       {
+        label: '파장등록',
+        path: '/spectrals',
+      },
+      {
         label: '대시보드',
         path: '/DashBoard',
       },

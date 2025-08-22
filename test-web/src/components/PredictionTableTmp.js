@@ -55,7 +55,7 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
         onRowClick(row);
       } else {
         // 기본 동작: 육류상세조회페이지로 이동
-        navigate(`/meat/${row.id}`, { state: { item: row } });
+        navigate(`/meat/${row.id}`, { state: { row } });
       }
     }
   };
@@ -109,7 +109,7 @@ const PredictionTableTmp = ({ data, onSelectionChange, onRowClick }) => {
                       onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
-                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.traceNum}</TableCell>
                   <TableCell>{getCategoryName(row.categoryId)}</TableCell>
                   <TableCell>{row.hasDeepAging ? '있음' : '없음'}</TableCell>
                   <TableCell>{row.butcheryYmd ? row.butcheryYmd.split('T')[0] : '-'}</TableCell>

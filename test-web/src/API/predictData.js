@@ -89,15 +89,18 @@ export const fetchPrediction = async (selectedRows) => {
 
   try {
     const ids = selectedRows.map((item) => item.id);
-
     const response = await fetch(`http://${apiIP}/hsipredict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ data_ids: ids }),
+      body: JSON.stringify({
+        id : ids[0],   // 배열 중 첫 번째만
+        seqno: 0,
+        isRefrigerated: true
+      }),
     });
-
+    console.log('ids[0] =', ids, typeof ids[0]);
     if (!response.ok) {
       throw new Error('ML 서버 예측 요청 실패');
     }

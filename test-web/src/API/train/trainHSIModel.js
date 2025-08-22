@@ -13,13 +13,14 @@ import { apiIP } from '../../config';
  */
 export const trainHSIModel = async (idList) => {
   try {
+    const tmp = ["e3b3ff1e7a200b6274c4"];
     // 요청 데이터 구성
     const requestData = {
-      id_list: idList
+      id_list: tmp
     };
 
     // API 호출
-    const response = await fetch(`http://${apiIP}/train/hsi`, {
+    const response = await fetch(`http://${apiIP}/hsi-train`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,7 +51,7 @@ export const trainHSIModel = async (idList) => {
  */
 export const getHSITrainingStatus = async (trainId) => {
   try {
-    const response = await fetch(`http://${apiIP}/train/hsi/status/${trainId}`, {
+    const response = await fetch(`http://${apiIP}/train-hsi/${trainId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

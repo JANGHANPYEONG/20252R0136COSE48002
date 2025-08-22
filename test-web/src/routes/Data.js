@@ -11,13 +11,19 @@ import home_DATA from '../src_assets/home_DATA.png';
 import data_BOARD from '../src_assets/data_BOARD.png';
 import data_ANA from '../src_assets/data_ANA.png';
 import home_ML from '../src_assets/home_ML.png';
-
+import data from '../src_assets/data.png';
 const cards = [
     {
         title: '데이터등록',
         subtitle: 'Data Registration',
         image: home_DATA,
         link: '/DataRegister',
+    },
+    {
+        title: '파장등록',
+        subtitle: 'Spectral Registration',
+        image: data,
+        link: '/spectrals',
     },
     {
         title: '대시보드',
