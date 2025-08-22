@@ -1,40 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
   CircularProgress,
   Typography,
-  Paper,
   Chip,
 } from '@mui/material';
-// style
-import style from './style/dashboardstyle';
 // components
-import DataList from '../components/DataList';
 import FilterModal from '../components/FilterModal';
 import PredictionTable from '../components/PredictionTable';
 import PredictionDetailPanel from '../components/PredictionDetailPanel';
-import { fetchFilteredData } from '../API/fetchFileteredData';
 import { Snackbar, Alert } from '@mui/material';
 import { fetchPrediction } from '../API/predictData';
 import ExportSelectedToExcel from '../components/ExportSelectedToExcel';
 
-// 새로운 컴포넌트들
-import PredictionProgressModal from '../components/PredictionProgressModal';
-import PredictionResultModal from '../components/PredictionResultModal';
-
 // 데이터 캐싱을 위한 import
 import useFileList from '../Utils/useFileList';
 import { useQueryClient } from '@tanstack/react-query';
-import { mergePredictions } from '../Utils/mergePredictions';
 import { usePrediction } from '../context/PredictionContext';
 
 const navy = '#0F3659';
 
 const Predict = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+
+  // PredictionContext에서 필요한 함수들과 변수들을 가져옴
+  const {
+    isPredicting,
+    startPrediction,
+    updateProgress,
+    completePrediction,
+    closeProgressModal,
+    closeResultModal,
+  } = usePrediction();
+
   const [selectedRows, setSelectedRows] = useState([]);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [openPanel, setOpenPanel] = useState(false);
