@@ -458,9 +458,9 @@ class HSIPredictor:
             if existing_record:
                 # 기존 레코드 업데이트
                 existing_record.marbling = predictions[0] if len(predictions) > 0 else None
-                existing_record.color = predictions[1] if len(predictions) > 1 else None
+                existing_record.meat_color = predictions[1] if len(predictions) > 1 else None
                 existing_record.texture = predictions[2] if len(predictions) > 2 else None
-                existing_record.surfaceMoisture = predictions[3] if len(predictions) > 3 else None
+                existing_record.surface_moisture = predictions[3] if len(predictions) > 3 else None
                 existing_record.overall = predictions[4] if len(predictions) > 4 else None
                 existing_record.xai_imagePath = xai_image_path
                 existing_record.createdAt = datetime.now()
@@ -471,9 +471,9 @@ class HSIPredictor:
                     seqno=seqno,
                     isRefrigerated=isRefrigerated,
                     marbling=predictions[0] if len(predictions) > 0 else None,
-                    color=predictions[1] if len(predictions) > 1 else None,
+                    meat_color=predictions[1] if len(predictions) > 1 else None,
                     texture=predictions[2] if len(predictions) > 2 else None,
-                    surfaceMoisture=predictions[3] if len(predictions) > 3 else None,
+                    surface_moisture=predictions[3] if len(predictions) > 3 else None,
                     overall=predictions[4] if len(predictions) > 4 else None,
                     xai_imagePath=xai_image_path,
                     createdAt=datetime.now()
