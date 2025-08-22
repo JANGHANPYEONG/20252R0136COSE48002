@@ -62,8 +62,6 @@ const Dashboard = () => {
   const [filters, setFilters] = useState([
     { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
     { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
-    { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
-    { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
   ]);
   const navigate = useNavigate();
   const [openPanel, setOpenPanel] = useState(false);
@@ -261,8 +259,6 @@ const Dashboard = () => {
     setFilters([
       { name: '날짜', type: 'date', options: [], value: { start: startDate.split('T')[0], end: endDate.split('T')[0] } },
       { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
-      { name: 'page', type: 'select', options: [1, 2, 3, 4, 5], value: 1 },
-      { name: 'pageSize', type: 'select', options: [10, 25, 50, 100], value: 50 },
     ]);
   }
   // 필터 적용 함수
@@ -288,12 +284,12 @@ const Dashboard = () => {
         ));
       }
 
-      // 품종 필터 업데이트
-      if (categoryIds && categoryIds.length > 0) {
-        let specieValue = '전체';
-        if (categoryIds.some(id => id >= 0 && id <= 9)) specieValue = '소';
-        else if (categoryIds.some(id => id >= 10 && id <= 20)) specieValue = '돼지';
-        else if (categoryIds.some(id => id >= 30 && id <= 40)) specieValue = '닭';
+              // 품종 필터 업데이트
+        if (categoryIds && categoryIds.length > 0) {
+          let specieValue = '전체';
+          if (categoryIds.some(id => id >= 0 && id <= 99)) specieValue = '소';
+          else if (categoryIds.some(id => id >= 100 && id <= 199)) specieValue = '돼지';
+          else if (categoryIds.some(id => id >= 200 && id <= 299)) specieValue = '닭';
 
         setFilters(prev => prev.map(f =>
           f.name === '품종'

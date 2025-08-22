@@ -161,7 +161,7 @@ const PredictionTable = ({ data, onSelectionChange, onRowClick, selectedRows = [
                         onChange={() => handleRowSelect(row.id)}
                       />
                     </TableCell>
-                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.traceNum || row.id}</TableCell>
                     <TableCell>{row.part}</TableCell>
                     <TableCell>{row.isDeepAged}</TableCell>
                     <TableCell>{row.butcheryDate}</TableCell>

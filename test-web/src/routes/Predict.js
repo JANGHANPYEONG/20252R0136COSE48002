@@ -43,20 +43,11 @@ const Predict = () => {
   const [openPanel, setOpenPanel] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [filters, setFilters] = useState([
-    {
-      name: '날짜',
-      type: 'date',
-      options: [],
-      value: { start: null, end: null },
-    },
-    {
-      name: '데이터 타입',
-      type: 'select',
-      options: ['RGB', 'MSI'],
-      value: null,
-    },
+    { name: '날짜', type: 'date', options: [], value: { start: null, end: null } },
+    { name: '품종', type: 'select', options: ['전체', '소', '돼지', '닭'], value: '전체' },
   ]);
-  const { data = [], isFetching, refetch } = useFileList(filters);
+  const [isLoaded, setIsLoaded] = useState(false); // query on/off
+  const { data = [], isFetching, refetch } = useFileList(filters, { enabled: isLoaded });
   // Dashboard에서 넘어온 데이터로 초기화 + 새로고침 대비 sessionStorage 사용
   useEffect(() => {
     if (location.state?.selectedRows) {
@@ -164,26 +155,16 @@ const Predict = () => {
   // 데이터 불러오기 함수
   const handleLoadData = async () => {
     try {
-      const { data: fresh } = await refetch();
-      const list = fresh ?? [];
-      const groupMap = {};
-      list.forEach((item) => {
-        const batchId = item.upload_batch_id || 'unknown_batch';
-        if (!groupMap[batchId]) groupMap[batchId] = [];
-        groupMap[batchId].push(item);
-      });
-      const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
-        batchId,
-        timestamp: rows[0]?.timestamp || '',
-        rows,
-      }));
-
-      setGroupedData(grouped);
+      setIsLoaded(true);
+      setTimeout(() => {
+        refetch();
+      }, 100);
+      
       // 성공 여부 알림
       setSnackbar({
         open: true,
         severity: 'success',
-        message: `데이터 ${list.length}개를 성공적으로 불러왔습니다.`,
+        message: '데이터를 불러오는 중입니다...',
       });
     } catch (err) {
       console.error('데이터 불러오기 실패:', err);
@@ -234,7 +215,7 @@ const Predict = () => {
     //   return;
     // }
     try {
-      const result = await fetchPrediction(selectedRows);
+      const result = await fetchPrediction(selectedRows, data);
       queryClient.setQueriesData({ queryKey: ['fileList'] }, (old) =>
         mergePredictions(old, result, 'prediction')
       );
@@ -255,6 +236,7 @@ const Predict = () => {
 
   const initializeData = () => {
     queryClient.removeQueries({ queryKey: ['fileList'] });
+    setIsLoaded(false);
     setSelectedRows([]);
     setOpenPanel(false);
     setDetailData(null);
@@ -278,11 +260,47 @@ const Predict = () => {
   };
   // 필터 적용 함수
   const handleApplyFilters = (appliedFilters) => {
-    setFilters(appliedFilters);
+    // appliedFilters는 백엔드용 필터 객체이므로, UI용 필터 상태는 유지
     console.log('적용된 필터:', appliedFilters);
-    // 여기서 필터링된 데이터를 API로 요청
-    // 필요하면 즉시 버튼 스피너를 띄우고 싶을 때만 refetch()
-    // refetch();
+
+    // 백엔드 필터를 UI 필터 상태에 반영
+    if (appliedFilters.filters) {
+      const { categoryIds, butcheryYmd_from, butcheryYmd_to } = appliedFilters.filters;
+
+      // 날짜 필터 업데이트
+      if (butcheryYmd_from || butcheryYmd_to) {
+        setFilters(prev => prev.map(f =>
+          f.name === '날짜'
+            ? {
+              ...f, value: {
+                start: butcheryYmd_from ? butcheryYmd_from.split('T')[0] : null,
+                end: butcheryYmd_to ? butcheryYmd_to.split('T')[0] : null
+              }
+            }
+            : f
+        ));
+      }
+
+      // 품종 필터 업데이트
+      if (categoryIds && categoryIds.length > 0) {
+        let specieValue = '전체';
+        if (categoryIds.some(id => id >= 0 && id <= 99)) specieValue = '소';
+        else if (categoryIds.some(id => id >= 100 && id <= 199)) specieValue = '돼지';
+        else if (categoryIds.some(id => id >= 200 && id <= 299)) specieValue = '닭';
+
+        setFilters(prev => prev.map(f =>
+          f.name === '품종'
+            ? { ...f, value: specieValue }
+            : f
+        ));
+      }
+    }
+
+    // 필터 적용 후 데이터 다시 로드
+    setIsLoaded(true);
+    setTimeout(() => {
+      refetch();
+    }, 100);
   };
 
   return (
@@ -350,7 +368,7 @@ const Predict = () => {
               데이터 초기화
             </Button>
           </Box>
-
+              
           <Box
             sx={{
               display: 'flex',
@@ -383,11 +401,11 @@ const Predict = () => {
                           </Typography>
                           <Typography variant="body2">
                             {filter.value.start
-                              ? filter.value.start.format('YYYY-MM-DD')
+                              ? (typeof filter.value.start === 'string' ? filter.value.start : filter.value.start.format('YYYY-MM-DD'))
                               : '처음'}{' '}
                             ~{' '}
                             {filter.value.end
-                              ? filter.value.end.format('YYYY-MM-DD')
+                              ? (typeof filter.value.end === 'string' ? filter.value.end : filter.value.end.format('YYYY-MM-DD'))
                               : '현재'}
                           </Typography>
                         </Box>
@@ -404,7 +422,7 @@ const Predict = () => {
                 }
                 // 선택 필터 처리
                 else if (filter.type === 'select' && filter.value) {
-                  const isDataTypeFilter = filter.name === '데이터 타입';
+                  const isSpecieFilter = filter.name === '품종';
                   return (
                     <Chip
                       key={filter.name}
@@ -418,7 +436,7 @@ const Predict = () => {
                           </Typography>
                           <Typography variant="body2">
                             {filter.value}
-                            {isDataTypeFilter && (
+                            {isSpecieFilter && (
                               <span
                                 style={{
                                   fontSize: '0.8rem',
@@ -427,9 +445,13 @@ const Predict = () => {
                                 }}
                               >
                                 (
-                                {filter.value === 'RGB'
-                                  ? '일반 컬러 이미지'
-                                  : '다중 스펙트럼 이미지'}
+                                {filter.value === '소'
+                                  ? '소고기'
+                                  : filter.value === '돼지'
+                                  ? '돼지고기'
+                                  : filter.value === '닭'
+                                  ? '닭고기'
+                                  : '전체'}
                                 )
                               </span>
                             )}
@@ -438,10 +460,14 @@ const Predict = () => {
                       }
                       onDelete={() => handleRemoveFilter(filter.name)}
                       sx={{
-                        backgroundColor: isDataTypeFilter
-                          ? filter.value === 'RGB'
+                        backgroundColor: isSpecieFilter
+                          ? filter.value === '소'
                             ? '#e8f5e9'
-                            : '#e0f7fa'
+                            : filter.value === '돼지'
+                            ? '#e0f7fa'
+                            : filter.value === '닭'
+                            ? '#fff3e0'
+                            : '#e3f2fd'
                           : '#e3f2fd',
                         borderRadius: '16px',
                         padding: '4px',
@@ -459,11 +485,11 @@ const Predict = () => {
                     (f.value.start || f.value.end)) ||
                   (f.type === 'select' && f.value)
               ) && (
-                  <Typography variant="body2" sx={{ color: '#666' }}>
-                    필터 버튼을 클릭하여 데이터 타입(RGB/MSI) 및 기타 필터 조건을
-                    설정할 수 있습니다.
-                  </Typography>
-                )}
+                <Typography variant="body2" sx={{ color: '#666' }}>
+                  필터 버튼을 클릭하여 품종(소/돼지/닭) 및 기타 필터 조건을
+                  설정할 수 있습니다.
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>

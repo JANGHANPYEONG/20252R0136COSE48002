@@ -2,7 +2,7 @@
 
 import { apiIP } from '../config'; // 백엔드 ML 서버 주소
 
-export const fetchPrediction = async (selectedRows) => {
+export const fetchPrediction = async (selectedRows, originalData) => {
   // dummy data
   //   const dummy = {
   //     'L01709271277001': {
@@ -88,19 +88,26 @@ export const fetchPrediction = async (selectedRows) => {
   // }
 
   try {
-    const ids = selectedRows.map((item) => item.id);
+    // selectedRows는 ID 배열이므로, 원본 데이터에서 해당 traceNum을 찾음
+    const firstId = selectedRows[0]; // 첫 번째 선택된 ID
+    const firstRow = originalData.find(item => item.id === firstId);
+    
+    if (!firstRow || !firstRow.traceNum) {
+      throw new Error('선택된 데이터에서 traceNum을 찾을 수 없습니다.');
+    }
+
     const response = await fetch(`http://${apiIP}/hsipredict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id : ids[0],   // 배열 중 첫 번째만
+        traceNum: firstRow.traceNum,   // Dashboard에서 받아오는 traceNum 사용
         seqno: 0,
         isRefrigerated: true
       }),
     });
-    console.log('ids[0] =', ids, typeof ids[0]);
+    console.log('traceNum =', firstRow.traceNum, 'type =', typeof firstRow.traceNum);
     if (!response.ok) {
       throw new Error('ML 서버 예측 요청 실패');
     }
