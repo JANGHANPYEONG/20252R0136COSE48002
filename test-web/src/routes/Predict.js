@@ -29,7 +29,6 @@ const navy = '#0F3659';
 
 const Predict = () => {
   const location = useLocation();
-  const [groupedData, setGroupedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [predicting, setPredicting] = useState(false);
   const queryClient = useQueryClient();
@@ -175,21 +174,6 @@ const Predict = () => {
       });
     }
   };
-  useEffect(() => {
-    if (!data) return;
-    const groupMap = {};
-    data.forEach((item) => {
-      const batchId = item.upload_batch_id || 'unknown_batch';
-      if (!groupMap[batchId]) groupMap[batchId] = [];
-      groupMap[batchId].push(item);
-    });
-    const grouped = Object.entries(groupMap).map(([batchId, rows]) => ({
-      batchId,
-      timestamp: rows[0]?.timestamp || '',
-      rows,
-    }));
-    setGroupedData(grouped);
-  }, [data]);
 
   // 선택 변경 핸들러
   const handleSelectionChange = (newSelection) => {
