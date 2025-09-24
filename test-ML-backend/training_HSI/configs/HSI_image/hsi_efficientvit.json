@@ -1,0 +1,127 @@
+{
+  "experiment": "beef_grading_efficientvit_m2",
+  "model": {
+    "file": "efficientvit_classifier",
+    "arch": "efficientvit",
+    "variant": "m2", 
+    "num_classes": 5,
+    "in_channels": 3,
+    "image_size": [224, 224],
+    "patch_size": 16,
+
+    "embed_dims": [64, 128, 192, 256],
+    "depths": [2, 2, 6, 2],
+    "num_heads": [2, 4, 6, 8],
+    "mlp_ratios": [4.0, 4.0, 4.0, 4.0],
+
+    "attention": {
+      "type": "cascaded_group",           
+      "groups_per_stage": [2, 2, 3, 4],   
+      "qk_dim": 64,                       
+      "v_dim": 64,                        
+      "head_dim": 32,                     
+      "use_qkv_bias": true
+    },
+
+    "dropout": 0.0,
+    "attn_dropout": 0.0,
+    "drop_path": 0.1,                     
+    "stochastic_depth_mode": "linear",
+
+    "norm_layer": "LayerNorm",
+    "norm_eps": 1e-6,
+    "act_layer": "GELU",
+
+    "use_abs_pos_emb": false,
+    "pos_emb_interpolation": "bicubic",
+
+    "stem": {
+      "type": "conv", 
+      "out_channels": 32,
+      "stride": 2,
+      "bn_eps": 1e-5
+    },
+
+    "head": {
+      "pool": "global_avg",
+      "classifier_bias": true,
+      "label_smoothing": 0.0
+    },
+
+    "pretrained": false,
+    "pretrained_path": "",
+    "strict_load": true,
+    "freeze_stages": 0,                   
+    "weight_init": "trunc_normal"
+  },
+
+  "data": {
+    "csv": "/mnt/data/datasets/beef/labels.csv",
+    "column_config": "configs/columns_beef.json",
+    "val_split": 0.1,
+    "test_split": 0.1,
+    "batch_size": 64,
+    "num_workers": 4,
+    "crop_size": [224, 224],
+    "resize_shorter": 256,
+    "center_crop_on_val": true,
+    "color_jitter": [0.4, 0.4, 0.4, 0.1],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_autoaugment": false,
+    "use_random_erasing": true,
+    "mixup": 0.0,
+    "cutmix": 0.0,
+    "normalize": {
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225],
+      "mode": "imagenet"
+    },
+    "scaler_mode": "normalized"
+  },
+
+  "train": {
+    "epochs": 200,
+    "early_stopping_patience": 15,
+    "optimizer": "AdamW",
+    "lr": 5e-4,
+    "weight_decay": 0.05,
+    "betas": [0.9, 0.999],
+    "scheduler": "CosineAnnealing",
+    "warmup_epochs": 20,
+    "min_lr": 1e-6,
+
+    "loss_fn": "CrossEntropy",
+    "label_smoothing": 0.1,
+    "class_weights": null,
+
+    "use_amp": true,
+    "grad_clip_norm": 1.0,
+    "accumulate_steps": 1,
+    "seed_everything": true
+  },
+
+  "checkpoint": {
+    "output_dir": "runs/efficientvit_m2",
+    "save_top_k": 3,
+    "monitor": "val_f1",
+    "mode": "max",
+    "resume": "",
+    "save_interval": 1
+  },
+
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "BEEF_EFFICIENTVIT_M2"
+  },
+
+  "export": {
+    "to_onnx": false,
+    "onnx_path": "exports/efficientvit_m2.onnx",
+    "dynamic_axes": true,
+    "opset": 17
+  },
+
+  "plot_keys": ["train_loss", "val_loss", "val_acc", "val_f1"],
+  "seed": 42
+}
