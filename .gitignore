@@ -60,7 +60,7 @@ test-ML-backend/.env
 # MLflow experiment tracking
 mlruns/
 mlartifacts/
-"test-ML-backend/serviceAccountKey.json" 
+"test-ML-backend/serviceAccountKey.json"
 label.csv
 migration_local
 HSI_PREDICT_API_SPEC.md
@@ -71,3 +71,27 @@ migration_local.py
 check_ai_table_schema.py
 check_table_schema.py
 test_hsi_predict.py
+
+# Claude Code generated files
+.claude/
+**/.claude/
+
+# Training checkpoints and models
+test-ML-backend/training_HSI/checkpoints/
+test-ML-backend/training_HSI/*.pt
+test-ML-backend/training_HSI/*.pth
+test-ML-backend/training_HSI/*.h5
+
+# Temporary and test config files
+test-ML-backend/training_HSI/test_*.json
+test-ML-backend/training_HSI/*_test.json
+
+# Training plots and artifacts
+test-ML-backend/training_HSI/*.png
+test-ML-backend/training_HSI/*.jpg
+test-ML-backend/training_HSI/training_curves.png
+
+# Temporary files
+temp_*.py
+temp_*.json
+*_temp.*
