@@ -150,7 +150,7 @@ class HSITrainer:
         """스케줄러를 설정합니다."""
         train_config = self.config.get('train', {})
         scheduler_name = train_config.get('scheduler', 'ReduceLROnPlateau')
-        
+
         if scheduler_name == 'ReduceLROnPlateau':
             patience = train_config.get('scheduler_patience', 5)
             factor = train_config.get('scheduler_factor', 0.5)
@@ -159,7 +159,25 @@ class HSITrainer:
             )
         elif scheduler_name == 'CosineAnnealingLR':
             T_max = train_config.get('scheduler_t_max', 50)
-            return optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=T_max)
+            eta_min = train_config.get('scheduler_eta_min', 1e-6)
+            return optim.lr_scheduler.CosineAnnealingLR(
+                self.optimizer, T_max=T_max, eta_min=eta_min
+            )
+        elif scheduler_name == 'CosineAnnealingWarmRestarts':
+            T_0 = train_config.get('scheduler_t_0', 10)
+            T_mult = train_config.get('scheduler_t_mult', 2)
+            eta_min = train_config.get('scheduler_eta_min', 1e-6)
+            return optim.lr_scheduler.CosineAnnealingWarmRestarts(
+                self.optimizer, T_0=T_0, T_mult=T_mult, eta_min=eta_min
+            )
+        elif scheduler_name == 'OneCycleLR':
+            max_lr = train_config.get('lr', 1e-3)
+            epochs = train_config.get('epochs', 50)
+            steps_per_epoch = train_config.get('steps_per_epoch', 100)  # 대략적인 값
+            return optim.lr_scheduler.OneCycleLR(
+                self.optimizer, max_lr=max_lr,
+                epochs=epochs, steps_per_epoch=steps_per_epoch
+            )
         else:
             return None
     
@@ -200,10 +218,15 @@ class HSITrainer:
         reg_outputs = outputs  # (B, 5) - Total, Marbling, Meat Color, Texture, Moisture
         reg_targets = targets[:, self.reg_indices]  # (B, 5)
 
-        # 전체 평균 메트릭 업데이트
+        # 전체 평균 메트릭 업데이트 (기존 방식)
         self.metrics['reg_mse'].update(reg_outputs.flatten(), reg_targets.flatten())
         self.metrics['reg_mae'].update(reg_outputs.flatten(), reg_targets.flatten())
         self.metrics['reg_r2'].update(reg_outputs.flatten(), reg_targets.flatten())
+
+        # 개별 품질 지표별 메트릭 업데이트 (개선된 방식)
+        self.metrics['reg_mse_individual'].update(reg_outputs, reg_targets)
+        self.metrics['reg_mae_individual'].update(reg_outputs, reg_targets)
+        self.metrics['reg_r2_individual'].update(reg_outputs, reg_targets)
 
         # AUC 계산을 위한 데이터 저장 (배치별)
         if not hasattr(self, '_auc_outputs'):
@@ -217,7 +240,7 @@ class HSITrainer:
         """누적된 메트릭을 계산합니다."""
         metrics = {}
 
-        # 회귀 메트릭 계산
+        # 전체 평균 회귀 메트릭 계산
         try:
             mse = self.metrics['reg_mse'].compute().item()
             mae = self.metrics['reg_mae'].compute().item()
@@ -236,34 +259,97 @@ class HSITrainer:
                 'r2': -999.0
             })
 
-        # AUC 계산 (회귀에서 연속값을 이용한 ROC-AUC)
+        # 개별 품질 지표별 메트릭 계산
+        try:
+            # 개별 MSE (5개 출력에 대한 MSE)
+            mse_individual = self.metrics['reg_mse_individual'].compute().item()
+            mae_individual = self.metrics['reg_mae_individual'].compute().item()
+
+            # R2 개별 값 계산
+            r2_individual = self.metrics['reg_r2_individual'].compute()
+
+            # R2 개별 값이 텐서인지 스칼라인지 확인
+            if hasattr(r2_individual, 'shape') and len(r2_individual.shape) > 0:
+                # 다차원 텐서인 경우 - 개별 값들의 평균
+                r2_mean = r2_individual.mean().item()
+                quality_names = ['Total', 'Marbling', 'MeatColor', 'Texture', 'Moisture']
+                for i, name in enumerate(quality_names):
+                    if i < len(r2_individual):
+                        metrics[f'r2_{name.lower()}'] = r2_individual[i].item()
+            else:
+                # 스칼라인 경우 - 그대로 사용
+                r2_mean = r2_individual.item() if hasattr(r2_individual, 'item') else float(r2_individual)
+
+            metrics.update({
+                'mse_individual': mse_individual,
+                'mae_individual': mae_individual,
+                'r2_individual_mean': r2_mean,
+            })
+
+        except Exception as e:
+            print(f"Individual metrics calculation failed: {e}")
+            # R2 개별 계산 실패시 기본 R2 사용
+            fallback_r2 = metrics.get('r2', -999.0)
+            metrics.update({
+                'mse_individual': metrics.get('mse', 999.0),
+                'mae_individual': metrics.get('mae', 999.0),
+                'r2_individual_mean': fallback_r2
+            })
+
+        # 개선된 AUC 계산 (모든 5개 품질 지표에 대한 평균 AUC)
         try:
             if hasattr(self, '_auc_outputs') and self._auc_outputs:
                 all_outputs = np.concatenate(self._auc_outputs, axis=0)  # (N, 5)
                 all_targets = np.concatenate(self._auc_targets, axis=0)  # (N, 5)
 
-                # Total score (첫 번째 출력)에 대한 AUC 계산
-                # 연속값을 이진 분류 문제로 변환 (중간값 기준)
-                total_outputs = all_outputs[:, 0]  # Total 예측값
-                total_targets = all_targets[:, 0]   # Total 실제값
+                auc_scores = []
+                for i in range(5):  # 각 품질 지표별 AUC 계산
+                    outputs_i = all_outputs[:, i]
+                    targets_i = all_targets[:, i]
 
-                # 중간값을 기준으로 이진화
-                median_target = np.median(total_targets)
-                binary_targets = (total_targets >= median_target).astype(int)
+                    # 중간값을 기준으로 이진화
+                    median_target = np.median(targets_i)
+                    binary_targets = (targets_i >= median_target).astype(int)
 
-                if len(np.unique(binary_targets)) > 1:  # 두 클래스 모두 존재할 때만
-                    auc = roc_auc_score(binary_targets, total_outputs)
-                    metrics['auc'] = auc
-                else:
-                    metrics['auc'] = 0.5  # 기본값
+                    if len(np.unique(binary_targets)) > 1:  # 두 클래스 모두 존재할 때만
+                        auc_i = roc_auc_score(binary_targets, outputs_i)
+                        auc_scores.append(auc_i)
+                    else:
+                        auc_scores.append(0.5)
+
+                metrics['auc'] = np.mean(auc_scores)  # 5개 품질 지표 AUC의 평균
             else:
                 metrics['auc'] = 0.5
         except Exception as e:
             print(f"AUC calculation failed: {e}")
             metrics['auc'] = 0.5
 
-        # Combined score = R2 점수 (R2가 높을수록 좋음)
-        metrics['combined_score'] = max(0, metrics.get('r2', 0))
+        # Combined score 계산 - 여러 메트릭을 조합한 종합 점수
+        r2_score = metrics.get('r2_individual_mean', metrics.get('r2', 0))
+        mse_val = metrics.get('mse', 1.0)
+        mae_val = metrics.get('mae', 1.0)
+
+        # 안전한 역수 계산 (0 나누기 방지)
+        mse_score = 1.0 / (1.0 + max(mse_val, 0.001))  # MSE 역수로 변환
+        mae_score = 1.0 / (1.0 + max(mae_val, 0.001))  # MAE 역수로 변환
+        auc_score = metrics.get('auc', 0.5)
+
+        # 가중 평균으로 combined score 계산
+        combined_score = (
+            0.5 * max(0, r2_score) +      # R2 (50% 가중치, 음수는 0으로)
+            0.2 * mse_score +             # MSE 역수 (20% 가중치)
+            0.2 * mae_score +             # MAE 역수 (20% 가중치)
+            0.1 * auc_score               # AUC (10% 가중치)
+        )
+
+        metrics['combined_score'] = combined_score
+
+        # 디버깅 정보 (첫 번째 에포크에만)
+        if not hasattr(self, '_debug_printed'):
+            print(f"Combined Score Debug: R2={r2_score:.4f}, MSE={mse_val:.4f}, MAE={mae_val:.4f}, AUC={auc_score:.4f}")
+            print(f"Combined Score Components: R2_part={0.5 * max(0, r2_score):.4f}, MSE_part={0.2 * mse_score:.4f}, MAE_part={0.2 * mae_score:.4f}, AUC_part={0.1 * auc_score:.4f}")
+            print(f"Final Combined Score: {combined_score:.4f}")
+            self._debug_printed = True
 
         return metrics
     
@@ -271,10 +357,15 @@ class HSITrainer:
         """TorchMetrics를 설정합니다."""
         self.metrics = {}
 
-        # 회귀 메트릭 설정 (회귀 전용 모델)
+        # 전체 평균 회귀 메트릭
         self.metrics['reg_mse'] = MeanSquaredError().to(self.device)
         self.metrics['reg_mae'] = MeanAbsoluteError().to(self.device)
         self.metrics['reg_r2'] = R2Score().to(self.device)
+
+        # 개별 품질 지표별 메트릭 (5개 출력: Total, Marbling, Meat Color, Texture, Moisture)
+        self.metrics['reg_mse_individual'] = MeanSquaredError().to(self.device)
+        self.metrics['reg_mae_individual'] = MeanAbsoluteError().to(self.device)
+        self.metrics['reg_r2_individual'] = R2Score(multioutput='raw_values').to(self.device)
     
     def _calculate_loss(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """회귀 손실을 계산합니다."""
@@ -324,30 +415,33 @@ class HSITrainer:
         for batch_idx, batch in enumerate(pbar):
             if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                 continue
-            images, targets, _, sample_indices = batch
+            images, targets, mask_tensor, sample_indices = batch
             images = images.to(self.device)
             targets = targets.to(self.device)
-            
+            mask_tensor = mask_tensor.to(self.device)
+
             self.optimizer.zero_grad()
-            
+
             # AMP 적용
             if self.use_amp:
                 with torch.cuda.amp.autocast():
-                    outputs = self.model(images)
+                    # 채널 마스킹 적용 (누락된 파장 처리)
+                    outputs = self.model(images, channel_mask=mask_tensor)
                     loss, loss_components = self._calculate_loss(outputs, targets)
-                
+
                 # GradScaler를 사용한 backward 및 step
                 self.scaler.scale(loss).backward()
-                
+
                 # Gradient clipping
                 if self.grad_clip_norm is not None:
                     self.scaler.unscale_(self.optimizer)
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip_norm)
-                
+
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
             else:
-                outputs = self.model(images)
+                # 채널 마스킹 적용 (누락된 파장 처리)
+                outputs = self.model(images, channel_mask=mask_tensor)
                 loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 loss.backward()
@@ -395,17 +489,20 @@ class HSITrainer:
             for batch_idx, batch in enumerate(pbar):
                 if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                     continue
-                images, targets, _, sample_indices = batch
+                images, targets, mask_tensor, sample_indices = batch
                 images = images.to(self.device)
                 targets = targets.to(self.device)
-                
+                mask_tensor = mask_tensor.to(self.device)
+
                 # AMP 적용 (검증 시에도 일관성 유지)
                 if self.use_amp:
                     with torch.cuda.amp.autocast():
-                        outputs = self.model(images)
+                        # 채널 마스킹 적용
+                        outputs = self.model(images, channel_mask=mask_tensor)
                         loss, loss_components = self._calculate_loss(outputs, targets)
                 else:
-                    outputs = self.model(images)
+                    # 채널 마스킹 적용
+                    outputs = self.model(images, channel_mask=mask_tensor)
                     loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 total_loss += loss.item()
@@ -458,8 +555,16 @@ class HSITrainer:
             if self.scheduler is not None:
                 if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
                     self.scheduler.step(val_loss)
+                elif isinstance(self.scheduler, optim.lr_scheduler.OneCycleLR):
+                    # OneCycleLR은 배치마다 호출되므로 여기서는 건너뜀
+                    pass
                 else:
                     self.scheduler.step()
+
+            # 현재 학습률 로깅
+            current_lr = self.optimizer.param_groups[0]['lr']
+            if logger is not None:
+                logger.log_metrics({'learning_rate': current_lr}, step=epoch)
             
             # 기록 저장
             train_losses.append(train_loss)

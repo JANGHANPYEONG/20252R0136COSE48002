@@ -128,7 +128,8 @@ def main():
             use_flip=config.get('data', {}).get('use_flip', True),
             use_rotation=config.get('data', {}).get('use_rotation', True),
             use_noise=config.get('data', {}).get('use_noise', True),
-            use_brightness_contrast=config.get('data', {}).get('use_brightness_contrast', True)
+            use_brightness_contrast=config.get('data', {}).get('use_brightness_contrast', True),
+            use_advanced_aug=config.get('data', {}).get('use_advanced_aug', True)
         )
         image_size = tuple(config.get('data', {}).get('target_size', [224, 224]))
         val_transform = get_val_transforms(image_size=image_size)

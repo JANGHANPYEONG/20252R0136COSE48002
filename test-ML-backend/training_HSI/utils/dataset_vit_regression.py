@@ -14,6 +14,25 @@ warnings.filterwarnings('ignore')
 from .wavelength_detector import WavelengthDetector
 
 
+class TransformWrapper(Dataset):
+    """Dataset wrapper for applying transforms"""
+    def __init__(self, dataset, transform):
+        self.dataset = dataset
+        self.transform = transform
+
+    def __getitem__(self, idx):
+        item = self.dataset[idx]
+        if item is None:
+            return None
+        images, labels, mask, sample_idx = item
+        if self.transform:
+            images = self.transform(images)
+        return images, labels, mask, sample_idx
+
+    def __len__(self):
+        return len(self.dataset)
+
+
 class ViTRegressionDataset(Dataset):
     """ViT Regression용 HSI 데이터셋 클래스"""
 
@@ -385,21 +404,15 @@ class ViTRegressionDataset(Dataset):
         # NaN 처리
         image_cube = np.nan_to_num(image_cube, nan=0.0, posinf=1.0, neginf=0.0)
 
-        # 라벨 생성 - 멀티태스크용 (분류 + 회귀)
-        # Total을 분류로 (3-8 -> 0-5), 나머지를 회귀로
+        # 라벨 생성 - 회귀 전용 (5개 품질 지표)
         labels = []
 
-        # 분류 라벨: Total을 연속된 클래스 인덱스로 매핑
-        total_original = sample['label']  # 3,5,6,7,8
-        class_mapping = {3: 0, 5: 1, 6: 2, 7: 3, 8: 4}  # 실제 등장하는 클래스들을 0-4로 매핑
-        total_class = class_mapping.get(total_original, 0)  # 매핑되지 않은 경우 0으로 기본값
-        labels.append(float(total_class))
-
-        # 회귀 라벨: Marbling, Meat Color, Texture, Moisture
-        labels.append(float(sample['marbling']))
-        labels.append(float(sample['meat_color']))
-        labels.append(float(sample['texture']))
-        labels.append(float(sample['moisture']))
+        # 모든 품질 지표를 회귀 라벨로 사용 (Total, Marbling, Meat Color, Texture, Moisture)
+        labels.append(float(sample['label']))      # Total
+        labels.append(float(sample['marbling']))   # Marbling
+        labels.append(float(sample['meat_color'])) # Meat Color
+        labels.append(float(sample['texture']))    # Texture
+        labels.append(float(sample['moisture']))   # Surface Moisture
 
         labels = np.array(labels, dtype=np.float32)
 
@@ -487,24 +500,6 @@ def create_vit_regression_data_loaders(root_dir, batch_size=8, num_workers=0,
     print("Calculating pos_weight statistics...")
     pos_weight_info = _calculate_pos_weight_info(full_dataset, train_indices)
 
-    # Transform 적용을 위한 wrapper 클래스
-    class TransformWrapper:
-        def __init__(self, dataset, transform):
-            self.dataset = dataset
-            self.transform = transform
-
-        def __getitem__(self, idx):
-            item = self.dataset[idx]
-            if item is None:
-                return None
-            images, labels, mask, sample_idx = item
-            if self.transform:
-                images = self.transform(images)
-            return images, labels, mask, sample_idx
-
-        def __len__(self):
-            return len(self.dataset)
-
     # Transform 적용
     train_dataset = TransformWrapper(train_dataset, train_transform)
     val_dataset = TransformWrapper(val_dataset, val_transform)
@@ -554,53 +549,44 @@ def create_vit_regression_data_loaders(root_dir, batch_size=8, num_workers=0,
 
 
 def _calculate_pos_weight_info(dataset, train_indices):
-    """train set의 라벨 통계를 계산하여 pos_weight 정보를 반환"""
+    """회귀 전용 모델을 위한 라벨 통계 정보 반환"""
 
-    # Total 점수를 분류로 사용 (첫 번째 라벨)
-    train_labels = []
-    class_mapping = {}  # 실제 클래스 -> 연속된 인덱스 매핑
-    mapped_labels = []
-
-    # 클래스 매핑 정의 (dataset과 동일하게)
-    class_mapping = {3: 0, 5: 1, 6: 2, 7: 3, 8: 4}
+    # 회귀 전용 - 라벨 분포 통계만 계산
+    train_labels = {
+        'Total': [],
+        'Marbling': [],
+        'MeatColor': [],
+        'Texture': [],
+        'Moisture': []
+    }
 
     for idx in train_indices:
         if idx < len(dataset.samples):
             sample = dataset.samples[idx]
-            # Total score를 연속된 인덱스로 매핑
-            total_original = sample['label']  # 3,5,6,7,8
-            total_class = class_mapping.get(total_original, 0)
-            train_labels.append(total_class)
+            train_labels['Total'].append(sample['label'])
+            train_labels['Marbling'].append(sample['marbling'])
+            train_labels['MeatColor'].append(sample['meat_color'])
+            train_labels['Texture'].append(sample['texture'])
+            train_labels['Moisture'].append(sample['moisture'])
 
-    # 매핑된 라벨을 그대로 사용
-    mapped_labels = train_labels
-    unique_classes = sorted(list(set(mapped_labels)))
-
-    # 매핑된 라벨로 카운트 계산
-    mapped_unique_labels, mapped_counts = np.unique(mapped_labels, return_counts=True)
-
-    # pos_weight 계산 (실제 등장한 클래스 수에 맞춰)
-    total_samples = len(mapped_labels)
-    pos_weights = []
-    num_classes = len(unique_classes)
-
-    for cls in range(num_classes):
-        if cls in mapped_unique_labels:
-            cls_count = mapped_counts[np.where(mapped_unique_labels == cls)[0][0]]
-            neg_count = total_samples - cls_count
-            pos_weight = neg_count / max(cls_count, 1)
-        else:
-            pos_weight = 1.0
-        pos_weights.append(pos_weight)
+    # 회귀 통계 계산
+    regression_stats = {}
+    for name, values in train_labels.items():
+        values = np.array(values)
+        regression_stats[name] = {
+            'mean': float(np.mean(values)),
+            'std': float(np.std(values)),
+            'min': float(np.min(values)),
+            'max': float(np.max(values))
+        }
 
     pos_weight_info = {
-        'cls_indices': [0],  # Total score가 분류 태스크 (첫 번째 인덱스)
-        'reg_indices': [1, 2, 3, 4],  # 나머지는 회귀 태스크 (Marbling, Meat Color, Texture, Surface Moisture)
-        'pos_weight': torch.tensor(pos_weights, dtype=torch.float32),
-        'class_counts': dict(zip(mapped_unique_labels.tolist(), mapped_counts.tolist())),
-        'total_samples': total_samples,
-        'class_mapping': class_mapping,  # 원본 클래스 -> 매핑된 인덱스
-        'original_classes': unique_classes  # 실제 등장한 원본 클래스들
+        'cls_indices': [],  # 분류 없음
+        'reg_indices': [0, 1, 2, 3, 4],  # 모든 5개 출력이 회귀 (Total, Marbling, Meat Color, Texture, Surface Moisture)
+        'pos_weight': None,  # 회귀에서는 pos_weight 사용하지 않음
+        'class_counts': {},  # 분류 없음
+        'total_samples': len(train_indices),
+        'regression_stats': regression_stats  # 회귀 통계 추가
     }
 
     return pos_weight_info
