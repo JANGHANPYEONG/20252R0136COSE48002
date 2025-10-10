@@ -9,9 +9,31 @@ import time
 from tqdm import tqdm
 from torchmetrics.classification import MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAUROC
 from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError, R2Score
+from torchmetrics import Metric
 import tempfile
 import os
 
+
+# Threshold 기반 Regression accuracy를 계산하기 위한 metric 클래스
+class RegressionAccuracy(Metric):
+
+    full_state_update = False
+
+    def __init__(self, threshold: float = 0.5):
+        super().__init__()
+        self.threshold = threshold
+        self.add_state("correct", default=torch.tensor(0.), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0.), dist_reduce_fx="sum")
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
+        diff = torch.abs(preds - target)
+        correct_mask = (diff <= self.threshold).float()
+        self.correct += correct_mask.sum()
+        self.total += target.numel()
+
+    def compute(self):
+        return self.correct / (self.total + 1e-6)
+    
 
 class MultiTaskLossWrapper(nn.Module):
     """멀티태스크 손실을 위한 래퍼 클래스"""
@@ -249,6 +271,7 @@ class HSITrainer:
                 self.metrics['reg_mse'].update(reg_outputs[:, i], reg_targets[:, i])
                 self.metrics['reg_mae'].update(reg_outputs[:, i], reg_targets[:, i])
                 self.metrics['reg_r2'].update(reg_outputs[:, i], reg_targets[:, i])
+                self.metrics['reg_regacc'].update(reg_outputs[:, i], reg_targets[:, i])
     
     def _compute_metrics(self) -> Dict[str, float]:
         """누적된 메트릭을 계산합니다."""
@@ -267,7 +290,8 @@ class HSITrainer:
             metrics.update({
                 'reg_mse': self.metrics['reg_mse'].compute().item(),
                 'reg_mae': self.metrics['reg_mae'].compute().item(),
-                'reg_r2': r2
+                'reg_r2': r2,
+                'reg_regacc': self.metrics['reg_regacc'].compute().item()
             })
         # 전체 메트릭 (가중 평균)
         if self.cls_indices and self.reg_indices:
@@ -300,6 +324,7 @@ class HSITrainer:
             self.metrics['reg_mse'] = MeanSquaredError().to(self.device)
             self.metrics['reg_mae'] = MeanAbsoluteError().to(self.device)
             self.metrics['reg_r2'] = R2Score().to(self.device)
+            self.metrics['reg_regacc'] = RegressionAccuracy(threshold=self.config.get('regacc_threshold', 0.5)).to(self.device)
     
     def _calculate_loss(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """멀티태스크 손실을 계산합니다."""
@@ -508,6 +533,7 @@ class HSITrainer:
             if self.reg_indices:
                 print(f"Train R2: {train_epoch_metrics.get('reg_r2', 0):.4f}, Val R2: {val_epoch_metrics.get('reg_r2', 0):.4f}")
                 print(f"Train MSE: {train_epoch_metrics.get('reg_mse', 0):.4f}, Val MSE: {val_epoch_metrics.get('reg_mse', 0):.4f}")
+                print(f"Train ACC: {train_epoch_metrics.get('reg_regacc', 0):.4f}, Val ACC: {val_epoch_metrics.get('reg_regacc', 0):.4f}")
             
             print(f"Combined Score: {train_epoch_metrics.get('combined_score', 0):.4f}")
             
@@ -598,6 +624,7 @@ class HSITrainer:
         if self.reg_indices:
             print(f"Test R2: {test_metrics.get('reg_r2', 0):.4f}")
             print(f"Test MSE: {test_metrics.get('reg_mse', 0):.4f}")
+            print(f"Test Acc: {test_metrics.get('reg_regacc', 0):.4f}")
         
         print(f"Test combined score: {test_metrics.get('combined_score', 0):.4f}")
         

@@ -108,6 +108,9 @@ class HSIDataset(Dataset):
         image_size = self.column_config['image_size']
         image_path_start = self.column_config['column_order']['image_path_start_index']
         hsi_base_dir = self.column_config['base_dirs']['hsi_image_dir']
+
+        crop_start_index = self.column_config['column_order']['crop_start_index']
+        rgb_image_path_start_index = self.column_config['column_order']['rgb_image_path_start_index']
         
         image_paths = []
         for i, wavelength in enumerate(wavelengths):
@@ -123,12 +126,32 @@ class HSIDataset(Dataset):
             else:
                 return None
         
+        # crop 좌표가 있는 경우
+        crop_box = None
+        if crop_start_index is not None:
+            crop_coord = []
+            crop_coord.append(self._parse_coord(row.iloc[crop_start_index]))
+            crop_coord.append(self._parse_coord(row.iloc[crop_start_index + 1]))
+            crop_coord.append(self._parse_coord(row.iloc[crop_start_index + 2]))
+            crop_coord.append(self._parse_coord(row.iloc[crop_start_index + 3]))
+            xs = [x for x, _ in crop_coord]
+            ys = [y for _, y in crop_coord]
+            left, upper = min(xs), min(ys)
+            right, lower = max(xs), max(ys)
+            crop_box = (left, upper, right, lower)
+        
         image_cube = []
         for image_path in image_paths:
             try:
                 if os.path.exists(image_path):
                     img = Image.open(image_path).convert('L')
-                    img = img.resize(image_size, resample=Image.NEAREST)
+
+                    # crop 좌표가 없는 경우 image_size로 강제 resize
+                    if crop_start_index is None:
+                        img = img.resize(image_size, resample=Image.NEAREST)
+                    else:
+                        img = img.crop(crop_box)                    
+
                     img_array = np.array(img, dtype=np.float32)
                     # 0-1 scaling only for normalized mode
                     if self.scaler_mode == 'normalized':
@@ -142,10 +165,46 @@ class HSIDataset(Dataset):
             except Exception as e:
                 print(f"[Error Loading] row_id={idx} | path={image_path} | wavelength_idx={i} | error={e}")
                 return None
-        if len(image_cube) == len(wavelengths):
+
+        # RGB image를 사용하는 경우
+        if rgb_image_path_start_index is not None:
+            rgb_image_path = row.iloc[rgb_image_path_start_index]
+            try:
+                if os.path.exists(rgb_image_path):
+                    img = Image.open(rgb_image_path).convert('RGB')
+
+                    if crop_start_index is None:
+                        img = img.resize(image_size, resample=Image.NEAREST)
+                    else:
+                        img = img.crop(crop_box)
+                    
+                    img_array = np.array(img, dtype=np.float32)
+                    if self.scaler_mode == 'normalized':
+                        img_array = img_array / 255.0
+                    image_cube.append(img_array[..., 0])
+                    image_cube.append(img_array[..., 1])
+                    image_cube.append(img_array[..., 2])
+                else:
+                    print(f"[Missing Image] RGB image doesnt exists: path={rgb_image_path}")
+                    return None
+            except Exception as e:
+                print(f"[Error Loading] Error occurs during loading RGB image: path={rgb_image_path} | error={e}")
+
+        if len(image_cube) == len(wavelengths) + (3 if rgb_image_path_start_index else 0):
             image_cube = np.stack(image_cube, axis=-1)
             return image_cube
         else:
+            return None
+        
+    def _parse_coord(self, s):
+        import re
+        pattern = r'(\d+)\s*,\s*(\d+)'
+        m = re.search(pattern, s)
+        if m:
+            x, y = map(int, m.groups())
+            return (x, y)
+        else:
+            print(f"[WARN] Invalid coord string: {s}")
             return None
     
     def _get_labels(self, idx):

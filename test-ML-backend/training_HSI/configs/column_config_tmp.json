@@ -4,8 +4,9 @@
     "label_start_index": 2,
     "vector_start_index": null,
     "image_path_start_index": 7,
-    "rgb_image_path_start_index": null,
-    "rgb_mask_path_index": null
+    "rgb_image_path_start_index": 5,
+    "rgb_mask_path_index": null,
+    "crop_start_index": 21
   },
   "label_columns": [
     "Marbling",
@@ -24,7 +25,7 @@
       "Total"
     ]
   },
-  "wavelengths": [430, 540],
+  "wavelengths": [430, 540, 580],
   "image_size": [256, 256],
   "rgb_image_size": [224, 224],
   "base_dirs": {
