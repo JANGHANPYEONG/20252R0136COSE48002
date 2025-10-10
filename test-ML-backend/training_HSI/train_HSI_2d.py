@@ -252,16 +252,6 @@ def main():
         
         print("Training completed successfully!")
         
-        if 'cls_f1_score' in test_metrics:
-            print(f"Test F1 Score: {test_metrics['cls_f1_score']:.4f}")
-            print(f"Test AUC: {test_metrics['cls_auc']:.4f}")
-        
-        if 'reg_r2' in test_metrics:
-            print(f"Test R2 Score: {test_metrics['reg_r2']:.4f}")
-            print(f"Test MSE: {test_metrics['reg_mse']:.4f}")
-        
-        print(f"Test Combined Score: {test_metrics.get('combined_score', 0):.4f}")
-        
     except Exception as e:
         print(f"Error during training: {e}")
         import traceback
