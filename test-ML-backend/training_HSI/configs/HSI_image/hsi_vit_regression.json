@@ -1,0 +1,56 @@
+{
+  "experiment": "hsi_vit_regression",
+  "model": {
+    "file": "hsi_vit_regression",
+    "in_channels": 6,
+    "img_size": 224,
+    "patch_size": 16,
+    "emb_dim": 96,
+    "depth": 4,
+    "num_heads": 6,
+    "mlp_dim": 256,
+    "num_classes": 5,
+    "dropout": 0.1
+  },
+  "data": {
+    "root_dir": "C:/sanhak/manage-dataset/result",
+    "column_config": "configs/HSI_image/column_config_vit_regression.json",
+    "wavelengths": null,
+    "wavelength_strategy": "all_available",
+    "missing_wavelength_strategy": "use_available",
+    "use_rgb": true,
+    "val_split": 0.2,
+    "test_split": 0.1,
+    "batch_size": 4,
+    "num_workers": 0,
+    "crop_size": [224, 224],
+    "target_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "use_advanced_aug": true,
+    "scaler_mode": "normalized"
+  },
+  "train": {
+    "epochs": 50,
+    "early_stopping_patience": 10,
+    "optimizer": "AdamW",
+    "lr": 1e-3,
+    "scheduler": "CosineAnnealingWarmRestarts",
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "scheduler_t_0": 10,
+    "scheduler_t_mult": 2,
+    "scheduler_eta_min": 1e-6,
+    "loss_fn": "equal",
+    "use_amp": false,
+    "grad_clip_norm": 1.0
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_ViT_Regression"
+  },
+  "plot_keys": ["r2", "mse", "auc", "combined_score"],
+  "seed": 42
+}
