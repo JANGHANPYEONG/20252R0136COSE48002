@@ -1,32 +1,21 @@
 {
   "column_order": {
     "id_column_index": 0,
-    "label_start_index": 1,
+    "label_start_index": 10,
     "vector_start_index": null,
-    "image_path_start_index": null,
-    "rgb_image_path_start_index": 11,
+    "image_path_start_index": 37,
+    "rgb_image_path_start_index": 40,
     "rgb_mask_path_index": null
   },
   "label_columns": [
-    "Marbling",
-    "Meat Color",
-    "Texture",
-    "Surface Moisture",
-    "Total",
-    "GRADE_3",
-    "GRADE_2",
-    "GRADE_1",
-    "GRADE_1+",
-    "GRADE_1++"
+  "Marbling",
+  "Meat Color",
+  "Texture",
+  "Surface Moisture",
+  "Total"
   ],
   "label_types": {
-    "classification": [
-      "GRADE_3",
-      "GRADE_2",
-      "GRADE_1",
-      "GRADE_1+",
-      "GRADE_1++"
-    ],
+    "classification": [],
     "regression": [
       "Marbling",
       "Meat Color",
@@ -35,9 +24,17 @@
       "Total"
     ]
   },
-  "wavelengths": [430, 540],
-  "image_size": [256, 256],
+    "regression": [
+      "Marbling",
+      "Meat Color",
+      "Texture",
+      "Surface Moisture",
+      "Total"
+    ],
+  "wavelengths": [430, 540, 580],
+  "image_size": [225, 225],
   "rgb_image_size": [224, 224],
+  "hsi_fallback_mode": "zeros",
   "base_dirs": {
     "hsi_image_dir": "/mnt/data/datasets_HSI/meat_image",
     "rgb_image_dir": "/mnt/data/datasets_RGB/rgb_meat_image",

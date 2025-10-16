@@ -1,5 +1,5 @@
 {
-  "experiment": "hsi_ssanet_baseline",
+  "experiment": "hsi_ssanet_baseline_no_kde",
   "model": {
     "file": "hsi_ssanet",
     "num_classes": 5,
@@ -38,11 +38,10 @@
       "use": false
     },
     "KDE_Layer": {
-      "use": true,
+      "use": false,
       "kde_dim": 46,
       "kde_hidden_dim": 128
     }
-
   },
   "data": {
     "csv": "../../../dataset/label_with_paths_3dim+rgb.csv",
@@ -57,10 +56,11 @@
     "use_rotation": true,
     "use_noise": true,
     "use_brightness_contrast": true,
-    "scaler_mode": "normalized"
+    "scaler_mode": "normalized",
+    "use_kde": false
   },
   "train": {
-    "epochs": 50,
+    "epochs": 20,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
@@ -73,7 +73,7 @@
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "hsi_ssanet"
+    "experiment_name": "hsi_ssanet_baseline"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
   "seed": 42

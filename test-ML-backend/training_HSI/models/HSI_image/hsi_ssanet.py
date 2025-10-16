@@ -249,23 +249,60 @@ class SpectralSpatialAttention(nn.Module):
         x = self.reduce(x) # (SeAM + SaAM) 결과를 1x1 conv로 축소
 
         return x
+    
+# KDE Distribution Statistics Processor
+class KDEProcessor(nn.Module):
+    """KDE 분포 통계를 처리하는 간단한 MLP"""
+    def __init__(self, kde_dim, hidden_dim, output_dim, dropout=0.1):
+        super().__init__()
+        self.kde_processor = nn.Sequential(
+            nn.Linear(kde_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim // 2, output_dim)
+        )
+        
+    def forward(self, kde_features):
+        return self.kde_processor(kde_features)
+
+class SimpleMultiModalFusion(nn.Module):
+    """이미지 특성과 KDE 분포 통계를 간단히 결합"""
+    def __init__(self, image_dim, kde_dim, fusion_dim):
+        super().__init__()
+        self.fusion = nn.Sequential(
+            nn.Linear(image_dim + kde_dim, fusion_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(fusion_dim, fusion_dim)
+        )
+        
+    def forward(self, image_features, kde_features):
+        combined = torch.cat([image_features, kde_features], dim=1)
+        return self.fusion(combined)
 
 # HSI SSANet Model
 # main model class that uses the SpectralSpatialAttention module
 # HSI_SSANet
 class HSI_SSANet(nn.Module):
-    def __init__(self, in_channels, num_classes, ssa_out_channels,
+    def __init__(self, in_channels, num_targets, ssa_out_channels,
                  image_size, patch_size, embed_dim,
                  num_TransformerEncoder_heads, num_TransformerEncoder_layers,
                  transformer_mlp_ratio, transformer_dropout,
                  seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size,
-                 UsingSeAM, UsingSaAM, branch_mode):
+                 UsingSeAM, UsingSaAM, branch_mode,
+                 UsingKDE, kde_dim, kde_hidden_dim,
+                 output_activation: str = "identity"):
         super().__init__()
 
         self.in_channels = in_channels
-        self.num_classes = num_classes
+        self.num_targets = num_targets
+        self.output_activation = output_activation  # "identity" | "sigmoid" | "tanh"
+        self.UsingKDE = UsingKDE
 
-        # 1. SSA module
+        # 1) SSA
         self.ssa = SpectralSpatialAttention(
             in_channels=in_channels,
             out_channels=ssa_out_channels,
@@ -278,7 +315,7 @@ class HSI_SSANet(nn.Module):
             branch_mode=branch_mode
         )
 
-        # 2. Patchify + Position Embedding
+        # 2) Patch + PosEmb
         self.patch_embed = PatchifyPositionEmbedding(
             patch_size=patch_size,
             in_channels=ssa_out_channels,
@@ -286,7 +323,7 @@ class HSI_SSANet(nn.Module):
             image_size=image_size
         )
 
-        # 3. Transformer Encoder Stack
+        # 3) Transformer
         self.transformer = DenseTransformer(
             block_cls=TransformerEncoderBlock,
             num_layers=num_TransformerEncoder_layers,
@@ -294,33 +331,72 @@ class HSI_SSANet(nn.Module):
             heads=num_TransformerEncoder_heads,
             mlp_ratio=transformer_mlp_ratio,
             dropout=transformer_dropout
+        )
+        # (선택) KDE 레이어
+        if self.UsingKDE:
+            self.kde_processor = KDEProcessor(
+                kde_dim=kde_dim, 
+                hidden_dim=kde_hidden_dim, 
+                output_dim=embed_dim // 4,  # 간소화된 차원
+                dropout=transformer_dropout
+            )
+            self.multimodal_fusion = SimpleMultiModalFusion(
+                image_dim=embed_dim,
+                kde_dim=embed_dim // 4,
+                fusion_dim=embed_dim
             )
 
-        # 4. Classification head
-        self.classifier = nn.Linear(embed_dim, num_classes)
+        # 4) Regression head
+        self.regressor = nn.Linear(embed_dim, num_targets)
 
-    def forward(self, x):
+    def _apply_activation(self, x):
+        if self.output_activation == "sigmoid":
+            return torch.sigmoid(x)
+        elif self.output_activation == "tanh":
+            return torch.tanh(x)
+        return x  # identity
+
+    def forward(self, x, kde_features=None, return_auxiliary=False):
         x = self.ssa(x)               # (B, ssa_out_channels, H, W)
-        x = self.patch_embed(x)      # (B, N+1, D)
-        x = self.transformer(x)      # (B, N+1, D)
-        cls_token = x[:, 0]          # (B, D)
-        out = self.classifier(cls_token)  # (B, num_classes)
-        return out
+        x = self.patch_embed(x)       # (B, N+1, D)
+        x = self.transformer(x)       # (B, N+1, D)
+        image_features = x[:, 0]      # CLS token: (B, D)
+
+        # KDE 분포 통계와 융합
+        if self.UsingKDE and kde_features is not None:
+            # KDE 분포 통계 처리
+            kde_processed = self.kde_processor(kde_features)
+            
+            # 이미지와 KDE 정보 결합
+            fused_features = self.multimodal_fusion(image_features, kde_processed)
+        else:
+            fused_features = image_features
+        
+        # 최종 예측
+        output = self.regressor(fused_features)  # (B, num_targets)
+        output = self._apply_activation(output)
+        
+        return output
 
 def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     column_config_path = config['data']['column_config']
     with open(column_config_path, 'r') as f:
         column_config = json.load(f)
 
-    in_channels = len(column_config['wavelengths'])
+    # in_channels = column_config['in_channels']  # 입력 채널 수 (밴드 수)
     model_cfg = config['model']
+    in_channels = model_cfg['in_channels']  # 입력 채널 수 (밴드 수)
 
-    # 구성 파라미터 추출
-    num_classes = model_cfg['num_classes']
+    # --- 회귀 타깃 개수 ---
+    # 권장: config['model']['num_targets']
+    # 하위호환: num_classes가 남아있다면 그 값을 num_targets로 사용
+    num_targets = model_cfg.get('num_targets', model_cfg.get('num_classes'))
+    if num_targets is None:
+        raise ValueError("Please set model.num_targets (or legacy model.num_classes) for regression.")
+
+    # SSA
     ssa_out_channels = model_cfg['SeAM']['out_channels']
     ssa_kernel_size = model_cfg['SpectralSpatialAttention']['kernel_size']
-
-    # SSA 세부 파라미터
     seam_reduction = model_cfg['SeAM']['reduction']
     saam_kernel_size = model_cfg['SaAM']['conv_kernel_size']
     saam_padding = model_cfg['SaAM']['conv_padding']
@@ -334,7 +410,7 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     num_heads = model_cfg['TransformerEncoderBlock']['num_heads']
     mlp_ratio = model_cfg['TransformerEncoderBlock']['mlp_ratio']
     dropout = model_cfg['TransformerEncoderBlock']['dropout']
-    num_layers = model_cfg.get('TransformerEncoderBlock').get('num_layers', 1)
+    num_layers = model_cfg.get('TransformerEncoderBlock', {}).get('num_layers', 1)
 
     # SeAM, SaAM 사용 여부
     UsingSeAM = model_cfg.get('UsingSeAM', {}).get('use', True)
@@ -343,9 +419,18 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     # Branch mode
     branch_mode = model_cfg.get('BranchAttention', {}).get('use', False)
 
+    # KDE 파라미터
+    kde_config = model_cfg.get('KDE_Layer', {})
+    UsingKDE = kde_config.get('use', False)
+    kde_dim = kde_config.get('kde_dim', 0)
+    kde_hidden_dim = kde_config.get('kde_hidden_dim', 128)
+
+    # (선택) 출력 활성화
+    output_activation = model_cfg.get('output_activation', 'identity')  # "identity"|"sigmoid"|"tanh"
+
     model = HSI_SSANet(
         in_channels=in_channels,
-        num_classes=num_classes,
+        num_targets=num_targets,
         ssa_out_channels=ssa_out_channels,
         image_size=image_size,
         patch_size=patch_size,
@@ -360,18 +445,20 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
         ssa_kernel_size=ssa_kernel_size,
         UsingSeAM=UsingSeAM,
         UsingSaAM=UsingSaAM,
-        branch_mode=branch_mode
+        branch_mode=branch_mode,
+        UsingKDE=UsingKDE,
+        kde_dim=kde_dim,
+        kde_hidden_dim=kde_hidden_dim,
+        output_activation=output_activation,
     )
-
     return model
 
 def get_model_info(model: HSI_SSANet) -> Dict[str, Any]:
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-
     return {
         'total_parameters': total_params,
         'trainable_parameters': trainable_params,
         'input_channels': model.in_channels,
-        'num_classes': model.num_classes
+        'num_targets': model.num_targets
     }

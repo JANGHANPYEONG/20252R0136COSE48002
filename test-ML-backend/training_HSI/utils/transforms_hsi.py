@@ -180,14 +180,15 @@ def get_train_transforms(
     use_flip: bool = True,
     use_rotation: bool = True,
     use_noise: bool = True,
-    use_brightness_contrast: bool = True
+    use_brightness_contrast: bool = True,
+    use_roi_crop: bool = False  # ROI 크롭이 이미 되어 있으면 False
 ) -> HSITransformCompose:
     """훈련용 transform 생성"""
     
     transforms = []
     
-    # 크롭
-    if crop_size is not None:
+    # 크롭 (ROI 크롭이 이미 되어 있으면 스킵)
+    if crop_size is not None and use_roi_crop:
         transforms.append(HSIRandomCrop(crop_size))
     
     # 뒤집기
@@ -212,11 +213,17 @@ def get_train_transforms(
     return HSITransformCompose(transforms)
 
 
-def get_val_transforms(image_size: Tuple[int, int] = (256, 256)) -> HSITransformCompose:
-    """검증용 transform 생성 (중앙 크롭으로 재현성 보장)"""
-    return HSITransformCompose([HSICenterCrop(image_size)])
+def get_val_transforms(image_size: Tuple[int, int] = (256, 256), use_roi_crop: bool = False) -> HSITransformCompose:
+    """검증용 transform 생성 (ROI 크롭이 이미 되어 있으면 크롭 스킵)"""
+    if use_roi_crop:
+        return HSITransformCompose([HSICenterCrop(image_size)])
+    else:
+        return HSITransformCompose([])  # ROI 크롭이 이미 되어 있으면 추가 변환 없음
 
 
-def get_test_transforms(image_size: Tuple[int, int] = (256, 256)) -> HSITransformCompose:
-    """테스트용 transform 생성 (중앙 크롭으로 재현성 보장)"""
-    return HSITransformCompose([HSICenterCrop(image_size)]) 
+def get_test_transforms(image_size: Tuple[int, int] = (256, 256), use_roi_crop: bool = False) -> HSITransformCompose:
+    """테스트용 transform 생성 (ROI 크롭이 이미 되어 있으면 크롭 스킵)"""
+    if use_roi_crop:
+        return HSITransformCompose([HSICenterCrop(image_size)])
+    else:
+        return HSITransformCompose([])  # ROI 크롭이 이미 되어 있으면 추가 변환 없음 

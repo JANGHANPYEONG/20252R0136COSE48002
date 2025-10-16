@@ -124,20 +124,27 @@ def main():
     try:
         # Transform 설정
         print("Setting up transforms...")
+        # ROI 크롭이 이미 dataset에서 수행되므로 use_roi_crop=False로 설정
+        use_roi_crop = config.get('data', {}).get('use_roi_crop', False)
+        
         train_transform = get_train_transforms(
             crop_size=tuple(config.get('data', {}).get('crop_size', [224, 224])),
             use_flip=config.get('data', {}).get('use_flip', True),
             use_rotation=config.get('data', {}).get('use_rotation', True),
             use_noise=config.get('data', {}).get('use_noise', True),
-            use_brightness_contrast=config.get('data', {}).get('use_brightness_contrast', True)
+            use_brightness_contrast=config.get('data', {}).get('use_brightness_contrast', True),
+            use_roi_crop=use_roi_crop
         )
         image_size = tuple(config.get('data', {}).get('crop_size', [224, 224]))
-        val_transform = get_val_transforms(image_size=image_size)
-        test_transform = get_test_transforms(image_size=image_size)
+        val_transform = get_val_transforms(image_size=image_size, use_roi_crop=use_roi_crop)
+        test_transform = get_test_transforms(image_size=image_size, use_roi_crop=use_roi_crop)
         
         # 데이터 로더 생성
         print("Creating data loaders...")
         scaler_mode = config["data"].get("scaler_mode", "normalized")
+        # KDE 설정 확인
+        use_kde = config.get('model', {}).get('KDE_Layer', {}).get('use', False)
+        
         train_loader, val_loader, test_loader, scaler, pos_weight_info = create_hsi_data_loaders(
             csv_path=config['data']['csv'],
             column_config_path=config['data']['column_config'],
@@ -149,7 +156,8 @@ def main():
             train_transform=train_transform,
             val_transform=val_transform,
             test_transform=test_transform,
-            scaler_mode=scaler_mode
+            scaler_mode=scaler_mode,
+            use_kde=use_kde
         )
         
         # 라벨 정보 가져오기
@@ -178,6 +186,19 @@ def main():
         total_params = sum(p.numel() for p in model.parameters())
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         print(f"Model parameters: {total_params:,} total, {trainable_params:,} trainable")
+        
+        # KDE 정보 출력
+        kde_config = config.get('model', {}).get('KDE_Layer', {})
+        kde_enabled = kde_config.get('use', False)
+        if kde_enabled:
+            print(f"KDE Layer Configuration:")
+            print(f"  - Status: ENABLED")
+            print(f"  - Input dimension: {kde_config.get('kde_dim', 0)}")
+            print(f"  - Hidden dimension: {kde_config.get('kde_hidden_dim', 128)}")
+            print(f"  - Statistical features per sample: density, percentile, z-score, relative position")
+            print(f"  - Additional correlation features: label mean & std")
+        else:
+            print(f"KDE Layer: DISABLED")
         
         # 훈련기 생성 (pos_weight_info 전달)
         trainer = HSITrainer(model, device, config, pos_weight_info=pos_weight_info)

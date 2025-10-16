@@ -117,7 +117,10 @@ class HSITrainer:
         
         # 메트릭 설정
         self._setup_metrics()
-        
+
+        # 회귀 정확도 허용오차(±tol) 기본값 설정
+        self.reg_acc_tol = self.config.get('metrics', {}).get('reg_accuracy_tol', 0.5)
+
         # 훈련 상태 초기화
         self.best_val_loss = float('inf')
         self.best_val_metrics = {}
@@ -239,6 +242,14 @@ class HSITrainer:
             self.metrics['cls_precision'].update(predictions, cls_targets_i)
             self.metrics['cls_recall'].update(predictions, cls_targets_i)
             self.metrics['cls_auc'].update(probs, cls_targets_i)
+            
+            # 분류 정확도 누적 (완전 일치)
+            with torch.no_grad():
+                correct = (predictions == cls_targets_i.float()).all(dim=1).sum().item()
+                total = predictions.shape[0]
+                if hasattr(self, "_cls_acc_correct") and hasattr(self, "_cls_acc_total"):
+                    self._cls_acc_correct += correct
+                    self._cls_acc_total += total
         
         # 회귀 메트릭 업데이트
         if self.reg_indices:
@@ -249,38 +260,71 @@ class HSITrainer:
                 self.metrics['reg_mse'].update(reg_outputs[:, i], reg_targets[:, i])
                 self.metrics['reg_mae'].update(reg_outputs[:, i], reg_targets[:, i])
                 self.metrics['reg_r2'].update(reg_outputs[:, i], reg_targets[:, i])
+            
+            # === 여기 추가: 회귀 '정확도' 누적 (±tol) ===
+            # 여러 회귀 타깃이면 샘플당 MAE(타깃 평균)로 판정
+            with torch.no_grad():
+                tol = float(self.reg_acc_tol)
+                err_per_sample = (reg_outputs - reg_targets).abs().mean(dim=1)  # [batch]
+                correct = (err_per_sample <= tol).sum().item()
+                total   = err_per_sample.numel()
+                # 누적 카운터가 있다면 누적 (에폭 시작 시 0으로 리셋 필요)
+                if hasattr(self, "_reg_acc_correct") and hasattr(self, "_reg_acc_total"):
+                    self._reg_acc_correct += correct
+                    self._reg_acc_total   += total
+
     
     def _compute_metrics(self) -> Dict[str, float]:
         """누적된 메트릭을 계산합니다."""
         metrics = {}
+        
         # 분류 메트릭 계산
         if self.cls_indices:
+            # 분류 정확도 계산 (누적 카운터 사용)
+            if hasattr(self, "_cls_acc_correct") and hasattr(self, "_cls_acc_total") and self._cls_acc_total > 0:
+                cls_acc = self._cls_acc_correct / self._cls_acc_total
+            else:
+                cls_acc = 0.0
+            
+            # 분류 메트릭: 원본 값 유지
             metrics.update({
-                'cls_f1_score': self.metrics['cls_f1'].compute().item(),
+                'cls_f1_score' : self.metrics['cls_f1'].compute().item(),
                 'cls_precision': self.metrics['cls_precision'].compute().item(),
-                'cls_recall': self.metrics['cls_recall'].compute().item(),
-                'cls_auc': self.metrics['cls_auc'].compute().item()
+                'cls_recall'   : self.metrics['cls_recall'].compute().item(),
+                'cls_auc'      : self.metrics['cls_auc'].compute().item(),
+                'cls_acc'      : cls_acc,
             })
+        
         # 회귀 메트릭 계산
         if self.reg_indices:
-            r2 = self.metrics['reg_r2'].compute().item()
+            r2   = self.metrics['reg_r2'].compute().item()
+            mae  = self.metrics['reg_mae'].compute().item()
+            mse  = self.metrics['reg_mse'].compute().item()
+            rmse = np.sqrt(mse)
+
+            # 회귀 정확도 계산 (누적 카운터 사용)
+            if hasattr(self, "_reg_acc_correct") and hasattr(self, "_reg_acc_total") and self._reg_acc_total > 0:
+                acc = self._reg_acc_correct / self._reg_acc_total
+            else:
+                acc = 0.0
+            
             metrics.update({
-                'reg_mse': self.metrics['reg_mse'].compute().item(),
-                'reg_mae': self.metrics['reg_mae'].compute().item(),
-                'reg_r2': r2
+                'reg_mse': mse,
+                'reg_mae': mae,
+                'reg_r2' : r2,
+                'reg_acc': acc,   # 정확도도 원본. 출력에서만 :.2f 적용
             })
+        
         # 전체 메트릭 (가중 평균)
         if self.cls_indices and self.reg_indices:
             total_f1 = metrics.get('cls_f1_score', 0)
             total_r2 = metrics.get('reg_r2', 0)
-            total_r2 = max(0, total_r2)  # R2 음수 클리핑
             metrics['combined_score'] = (total_f1 + total_r2) / 2
         elif self.cls_indices:
             metrics['combined_score'] = metrics.get('cls_f1_score', 0)
         elif self.reg_indices:
-            total_r2 = metrics.get('reg_r2', 0)
-            total_r2 = max(0, total_r2)
-            metrics['combined_score'] = total_r2
+            metrics['combined_score'] = metrics.get('reg_r2', 0)
+
         return metrics
     
     def _setup_metrics(self):
@@ -300,6 +344,7 @@ class HSITrainer:
             self.metrics['reg_mse'] = MeanSquaredError().to(self.device)
             self.metrics['reg_mae'] = MeanAbsoluteError().to(self.device)
             self.metrics['reg_r2'] = R2Score().to(self.device)
+            # self.metrics['reg_acc'] = None  # 정확도는 직접 계산 (허용 오차 필요)
     
     def _calculate_loss(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """멀티태스크 손실을 계산합니다."""
@@ -351,12 +396,28 @@ class HSITrainer:
         # 메트릭 리셋
         for metric in self.metrics.values():
             metric.reset()
+
+        # 분류 정확도 누적 카운터 초기화
+        self._cls_acc_correct = 0
+        self._cls_acc_total   = 0
+        
+        # 회귀 정확도 누적 카운터 초기화
+        self._reg_acc_correct = 0
+        self._reg_acc_total   = 0
         
         pbar = tqdm(train_loader, desc="Training")
         for batch_idx, batch in enumerate(pbar):
             if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                 continue
-            images, targets, _ = batch
+            
+            # KDE 특성이 있는지 확인
+            if len(batch) == 4:  # images, targets, kde_features, indices
+                images, targets, kde_features, _ = batch
+                kde_features = kde_features.to(self.device, non_blocking=True)
+            else:  # images, targets, indices
+                images, targets, _ = batch
+                kde_features = None
+                
             images = images.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
             
@@ -365,7 +426,7 @@ class HSITrainer:
             # AMP 적용
             if self.use_amp:
                 with torch.cuda.amp.autocast():
-                    outputs = self.model(images)
+                    outputs = self.model(images, kde_features)
                     loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 # GradScaler를 사용한 backward 및 step
@@ -379,7 +440,7 @@ class HSITrainer:
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
             else:
-                outputs = self.model(images)
+                outputs = self.model(images, kde_features)
                 loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 loss.backward()
@@ -416,23 +477,39 @@ class HSITrainer:
         # 메트릭 리셋
         for metric in self.metrics.values():
             metric.reset()
+
+        # 분류 정확도 누적 카운터 초기화
+        self._cls_acc_correct = 0
+        self._cls_acc_total   = 0
+
+        # 회귀 정확도 누적 카운터 초기화
+        self._reg_acc_correct = 0
+        self._reg_acc_total   = 0
         
         with torch.no_grad():
             pbar = tqdm(val_loader, desc="Validation")
             for batch_idx, batch in enumerate(pbar):
                 if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                     continue
-                images, targets, _ = batch
+                
+                # KDE 특성이 있는지 확인
+                if len(batch) == 4:  # images, targets, kde_features, indices
+                    images, targets, kde_features, _ = batch
+                    kde_features = kde_features.to(self.device, non_blocking=True)
+                else:  # images, targets, indices
+                    images, targets, _ = batch
+                    kde_features = None
+                    
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
                 # AMP 적용 (검증 시에도 일관성 유지)
                 if self.use_amp:
                     with torch.cuda.amp.autocast():
-                        outputs = self.model(images)
+                        outputs = self.model(images, kde_features)
                         loss, loss_components = self._calculate_loss(outputs, targets)
                 else:
-                    outputs = self.model(images)
+                    outputs = self.model(images, kde_features)
                     loss, loss_components = self._calculate_loss(outputs, targets)
                 
                 total_loss += loss.item()
@@ -504,11 +581,14 @@ class HSITrainer:
             if self.cls_indices:
                 print(f"Train F1: {train_epoch_metrics.get('cls_f1_score', 0):.4f}, Val F1: {val_epoch_metrics.get('cls_f1_score', 0):.4f}")
                 print(f"Train AUC: {train_epoch_metrics.get('cls_auc', 0):.4f}, Val AUC: {val_epoch_metrics.get('cls_auc', 0):.4f}")
+                print(f"Train Acc: {train_epoch_metrics.get('cls_acc', 0):.4f}, Val Acc: {val_epoch_metrics.get('cls_acc', 0):.4f}")
             
             if self.reg_indices:
                 print(f"Train R2: {train_epoch_metrics.get('reg_r2', 0):.4f}, Val R2: {val_epoch_metrics.get('reg_r2', 0):.4f}")
                 print(f"Train MSE: {train_epoch_metrics.get('reg_mse', 0):.4f}, Val MSE: {val_epoch_metrics.get('reg_mse', 0):.4f}")
-            
+                print(f"Train Acc(±{self.reg_acc_tol}): {train_epoch_metrics.get('reg_acc', 0):.2f}, "
+                      f"Val Acc(±{self.reg_acc_tol}): {val_epoch_metrics.get('reg_acc', 0):.2f}")
+
             print(f"Combined Score: {train_epoch_metrics.get('combined_score', 0):.4f}")
             
             # MLflow 로깅
@@ -567,11 +647,13 @@ class HSITrainer:
         if self.cls_indices:
             print(f"Best validation F1: {self.best_val_metrics.get('cls_f1_score', 0):.4f}")
             print(f"Best validation AUC: {self.best_val_metrics.get('cls_auc', 0):.4f}")
+            print(f"Best validation Acc: {self.best_val_metrics.get('cls_acc', 0):.4f}")
         
         if self.reg_indices:
             print(f"Best validation R2: {self.best_val_metrics.get('reg_r2', 0):.4f}")
             print(f"Best validation MSE: {self.best_val_metrics.get('reg_mse', 0):.4f}")
-        
+            print(f"Best validation Acc(±{self.reg_acc_tol}): {self.best_val_metrics.get('reg_acc', 0):.2f}")
+
         print(f"Best combined score: {self.best_val_metrics.get('combined_score', 0):.4f}")
         
         return {
@@ -594,10 +676,12 @@ class HSITrainer:
         if self.cls_indices:
             print(f"Test F1: {test_metrics.get('cls_f1_score', 0):.4f}")
             print(f"Test AUC: {test_metrics.get('cls_auc', 0):.4f}")
+            print(f"Test Acc: {test_metrics.get('cls_acc', 0):.4f}")
         
         if self.reg_indices:
             print(f"Test R2: {test_metrics.get('reg_r2', 0):.4f}")
             print(f"Test MSE: {test_metrics.get('reg_mse', 0):.4f}")
+            print(f"Test Acc(±{self.reg_acc_tol}): {test_metrics.get('reg_acc', 0):.2f}")
         
         print(f"Test combined score: {test_metrics.get('combined_score', 0):.4f}")
         
