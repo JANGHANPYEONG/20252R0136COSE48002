@@ -70,7 +70,7 @@ class HSIDataset(Dataset):
         return pd.read_csv(self.csv_path)
     
     def _prepare_kde_features(self):
-        """KDE 방식: 학습 데이터의 라벨 분포를 KDE로 모델링하여 분포 통계 feature 생성"""
+        """KDE 방식: 학습 데이터의 라벨 분포를 KDE로 모델링하여 분포 통계 feature 생성 (Feature Leakage 방지)"""
         from scipy.stats import gaussian_kde
         import warnings
         warnings.filterwarnings('ignore')
@@ -162,20 +162,21 @@ class HSIDataset(Dataset):
         
         # 고정된 feature vector를 numpy array로 변환
         fixed_kde_features = np.array(kde_stats, dtype=np.float32)
-        print(f"KDE feature vector dimension: {len(fixed_kde_features)}")
+        print(f"Safe KDE feature vector dimension: {len(fixed_kde_features)}")
         print(f"  - Per-label statistics: {len(label_columns)} labels × 8 features = {len(label_columns) * 8}")
         print(f"  - Global meta features: 6")
         print(f"  - Total: {len(fixed_kde_features)} features")
         
-        # 4. 모든 샘플에 동일한 고정 feature vector 할당
+        # 4. 모든 샘플에 동일한 고정 feature vector 할당 (Feature Leakage 방지)
         self.kde_features = []
         for idx in range(len(self.data)):
             self.kde_features.append(fixed_kde_features.copy())
         
-        print(f" KDE Distribution Features Created:")
+        print(f"\n Safe KDE Distribution Features Created:")
         print(f"  - Fixed feature vector applied to all {len(self.kde_features)} samples")
         print(f"  - Based on train label distributions only (no feature leakage)")
-        print(f"  - Provides distribution context for prediction guidance")
+        print(f"  - No sample-specific label information used")
+        print(f"  - Safe for production deployment")
         
         # 분포 정보 출력
         print(f"\nTrain Label Distribution Summary:")
@@ -188,7 +189,7 @@ class HSIDataset(Dataset):
         kde_array = np.array(self.kde_features)
         variances = np.var(kde_array, axis=0)
         if np.all(variances < 1e-10):
-            print(" All samples have identical KDE features (as expected for distribution statistics)")
+            print(" All samples have identical KDE features (safe from feature leakage)")
         else:
             print("  Warning: KDE features should be identical across samples")
         

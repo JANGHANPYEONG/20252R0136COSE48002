@@ -1,26 +1,26 @@
 {
-  "experiment": "hsi_ssanet_baseline_no_kde",
+  "experiment": "meat_freshness_ssanet",
   "model": {
     "file": "hsi_ssanet",
-    "num_classes": 5,
-    "in_channels": 6,
+    "num_classes": 3,
+    "in_channels": 3,
     "SeAM": {
-      "out_channels": 30,
+      "out_channels": 16,
       "reduction": 2
     },
     "SaAM": {
       "conv_kernel_size": 7,
       "conv_padding": 3,
-      "hidden_dim": 256
+      "hidden_dim": 128
     },
     "SpectralSpatialAttention": {
       "kernel_size": 1
     },
     "PatchPositionEmbedding": {
-      "patch_size": 15,
-      "in_channels": 6,
+      "patch_size": 16,
+      "in_channels": 3,
       "embed_dim": 256,
-      "image_size": 225
+      "image_size": 224
     },
     "TransformerEncoderBlock": {
       "num_heads": 4,
@@ -29,7 +29,7 @@
       "num_layers": 4
     },
     "UsingSeAM": {
-      "use": false
+      "use": true
     },
     "UsingSaAM": {
       "use": true
@@ -40,41 +40,42 @@
     "KDE_Layer": {
       "use": false,
       "kde_dim": 46,
-      "kde_hidden_dim": 128
+      "kde_hidden_dim": 16,
+      "direct_connection": true
     }
   },
   "data": {
-    "csv": "../../../dataset/label_with_paths_3dim+rgb.csv",
-    "column_config": "configs/column_config.json",
-    "val_split": 0.2,
-    "test_split": 0.1,
-    "batch_size": 8,
-    "num_workers": 0,
-    "crop_size": [225, 225],
+    "dataset_type": "image_folder",
+    "train_dir": "/Users/potato/Desktop/Proj-Deeplant/dataset/meat_freshness/train",
+    "valid_dir": "/Users/potato/Desktop/Proj-Deeplant/dataset/meat_freshness/valid",
+    "class_names": ["FRESH", "HALF-FRESH", "SPOILED"],
+    "image_size": [224, 224],
+    "batch_size": 32,
+    "num_workers": 4,
     "use_roi_crop": false,
     "use_flip": true,
     "use_rotation": true,
-    "use_noise": true,
-    "use_brightness_contrast": true,
-    "scaler_mode": "normalized",
-    "use_kde": false
+    "use_noise": false,
+    "use_brightness_contrast": true
   },
   "train": {
-    "epochs": 20,
+    "epochs": 30,
     "early_stopping_patience": 10,
     "optimizer": "AdamW",
     "lr": 3e-4,
+    "weight_decay": 1e-4,
     "scheduler": "ReduceLROnPlateau",
     "scheduler_patience": 5,
     "scheduler_factor": 0.5,
     "loss_fn": "uncertainty",
-    "use_amp": false,
-    "grad_clip_norm": null
+    "use_amp": true,
+    "grad_clip_norm": 1.0,
+    "save_interval": 5
   },
   "mlflow": {
     "tracking_uri": "http://127.0.0.1:5000",
-    "experiment_name": "hsi_ssanet_baseline"
+    "experiment_name": "meat_freshness"
   },
-  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "plot_keys": ["accuracy", "precision", "recall", "f1_score"],
   "seed": 42
 }

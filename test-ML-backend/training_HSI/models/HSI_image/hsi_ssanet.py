@@ -268,14 +268,25 @@ class KDEProcessor(nn.Module):
     def forward(self, kde_features):
         return self.kde_processor(kde_features)
 
+class DirectKDEConnection(nn.Module):
+    """KDE 통계를 직접 사용 (MLP 처리 없음)"""
+    def __init__(self, kde_dim, output_dim):
+        super().__init__()
+        # 간단한 Linear 변환만 (선택적)
+        self.adapter = nn.Linear(kde_dim, output_dim) if kde_dim != output_dim else nn.Identity()
+        
+    def forward(self, kde_features):
+        return self.adapter(kde_features)
+
 class SimpleMultiModalFusion(nn.Module):
     """이미지 특성과 KDE 분포 통계를 간단히 결합"""
-    def __init__(self, image_dim, kde_dim, fusion_dim):
+    def __init__(self, image_dim, kde_dim, fusion_dim, dropout=0.1):
         super().__init__()
         self.fusion = nn.Sequential(
             nn.Linear(image_dim + kde_dim, fusion_dim),
+            nn.LayerNorm(fusion_dim),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Dropout(dropout),
             nn.Linear(fusion_dim, fusion_dim)
         )
         
@@ -293,7 +304,7 @@ class HSI_SSANet(nn.Module):
                  transformer_mlp_ratio, transformer_dropout,
                  seam_reduction, saam_kernel_size, saam_padding, ssa_kernel_size,
                  UsingSeAM, UsingSaAM, branch_mode,
-                 UsingKDE, kde_dim, kde_hidden_dim,
+                 UsingKDE, kde_dim, kde_hidden_dim, kde_direct_connection,
                  output_activation: str = "identity"):
         super().__init__()
 
@@ -301,6 +312,7 @@ class HSI_SSANet(nn.Module):
         self.num_targets = num_targets
         self.output_activation = output_activation  # "identity" | "sigmoid" | "tanh"
         self.UsingKDE = UsingKDE
+        self.kde_direct_connection = kde_direct_connection
 
         # 1) SSA
         self.ssa = SpectralSpatialAttention(
@@ -332,18 +344,33 @@ class HSI_SSANet(nn.Module):
             mlp_ratio=transformer_mlp_ratio,
             dropout=transformer_dropout
         )
+        
         # (선택) KDE 레이어
         if self.UsingKDE:
-            self.kde_processor = KDEProcessor(
-                kde_dim=kde_dim, 
-                hidden_dim=kde_hidden_dim, 
-                output_dim=embed_dim // 4,  # 간소화된 차원
-                dropout=transformer_dropout
-            )
+            if kde_direct_connection:
+                # Direct Connection: MLP 없이 바로 사용
+                kde_output_dim = embed_dim // 4
+                self.kde_processor = DirectKDEConnection(
+                    kde_dim=kde_dim,
+                    output_dim=kde_output_dim
+                )
+                print(f"[KDE] Using Direct Connection: {kde_dim} -> {kde_output_dim}")
+            else:
+                # MLP Processing: 기존 방식
+                kde_output_dim = embed_dim // 4
+                self.kde_processor = KDEProcessor(
+                    kde_dim=kde_dim, 
+                    hidden_dim=kde_hidden_dim, 
+                    output_dim=kde_output_dim,
+                    dropout=transformer_dropout
+                )
+                print(f"[KDE] Using MLP Processing: {kde_dim} -> {kde_hidden_dim} -> {kde_output_dim}")
+            
             self.multimodal_fusion = SimpleMultiModalFusion(
                 image_dim=embed_dim,
-                kde_dim=embed_dim // 4,
-                fusion_dim=embed_dim
+                kde_dim=kde_output_dim,
+                fusion_dim=embed_dim,
+                dropout=transformer_dropout
             )
 
         # 4) Regression head
@@ -424,6 +451,7 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
     UsingKDE = kde_config.get('use', False)
     kde_dim = kde_config.get('kde_dim', 0)
     kde_hidden_dim = kde_config.get('kde_hidden_dim', 128)
+    kde_direct_connection = kde_config.get('direct_connection', False)
 
     # (선택) 출력 활성화
     output_activation = model_cfg.get('output_activation', 'identity')  # "identity"|"sigmoid"|"tanh"
@@ -449,6 +477,7 @@ def create_model(config: Dict[str, Any]) -> HSI_SSANet:
         UsingKDE=UsingKDE,
         kde_dim=kde_dim,
         kde_hidden_dim=kde_hidden_dim,
+        kde_direct_connection=kde_direct_connection,
         output_activation=output_activation,
     )
     return model

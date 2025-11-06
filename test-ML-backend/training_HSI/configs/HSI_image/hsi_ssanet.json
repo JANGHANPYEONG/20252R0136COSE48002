@@ -38,9 +38,10 @@
       "use": false
     },
     "KDE_Layer": {
-      "use": true,
+      "use": false,
       "kde_dim": 46,
-      "kde_hidden_dim": 128
+      "kde_hidden_dim": 16,
+      "direct_connection": true
     }
 
   },
