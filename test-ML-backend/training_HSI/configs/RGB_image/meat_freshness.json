@@ -67,7 +67,7 @@
     "scheduler": "ReduceLROnPlateau",
     "scheduler_patience": 5,
     "scheduler_factor": 0.5,
-    "loss_fn": "uncertainty",
+    "loss_fn": "cross_entropy",
     "use_amp": true,
     "grad_clip_norm": 1.0,
     "save_interval": 5

@@ -1,0 +1,101 @@
+{
+    "experiment_name": "MeatScan_Binary_Classification",
+    "run_name": "HSI_SSANet_RGB_MeatScan",
+    
+    "data": {
+        "data_dir": "/Users/potato/Desktop/Proj-Deeplant/MeatScan_Dataset",
+        "image_size": 224,
+        "num_classes": 2,
+        "class_names": ["Fresh", "Spoiled"],
+        "test_split": 0.15,
+        "val_split": 0.15
+    },
+    
+    "model": {
+        "name": "HSI_SSANet",
+        "file": "hsi_ssanet",
+        "in_channels": 3,
+        "num_classes": 2,
+        "SeAM": {
+            "out_channels": 12,
+            "reduction": 2
+        },
+        "SaAM": {
+            "conv_kernel_size": 7,
+            "conv_padding": 3,
+            "hidden_dim": 128
+        },
+        "SpectralSpatialAttention": {
+            "kernel_size": 1
+        },
+        "PatchPositionEmbedding": {
+            "patch_size": 14,
+            "in_channels": 3,
+            "embed_dim": 128,
+            "image_size": 224
+        },
+        "TransformerEncoderBlock": {
+            "num_heads": 2,
+            "mlp_ratio": 2.0,
+            "dropout": 0.2,
+            "num_layers": 2
+        },
+        "UsingSeAM": {
+            "use": false
+        },
+        "UsingSaAM": {
+            "use": true
+        },
+        "BranchAttention": {
+            "use": false
+        },
+        "KDE_Layer": {
+            "use": false,
+            "kde_dim": 0,
+            "kde_hidden_dim": 16,
+            "direct_connection": false
+        }
+    },
+    
+    "training": {
+        "seed": 42,
+        "batch_size": 32,
+        "num_epochs": 5,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0001,
+        "optimizer": "adam",
+        "scheduler": {
+            "type": "ReduceLROnPlateau",
+            "mode": "min",
+            "factor": 0.5,
+            "patience": 10,
+            "min_lr": 1e-6
+        },
+        "early_stopping": {
+            "patience": 20,
+            "min_delta": 0.001
+        },
+        "num_workers": 4,
+        "checkpoint_dir": "checkpoints/meatscan",
+        "save_best_only": true,
+        "log_interval": 10
+    },
+    
+    "augmentation": {
+        "horizontal_flip": 0.5,
+        "vertical_flip": 0.5,
+        "rotation_degrees": 15,
+        "color_jitter": {
+            "brightness": 0.2,
+            "contrast": 0.2,
+            "saturation": 0.2
+        }
+    },
+    
+    "mlflow": {
+        "tracking_uri": "mlruns",
+        "log_models": true,
+        "log_params": true,
+        "log_metrics": true
+    }
+}

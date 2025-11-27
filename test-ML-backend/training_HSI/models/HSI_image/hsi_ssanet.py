@@ -5,6 +5,7 @@ from typing import Dict, Any
 import json
 
 # Spatial and Spectral Attention Modules
+# python train_HSI_2d.py --config configs/HSI_image/hsi_ssanet.json --no-mlflow
 
 # SeAM: Spectral Attention Module
 # 분류에 유용한 밴드(파장)를 선택하는 모듈
@@ -344,6 +345,7 @@ class HSI_SSANet(nn.Module):
             mlp_ratio=transformer_mlp_ratio,
             dropout=transformer_dropout
         )
+        
         
         # (선택) KDE 레이어
         if self.UsingKDE:

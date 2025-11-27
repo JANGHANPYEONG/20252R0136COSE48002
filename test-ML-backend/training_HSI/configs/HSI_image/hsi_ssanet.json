@@ -46,11 +46,11 @@
 
   },
   "data": {
-    "csv": "../../../dataset/label_with_paths_3dim+rgb.csv",
+    "csv": "../../../DP_dataset/merged_dataset_exact_for_training.csv",
     "column_config": "configs/column_config.json",
     "val_split": 0.2,
     "test_split": 0.1,
-    "batch_size": 8,
+    "batch_size": 8,  
     "num_workers": 0,
     "crop_size": [225, 225],
     "use_roi_crop": false,

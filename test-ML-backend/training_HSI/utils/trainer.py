@@ -253,25 +253,24 @@ class HSITrainer:
         
         # 회귀 메트릭 업데이트
         if self.reg_indices:
-            reg_outputs = outputs[:, self.reg_indices]
-            reg_targets = targets[:, self.reg_indices]
-            
-            for i in range(reg_outputs.shape[1]):
-                self.metrics['reg_mse'].update(reg_outputs[:, i], reg_targets[:, i])
-                self.metrics['reg_mae'].update(reg_outputs[:, i], reg_targets[:, i])
-                self.metrics['reg_r2'].update(reg_outputs[:, i], reg_targets[:, i])
-            
-            # === 여기 추가: 회귀 '정확도' 누적 (±tol) ===
-            # 여러 회귀 타깃이면 샘플당 MAE(타깃 평균)로 판정
+            reg_outputs = outputs[:, self.reg_indices]   # [B, num_reg]
+            reg_targets = targets[:, self.reg_indices]   # [B, num_reg]
+
+            # 🔧 수정: 전체 벡터를 한 번에 업데이트
+            self.metrics['reg_mse'].update(reg_outputs, reg_targets)
+            self.metrics['reg_mae'].update(reg_outputs, reg_targets)
+            self.metrics['reg_r2'].update(reg_outputs, reg_targets)
+
+            # === 회귀 '정확도' 누적 (±tol) ===
             with torch.no_grad():
                 tol = float(self.reg_acc_tol)
                 err_per_sample = (reg_outputs - reg_targets).abs().mean(dim=1)  # [batch]
                 correct = (err_per_sample <= tol).sum().item()
                 total   = err_per_sample.numel()
-                # 누적 카운터가 있다면 누적 (에폭 시작 시 0으로 리셋 필요)
                 if hasattr(self, "_reg_acc_correct") and hasattr(self, "_reg_acc_total"):
                     self._reg_acc_correct += correct
                     self._reg_acc_total   += total
+
 
     
     def _compute_metrics(self) -> Dict[str, float]:
@@ -297,23 +296,48 @@ class HSITrainer:
         
         # 회귀 메트릭 계산
         if self.reg_indices:
-            r2   = self.metrics['reg_r2'].compute().item()
-            mae  = self.metrics['reg_mae'].compute().item()
-            mse  = self.metrics['reg_mse'].compute().item()
-            rmse = np.sqrt(mse)
+            # MSE / MAE: multi-output이면 평균
+            mse_raw = self.metrics['reg_mse'].compute()
+            mae_raw = self.metrics['reg_mae'].compute()
+
+            if torch.is_tensor(mse_raw):
+                mse = mse_raw.mean().item()
+            else:
+                mse = float(mse_raw)
+
+            if torch.is_tensor(mae_raw):
+                mae = mae_raw.mean().item()
+            else:
+                mae = float(mae_raw)
+
+            rmse = float(np.sqrt(mse))
+
+            # R2: torchmetrics가 샘플 부족 시 ValueError를 던질 수 있으므로 방어
+            try:
+                r2_raw = self.metrics['reg_r2'].compute()
+                if torch.is_tensor(r2_raw):
+                    r2 = r2_raw.mean().item()
+                else:
+                    r2 = float(r2_raw)
+            except ValueError as e:
+                if "Needs at least two samples" in str(e):
+                    r2 = float("nan")   # 또는 0.0 으로 해도 됨
+                else:
+                    raise
 
             # 회귀 정확도 계산 (누적 카운터 사용)
             if hasattr(self, "_reg_acc_correct") and hasattr(self, "_reg_acc_total") and self._reg_acc_total > 0:
                 acc = self._reg_acc_correct / self._reg_acc_total
             else:
                 acc = 0.0
-            
+
             metrics.update({
                 'reg_mse': mse,
                 'reg_mae': mae,
                 'reg_r2' : r2,
-                'reg_acc': acc,   # 정확도도 원본. 출력에서만 :.2f 적용
+                'reg_acc': acc,
             })
+
         
         # 전체 메트릭 (가중 평균)
         if self.cls_indices and self.reg_indices:
@@ -409,6 +433,18 @@ class HSITrainer:
         for batch_idx, batch in enumerate(pbar):
             if batch is None or len(batch) == 0 or batch[0].numel() == 0:
                 continue
+
+                # 디버그: 첫 배치만 모양/값 찍어보기
+            if batch_idx == 0:
+                print("\n[DEBUG] First train batch structure:")
+                if isinstance(batch, (list, tuple)):
+                    for i, b in enumerate(batch):
+                        if hasattr(b, "shape"):
+                            print(f"  batch[{i}] shape:", b.shape, "dtype:", b.dtype)
+                        else:
+                            print(f"  batch[{i}] type:", type(b))
+                else:
+                    print("  batch type:", type(batch))
             
             # KDE 특성이 있는지 확인
             if len(batch) == 4:  # images, targets, kde_features, indices
