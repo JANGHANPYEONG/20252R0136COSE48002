@@ -2,12 +2,22 @@
 """
 HSI 2D CNN 학습 파이프라인
 
-이 스크립트는 HSI(Hyperspectral Imaging) 데이터를 사용하여 2D CNN 모델을 훈련합니다.
-멀티태스크 학습을 지원하며, 분류 및 회귀 작업을 동시에 수행할 수 있습니다.
+이 스크립트는 HSI(Hyperspectral Imaging) 데이터를 사용하여 2D CNN 모델을 학습시키는
+엔드 투 엔드 파이프라인입니다. JSON 설정 파일을 입력받아 모델 구조, 데이터셋 경로,
+데이터 증강 파라미터, 학습/검증/테스트 비율, 최적화 설정(optimizer, learning rate,
+스케줄러, 시드) 등을 자동으로 구성합니다. 멀티태스크 학습을 지원하므로 분류와
+회귀 헤드를 동시에 가진 모델을 불러올 수 있으며, 필요한 경우 클래스 불균형을
+대비한 pos_weight 정보와 스케일러도 생성합니다.
 
-사용법:
+주요 기능:
+  - CLI 인자를 통해 설정 파일, 체크포인트 저장 주기, MLflow 사용 여부 등을 제어
+  - Albumentations 기반 데이터 증강과 표준화 파이프라인 자동 생성
+  - GPU/CPU 자동 감지와 재현성을 위한 시드 설정
+  - MLflow 로깅(선택)으로 하이퍼파라미터, 메트릭, 체크포인트 기록
+  - 학습/검증/테스트 루프 실행 후 결과 요약 및 베스트 모델 저장
+
+사용 예시:
     python3 train_HSI_2d.py --config configs/HSI_image/hsi_resnet.json
-
 """
 
 import os
@@ -18,7 +28,6 @@ import torch
 import numpy as np
 import random
 import torch.backends.cudnn as cudnn
-from torch.utils.data import DataLoader
 import warnings
 warnings.filterwarnings('ignore')
 

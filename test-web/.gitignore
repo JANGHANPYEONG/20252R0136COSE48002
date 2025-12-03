@@ -1,4 +1,6 @@
 .env
+.env.*
+.env.local
 
 .DS_STORE
 node_modules
