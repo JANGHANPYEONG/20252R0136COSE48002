@@ -1,5 +1,8 @@
 """
-FastAPI용 데이터베이스 세션 관리 모듈
+SQLAlchemy 엔진/세션을 초기화하고 FastAPI 의존성으로 주입하는 공용 모듈.
+
+환경설정에서 DB URI를 읽어 엔진과 scoped_session을 만들고,
+`get_db`/`init_db` 헬퍼로 세션 라이프사이클과 초기 데이터를 관리한다.
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base

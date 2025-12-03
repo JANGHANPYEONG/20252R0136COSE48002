@@ -1,3 +1,9 @@
+"""
+데이터베이스 ORM 모델 및 초기 데이터 로딩 유틸을 정의한 모듈.
+
+Meat/관능평가/HSI 연관 테이블과 참조 테이블(Species, Category 등)을 SQLAlchemy로 선언하고,
+`load_initial_data`가 기본 코드표를 자동 삽입해 새 환경에서도 바로 서비스 구성 가능하게 한다.
+"""
 # db_model.py — rebuilt from user's schema with color→meat_color, casing unified for HSI blocks,
 # duplicate fields fixed, typos corrected, and constraints aligned.
 from __future__ import annotations

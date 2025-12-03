@@ -1,10 +1,16 @@
+"""
+DB 레이어 비즈니스 로직을 모아둔 컨트롤러 모듈.
+
+카테고리 ID 계산, 육류/관능평가 CRUD, 통계 조회 등 다수의 ORM 쿼리를 캡슐화해
+라우터나 서비스에서 재사용한다.
+"""
+
 import requests
 import uuid
 from sqlalchemy import func
 import json
 import logging
 from ..utils.utils import *
-import pprint
 
 from app.db.db_model import *
 from ..utils.opencv_utils import *
