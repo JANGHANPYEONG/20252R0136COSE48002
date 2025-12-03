@@ -1,4 +1,9 @@
-# app/database.py
+"""
+FastAPI 서비스에서 사용할 SQLAlchemy 기본 설정을 담은 모듈.
+
+엔진/세션/베이스 클래스를 생성해 다른 모듈에서 import 후 공유할 수 있게 해준다.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker

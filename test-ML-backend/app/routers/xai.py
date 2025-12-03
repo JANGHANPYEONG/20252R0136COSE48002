@@ -1,10 +1,15 @@
+"""
+XAI 시각화 생성 라우터.
+
+입력 데이터에 대해 Grad-CAM/Attention 등 해석 이미지를 생성하는 별도 스크립트를 호출한다.
+"""
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Literal, List
+from typing import Optional, Dict, Literal
 from datetime import datetime
 import asyncio
 import time
-import subprocess
 import json
 import os
 import tempfile

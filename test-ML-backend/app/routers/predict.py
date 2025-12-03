@@ -1,10 +1,15 @@
+"""
+ML 모델 예측 작업을 트리거하고 결과를 반환하는 라우터.
+
+MLflow 모델 URI와 입력 타입을 받아 별도 스크립트를 실행해 비동기 예측을 수행한다.
+"""
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Literal, List
+from typing import Optional, Dict, Literal
 from datetime import datetime
 import asyncio
 import time
-import subprocess
 import json
 import os
 import tempfile

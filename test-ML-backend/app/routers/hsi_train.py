@@ -1,10 +1,15 @@
+"""
+HSI 학습 작업을 큐에 넣고 상태를 조회하는 라우터.
+
+Celery 기반으로 학습 파이프라인을 트리거하고 MLflow 진행 정보를 노출한다.
+"""
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Literal
 from mlflow.exceptions import RestException
 import json
 import tempfile
-import re
 import os
 import csv
 from datetime import datetime
@@ -12,9 +17,7 @@ from celery import Celery
 from celery.result import AsyncResult
 import boto3
 from botocore.exceptions import ClientError
-import pandas as pd
 
-from training_HSI.train_HSI_2d import main as train_hsi_2d
 from app.utils.mlflow_tracking import get_run_core, latest_metrics
 
 # Celery 및 APIRouter 설정
@@ -542,7 +545,6 @@ async def cancel_hsi_train(train_id: str):
     """
     import signal
     import os
-    import subprocess
     
     try:
         result = AsyncResult(train_id, app=celery_app)

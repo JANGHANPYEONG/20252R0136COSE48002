@@ -1,22 +1,24 @@
+"""
+HSI 예측 API 라우터.
+
+HSI 밴드 데이터를 기반으로 MLflow 모델을 호출해 예측 및 XAI 이미지를 생성한다.
+"""
+
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 import os
 import json
 import mlflow
-import boto3
 from botocore.exceptions import ClientError
 import tempfile
 import subprocess
-import asyncio
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.db.db_model import HSIImagesBands, SpectralInfo, AI_HSISensoryEval
 from app.connection.s3_connect import get_s3_client
-from app.utils.s3_downloader import download_s3_prefix_to_local
-from app.utils.s3_uploader import upload_local_to_s3_prefix
 
 router = APIRouter()
 

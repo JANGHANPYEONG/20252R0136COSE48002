@@ -1,3 +1,9 @@
+"""
+기존 DB에 저장된 AI HSI 예측 결과를 조회하는 라우터.
+
+app.state 리소스를 사용해 세션을 얻고, 복합키로 ai_hsi_sensory_eval 데이터를 반환한다.
+"""
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, List

@@ -1,4 +1,10 @@
-# app.py
+"""
+FastAPI 기반 데모 더미 서버.
+
+간단한 헬스체크와 예측 엔드포인트를 제공하며 CORS 전역 허용, 고정 페이로드
+응답 등을 테스트용으로 구현한 라우터다.
+"""
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

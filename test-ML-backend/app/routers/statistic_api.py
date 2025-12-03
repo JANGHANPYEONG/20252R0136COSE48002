@@ -1,13 +1,18 @@
+"""
+육류 통계 데이터를 제공하는 라우터.
+
+기간별 비율, 부위별 집계, 시계열 등 대시보드에 필요한 통계 API를 노출한다.
+"""
+
 from app.db.db_controller import (
     get_num_of_processed_raw,
-    get_num_of_primal_part,
     get_num_by_farmAddr,
     get_probexpt_of_meat,
     get_sensory_of_meat,
     get_sensory_of_raw_heatedmeat,
     get_timeseries_of_cattle_data,
 )
-from fastapi import APIRouter, Request, Depends, Query
+from fastapi import APIRouter, Request, Query
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from utils import *
