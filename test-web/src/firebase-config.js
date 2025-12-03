@@ -7,17 +7,30 @@ import { getStorage } from 'firebase/storage';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
+// const firebaseConfig = {
+//   apiKey: process.env.REACT_APP_API_KEY,
+//   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+//   projectId: process.env.REACT_APP_PROJECT_ID,
+//   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+//   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+//   appId: process.env.REACT_APP_ID,
+//   measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+// };
+
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_ID,
-  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+  apiKey: "AIzaSyACiwdOdfk6dA80uzWYZBln8qilMxItbAg",
+  authDomain: "deeplant-auth.firebaseapp.com",
+  projectId: "deeplant-auth",
+  storageBucket: "deeplant-auth.firebasestorage.app",
+  messagingSenderId: "487484740048",
+  appId: "1:487484740048:web:6efab33fbaec1b46d629d5"
 };
+
+
+
 const firebase = initializeApp(firebaseConfig);
 const app = initializeApp(firebaseConfig);
+
 export const db = getFirestore(app);
 export const fireStore = getFirestore(firebase);
 export const auth = getAuth(app); // 코드 추가

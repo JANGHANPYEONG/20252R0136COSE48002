@@ -46,7 +46,7 @@ export const addSensoryProcessedData = async (
 
   ///meat/add/sensory-eval로 처리육 데이터 생성/수정 API 전송
   try {
-    const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
+    const response = await fetch(`http://${apiIP}/meat/sensory-eval`, {
       method: `${isPost ? 'POST' : 'PATCH'}`,
       headers: {
         'Content-Type': 'application/json',

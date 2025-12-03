@@ -20,7 +20,7 @@ export const addSensoryRawData = async (rawInput, i, meatId) => {
   };
 
   try {
-    const response = await fetch(`http://${apiIP}/meat/add/sensory-eval`, {
+    const response = await fetch(`http://${apiIP}/meat/sensory-eval`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

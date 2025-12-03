@@ -9,7 +9,7 @@ export const getByPartialMeatId = async (
   specieValue
 ) => {
   const response = await fetch(
-    `http://${apiIP}/meat/get/by-partial-id?meatId=${partialMeatId}&offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&specieValue=${specieValue}`
+    `http://${apiIP}/meat/by-partial-id?meatId=${partialMeatId}&offset=${offset}&count=${count}&start=${startDate}&end=${endDate}&specieValue=${specieValue}`
   );
 
   if (!response.ok) {

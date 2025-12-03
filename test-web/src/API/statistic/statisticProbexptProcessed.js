@@ -4,11 +4,11 @@ export const statisticProbexptProcessed = async (
   startDate,
   endDate,
   animalType,
-  grade
+  grade,
+  meatValue
 ) => {
-  const response = await fetch(
-    `http://${apiIP}/meat/statistic/probexpt-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
-  );
+  const url = `http://${apiIP}/statistic/probexbt-stats/processed?start=${startDate}&end=${endDate}&animal_type=${animalType}&grade=${grade}`;
+  const response = await fetch(url);
   return response;
 };
 
