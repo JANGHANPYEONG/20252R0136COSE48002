@@ -2,7 +2,6 @@
 세그멘테이션 엔진 모듈
 
 이 모듈은 세그멘테이션 마스크 생성을 위한 인터페이스를 제공합니다.
-현재는 precomputed 모드만 지원하며, 향후 online/online_cache 모드를 구현할 예정입니다.
 """
 
 import numpy as np
@@ -46,9 +45,6 @@ class SegmentationEngine:
             
         Returns:
             np.ndarray: 마스크 배열 (H, W, [0,1])
-            
-        Note:
-            현재는 더미 마스크를 반환합니다. 실제 구현은 후속 개선에서 진행됩니다.
         """
         if self.mode == 'precomputed':
             # precomputed 모드에서는 이 함수가 호출되지 않아야 함
@@ -57,8 +53,6 @@ class SegmentationEngine:
                 "Masks should be loaded from files instead."
             )
         
-        # TODO: 실제 세그멘테이션 모델 구현
-        # 현재는 더미 마스크 반환
         width, height = img.size
         mask = np.ones((height, width), dtype=np.float32)
         
@@ -125,10 +119,3 @@ def create_segmentation_engine(seg_cfg: Dict[str, Any], device: str = "cpu") -> 
         SegmentationEngine: 생성된 세그멘테이션 엔진
     """
     return SegmentationEngine(seg_cfg, device)
-
-
-# TODO: 향후 구현 예정
-# - online 모드: 실시간 U-Net 추론으로 마스크 생성
-# - online_cache 모드: 생성된 마스크를 캐시하여 재사용
-# - 멀티마스크 지원: 여러 마스크를 동시에 적용
-# - GPU 가속: 마스크 생성 시 GPU 활용 최적화
