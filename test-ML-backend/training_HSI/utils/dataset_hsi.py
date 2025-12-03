@@ -1,3 +1,10 @@
+"""
+HSI(초분광) 이미지 학습용 데이터셋과 로더를 정의하는 모듈.
+
+CSV/컬럼 설정을 읽어 분광 이미지와 라벨을 묶고, 스케일러/변환 설정에 따라
+train/val/test 데이터를 생성하는 유틸리티를 제공한다.
+"""
+
 import os
 import json
 import pandas as pd

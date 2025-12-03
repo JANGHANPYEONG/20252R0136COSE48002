@@ -1,3 +1,9 @@
+"""
+HSI 전용 데이터 증강/전처리 연산들을 모아둔 모듈.
+
+크롭, 노이즈, 정규화 등 PyTorch 텐서 기반 변환 클래스를 제공한다.
+"""
+
 import torch
 import torch.nn.functional as F
 import numpy as np

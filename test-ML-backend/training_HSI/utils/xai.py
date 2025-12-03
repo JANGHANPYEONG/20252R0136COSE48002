@@ -1,3 +1,9 @@
+"""
+HSI 모델 결과를 설명하기 위한 XAI(Grad-CAM 등) 유틸리티 모듈.
+
+분광→RGB 변환, CAM 시각화, PyTorch 모델용 헬퍼 함수를 제공한다.
+"""
+
 from typing import Optional, Any, List, Dict, Tuple
 import numpy as np
 import torch

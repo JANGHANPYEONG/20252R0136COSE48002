@@ -1,3 +1,9 @@
+"""
+HSI + RGB 데이터를 Vision Transformer 회귀 모델에 공급하기 위한 Dataset/Transform 래퍼.
+
+파장 정보 스캔, 스케일러 적용, RGB/HSI 이미지 불러오기와 변환 적용 로직을 포함한다.
+"""
+
 import os
 import glob
 import json

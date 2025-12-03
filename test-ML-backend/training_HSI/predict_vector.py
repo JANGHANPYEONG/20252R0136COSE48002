@@ -15,8 +15,6 @@ import json
 import argparse
 import numpy as np
 import joblib
-import mlflow
-import tempfile
 import warnings
 warnings.filterwarnings('ignore')
 

@@ -1,3 +1,9 @@
+"""
+HSI+RGB Vision Transformer 회귀/멀티태스크 모델의 학습 루프와 손실 래퍼를 구현한 모듈.
+
+다양한 메트릭, 손실 가중 전략, 체크포인트 저장 로직을 포함한다.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim

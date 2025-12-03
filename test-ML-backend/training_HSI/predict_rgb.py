@@ -18,12 +18,9 @@ import sys
 import json
 import argparse
 import torch
-import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
-import pickle
-import mlflow
-import tempfile
+
 import warnings
 warnings.filterwarnings('ignore')
 

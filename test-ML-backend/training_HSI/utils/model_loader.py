@@ -1,3 +1,9 @@
+"""
+설정 파일에 따라 모델 모듈을 import하고 생성하는 로더/검증 유틸리티.
+
+모델 네임스페이스·파일 경로를 동적으로 해석하고 create_model 함수를 호출한다.
+"""
+
 import importlib
 import torch
 import torch.nn as nn

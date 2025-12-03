@@ -1,3 +1,9 @@
+"""
+ViT 회귀 실험에 특화된 MLflow 로깅 유틸리티.
+
+실험 생성, 파라미터/메트릭 기록, 체크포인트 업로드를 한 곳에서 관리한다.
+"""
+
 import os
 import json
 import mlflow

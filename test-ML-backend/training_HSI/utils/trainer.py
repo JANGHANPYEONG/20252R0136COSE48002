@@ -1,3 +1,9 @@
+"""
+HSI/RGB 멀티태스크 모델 학습을 위한 기본 Trainer와 보조 손실·메트릭 클래스를 정의한 모듈.
+
+학습/검증 루프, 체크포인트 저장, 다양한 torchmetrics 계산을 지원한다.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
