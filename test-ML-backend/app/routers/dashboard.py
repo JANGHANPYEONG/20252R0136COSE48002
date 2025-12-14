@@ -1,15 +1,20 @@
+"""
+대시보드 조회 API 라우터.
+
+필터링 조건으로 육류/관능평가/HSI 데이터 목록을 조회하고 상세 정보를 반환한다.
+"""
+
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from pydantic import BaseModel
 
 from app.db.database import get_db
 from app.db.db_model import (
     Meat, DeepAgingInfo, SensoryEval, AI_SensoryEval, 
-    HSISensoryEval, AI_HSISensoryEval, HSIImagesBands,
-    CategoryInfo, GradeInfo, SexInfo, StatusInfo, User
+    HSISensoryEval, AI_HSISensoryEval, HSIImagesBands
 )
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])

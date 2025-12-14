@@ -1,3 +1,9 @@
+"""
+테스트/모의 데이터를 조회·삽입하기 위한 라우터.
+
+스키마 예시와 검증 로직을 포함해 API 명세를 점검하는 용도로 사용된다.
+"""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -12,10 +18,7 @@ from sqlalchemy import and_, or_
 
 from ..db.database import get_db
 from ..db.db_model import (
-    Meat, CategoryInfo, DeepAgingInfo,
-    SensoryEval, AI_SensoryEval,
-    HeatedmeatSensoryEval, AI_HeatedmeatSeonsoryEval,
-    HSISensoryEval, AI_HSISensoryEval, HSIImagesBands, SpectralInfo
+    Meat
 )
 # from Dev_2025 import app
 

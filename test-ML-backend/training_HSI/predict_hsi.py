@@ -21,8 +21,6 @@ import torch
 import numpy as np
 from PIL import Image
 import pickle
-import mlflow
-import tempfile
 import warnings
 from torch.utils.data import Dataset, DataLoader
 warnings.filterwarnings('ignore')

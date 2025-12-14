@@ -1,3 +1,9 @@
+"""
+벡터 기반 전통 ML 모델의 하이퍼파라미터 탐색과 평가 지표 계산을 담당하는 모듈.
+
+Grid/Bayes/Random Search 래퍼와 멀티태스크 메트릭 유틸리티를 제공한다.
+"""
+
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, accuracy_score
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error, make_scorer

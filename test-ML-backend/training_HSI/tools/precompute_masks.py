@@ -87,8 +87,6 @@ def create_dummy_mask(image_size: tuple, threshold: float = 0.5) -> np.ndarray:
     Returns:
         np.ndarray: 더미 마스크 (0~1 범위)
     """
-    # 현재는 더미 마스크 생성 (전체 영역을 마스크로 처리)
-    # TODO: 실제 세그멘테이션 모델로 교체
     mask = np.ones(image_size[::-1], dtype=np.float32)  # PIL은 (W, H), numpy는 (H, W)
     
     # 약간의 노이즈 추가 (실제 마스크와 비슷하게)

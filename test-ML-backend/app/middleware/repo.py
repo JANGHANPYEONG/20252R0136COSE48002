@@ -12,15 +12,12 @@ class MeatRecord(TypedDict, total=False):
 class DataRepository:
     def __init__(self, db_url: str):
         self.db_url = db_url
-        # TODO: 실제 커넥션 풀 초기화 (SQLAlchemy 등)
 
     def get_by_trace(self, trace_no: str) -> Optional[MeatRecord]:
         """
         traceNo로 레코드를 조회한다.
         팀 DB 스키마에 맞게 실제 쿼리 구현하세요.
         """
-        # ----- 예시(가짜) -----
-        # 실전에서는 SELECT ... WHERE trace_no = :trace_no
         if trace_no.startswith("L"):
             return {
                 "traceNo": trace_no,

@@ -1,3 +1,9 @@
+"""
+분광 벡터 특징을 로딩해 학습/평가에 사용할 Dataset 헬퍼를 제공하는 모듈.
+
+CSV/컬럼 설정을 기반으로 스펙트럴 밴드를 분리하고 라벨 정보를 구성한다.
+"""
+
 import json
 import pandas as pd
 import numpy as np

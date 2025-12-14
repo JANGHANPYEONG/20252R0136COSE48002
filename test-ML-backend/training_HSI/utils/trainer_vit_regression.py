@@ -1,3 +1,9 @@
+"""
+HSI+RGB Vision Transformer 회귀/멀티태스크 모델의 학습 루프와 손실 래퍼를 구현한 모듈.
+
+다양한 메트릭, 손실 가중 전략, 체크포인트 저장 로직을 포함한다.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -102,18 +108,15 @@ class HSITrainer:
         
         # 라벨 정보 설정
         self._setup_label_info()
-        
-        # 손실 래퍼 설정 (optimizer보다 먼저 생성)
-        self.loss_wrapper = self._setup_loss_wrapper().to(self.device)
-        
+
+        # 손실 함수 설정
+        self.criterion = self._setup_criterion()
+
         # 옵티마이저 설정
         self.optimizer = self._setup_optimizer()
-        
+
         # 스케줄러 설정
         self.scheduler = self._setup_scheduler()
-        
-        # 손실 함수 설정 (pos_weight_info 사용)
-        self.criterions = self._setup_criterions()
         
         # 메트릭 설정
         self._setup_metrics()
@@ -131,12 +134,9 @@ class HSITrainer:
         optimizer_name = train_config.get('optimizer', 'AdamW')
         lr = train_config.get('lr', 3e-4)
         weight_decay = train_config.get('weight_decay', 1e-4)
-        
-        # model + loss_wrapper 파라미터를 모두 포함
-        params = list(self.model.parameters())
-        if hasattr(self.loss_wrapper, 'parameters') and any(p.requires_grad for p in self.loss_wrapper.parameters()):
-            params += list(self.loss_wrapper.parameters())
-        
+
+        params = self.model.parameters()
+
         if optimizer_name.lower() == 'adamw':
             return optim.AdamW(params, lr=lr, weight_decay=weight_decay)
         elif optimizer_name.lower() == 'adam':
@@ -191,24 +191,12 @@ class HSITrainer:
         print(f"  Classification indices: {self.cls_indices}")
         print(f"  Regression indices: {self.reg_indices}")
     
-    def _setup_criterions(self) -> Dict[str, nn.Module]:
-        """손실 함수들을 설정합니다."""
-        criterions = {}
-        # 회귀 전용 모델
-        if self.reg_indices:
-            criterions['regression'] = nn.MSELoss().to(self.device)
-            print("MSELoss for regression tasks")
-        return criterions
-    
-    def _setup_loss_wrapper(self) -> MultiTaskLossWrapper:
-        """MultiTaskLossWrapper를 설정합니다."""
-        train_config = self.config.get('train', {})
-        loss_fn = train_config.get('loss_fn', 'equal')  # 회귀 전용이므로 equal 사용
-
-        # 회귀 전용 - 1개 태스크
-        task_num = 1
-
-        return MultiTaskLossWrapper(task_num=task_num, loss_fn=loss_fn)
+    def _setup_criterion(self) -> nn.Module:
+        """손실 함수를 설정합니다."""
+        # 회귀 전용 모델 - MSELoss 사용
+        # 큰 예측 오차에 더 강한 패널티 (품질 예측에 중요)
+        print("Using MSELoss for regression tasks - penalizes large errors more")
+        return nn.MSELoss().to(self.device)
     
     def _update_metrics(self, outputs: torch.Tensor, targets: torch.Tensor):
         """
@@ -216,52 +204,20 @@ class HSITrainer:
         """
         # 회귀 메트릭 업데이트 - 모든 5개 출력
         reg_outputs = outputs  # (B, 5) - Total, Marbling, Meat Color, Texture, Moisture
-        reg_targets = targets[:, self.reg_indices]  # (B, 5)
+        reg_targets = targets  # (B, 5) - targets는 이미 5개 회귀값
 
-        # 전체 평균 메트릭 업데이트 (기존 방식)
-        self.metrics['reg_mse'].update(reg_outputs.flatten(), reg_targets.flatten())
-        self.metrics['reg_mae'].update(reg_outputs.flatten(), reg_targets.flatten())
-        self.metrics['reg_r2'].update(reg_outputs.flatten(), reg_targets.flatten())
-
-        # 개별 품질 지표별 메트릭 업데이트 (개선된 방식)
+        # 개별 품질 지표별 메트릭 업데이트
         self.metrics['reg_mse_individual'].update(reg_outputs, reg_targets)
         self.metrics['reg_mae_individual'].update(reg_outputs, reg_targets)
         self.metrics['reg_r2_individual'].update(reg_outputs, reg_targets)
-
-        # AUC 계산을 위한 데이터 저장 (배치별)
-        if not hasattr(self, '_auc_outputs'):
-            self._auc_outputs = []
-            self._auc_targets = []
-
-        self._auc_outputs.append(reg_outputs.detach().cpu().numpy())
-        self._auc_targets.append(reg_targets.detach().cpu().numpy())
     
     def _compute_metrics(self) -> Dict[str, float]:
         """누적된 메트릭을 계산합니다."""
         metrics = {}
 
-        # 전체 평균 회귀 메트릭 계산
-        try:
-            mse = self.metrics['reg_mse'].compute().item()
-            mae = self.metrics['reg_mae'].compute().item()
-            r2 = self.metrics['reg_r2'].compute().item()
-
-            metrics.update({
-                'mse': mse,
-                'mae': mae,
-                'r2': r2
-            })
-        except ValueError as e:
-            # 샘플이 부족하거나 계산 불가능한 경우 기본값 사용
-            metrics.update({
-                'mse': 999.0,
-                'mae': 999.0,
-                'r2': -999.0
-            })
-
         # 개별 품질 지표별 메트릭 계산
         try:
-            # 개별 MSE (5개 출력에 대한 MSE)
+            # 개별 MSE, MAE (5개 출력에 대한 평균)
             mse_individual = self.metrics['reg_mse_individual'].compute().item()
             mae_individual = self.metrics['reg_mae_individual'].compute().item()
 
@@ -281,75 +237,36 @@ class HSITrainer:
                 r2_mean = r2_individual.item() if hasattr(r2_individual, 'item') else float(r2_individual)
 
             metrics.update({
-                'mse_individual': mse_individual,
-                'mae_individual': mae_individual,
-                'r2_individual_mean': r2_mean,
+                'mse': mse_individual,
+                'mae': mae_individual,
+                'r2': r2_mean,
             })
 
         except Exception as e:
-            print(f"Individual metrics calculation failed: {e}")
-            # R2 개별 계산 실패시 기본 R2 사용
-            fallback_r2 = metrics.get('r2', -999.0)
+            print(f"Metrics calculation failed: {e}")
             metrics.update({
-                'mse_individual': metrics.get('mse', 999.0),
-                'mae_individual': metrics.get('mae', 999.0),
-                'r2_individual_mean': fallback_r2
+                'mse': 999.0,
+                'mae': 999.0,
+                'r2': -999.0
             })
 
-        # 개선된 AUC 계산 (모든 5개 품질 지표에 대한 평균 AUC)
-        try:
-            if hasattr(self, '_auc_outputs') and self._auc_outputs:
-                all_outputs = np.concatenate(self._auc_outputs, axis=0)  # (N, 5)
-                all_targets = np.concatenate(self._auc_targets, axis=0)  # (N, 5)
-
-                auc_scores = []
-                for i in range(5):  # 각 품질 지표별 AUC 계산
-                    outputs_i = all_outputs[:, i]
-                    targets_i = all_targets[:, i]
-
-                    # 중간값을 기준으로 이진화
-                    median_target = np.median(targets_i)
-                    binary_targets = (targets_i >= median_target).astype(int)
-
-                    if len(np.unique(binary_targets)) > 1:  # 두 클래스 모두 존재할 때만
-                        auc_i = roc_auc_score(binary_targets, outputs_i)
-                        auc_scores.append(auc_i)
-                    else:
-                        auc_scores.append(0.5)
-
-                metrics['auc'] = np.mean(auc_scores)  # 5개 품질 지표 AUC의 평균
-            else:
-                metrics['auc'] = 0.5
-        except Exception as e:
-            print(f"AUC calculation failed: {e}")
-            metrics['auc'] = 0.5
-
-        # Combined score 계산 - 여러 메트릭을 조합한 종합 점수
-        r2_score = metrics.get('r2_individual_mean', metrics.get('r2', 0))
+        # Combined score 계산 - R2, MSE, MAE 조합
+        r2_score = metrics.get('r2', 0)
         mse_val = metrics.get('mse', 1.0)
         mae_val = metrics.get('mae', 1.0)
 
         # 안전한 역수 계산 (0 나누기 방지)
         mse_score = 1.0 / (1.0 + max(mse_val, 0.001))  # MSE 역수로 변환
         mae_score = 1.0 / (1.0 + max(mae_val, 0.001))  # MAE 역수로 변환
-        auc_score = metrics.get('auc', 0.5)
 
-        # 가중 평균으로 combined score 계산
+        # 가중 평균으로 combined score 계산 (AUC 제거)
         combined_score = (
-            0.5 * max(0, r2_score) +      # R2 (50% 가중치, 음수는 0으로)
+            0.6 * max(0, r2_score) +      # R2 (60% 가중치, 음수는 0으로)
             0.2 * mse_score +             # MSE 역수 (20% 가중치)
-            0.2 * mae_score +             # MAE 역수 (20% 가중치)
-            0.1 * auc_score               # AUC (10% 가중치)
+            0.2 * mae_score               # MAE 역수 (20% 가중치)
         )
 
         metrics['combined_score'] = combined_score
-
-        # 디버깅 정보 (첫 번째 에포크에만)
-        if not hasattr(self, '_debug_printed'):
-            print(f"Combined Score Debug: R2={r2_score:.4f}, MSE={mse_val:.4f}, MAE={mae_val:.4f}, AUC={auc_score:.4f}")
-            print(f"Combined Score Components: R2_part={0.5 * max(0, r2_score):.4f}, MSE_part={0.2 * mse_score:.4f}, MAE_part={0.2 * mae_score:.4f}, AUC_part={0.1 * auc_score:.4f}")
-            print(f"Final Combined Score: {combined_score:.4f}")
-            self._debug_printed = True
 
         return metrics
     
@@ -357,32 +274,18 @@ class HSITrainer:
         """TorchMetrics를 설정합니다."""
         self.metrics = {}
 
-        # 전체 평균 회귀 메트릭
-        self.metrics['reg_mse'] = MeanSquaredError().to(self.device)
-        self.metrics['reg_mae'] = MeanAbsoluteError().to(self.device)
-        self.metrics['reg_r2'] = R2Score().to(self.device)
-
         # 개별 품질 지표별 메트릭 (5개 출력: Total, Marbling, Meat Color, Texture, Moisture)
         self.metrics['reg_mse_individual'] = MeanSquaredError().to(self.device)
         self.metrics['reg_mae_individual'] = MeanAbsoluteError().to(self.device)
         self.metrics['reg_r2_individual'] = R2Score(multioutput='raw_values').to(self.device)
     
-    def _calculate_loss(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    def _calculate_loss(self, outputs: torch.Tensor, targets: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, float]]:
         """회귀 손실을 계산합니다."""
-        losses = []
-        loss_components = {}
-
         # 회귀 손실 계산 (모든 5개 출력)
-        reg_outputs = outputs  # (B, 5)
-        reg_targets = targets[:, self.reg_indices]  # (B, 5)
-        reg_loss = self.criterions['regression'](reg_outputs, reg_targets)
-        losses.append(reg_loss)
-        loss_components['regression_loss'] = reg_loss.item()
+        loss = self.criterion(outputs, targets)
+        loss_components = {'regression_loss': loss.item()}
 
-        # MultiTaskLossWrapper로 손실 결합 (단일 태스크)
-        total_loss = self.loss_wrapper(losses)
-
-        return total_loss, loss_components
+        return loss, loss_components
     
     def _calculate_metrics(self, outputs: torch.Tensor, targets: torch.Tensor) -> Dict[str, float]:
         """평가 지표를 계산합니다 (기존 방식 - evaluate에서 사용)."""
@@ -407,10 +310,6 @@ class HSITrainer:
             if metric is not None:
                 metric.reset()
 
-        # AUC 계산용 데이터 리셋
-        self._auc_outputs = []
-        self._auc_targets = []
-        
         pbar = tqdm(train_loader, desc="Training")
         for batch_idx, batch in enumerate(pbar):
             if batch is None or len(batch) == 0 or batch[0].numel() == 0:
@@ -480,10 +379,6 @@ class HSITrainer:
             if metric is not None:
                 metric.reset()
 
-        # AUC 계산용 데이터 리셋
-        self._auc_outputs = []
-        self._auc_targets = []
-        
         with torch.no_grad():
             pbar = tqdm(val_loader, desc="Validation")
             for batch_idx, batch in enumerate(pbar):
@@ -581,7 +476,6 @@ class HSITrainer:
             print(f"Train R2: {train_epoch_metrics.get('r2', 0):.4f}, Val R2: {val_epoch_metrics.get('r2', 0):.4f}")
             print(f"Train MSE: {train_epoch_metrics.get('mse', 0):.4f}, Val MSE: {val_epoch_metrics.get('mse', 0):.4f}")
             print(f"Train MAE: {train_epoch_metrics.get('mae', 0):.4f}, Val MAE: {val_epoch_metrics.get('mae', 0):.4f}")
-            print(f"Train AUC: {train_epoch_metrics.get('auc', 0):.4f}, Val AUC: {val_epoch_metrics.get('auc', 0):.4f}")
             print(f"Combined Score: {train_epoch_metrics.get('combined_score', 0):.4f}")
             
             # MLflow 로깅
@@ -626,7 +520,6 @@ class HSITrainer:
         print(f"Best validation R2: {self.best_val_metrics.get('r2', 0):.4f}")
         print(f"Best validation MSE: {self.best_val_metrics.get('mse', 0):.4f}")
         print(f"Best validation MAE: {self.best_val_metrics.get('mae', 0):.4f}")
-        print(f"Best validation AUC: {self.best_val_metrics.get('auc', 0):.4f}")
         print(f"Best combined score: {self.best_val_metrics.get('combined_score', 0):.4f}")
         
         return {
@@ -648,7 +541,6 @@ class HSITrainer:
         print(f"Test R2: {test_metrics.get('r2', 0):.4f}")
         print(f"Test MSE: {test_metrics.get('mse', 0):.4f}")
         print(f"Test MAE: {test_metrics.get('mae', 0):.4f}")
-        print(f"Test AUC: {test_metrics.get('auc', 0):.4f}")
         print(f"Test combined score: {test_metrics.get('combined_score', 0):.4f}")
         
         return test_metrics 

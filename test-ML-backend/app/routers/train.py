@@ -1,18 +1,19 @@
+"""
+일반 RGB/HSI/벡터 학습 작업을 큐에 맡기는 라우터.
+
+클라이언트로부터 설정을 받아 Celery 작업을 시작하고 상태를 조회한다.
+"""
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Literal
+from typing import Optional, Dict, Literal
 import json
 import tempfile
-import re
 from datetime import datetime
 from celery import Celery
-import os
 from celery.result import AsyncResult
 from app.core.config import settings
 
-from training_HSI.train_HSI_2d import main as train_hsi_2d
-from training_HSI.train_vector import main as train_vector
-from training_HSI.train_RGB import main as train_rgb
 
 # Celery 및 APIRouter 설정
 # 중앙 설정에서 REDIS_URL 사용
@@ -322,7 +323,6 @@ async def cancel_train(train_id: str):
     """
     import signal
     import os
-    import subprocess
     
     try:
         result = AsyncResult(train_id, app=celery_app)

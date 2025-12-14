@@ -1,3 +1,9 @@
+"""
+S3 이미지 기반 분류·회귀 모델 예측 로직과 전처리/후처리를 모아둔 유틸리티.
+
+모델 로드, S3 이미지 불러오기, 추론 결과를 도메인 포맷으로 변환하는 함수들을 제공한다.
+"""
+
 import torch
 from torch import nn
 import torch.nn.functional as F

@@ -15,14 +15,14 @@ const DataPredict = () => {
   const endDate = new URLSearchParams(searchParams).get('end');
 
   //관리번호
-  const idParam = useParams();
+  const idParam = useParams();    
 
   return (
     <Box
       style={{
         width: '100%',
         height: '100%',
-        padding: '45px 80px',
+        padding: '20px 80px', // Reduced top padding to align with sidebar
         // display: 'flex',
         // flexDirection: 'column',
       }}

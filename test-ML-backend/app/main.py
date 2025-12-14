@@ -1,3 +1,9 @@
+"""
+FastAPI 애플리케이션 엔트리포인트.
+
+환경 설정 로딩, 미들웨어/라우터 등록, 헬스체크 등 서비스 전역 구성을 담당한다.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import train, predict, meat, user, statistic_api, data_upload, xai, hsi_predict, hsi_train, spectral_info, dashboard
@@ -11,7 +17,7 @@ from app.middleware.performance import PerformanceMonitoringMiddleware, Resource
 # Firebase 초기화 및 토큰 검증 의존성, /auth 라우터(로그인)
 from app.core.firebase import init_firebase                
 from app.core.security import verify_firebase_token        
-from app.api.routers.auth import router as auth_router         
+from app.routers.auth import router as auth_router         
 from app.db.database import SessionLocal
 app = FastAPI(
     title=settings.PROJECT_NAME,

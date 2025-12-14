@@ -1,52 +1,11 @@
 """
-FastAPI용 육류 관련 CRUD/조회 라우터
+육류 정보 CRUD·조회 전반을 담당하는 FastAPI 라우터.
 
-- 원본 Flask 블루프린트(add_api, get_api, update_api, delete_api)의 엔드포인트를
-  하나의 FastAPI 라우터로 통합함.
-- DB 세션/스토리지 커넥션은 FastAPI의 app.state 를 통해 주입한다고 가정:
-    app.state.db_session
-    app.state.s3_conn
-    app.state.firestore_conn
-  (미설정 시 500 에러를 반환하도록 방어 처리)
-
-- 원본에서 사용하던 비즈니스 로직 함수/유틸:
-    from db.db_controller import (...여러 함수...)
-    from db.db_model import Meat, User
-    from utils import safe_int, safe_bool, safe_str, convert2datetime, species, logger, ...
-  → 경로가 바뀌면 import 경로만 수정하면 됨.
-
-- 경로 맵핑(원본과 동일 의도):
-  [생성/수정 계열 - add_api]
-    POST/PATCH   /meat                  : 기본 원육 정보 생성/수정
-    POST/PATCH   /meat/deep-aging-data  : 딥에이징 이력 생성/수정
-    POST/PATCH   /meat/sensory-eval     : 관능 검사 결과 생성/수정
-    POST/PATCH   /meat/heatedmeat-eval  : 가열육 관능 검사 결과 생성/수정
-    POST/PATCH   /meat/probexpt-data    : 실험실 데이터 생성/수정
-    POST         /meat/predict-data     : 예측 데이터 생성 (GET은 404)
-
-  [조회 계열 - get_api]
-    GET          /meat                  : 범위/종 필터 조회
-    GET          /meat/by-meat-id       : meatId 단건 조회
-    GET          /meat/by-partial-id    : meatId 부분 일치 조회
-    GET          /meat/by-range-data    : 범위 + 컬럼별 표시 여부 필터 조회
-    GET          /meat/by-user-id       : 특정 사용자 기준 조회
-    GET          /meat/by-user-type     : 사용자 타입별 조회
-    GET          /meat/by-user-total    : 전체 사용자별 생성 데이터 집계
-    GET          /meat/by-status        : 승인여부 + 범위 조회
-    GET          /meat/default-data     : Texanomy 기본 데이터
-    GET          /meat/predict-data     : 예측 결과 조회
-    GET          /meat/opencv-image     : OpenCV 결과 조회
-
-  [상태 업데이트 - update_api]
-    PATCH        /meat/confirm          : 승인 처리
-    PATCH        /meat/reject           : 반려 처리
-
-  [삭제 - delete_api]
-    DELETE       /meat                  : id 리스트로 일괄 삭제
-    DELETE       /meat/deep-aging       : 특정 meatId, seqno 딥에이징 이력 삭제
+기존 Flask 엔드포인트(add/get/update/delete)를 통합해 원육, 딥에이징, 관능평가,
+예측 결과 등 다양한 API를 제공하며 `app.state`에서 세션·스토리지 의존성을 주입해 사용한다.
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request, Query
 from fastapi.responses import JSONResponse

@@ -3,12 +3,11 @@ import { apiIP } from '../../config';
 export const statisticSensoryProcessed = async (
   startDate,
   endDate,
-  animalType,
+  animal_type,
   grade
 ) => {
-  const response = await fetch(
-    `http://${apiIP}/meat/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animalType=${animalType}&grade=${grade}`
-  );
+  const url = `http://${apiIP}/statistic/sensory-stats/processed?start=${startDate}&end=${endDate}&animal_type=${animal_type}&grade=${grade}`;
+  const response = await fetch(url);
   return response;
 };
 

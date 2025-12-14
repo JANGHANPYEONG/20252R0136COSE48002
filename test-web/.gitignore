@@ -1,4 +1,6 @@
 .env
+.env.*
+.env.local
 
 .DS_STORE
 node_modules
@@ -26,6 +28,9 @@ chrome-user-data
 *.swp
 *.swo
 
+# Test data folder
+test-data/
+
 packages/react-devtools-core/dist
 packages/react-devtools-extensions/chrome/build
 packages/react-devtools-extensions/chrome/*.crx
@@ -39,3 +44,7 @@ packages/react-devtools-fusebox/dist
 packages/react-devtools-inline/dist
 packages/react-devtools-shell/dist
 packages/react-devtools-timeline/dist
+
+
+
+label_send_form.json

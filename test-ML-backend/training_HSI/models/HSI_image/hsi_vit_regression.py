@@ -33,8 +33,11 @@ class ViTRegression(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=emb_dim, nhead=num_heads, dim_feedforward=mlp_dim, dropout=dropout, batch_first=True)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=depth)
         self.norm = nn.LayerNorm(emb_dim)
-        # Regression head: 5 outputs (Total, Marbling, Meat Color, Texture, Surface Moisture)
-        self.head = nn.Linear(emb_dim, 5)
+
+        # Regression head with additional dropout for regularization (small dataset)
+        self.head_dropout = nn.Dropout(dropout)
+        self.head = nn.Linear(emb_dim, num_classes)
+
         self._init_weights()
 
     def _init_weights(self):
@@ -51,19 +54,20 @@ class ViTRegression(nn.Module):
         x = x + self.pos_embed
         x = self.transformer(x)
         x = self.norm(x[:, 0])  # cls token
+        x = self.head_dropout(x)  # Additional dropout before head
         x = self.head(x)
         return x
 
 def create_model(config: dict) -> nn.Module:
     mcfg = config['model']
-    in_channels = mcfg.get('in_channels', 5)
+    in_channels = mcfg.get('in_channels', 6)
     img_size = mcfg.get('img_size', 224)
     patch_size = mcfg.get('patch_size', 16)
-    emb_dim = mcfg.get('emb_dim', 64)
+    emb_dim = mcfg.get('emb_dim', 96)
     depth = mcfg.get('depth', 4)
-    num_heads = mcfg.get('num_heads', 4)
-    mlp_dim = mcfg.get('mlp_dim', 128)
-    num_classes = mcfg.get('num_classes', 6)
+    num_heads = mcfg.get('num_heads', 6)
+    mlp_dim = mcfg.get('mlp_dim', 256)
+    num_classes = mcfg.get('num_classes', 5)
     dropout = mcfg.get('dropout', 0.1)
     return ViTRegression(
         in_channels=in_channels,

@@ -2,14 +2,14 @@
   "experiment": "hsi_2dcnn_experiment",
   "model": {
     "file": "hsi_2dcnn",
-    "num_classes": 13,
-    "hsi_channels": 5,
+    "num_classes": 5,
+    "hsi_channels": 6,
     "dropout" : 0.1
   },
   "data": {
     "csv": "/mnt/data/datasets_HSI/label/label.csv",
     "column_config": "configs/column_config.json",
-    "val_split": 0.1,
+    "val_split": 0.2,
     "test_split": 0.1,
     "batch_size": 16,
     "num_workers": 4,
@@ -21,10 +21,10 @@
     "scaler_mode": "normalized"    
   },
   "train": {
-    "epochs": 100,
-    "early_stopping_patience": 999,
+    "epochs": 80,
+    "early_stopping_patience": 10,
     "optimizer": "AdamW",
-    "lr": 0.0003,
+    "lr": 5e-4,
     "scheduler": "ReduceLROnPlateau",
     "loss_fn": "uncertainty",
     "use_amp": true,
@@ -35,5 +35,6 @@
     "experiment_name": "HSI_2D_CNN"
   },
   "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "regacc_threshold": 0.5,
   "seed": 42
 }

@@ -1,3 +1,9 @@
+"""
+HSI + RGB 데이터를 Vision Transformer 회귀 모델에 공급하기 위한 Dataset/Transform 래퍼.
+
+파장 정보 스캔, 스케일러 적용, RGB/HSI 이미지 불러오기와 변환 적용 로직을 포함한다.
+"""
+
 import os
 import glob
 import json
@@ -198,39 +204,74 @@ class ViTRegressionDataset(Dataset):
         return samples
 
     def _fit_scaler(self, sample_ratio=0.1, max_samples=50):
-        """스케일러 학습"""
+        """스케일러 학습 - RGB와 파장 분리"""
         if self.scaler_mode == "off":
             return
 
-        print("Fitting StandardScaler...")
+        print("Fitting StandardScaler (separate for wavelengths and RGB)...")
 
         # 샘플링
         num_samples = min(max_samples, int(len(self.samples) * sample_ratio))
         sample_indices = np.random.choice(len(self.samples), num_samples, replace=False)
 
-        all_pixels = []
+        wavelength_pixels = []
+        rgb_pixels = []
+
         for idx in sample_indices:
             try:
-                image_cube = self._load_image_cube(idx)
-                if image_cube is not None:
-                    # 픽셀 샘플링
+                result = self._load_image_cube(idx)
+                if result is not None and result[0] is not None:
+                    image_cube, _ = result
                     h, w, c = image_cube.shape
                     pixels = image_cube.reshape(-1, c)
-                    # 랜덤하게 픽셀 선택
+
+                    # 픽셀 샘플링
                     n_pixels = min(1000, pixels.shape[0])
                     pixel_indices = np.random.choice(pixels.shape[0], n_pixels, replace=False)
-                    all_pixels.append(pixels[pixel_indices])
+                    sampled_pixels = pixels[pixel_indices]
+
+                    # 파장과 RGB 분리
+                    n_wavelengths = len(self.wavelengths)
+                    wavelength_pixels.append(sampled_pixels[:, :n_wavelengths])
+                    if self.use_rgb:
+                        rgb_pixels.append(sampled_pixels[:, n_wavelengths:])
             except:
                 continue
 
-        if all_pixels:
-            all_pixels = np.concatenate(all_pixels, axis=0)
-            self.scaler.fit(all_pixels)
-            print(f"Scaler fitted with {len(all_pixels)} pixels from {num_samples} samples")
+        # 파장 스케일러
+        if wavelength_pixels:
+            wavelength_pixels = np.concatenate(wavelength_pixels, axis=0)
+            scaler_wavelength = StandardScaler()
+            scaler_wavelength.fit(wavelength_pixels)
+            mean_wavelength = scaler_wavelength.mean_
+            scale_wavelength = scaler_wavelength.scale_
+        else:
+            mean_wavelength = None
+            scale_wavelength = None
 
-            # 텐서 변환
-            self._mean_tensor = torch.as_tensor(self.scaler.mean_, dtype=torch.float32).view(-1, 1, 1)
-            self._scale_tensor = torch.as_tensor(self.scaler.scale_, dtype=torch.float32).view(-1, 1, 1)
+        # RGB 스케일러
+        if rgb_pixels and self.use_rgb:
+            rgb_pixels = np.concatenate(rgb_pixels, axis=0)
+            scaler_rgb = StandardScaler()
+            scaler_rgb.fit(rgb_pixels)
+            mean_rgb = scaler_rgb.mean_
+            scale_rgb = scaler_rgb.scale_
+        else:
+            mean_rgb = None
+            scale_rgb = None
+
+        # 결합
+        if mean_wavelength is not None:
+            if mean_rgb is not None:
+                combined_mean = np.concatenate([mean_wavelength, mean_rgb])
+                combined_scale = np.concatenate([scale_wavelength, scale_rgb])
+            else:
+                combined_mean = mean_wavelength
+                combined_scale = scale_wavelength
+
+            self._mean_tensor = torch.as_tensor(combined_mean, dtype=torch.float32).view(-1, 1, 1)
+            self._scale_tensor = torch.as_tensor(combined_scale, dtype=torch.float32).view(-1, 1, 1)
+            print(f"Scaler fitted: {len(self.wavelengths)} wavelengths + {3 if self.use_rgb else 0} RGB channels")
         else:
             self._mean_tensor = None
             self._scale_tensor = None

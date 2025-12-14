@@ -3,6 +3,15 @@ test-flask/.env
 test-flask/serviceAccountKey.json
 .idea/*
 
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+*.env
+
 # flask
 .idea/
 .vscode/
@@ -72,6 +81,9 @@ check_ai_table_schema.py
 check_table_schema.py
 test_hsi_predict.py
 
+# Datasets
+datasets_HSI
+
 # Claude Code generated files
 .claude/
 **/.claude/
@@ -95,3 +107,5 @@ test-ML-backend/training_HSI/training_curves.png
 temp_*.py
 temp_*.json
 *_temp.*
+
+DEPLOYMENT_ROADMAP.md

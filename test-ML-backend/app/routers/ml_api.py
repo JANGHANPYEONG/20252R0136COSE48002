@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Body, Request
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, Optional, List, Dict, Any, Union
+"""
+FastAPI 기반 ML 예측/학습 라우터.
+
+예측·학습 API의 요청/응답 스키마를 정의하고 데이터베이스 의존성을 주입하며,
+향후 실제 파이프라인과 연동할 수 있도록 임시 로직을 포함한다.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from typing import Literal, Optional, Dict, Any
 from sqlalchemy.orm import Session
-import time
-import pandas as pd
-import io
 import uuid
-import numpy as np
-from datetime import datetime
 from app.db.database import get_db
 from app.db.db_model import Meat
 from app.utils import logger
@@ -149,15 +151,9 @@ async def train_request(
         
         logger.info(f"Starting training {training_id} with model: {request.model_type}")
         
-        # 1. 학습 파라미터 검증
+        # 학습 파라미터 검증
         if request.epochs < 1 or request.epochs > 1000:
             raise HTTPException(status_code=400, detail="에포크 수는 1-1000 사이여야 합니다.")
-        
-        # 2. 데이터셋 경로 확인
-        # TODO: 실제 데이터셋 존재 여부 확인
-        
-        # 3. 모델 타입별 학습 수행 (임시 구현)
-        # TODO: 실제 모델 학습 코드 연동
         
         # 임시 학습 결과 생성
         training_metrics = {
@@ -190,7 +186,6 @@ async def get_prediction_result(prediction_id: str):
     """
     예측 결과 조회 API
     """
-    # TODO: 실제 예측 결과 저장소에서 조회
     return {"message": f"예측 ID {prediction_id}의 결과를 조회합니다."}
 
 # 학습 진행 상황 조회
@@ -199,5 +194,4 @@ async def get_training_status(training_id: str):
     """
     학습 진행 상황 조회 API
     """
-    # TODO: 실제 학습 진행 상황 추적
     return {"message": f"학습 ID {training_id}의 진행 상황을 조회합니다."}

@@ -1,0 +1,56 @@
+{
+  "experiment": "hsi_vit_transfer_kfold",
+  "model": {
+    "file": "hsi_vit_transfer",
+    "timm_model_name": "vit_tiny_patch16_224",
+    "in_channels": 6,
+    "num_classes": 5,
+    "pretrained": true,
+    "freeze_backbone": false,
+    "dropout": 0.3
+  },
+  "data": {
+    "root_dir": "C:/sanhak/manage-dataset/result",
+    "column_config": "configs/HSI_image/column_config_vit_regression.json",
+    "wavelengths": null,
+    "wavelength_strategy": "all_available",
+    "missing_wavelength_strategy": "use_available",
+    "use_rgb": true,
+    "batch_size": 8,
+    "num_workers": 0,
+    "crop_size": [224, 224],
+    "target_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "use_advanced_aug": true,
+    "scaler_mode": "normalized"
+  },
+  "kfold": {
+    "n_splits": 5,
+    "save_fold_models": true
+  },
+  "train": {
+    "epochs": 100,
+    "early_stopping_patience": 20,
+    "optimizer": "AdamW",
+    "lr": 1e-4,
+    "weight_decay": 0.01,
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 8,
+    "scheduler_factor": 0.5,
+    "scheduler_t_0": 10,
+    "scheduler_t_mult": 2,
+    "scheduler_eta_min": 1e-6,
+    "loss_fn": "equal",
+    "use_amp": false,
+    "grad_clip_norm": 1.0
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_ViT_Transfer_KFold"
+  },
+  "plot_keys": ["r2", "mse", "combined_score"],
+  "seed": 42
+}

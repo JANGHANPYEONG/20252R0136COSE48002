@@ -1,12 +1,21 @@
+// C:\KKM\산학협력\frontend\test-web\src\components\LogIn\LogInField.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// ✅ Firebase Auth: v9 모듈식 + 지속성 설정
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from 'firebase/auth';
-// import { auth } from '../../firebase-config';
-import { useUser, useSetUser } from '../../Utils/UserContext';
+import { auth } from '../../firebase-config'; // ✅ 중앙화된 auth 사용
+
+// ✅ 토큰 자동 첨부 fetch 래퍼 & 서버 주소
+import fetchWithAuth from '../../API/fetchWithAuth';
+import { apiIP } from '../../config';
+
+import { useSetUser } from '../../Utils/UserContext';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -14,25 +23,32 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+
 import layer_1 from '../../src_assets/layer_1.png';
 import background from '../../src_assets/background.png';
-import { userIsLogin } from '../../API/user/userIsLogin';
 
 const defaultTheme = createTheme();
 
 const LogInField = () => {
-  // const [registerEmail, setRegisterEmail] = useState('');
-  // const [registerPassword, setRegisterPassword] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false); // New state variable for "Remember Me" checkbox
+  const [loginError, setLoginError] = useState(''); // 폼 검증/일반 에러 텍스트
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // 🔔 팝업(Dialog) 상태
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorDialogTitle, setErrorDialogTitle] = useState('');
+  const [errorDialogMessage, setErrorDialogMessage] = useState('');
 
   const setUser = useSetUser();
+  const navigate = useNavigate();
 
+  // 저장된 이메일 복원
   useEffect(() => {
-    // Check if the email was stored in the local storage
     const storedEmail = localStorage.getItem('rememberedEmail');
     if (storedEmail) {
       setLoginEmail(storedEmail);
@@ -40,117 +56,142 @@ const LogInField = () => {
     }
   }, []);
 
-  const auth = getAuth();
+  // 공통 팝업 오픈 함수
+  const openErrorDialog = (title, message) => {
+    setErrorDialogTitle(title);
+    setErrorDialogMessage(message);
+    setErrorDialogOpen(true);
+  };
 
-  /*const register = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        registerEmail,
-        registerPassword
-      );
-      console.log(userCredential.user);
-    } catch (error) {
-      console.log(error.message);
+  // Firebase 에러 코드 → 메시지 매핑
+  const firebaseErrorToMessage = (code) => {
+    switch (code) {
+      case 'auth/user-not-found':
+        return '존재하지 않는 계정입니다. 이메일을 확인해주세요.';
+      case 'auth/wrong-password':
+        return '비밀번호가 일치하지 않습니다.';
+      case 'auth/too-many-requests':
+        return '로그인을 너무 많이 시도했습니다. 잠시 후 다시 시도해주세요.';
+      case 'auth/invalid-email':
+        return '올바른 이메일 형식이 아닙니다.';
+      case 'auth/network-request-failed':
+        return '네트워크 오류로 Firebase 로그인 요청이 실패했습니다.';
+      case 'auth/invalid-api-key':
+      case 'auth/invalid-auth-domain':
+        return 'Firebase 설정(API Key/Auth Domain) 오류가 있습니다. 환경변수를 확인해주세요.';
+      default:
+        return 'Firebase 로그인 중 알 수 없는 오류가 발생했습니다.';
     }
-  };*/
+  };
 
-  const navigate = useNavigate();
+  // ✅ 메인 로그인 플로우
   const login = async () => {
-    try {
-      if (!loginEmail) {
-        setLoginError('아이디를 입력해주세요.');
-        return;
-      }
-      if (!loginPassword) {
-        setLoginError('비밀번호를 입력해주세요.');
-        return;
-      }
-
-      const response = await userIsLogin(loginEmail);
-      const user = await response.json();
-      // const user = userUser();
-
-      if (!user.type || user.type === 'Normal') {
-        // 관리자가 아닌 경우
-        setLoginError('로그인 권한이 없습니다. 관리자에게 문의해주세요.');
-        return;
-      } else if (!user.userId) {
-        // 사용자 존재 여부 확인
-        setLoginError(
-          'DB상 존재하지 않는 아이디입니다. 관리자에게 문의해주세요.'
-        );
-        return;
-      }
-
-      try {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          loginEmail,
-          loginPassword
-        );
-
-        // 이메일 인증 여부 확인
-
-        /*const firebaseUser = userCredential.user;
-        if (
-          !firebaseUser.emailVerified &&
-          loginEmail != 'deeplant@example.com'
-        ) {
-          setLoginError(
-            '이메일 인증이 필요한 계정입니다. 이메일을 확인하고 인증을 완료해주세요.'
-          );
-          return;
-        }*/
-
-        // 로그인 성공 시 UserContext에 사용자 정보 설정
-        setUser(user);
-
-        // 로그인 성공 시 Localstorage에 사용자 정보 설정
-        if (rememberMe) {
-          localStorage.setItem('rememberedEmail', loginEmail);
-        } else {
-          localStorage.removeItem('rememberedEmail');
-        }
-        localStorage.setItem('isLoggedIn', 'true');
-
-        // 로그인 성공 시 홈으로 이동
-        console.log('LOGIN SUCCESS');
-        navigate('/Home');
-        window.location.reload();
-      } catch (error) {
-        if (error.code === 'auth/user-not-found') {
-          // 아이디가 존재하지 않는다면
-          setLoginError('존재하지 않는 아이디입니다.');
-          return;
-        } else if (error.code === 'auth/too-many-requests') {
-          // 로그인을 너무 많이 시도하면
-          setLoginError(
-            '로그인을 너무 많이 시도했습니다. 잠시후 다시 시도해주세요.'
-          );
-          return;
-        } else if (error.code === 'auth/wrong-password') {
-          // 비밀번호가 일치하지 않는다면
-          setLoginError('비밀번호가 일치하지 않습니다.');
-          return;
-        } else {
-          console.log(error.message);
-          setLoginError('로그인에 실패했습니다. 관리자에게 문의해주세요.');
-        }
-      }
-    } catch (error) {
-      console.log(error.message);
-      setLoginError('로그인에 실패했습니다. 관리자에게 문의해주세요.');
+    localStorage.setItem('isLoggedIn', 'false');
+    // 0) 프론트 입력 검증
+    if (!loginEmail) {
+      setLoginError('아이디를 입력해주세요.');
+      return;
     }
+    if (!loginPassword) {
+      setLoginError('비밀번호를 입력해주세요.');
+      return;
+    }
+    setLoginError('');
+
+    // 1) Firebase 인증 단계
+    try {
+      await setPersistence(
+        auth,
+        rememberMe ? browserLocalPersistence : browserSessionPersistence
+      );
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+    } catch (fbErr) {
+      console.error('[AUTH ERROR]', fbErr?.code, fbErr?.message);
+      const msg = firebaseErrorToMessage(fbErr?.code);
+      openErrorDialog('Firebase 로그인 실패', msg);
+      return; // Firebase 단계에서 실패하면 더 진행하지 않음
+    }
+
+    // // 2) 백엔드 토큰 검증 + 프로필/권한 조회 단계
+    // let meRes;
+    // try {
+    //   meRes = await fetchWithAuth(`http://${apiIP}/auth/me`);
+    // } catch (netErr) {
+    //   console.error('[ME NETWORK ERROR]', netErr);
+    //   openErrorDialog(
+    //     '백엔드 연결 실패',
+    //     '서버에 연결할 수 없습니다. (백엔드 미가동, 주소 오타, 또는 CORS 문제일 수 있습니다.)'
+    //   );
+    //   return;
+    // }
+
+    // if (!meRes.ok) {
+    //   console.error('[ME HTTP ERROR]', meRes.status);
+    //   // 상태코드별 분기
+    //   if (meRes.status === 401) {
+    //     openErrorDialog(
+    //       '백엔드 인증 실패 (401)',
+    //       '인증 토큰이 유효하지 않습니다. Firebase 프로젝트 불일치, 만료, 또는 헤더 누락일 수 있습니다.'
+    //     );
+    //   } else if (meRes.status === 403) {
+    //     openErrorDialog(
+    //       '권한 없음 (403)',
+    //       '권한이 없습니다. 관리자에게 문의하세요.'
+    //     );
+    //   } else if (meRes.status === 404) {
+    //     openErrorDialog(
+    //       '사용자 DB 없음 (404)',
+    //       'Firebase에는 로그인되었지만, 내부 DB에 사용자 정보가 없습니다.'
+    //     );
+    //   } else if (meRes.status >= 500) {
+    //     openErrorDialog(
+    //       '백엔드 서버 오류',
+    //       `서버에서 오류가 발생했습니다. (status: ${meRes.status})`
+    //     );
+    //   } else {
+    //     openErrorDialog(
+    //       '요청 실패',
+    //       `요청이 실패했습니다. (status: ${meRes.status})`
+    //     );
+    //   }
+    //   return;
+    // }
+
+    // // 3) 비즈니스 권한 체크
+    // const me = await meRes.json(); // { userId, name, type, ... }
+    // if (!me.type || me.type === 'Normal') {
+    //   openErrorDialog(
+    //     '접근 권한 없음',
+    //     '로그인 권한이 없습니다. 관리자에게 문의해주세요.'
+    //   );
+    //   return;
+    // }
+    // if (!me.userId) {
+    //   openErrorDialog(
+    //     'DB 사용자 정보 없음',
+    //     'DB상 존재하지 않는 아이디입니다. 관리자에게 문의해주세요.'
+    //   );
+    //   return;
+    // }
+
+    // // 4) 전역 상태/스토리지 반영
+    // setUser(me);
+    // if (rememberMe) {
+    //   localStorage.setItem('rememberedEmail', loginEmail);
+    // } else {
+    //   localStorage.removeItem('rememberedEmail');
+    // }
+    localStorage.setItem('isLoggedIn', 'true');
+
+    // 5) 이동
+    navigate('/Home', { replace: true });
   };
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       if (event.target.name === 'email') {
-        // 아이디 필드에서 Enter 키를 누르면 비밀번호 필드로 이동
         document.getElementById('password').focus();
       } else if (event.target.name === 'password') {
-        // 비밀번호 필드에서 Enter 키를 누르면 로그인 버튼 클릭
         login();
       }
     }
@@ -165,15 +206,16 @@ const LogInField = () => {
           alignItems: 'center',
           justifyContent: 'center',
           height: '100vh',
-          minWidth: '100vw', // 전체 화면 너비
-          backgroundImage: `url(${background})`, // 경로를 실제 파일 경로로 변경
-          backgroundSize: 'cover', // 배경 이미지 크기 조절 (cover는 화면 전체를 채우도록 설정)
-          backgroundRepeat: 'no-repeat', // 배경 이미지 반복 방지
+          minWidth: '100vw',
+          backgroundImage: `url(${background})`,
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
         }}
       >
         <CssBaseline />
         <img
           src={layer_1}
+          alt=""
           style={{
             width: `${(323 / 1920) * 100}vw`,
             marginBottom: `${(48 / 1080) * 100}vh`,
@@ -185,12 +227,12 @@ const LogInField = () => {
           component="form"
           noValidate
           sx={{
-            flexDirection: 'column', // 세로로 배치
+            flexDirection: 'column',
             justifyContent: 'center',
-            width: `${(450 / 1920) * 100}vw`, // 너비를 450px로 설정
+            width: `${(450 / 1920) * 100}vw`,
             height: `${(594 / 1080) * 100}vh`,
             bgcolor: 'white',
-            paddingX: `${(42 / 1920) * 100}vw`, // 가로 패딩
+            paddingX: `${(42 / 1920) * 100}vw`,
             borderRadius: `${(20 / 1920) * 100}vw`,
             mb: '160px',
           }}
@@ -221,14 +263,12 @@ const LogInField = () => {
             autoComplete="email"
             autoFocus
             value={loginEmail}
-            onChange={(event) => {
-              setLoginEmail(event.target.value);
-            }}
+            onChange={(e) => setLoginEmail(e.target.value)}
             onKeyDown={handleKeyDown}
             style={{
-              width: `${(365 / 1920) * 100}vw`, // 너비를 365px로 설정
-              height: `${(72 / 1080) * 100}vh`, // 높이를 72px로 설정
-              padding: '8px', // Add padding for styling if needed
+              width: `${(365 / 1920) * 100}vw`,
+              height: `${(72 / 1080) * 100}vh`,
+              padding: '8px',
               marginBottom: `${(20 / 1080) * 100}vh`,
             }}
           />
@@ -241,32 +281,33 @@ const LogInField = () => {
             name="password"
             autoComplete="current-password"
             value={loginPassword}
-            onChange={(event) => {
-              setLoginPassword(event.target.value);
-            }}
+            onChange={(e) => setLoginPassword(e.target.value)}
             onKeyDown={handleKeyDown}
             style={{
-              width: `${(365 / 1920) * 100}vw`, // 너비를 365px로 설정
-              height: `${(72 / 1080) * 100}vh`, // 높이를 72px로 설정
-              padding: '8px', // Add padding for styling if needed
+              width: `${(365 / 1920) * 100}vw`,
+              height: `${(72 / 1080) * 100}vh`,
+              padding: '8px',
             }}
           />
+
           <FormControlLabel
             control={
               <Checkbox
-                value={rememberMe}
-                onChange={(event) => setRememberMe(event.target.checked)}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 color="primary"
                 checked={rememberMe}
               />
             }
             label="아이디 저장"
           />
+
+          {/* 폼 아래 작은 에러 텍스트 (입력 누락 등) */}
           {loginError && (
             <Typography variant="caption" color="error">
               {loginError}
             </Typography>
           )}
+
           <Button
             onClick={login}
             variant="contained"
@@ -282,6 +323,19 @@ const LogInField = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* 🔔 오류 팝업 */}
+      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
+        <DialogTitle>{errorDialogTitle}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ whiteSpace: 'pre-line' }}>
+            {errorDialogMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorDialogOpen(false)}>확인</Button>
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 };

@@ -1,3 +1,10 @@
+"""
+데이터 업로드 및 수정 API 라우터.
+
+육류/관능평가/HSI 관련 데이터를 단건 또는 벌크로 등록·수정·삭제하고,
+S3 업로드용 presigned URL을 발급한다.
+"""
+
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -13,7 +20,7 @@ from app.db.db_model import (
     AI_SensoryEval, AI_HSISensoryEval, SpectralInfo
 )
 from app.core.config import settings
-from app.schemas.meat import DataUploadRequest, MeatDataUpload
+from app.schemas.meat import DataUploadRequest
 
 router = APIRouter(prefix="", tags=["data-upload"])
 

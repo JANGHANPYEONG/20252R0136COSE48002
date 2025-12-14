@@ -18,6 +18,27 @@ if [ ! -f "$BACKEND_DIR/app/__init__.py" ]; then
   touch "$BACKEND_DIR/app/__init__.py"
 fi
 
+# 0-1) Redis 실행 확인 및 시작
+if ! command -v redis-server &> /dev/null; then
+  echo "[ERR] redis-server가 설치되어 있지 않습니다." >&2
+  exit 1
+fi
+
+# Redis가 실행 중인지 확인
+if ! redis-cli ping &> /dev/null; then
+  echo "[INFO] Redis 서버 시작 중..."
+  redis-server --daemonize yes
+  sleep 1
+  if redis-cli ping &> /dev/null; then
+    echo "[INFO] Redis 서버가 성공적으로 시작되었습니다."
+  else
+    echo "[ERR] Redis 서버 시작 실패" >&2
+    exit 1
+  fi
+else
+  echo "[INFO] Redis 서버가 이미 실행 중입니다."
+fi
+
 # 1) 새 세션 만들기
 tmux kill-session -t $SESSION 2>/dev/null || true
 tmux new-session -d -s $SESSION

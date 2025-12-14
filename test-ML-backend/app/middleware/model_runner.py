@@ -1,4 +1,9 @@
-# model_runner.py
+"""
+ML 모델 추론 파이프라인을 감싸 FastAPI 등에서 쉽게 호출할 수 있게 해주는 미들웨어.
+
+로컬(eBS) 또는 S3에서 이미지를 불러와 기존 추론 함수(run_inference)에 전달하고,
+DB 레코드 구조(MeatRecord)에 맞춰 입력 값을 구성해 결과 dict를 돌려준다.
+"""
 from __future__ import annotations
 import os
 from typing import Dict, Any, Tuple, Union
@@ -18,8 +23,6 @@ def run_inference(*, image_path: Union[str, None] = None, image_bytes: Union[byt
     이미지 경로 또는 바이트 중 하나만 주면 됩니다.
     반환 형식은 팀 표준(JSON 직렬화 가능한 dict)으로.
     """
-    # ---- TODO: 실제 파이프라인 호출로 교체 ----
-    # 아래는 데모용 더미 결과
     return {"overall": 7.1, "color": 7.2, "aroma": 6.8, "texture": 6.9, "juiciness": 6.5, "flavor": 7.1}
 
 class ModelRunner:

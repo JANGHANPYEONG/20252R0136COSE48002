@@ -1,4 +1,9 @@
-# mlflow_progress.py
+"""
+MLflow 실험 진행 상황을 조회하고 ETA/메트릭을 계산하는 헬퍼.
+
+run_id별 최신 메트릭, 추정 완료 시간, 태그 등을 집계해 API 응답에 활용한다.
+"""
+
 from typing import Dict, Optional, List
 from datetime import datetime, timezone, timedelta
 from mlflow.tracking import MlflowClient

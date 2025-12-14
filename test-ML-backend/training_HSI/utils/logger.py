@@ -1,3 +1,9 @@
+"""
+HSI/RGB 전반 실험을 위한 공통 MLflow 로깅 도우미.
+
+실험 생성·연결, 파라미터/메트릭 기록, 곡선 시각화 저장까지 처리한다.
+"""
+
 import os
 import json
 import mlflow

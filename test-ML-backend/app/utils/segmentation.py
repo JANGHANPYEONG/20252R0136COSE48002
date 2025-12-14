@@ -1,3 +1,9 @@
+"""
+세그멘테이션 모델 서빙 및 데이터셋/변환 정의를 담은 유틸리티.
+
+MLflow에서 모델을 불러와 추론하고, 학습용 Dataset/Transform 클래스를 제공한다.
+"""
+
 import torch
 from torch.utils.data import Dataset
 from torch.cuda.amp import autocast

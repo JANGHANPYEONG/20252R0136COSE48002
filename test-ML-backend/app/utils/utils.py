@@ -1,3 +1,10 @@
+"""
+레거시 유틸 통합 모듈.
+
+constants/logging/validation/error handler 등을 재노출하고 과거 함수 호환성 유지용
+헬퍼(item_encoder 등)를 보관한다.
+"""
+
 # 새로운 모듈 구조로 이동된 함수들 import
 from .constants import *
 from .logging_utils import *

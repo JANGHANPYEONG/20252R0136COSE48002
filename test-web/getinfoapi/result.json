@@ -1,9 +1,0 @@
-{
-  "response": {
-    "header": {
-      "resultCode": "99",
-      "resultMsg": "SERVICE KEY IS NOT REGISTERED ERROR."
-    },
-    "notice": null
-  }
-}

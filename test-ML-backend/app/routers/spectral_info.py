@@ -1,10 +1,15 @@
+"""
+스펙트럼 메타데이터 CRUD 라우터.
+
+HSI 파장 인덱스 정보를 일괄 등록·수정·조회하기 위한 엔드포인트를 제공한다.
+"""
+
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
 from app.db.database import get_db
 from app.db.db_model import SpectralInfo
@@ -24,7 +29,6 @@ class SpectralInfoBase(BaseModel):
 
 class SpectralInfoCreate(SpectralInfoBase):
     """스펙트럼 정보 생성 모델"""
-    pass
 
 class SpectralInfoUpdate(BaseModel):
     """스펙트럼 정보 수정 모델"""
@@ -34,7 +38,6 @@ class SpectralInfoUpdate(BaseModel):
 
 class SpectralInfoResponse(SpectralInfoBase):
     """스펙트럼 정보 응답 모델"""
-    pass
 
 class SpectralInfoBulkRequest(BaseModel):
     """스펙트럼 정보 일괄 처리 요청 모델"""
