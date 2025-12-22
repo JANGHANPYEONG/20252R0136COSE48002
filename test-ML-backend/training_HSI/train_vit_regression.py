@@ -108,9 +108,14 @@ def main():
                 'batch_size': config['data']['batch_size'],
                 'epochs': config['train']['epochs'],
                 'optimizer': config['train']['optimizer'],
-                'lr': config['train']['lr'],
+                'lr': float(config['train']['lr']),  # 명시적 float 변환
+                'weight_decay': float(config['train'].get('weight_decay', 0)),
                 'scheduler': config['train']['scheduler'],
                 'save_interval': config['train'].get('save_interval', 5),
+                'dropout': config['model'].get('dropout', 0.1),
+                'patch_size': config['model'].get('patch_size', 16),
+                'emb_dim': config['model'].get('emb_dim', 96),
+                'depth': config['model'].get('depth', 4),
                 'seed': seed,
                 'dataset': 'vit-regression'
             }
@@ -190,7 +195,7 @@ def main():
         trainer = HSITrainer(model, device, config, pos_weight_info=pos_weight_info)
 
         # 플롯 키 설정 (회귀 전용)
-        plot_keys = config.get('plot_keys', ["r2", "mse", "auc", "combined_score"])
+        plot_keys = config.get('plot_keys', ["r2", "mse", "combined_score"])
 
         # 훈련 수행
         print("Starting training...")
@@ -234,8 +239,7 @@ def main():
             final_metrics.update({
                 'best_val_r2': training_results['best_val_metrics'].get('r2', 0),
                 'best_val_mse': training_results['best_val_metrics'].get('mse', 0),
-                'best_val_mae': training_results['best_val_metrics'].get('mae', 0),
-                'best_val_auc': training_results['best_val_metrics'].get('auc', 0)
+                'best_val_mae': training_results['best_val_metrics'].get('mae', 0)
             })
 
             logger.log_metrics(final_metrics)

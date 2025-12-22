@@ -1,0 +1,45 @@
+{
+  "experiment": "hsi_mscnn_experiment",
+  "model": {
+    "file": "hsi_mscnn",
+    "num_classes": 5,
+    "hsi_channels": 6,
+    "dropout": 0.1,
+    "parameters": {
+      "hsi_channels": 6,
+      "base_channels": 8,
+      "dropout": 0.1
+    }
+  },
+  "data": {
+    "csv": "/mnt/data/datasets_HSI/label/label.csv",
+    "column_config": "configs/column_config.json",
+    "val_split": 0.2,
+    "test_split": 0.1,
+    "batch_size": 16,
+    "num_workers": 4,
+    "crop_size": [224, 224],
+    "use_flip": true,
+    "use_rotation": true,
+    "use_noise": true,
+    "use_brightness_contrast": true,
+    "scaler_mode": "normalized"
+  },
+  "train": {
+    "epochs": 120,
+    "early_stopping_patience": 25,
+    "optimizer": "AdamW",
+    "lr": 5e-4,
+    "scheduler": "CosineAnnealingWarmRestarts",
+    "loss_fn": "uncertainty",
+    "use_amp": true,
+    "grad_clip_norm": 1
+  },
+  "mlflow": {
+    "tracking_uri": "http://127.0.0.1:5000",
+    "experiment_name": "HSI_2D_CNN"
+  },
+  "plot_keys": ["cls_f1_score", "reg_r2", "combined_score"],
+  "seed": 42,
+  "regacc_threshold": 0.5
+}

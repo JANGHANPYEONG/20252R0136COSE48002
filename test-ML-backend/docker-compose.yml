@@ -1,0 +1,188 @@
+version: '3.8'
+
+services:
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: ml-backend-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ml-backend-network
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: ml-backend-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-deeplant_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ml-backend-network
+
+  # MLflow
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ml-backend-mlflow
+    command: >
+      sh -c "
+        mlflow server
+        --backend-store-uri postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-deeplant_db}
+        --default-artifact-root s3://${S3_BUCKET_NAME}/mlflow-artifacts
+        --host 0.0.0.0
+        --port 5000
+      "
+    ports:
+      - "5000:5000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${S3_REGION_NAME:-ap-northeast-2}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ml-backend-network
+    volumes:
+      - mlflow_data:/app/mlruns
+
+  # FastAPI
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ml-backend-api
+    ports:
+      - "8000:8000"
+    environment:
+      # SERVER
+      - HOST=0.0.0.0
+      - PORT=8000
+      - RELOAD=false
+      # ENVIRONMENT
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DEBUG=${DEBUG:-false}
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-[]}
+      # DB
+      - DB_URI=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-deeplant_db}
+      # Redis
+      - REDIS_URL=redis://redis:6379/0
+      # ML MODEL
+      - MODEL_SAVE_PATH=/app/models
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      # AWS S3
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION_NAME=${S3_REGION_NAME:-ap-northeast-2}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      # Firebase
+      - FIREBASE_CREDENTIALS=/app/serviceAccountKey.json
+      - FIREBASE_BUCKET_ADDRESS=${FIREBASE_BUCKET_ADDRESS}
+      # Python
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+      - ./log:/app/log
+      - ./models:/app/models
+      - ./training_HSI:/app/training_HSI
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    networks:
+      - ml-backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ml-backend-celery
+    command: >
+      sh -c "
+        celery -A app.routers.hsi_train.celery_app worker
+        --loglevel=info
+        --pool=threads
+        --concurrency=1
+      "
+    environment:
+      # DB
+      - DB_URI=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-deeplant_db}
+      # Redis
+      - REDIS_URL=redis://redis:6379/0
+      # ML MODEL
+      - MODEL_SAVE_PATH=/app/models
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      # AWS S3
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION_NAME=${S3_REGION_NAME:-ap-northeast-2}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      # Firebase
+      - FIREBASE_CREDENTIALS=/app/serviceAccountKey.json
+      - FIREBASE_BUCKET_ADDRESS=${FIREBASE_BUCKET_ADDRESS}
+      # Python
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+      - ./log:/app/log
+      - ./models:/app/models
+      - ./training_HSI:/app/training_HSI
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+      backend:
+        condition: service_started
+    networks:
+      - ml-backend-network
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  mlflow_data:
+    driver: local
+
+networks:
+  ml-backend-network:
+    driver: bridge
+
+

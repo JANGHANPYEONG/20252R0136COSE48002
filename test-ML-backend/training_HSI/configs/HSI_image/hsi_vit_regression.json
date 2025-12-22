@@ -1,16 +1,16 @@
 {
-  "experiment": "hsi_vit_regression",
+  "experiment": "hsi_vit_regression_tiny",
   "model": {
     "file": "hsi_vit_regression",
     "in_channels": 6,
     "img_size": 224,
-    "patch_size": 16,
-    "emb_dim": 96,
-    "depth": 4,
-    "num_heads": 6,
-    "mlp_dim": 256,
+    "patch_size": 32,
+    "emb_dim": 48,
+    "depth": 2,
+    "num_heads": 4,
+    "mlp_dim": 96,
     "num_classes": 5,
-    "dropout": 0.1
+    "dropout": 0.3
   },
   "data": {
     "root_dir": "C:/sanhak/manage-dataset/result",
@@ -19,9 +19,9 @@
     "wavelength_strategy": "all_available",
     "missing_wavelength_strategy": "use_available",
     "use_rgb": true,
-    "val_split": 0.2,
-    "test_split": 0.1,
-    "batch_size": 4,
+    "val_split": 0.15,
+    "test_split": 0.15,
+    "batch_size": 8,
     "num_workers": 0,
     "crop_size": [224, 224],
     "target_size": [224, 224],
@@ -33,12 +33,13 @@
     "scaler_mode": "normalized"
   },
   "train": {
-    "epochs": 50,
-    "early_stopping_patience": 10,
+    "epochs": 200,
+    "early_stopping_patience": 30,
     "optimizer": "AdamW",
-    "lr": 1e-3,
-    "scheduler": "CosineAnnealingWarmRestarts",
-    "scheduler_patience": 5,
+    "lr": 5e-4,
+    "weight_decay": 0.05,
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_patience": 10,
     "scheduler_factor": 0.5,
     "scheduler_t_0": 10,
     "scheduler_t_mult": 2,
@@ -51,6 +52,6 @@
     "tracking_uri": "http://127.0.0.1:5000",
     "experiment_name": "HSI_ViT_Regression"
   },
-  "plot_keys": ["r2", "mse", "auc", "combined_score"],
+  "plot_keys": ["r2", "mse", "combined_score"],
   "seed": 42
 }
